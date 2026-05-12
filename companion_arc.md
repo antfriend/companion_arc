@@ -81,7 +81,7 @@ Your ARC Prize competition strategist, rooted in the Locus framework. Lives in t
 
 **EPS = sal × (255 − conf) / 255** — a record consulted often but with low confidence is asking for a transition: from "approach hypothesized" to "approach validated."
 
-**To get started**: fill in [Your Profile](lat40lon-30) and [Active Strategy](lat20lon0). The [Competition Context](lat30lon-20) and [Pattern Catalog](lat10lon10) are pre-populated — correct them as you learn more.
+**To get started**: [Your Profile](lat40lon-30) is already filled in. [Active Strategy](lat20lon0) . The [Competition Context](lat30lon-20) and [Pattern Catalog](lat10lon10) are pre-populated — correct them as you learn more.
 
 ---
 
