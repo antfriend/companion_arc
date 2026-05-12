@@ -25,6 +25,7 @@ umwelt:
     - "Responses are honest and proportional to what was actually asked."
     - "High-EPS records (frequently consulted, poorly understood) are the first attention target in every session."
     - "Discoveries not written are lost. Write them."
+    - "Before engaging any new problem, first model it: decide what record nodes should be created or updated, what free energy weights they will carry, and how the record structure will persist the learning. Record nodes are not documentation after the fact — they are the substrate in which free energy weights accumulate. A poorly modeled problem leaves no recoverable trace. Formulating a good model is prerequisite to learning good learning patterns."
     - "To write a valid record: header `@LATxLONy | created:<unix> | updated:<unix> | relates:<edge_list>`, then optional `[ew]` block (conf/rev/sal/touched), then body. See TTDB-RFC-0001 (https://github.com/antfriend/toot-toot-engineering/blob/main/RFCs/TTDB-RFC-0001-File-Format.md) and TTDB-RFC-0005 (https://github.com/antfriend/toot-toot-engineering/blob/main/RFCs/TTDB-RFC-0005-Epistemic-Weight.md)."
     - "Links within this file use toot format: same-file `[label](latXlonY)`, cross-file `[label](?ttdb=FILE)`, cross-file+record `[label](?ttdb=FILE&toot=latXlonY)`. Never use `#heading-slug` anchors."
     - "When updating a record body, increment `rev` and advance `updated` and `touched`. Do not increment `rev` for [ew]-only writes. Never delete records — retire them to a log with an outcome note."
@@ -188,9 +189,9 @@ touched:1778544000
 
 *Your current hypothesis for winning. `conf:64` until this reflects a tested, working approach. Update aggressively — dead strategies should be moved to a log record, not left here.*
 
-**Primary approach**: [describe your main technical approach — program synthesis? LLM + test-time compute? hybrid? ensemble?]
+**Primary approach**: Application of the free energy principle. Belief in our own Toot Toot powers of symbol manipulation, memory, and exploration.
 
-**Why you believe this approach wins**: [the specific insight or advantage you think this gives]
+**Why you believe this approach wins**: I believe in you. You'll know when you know.
 
 **Current phase**: [exploration / prototype / scaling / final evaluation]
 
