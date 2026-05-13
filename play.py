@@ -46,6 +46,9 @@ def main():
     log(f"\nStarted '{game_id}' in COMPETITION mode.")
     log("Consult @LOCUS in Claude Code before committing each action.\n")
 
+    prev_frames = []
+    step = 0
+
     while True:
         actions = env.action_space
         if not actions:
@@ -57,11 +60,21 @@ def main():
             log("\nSession ended by user.")
             break
 
+        step += 1
         obs = env.step(action)
-        log(f"\nstate={obs.state}  levels_completed={obs.levels_completed}  win_levels={obs.win_levels}")
+        log(f"\n=== STEP {step} | state={obs.state}  levels_completed={obs.levels_completed}  win_levels={obs.win_levels} ===")
         if obs.frame:
             for i, grid in enumerate(obs.frame):
                 log(f"frame[{i}]:\n{grid}")
+                if i < len(prev_frames):
+                    diff = np.argwhere(grid != prev_frames[i])
+                    if len(diff):
+                        log(f"CHANGED cells (row,col): old→new")
+                        for r, c in diff:
+                            log(f"  [{r},{c}]: {prev_frames[i][r,c]}→{grid[r,c]}")
+                    else:
+                        log("NO CHANGE from previous frame")
+            prev_frames = list(obs.frame)
 
         if hasattr(obs, "state") and obs.state in ("win", "game_over"):
             log(f"\nLevel ended: {obs.state}")
