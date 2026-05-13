@@ -282,40 +282,42 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1778544000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1778630400 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:140
-rev:3
+rev:4
 sal:5
-touched:1778544000
+touched:1778630400
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 1 still in progress** (session 3, step 23 awaiting input)
+**Current level**: ls20 — **level 1 still in progress** (session 4, step 0 — awaiting first action)
 
 **Level 1 outcome**:
 - Session 1: 28 actions (WIN) — scorecard pending
 - Session 2: abandoned, explored capture zone, exited at step 27
-- Session 3 (current): in progress, **NOT WON**, step 23
-- Block: rows 20–21, cols 34–38 (escaped capture zone via DOWN at step 22→23)
-- Entity1: ring=5 (re-lit by DOWN), state=1
-- Timer: 26 remaining
-- Immediate next action: **DOWN (1)** — move to rows 25–26 (open corridor, UNEXPLORED this session)
+- Session 3: ended step 23 — API session ls20-9607627b expired server-side (400 on next action); open corridor never explored
+- Session 4 (current): fresh start — arc.make("ls20") creates NEW game (confirmed: does NOT resume prior session)
+- Block: rows 45–46, cols 34–38 (expected initial; unconfirmed until step 1 frame)
+- Entity1: state=1 (initial level 1 state, confirmed across sessions 1–3), ring state unknown
+- Timer: 42 (fresh reset)
+- Immediate next action: **ACTION1 (0)** — UP; then plan LEFT route via open corridor rows 25–26
 
 **Level 1 — CRITICAL OPEN PROBLEM**:
-- Session 1 route: "UP×N, LEFT across, UP again to rows 10–11" — the LEFT was NOT in the capture zone but in the open corridor (rows 25–26), which has NEVER been explored in sessions 2–3
+- Session 1 route: "UP×N, LEFT across, UP again to rows 10–11" — the LEFT was NOT in the capture zone but in the open corridor (rows 25–26), which has NEVER been explored in sessions 2–4
 - UP from rows 15–16 (any ring state): does not enter entity2 interior (confirmed ×10+ attempts across sessions)
 - DOWN from rows 15–16 (ring=0): moves to rows 20–21 AND ring RE-LIGHTS to 5 (confirmed session 3 step 23)
 - The lower maze (rows 25–54) contains unexplored LEFT/RIGHT paths — session 1 "LEFT across" happened here
 - Initial block position: rows 45–46, cols 34–38 (confirmed from session 3 step trace)
 
-**High-EPS mechanics** (sessions 2–3):
+**High-EPS mechanics** (sessions 2–4):
 - Entity2 entry mechanic: LOW conf — no confirmed path to interior rows 9–14 from below
-- Ring re-light on capture zone exit: DOWN from rows 15–16 always re-lights ring (new, conf ~180)
-- Lower maze path: **UNEXPLORED** — DOWN from rows 20–21 to rows 25–26 never taken in sessions 2–3
+- Ring re-light on capture zone exit: DOWN from rows 15–16 always re-lights ring (conf ~180)
+- Lower maze path: **UNEXPLORED** — open corridor rows 25–26 never explored in any session
+- Competition session expiration: API sessions expire after inactivity; arc.make() on reconnect creates new game (no resume)
 
 *Update after every level. Increment `rev` on each material update.*
 
@@ -513,6 +515,8 @@ level: "1 of 7 (in progress, session 3)"
 **Critical discovery**: Session 1 "LEFT across" route must have occurred in lower maze. Session 1 block started rows 40–41 (different initial?) and navigated LEFT at some point — likely from rows 25–26 open corridor before final UP to rows 10–11.
 
 **Next action**: DOWN (1) → rows 25–26 (open corridor). Then LEFT exploration.
+
+**Session 3 end**: API session ls20-9607627b expired server-side. Action submitted after step 23 (intended DOWN to rows 25–26) returned 400 Bad Request. play.py crashed. Session 4 started fresh (new game instance).
 
 ---
 
