@@ -282,11 +282,11 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1778544000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1778544000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:180
-rev:1
-sal:3
+conf:160
+rev:2
+sal:4
 touched:1778544000
 [/ew]
 
@@ -294,30 +294,28 @@ touched:1778544000
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — level 2 of 7 (**SESSION ENDED** — API session dropped after step 29; reconnect status unknown)
+**Current level**: ls20 — **level 1 still in progress** (session 2, step 27 awaiting input)
 
 **Level 1 outcome**:
-- Actions taken: 28
-- Human baseline: unknown (session still active — scorecard pending)
-- Level score: pending
-- Level weight: 1 (lowest — weighted RHAE impact minimal)
-- Revision cycle status: **OPEN** — phases 1–3 not yet run
+- Session 1: 28 actions (WIN) — scorecard pending
+- Session 2 (current): in progress, **NOT WON**, step 27
+- Block: rows 15–16, cols 34–38 (stuck in entity2 capture zone since step 13)
+- Entity1: ring=0 (dimmed), state=1
+- Timer: 27 remaining (all steps since step 20 were free UP-null actions)
+- Immediate next action: **DOWN (1)** — escapes capture zone, confirmed to work at step 10
 
-**Level 2 in-progress** (as of step 29):
-- Block: rows 35–36, cols 29–33 (2 rows × 5 cols confirmed)
-- Entity1 state: 1 — need 3 more cluster collections to reach state 0
-- Entity2 target: rows 39–45, cols 12–20 (requires state 0: `9 9 9 / 9 5 5 / 9 5 9`)
-- Cluster: rows 46–48, cols 50–52 (values 0 and 1)
-- Timer: 40 cells remaining (rows 61–62, cols 15–54 remaining; resets each level)
-- Available actions: 0=UP, 1=DOWN, 2=LEFT only (ACTION4/RIGHT absent from current position)
+**Level 1 — CRITICAL OPEN PROBLEM**:
+- Entering entity2 from shaft (rows 15–16) triggers capture zone
+- UP from rows 15–16 (ring=5): ring dims to 0, FREE, no movement
+- UP from rows 15–16 (ring=0): NULL action, FREE, no change
+- LEFT/RIGHT from rows 15–16: timer consumed, no movement
+- DOWN from rows 15–16: moves to rows 20–21 (confirmed step 10, NOT yet tried with ring=0)
+- **Unknown**: how to reach entity2 interior rows 9–15 for win condition
 
-**Overall score to date**:
-- Level 1: 28 AI actions — score TBD at session end
-- Total RHAE: pending scorecard
-
-**High-EPS mechanics** (session 1 scan):
-- 3-direction restriction in level 2: conf low, not yet understood — EPS rising
-- Cluster reach without RIGHT: unresolved routing problem
+**High-EPS mechanics** (session 2):
+- Entity2 entry mechanic: LOW conf — capture zone prevents all upward entry attempts seen so far
+- Ring toggle function: confirmed as ring display only (not entry gate)
+- Path from rows 20–21 back to entity2 interior: **UNRESOLVED**
 
 *Update after every level. Increment `rev` on each material update.*
 
@@ -396,13 +394,13 @@ level: "2 of 7 (in progress)"
 
 @LAT20LON-30 | created:1778544000 | updated:1778544000 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10
 [ew]
-conf:180
-rev:0
-sal:0
+conf:160
+rev:1
+sal:2
 touched:1778544000
 [/ew]
 
-## ls20 — Game Mechanics (session 1)
+## ls20 — Game Mechanics (sessions 1–2)
 
 Game ID: ls20. 7 levels. COMPETITION mode.
 
@@ -442,6 +440,18 @@ Game ID: ls20. 7 levels. COMPETITION mode.
 - Level 2 (from entry position rows 35–36, cols 29–33): only 3 actions — ACTION1=UP, ACTION2=DOWN, ACTION3=LEFT
 - ACTION4 (RIGHT) absent from level 2 entry position — cause unknown; entity1 structure may be blocking
 
+**Entity2 capture zone (level 1) — session 2 discoveries**
+- Entering entity2 from the shaft (rows 17–24, cols 34–38) via UP deposits block at rows 15–16 (capture zone)
+- From rows 15–16 (capture zone):
+  - UP when ring=5 → ring dims to 0, **FREE** (no timer consumed), block does NOT move
+  - UP when ring=0 → **NULL action** (no change at all, FREE, confirmed ×6 consecutive steps)
+  - LEFT → timer consumed, no block movement
+  - RIGHT when ring=0 → ring re-lights to 5, timer consumed, no block movement
+  - RIGHT when ring=5 → timer consumed, no ring change, no block movement
+  - DOWN → **moves block to rows 20–21** (confirmed step 10; NOT yet tried with ring=0)
+- Win requires block fully inside entity2 interior (rows 9–15, not row 16 outer ring) — currently unachieved
+- **OPEN**: how to enter entity2 interior rows 9–14 from below — ring toggle is NOT an entry gate
+
 **Special tiles (11-bordered mini-boxes)**
 - Left: rows 16–18, cols 15–17 (3×3 box of 11s with center=3)
 - Right: rows 51–53, cols 40–42 (same pattern, in bottom corridor)
@@ -454,6 +464,47 @@ Game ID: ls20. 7 levels. COMPETITION mode.
 - Void barrier: cols 24–28 separates left from center at all accessible row ranges
 - Right section / bottom corridor: cols 44–58, rows 44–54 (contains cluster and right mini-box)
 - No direct center-to-right path observed — requires route through upper corridor or portal
+
+---
+
+@LAT-60LON10 | created:1778544000 | updated:1778544000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1778544000
+[/ew]
+
+## Log — 2026-05-13 (session 2)
+
+```session-log
+timestamp: 1778544000
+game: "ls20"
+level: "1 of 7 (in progress, session 2)"
+```
+
+**Session**: Second competition run on ls20 (fresh session; server state reset). Level 1 NOT won as of step 27.
+
+**Level 1 — session 2 progress**:
+- Steps 1–12: navigated block UP through shaft to rows 15–16 (entity2 capture zone); discovered ring toggle mechanic
+- Steps 13–15: confirmed UP from capture zone = ring toggle (5→0, 0→5 via RIGHT), no movement
+- Steps 16–17: LEFT from capture zone = timer consumed, no movement (2 ticks wasted)
+- Steps 17–18: UP → ring dims again
+- Steps 18–20: RIGHT×3 = timer consumed (re-lit ring at step 18→19, then timer-only at 19→20)
+- Step 20→21: UP → ring dims (5→0), FREE
+- Steps 21→27: UP ×6 with ring=0 → **NULL ×6** (no change, all FREE)
+
+**Timer status**: 27 remaining. 15 consumed (11 in approach + 5 wasted in capture zone via LEFT×2 and RIGHT×3). Approach cost was 7; escape and re-approach budget = 20 ticks.
+
+**Mechanics confirmed this session**:
+- Ring toggle is display-only — NOT an entry gate into entity2 interior
+- UP when ring=0 = complete null (no change to block or ring)
+- DOWN from rows 15–16 moves to rows 20–21 (step 10 precedent; NOT yet re-tried)
+- Maze at rows 20–21: only cols 34–38 walkable (narrow shaft — can't exit LEFT or RIGHT)
+
+**Critical unknown**: how to enter entity2 interior (rows 9–14) from below — no path observed
+
+**Next action**: DOWN (1) to escape capture zone, then DOWN again to open corridor rows 25–26
 
 ---
 
