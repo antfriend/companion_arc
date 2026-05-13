@@ -294,7 +294,7 @@ touched:1778544000
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — level 2 of 7 (step 29 taken)
+**Current level**: ls20 — level 2 of 7 (**SESSION ENDED** — API session dropped after step 29; reconnect status unknown)
 
 **Level 1 outcome**:
 - Actions taken: 28
@@ -388,8 +388,9 @@ level: "2 of 7 (in progress)"
 - Collections are free (cluster collection does not tick timer)
 - Level 2 action space: only 3 directions available from entry position
 
-**Revision cycle status**: phases 1–3 OPEN, phase 4 pending level 2 outcome
+**Revision cycle status**: phases 1–3 OPEN, phase 4 pending — **SESSION ENDED before level 2 complete**
 **Open for Phase 4**: cluster-reach mechanic, 3-direction restriction cause
+**Next session**: verify API game state on reconnect; `arc.make("ls20")` may resume or reset
 
 ---
 
