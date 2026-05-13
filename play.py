@@ -1,8 +1,11 @@
 import os
 import sys
+import numpy as np
 import arc_agi
 from arc_agi import OperationMode
 from dotenv import load_dotenv
+
+np.set_printoptions(threshold=np.inf, linewidth=200)
 
 load_dotenv()
 
