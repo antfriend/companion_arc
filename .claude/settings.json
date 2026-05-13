@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Remove-Item \"c:\\\\git\\\\companion_arc\\\\arc_operator_guide.md\")"
+    ]
+  }
+}

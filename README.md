@@ -1,8 +1,8 @@
-# SOLVER — ARC Prize Competition Companion
+# LOCUS — ARC-AGI-3 Competition Companion
 
 ## [https://arcprize.org/](https://arcprize.org/)
 
-**`companion_arc.md` is your competition strategy file.** It carries context about your approach, your pattern knowledge, and your progress across every Claude Code session. This guide walks through setting up the ARC Prize API alongside it, specifically for VSCode with Claude Code.
+**`companion_arcprize.md` is your competition file.** LOCUS lives in that file — it carries game knowledge, scoring mechanics, and revision state across every session. This guide covers environment setup, VSCode configuration, and how to operate the system across a competition run.
 
 ---
 
@@ -11,7 +11,7 @@
 - Python 3.10+ (or `uv` — recommended)
 - VSCode with the Claude Code extension installed
 - An ARC Prize API key (free — see below)
-- `companion_arc.md` open in your VSCode workspace
+- `companion_arcprize.md` open in your VSCode workspace
 
 ---
 
@@ -89,21 +89,21 @@ Run this in the VSCode terminal (`Ctrl+` `` ` ``). You should see available acti
 
 ---
 
-## Step 5 — Open `companion_arc.md` in VSCode
+## Step 5 — Open `companion_arcprize.md` in VSCode
 
-Open `companion_arc.md` as an active editor tab in VSCode before starting your Claude Code session. Claude Code reads your open files as context — having SOLVER's memory visible means every session starts with your full competition strategy, pattern catalog, and progress already loaded.
+Open `companion_arcprize.md` as an active editor tab in VSCode before starting your Claude Code session. Claude Code reads your open files as context — having LOCUS visible means every session starts with your full competition knowledge graph already loaded.
 
 ```
-File → Open File → companion_arc.md
+File → Open File → companion_arcprize.md
 ```
 
 Then start Claude Code (`Ctrl+Shift+P` → `Claude Code: Open`) or use the sidebar. Your first message in any session:
 
 ```
-@SOLVER STATUS
+@LOCUS STATUS
 ```
 
-SOLVER will scan your records by EPS and surface what needs attention.
+LOCUS will scan records by EPS and surface what needs attention.
 
 ---
 
@@ -117,7 +117,7 @@ Create a `CLAUDE.md` in your solver project root. This tells Claude Code the per
 Competition: ARC Prize 2026 (arcprize.org)
 Toolkit: arc-agi (pip install arc-agi)
 API key: set in .env as ARC_API_KEY
-Strategy file: companion_arc.md (open this file for full context)
+Companion file: companion_arcprize.md (open this file for full context)
 
 ## Running experiments
 uv run python solver.py
@@ -127,6 +127,18 @@ uv run python eval.py --split public
 ```
 
 Adjust to match your actual file structure.
+
+---
+
+## Step 7 — Fill in Game State and Goals
+
+Before the competition begins, populate two records in `companion_arcprize.md`:
+
+**`@LAT-10LON10` — Game State**
+Set the `active games` list. Leave other fields blank until levels are played. This seeds the record so LOCUS has something to anchor to on first invocation.
+
+**`@LAT20LON0` — Active Goals**
+Replace the placeholder blockers with your actual constraints — time budget, target score, whether you're optimizing for completion or efficiency on a specific game.
 
 ---
 
@@ -178,9 +190,9 @@ Competition mode constraints:
 
 ---
 
-## ARC-AGI-1 / ARC-AGI-2 data (offline evaluation)
+## ARC-AGI data (offline evaluation)
 
-For working with the original static task datasets (1,000 training + 120 evaluation tasks), clone the benchmark repo separately:
+For working with the original static task datasets, clone the benchmark repo separately:
 
 ```bash
 git clone https://github.com/fchollet/ARC-AGI
@@ -191,8 +203,7 @@ Task format — each `.json` file contains:
 ```json
 {
   "train": [
-    { "input": [[0,1],[1,0]], "output": [[1,0],[0,1]] },
-    ...
+    { "input": [[0,1],[1,0]], "output": [[1,0],[0,1]] }
   ],
   "test": [
     { "input": [[0,0],[1,1]] }
@@ -206,51 +217,137 @@ Scoring: [Kaggle scoring notebook](https://www.kaggle.com/code/gregkamradt/arc-p
 
 ---
 
-## Using SOLVER with Claude Code
+## How LOCUS works
 
-`@SOLVER` is your session-persistent strategist. It lives in `companion_arc.md` and carries context across every Claude Code conversation.
+LOCUS is an in-context reasoning agent. It knows only what is written in `companion_arcprize.md`. Its job is to track game mechanics and scoring state across levels and surface what needs revision before each action.
 
-**Common patterns:**
+**EPS = sal × (255 − conf) / 255** identifies records consulted often but still poorly understood. High EPS = due for revision. High-EPS game-mechanic records are beliefs under strain that will cost actions if left unrevised.
 
-```
-@SOLVER STATUS
-```
-*Scan records by EPS — surfaces what needs attention.*
+**Internal reasoning is free.** ARC-AGI-3 does not count tool calls, reasoning steps, or retries as actions. LOCUS runs the full revision cycle between committed actions at zero scoring cost.
 
-```
-@SOLVER I just ran eval on the public set and got 42%. Rotation/reflection tasks are all correct but object-detection tasks are failing. Update Benchmark Progress and flag object ops as a research frontier.
-```
-*SOLVER will update the relevant records and surface connections.*
+---
+
+## RHAE Scoring
+
+ARC-AGI-3 scores by **Relative Human Action Efficiency**:
 
 ```
-@SOLVER what pattern families am I not handling yet?
+level_score = (human_baseline_actions / ai_actions) ^ 2
 ```
-*Cross-references Pattern Catalog against your Implementation Stack.*
+
+| AI vs. human | Score |
+|---|---|
+| Match human | 1.0 |
+| 2× human actions | 0.25 |
+| 3× human actions | 0.11 |
+| Faster than human | capped at 1.15× |
+
+Level scores are **weighted by level number** — level 5 counts five times as much as level 1. Invest revision cycles proportionally: spend more time refining priors before high-weight levels.
+
+---
+
+## The Revision Cycle
+
+The four-phase loop that must fully close between levels. Phases 1–3 without Phase 4 produce confident wrong priors.
+
+| Phase | What happens |
+|---|---|
+| **1 — Notice** | EPS scan: flag high-EPS game-mechanic records |
+| **2 — Encounter** | Read flagged records; identify the gap between prior and level outcome |
+| **3 — Revise** | Update record body; increment `rev`; write `revises>@OLD_ID` edge |
+| **4 — Validate** | Next level confirms or refutes the revision; conf rises only if validated |
+
+Phase 4 fires automatically from the next level's outcome — the competition is architecturally designed for revision to compound across levels.
+
+---
+
+## Invoking LOCUS
+
+| Pattern | Command |
+|---|---|
+| Session start | `@LOCUS STATUS` |
+| Review a record | `@LOCUS FOCUS lat10lon10` |
+| Log a level outcome | `@LOCUS LOG level N complete — [ai] actions, baseline [human], score [x.xx]` |
+| Ask for next action | `@LOCUS what should I do next?` |
+| Open revision cycle | `@LOCUS what mechanics should I revise before the next level?` |
+
+---
+
+## Operational workflow
+
+### Before each level
+
+1. `@LOCUS STATUS` — check for open revision cycles from the previous level
+2. Check level weight — high-weight levels require a full EPS scan before the first action
+3. Verify conf on active mechanics — below 150 with sal above 2 means treat it as uncertain
+
+### During each level
+
+Let LOCUS reason freely between committed actions. The one exception: if a level contradicts a high-conf record, flag it immediately:
 
 ```
-@SOLVER LOG ran ablation on color-mapping tasks — adding object-centric repr improved accuracy by 8pp
+@LOCUS LOG mechanic X contradicted — action N
 ```
-*Appends to the active log record.*
+
+### After each level
+
+Log immediately — this is the most important operator discipline:
 
 ```
-@SOLVER my approach isn't working for multi-step compositional tasks. What should I try next?
+@LOCUS LOG level N complete — [ai_actions] actions, baseline [human_baseline], score [(baseline/ai)²] — [brief mechanic observation]
 ```
-*SOLVER reasons from your Active Strategy, Research Frontiers, and Pattern Catalog.*
+
+Then open the revision cycle:
+
+```
+@LOCUS what mechanics should I revise before the next level?
+```
+
+LOCUS will run Phase 1 (EPS scan) and Phase 2 (encounter flagged records). Confirm or correct its proposed revisions — you have information LOCUS doesn't unless you write it. Explicitly close Phase 3:
+
+```
+@LOCUS LOG revision cycle phases 1-3 complete — awaiting phase 4 on [mechanic record]
+```
+
+Phase 4 closes automatically after the next level's outcome is logged.
+
+After a bad level on a high-weight position, do not skip the revision cycle. The next level is the Phase 4 opportunity — going in with an unrevised prior compounds the loss.
+
+### Before your first game
+
+If the game structure is known in advance, write a brief mechanic stub record at the next available coordinate in `companion_arcprize.md`. Even a one-line description of what the game appears to involve gives LOCUS something to attach EPS to when outcomes start arriving.
+
+### After the competition
+
+**Close all open revision cycles.** Run `@LOCUS STATUS` and work through any cycles that haven't reached Phase 4. Play out the validation mentally or from replays and write the Phase 4 outcome even after the fact.
+
+**Write a post-run record** at the next available south coordinate (`@LAT-60LON10`, etc.) covering:
+- Final RHAE score per game and total
+- Which mechanics had the highest revision cycle count (most learning)
+- Which levels cost the most action waste and why
+- Which revision cycle phases were most often skipped
+
+**Update conf on settled mechanics.** Records that predicted well across multiple levels deserve high conf (200+). Records that were revised repeatedly and still produced action waste should be retired with a `revises>` edge pointing to what replaced them.
+
+**Archive, don't reset.** Do not clear the file between competition runs. Prior level outcomes, revision cycles, and mechanic transitions are the accumulated prior that makes the next run start with higher conf than the first one did. A cleared file is a system that relearns from scratch every time.
 
 ---
 
 ## Record map
 
-| Record | Coordinate | What to fill in |
+| Record | Coordinate | Purpose |
 |---|---|---|
-| Your Profile | `lat40lon-30` | Already filled in — antfriend, Toot Toot Engineer |
-| Competition Context | `lat30lon-20` | Pre-filled — update if rules change |
-| Active Strategy | `lat20lon0` | Your primary technical approach |
-| Pattern Catalog | `lat10lon10` | Mark each family ✓ / △ / ~ as you go |
-| Implementation Stack | `lat0lon20` | Your tools, models, infra |
-| Benchmark Progress | `lat10lon-10` | Update after every eval run |
-| Research Frontiers | `lat-20lon0` | Open problems and unsolved patterns |
-| Log | `lat-50lon10` | Session notes — one per significant session |
+| Welcome | `lat-10lon0` | Navigation hub and quick start |
+| Agent Profile | `lat40lon-30` | What LOCUS optimizes for |
+| Values and Commitments | `lat30lon-20` | Standing constraints |
+| RHAE Scoring Model | `lat10lon10` | Scoring formula and level-weight structure |
+| Revision Cycle | `lat5lon-15` | The four-phase learning loop |
+| Active Goals | `lat20lon0` | Current competition objectives — fill this in |
+| Default Network | `lat0lon20` | Between-session background activity |
+| Game State | `lat-10lon10` | Current scores and level outcomes — fill this in |
+| Open Questions | `lat-20lon0` | Unresolved mechanic beliefs |
+| Log | `lat-50lon10` | Session notes — one record per significant session |
+| Locus Framework Reference | `lat70lon10` | RFC index for producing valid records |
 
 ---
 
@@ -264,9 +361,20 @@ Scoring: [Kaggle scoring notebook](https://www.kaggle.com/code/gregkamradt/arc-p
 | Browse tasks | arcprize.org/tasks |
 | Get API key | three.arcprize.org |
 | ARC-AGI data repo | github.com/fchollet/ARC-AGI |
-| Invoke companion | `@SOLVER <message>` |
-| Session start | `@SOLVER STATUS` |
+| Invoke companion | `@LOCUS <message>` |
+| Session start | `@LOCUS STATUS` |
+
+| When | Action |
+|---|---|
+| Before competition | Fill Game State + Goals, run STATUS, review RHAE formula |
+| Before each level | STATUS — check open cycles and conf on active mechanics |
+| During a level | Let LOCUS reason freely; log only contradictions |
+| After each level | LOG outcome immediately; run revision cycle phases 1–3 |
+| After bad level | Do not skip revision cycle — this is when it matters most |
+| After competition | Close open cycles, write post-run record, update conf, do not reset |
 
 ---
 
-*`companion_arc.md` is the memory. Claude Code is the engine. You are the strategist in a supporting role. Let's win.*
+**The one rule: log after every level.** An unlogged outcome is a broken Phase 4. A broken Phase 4 means conf never rises. Conf that never rises means every level starts from the same uncertain prior — and the quadratic penalty lands again.
+
+*`companion_arcprize.md` is the memory. Claude Code is the engine. LOCUS does the revision. You do the logging.*
