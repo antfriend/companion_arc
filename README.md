@@ -8,7 +8,8 @@
 
 ## What you need
 
-- Python 3.10+ (or `uv` — recommended)
+- Python 3.12+
+- `uv` (recommended) or `pip`
 - VSCode with the Claude Code extension installed
 - An ARC Prize API key (free — see below)
 - `companion_arcprize.md` open in your VSCode workspace
@@ -17,75 +18,57 @@
 
 ## Step 1 — Get your API key
 
-Register at [https://three.arcprize.org](https://three.arcprize.org) to obtain an API key. Anonymous access works for local exploration, but you need a key for competition mode and leaderboard submissions.
+Register at [https://three.arcprize.org](https://three.arcprize.org) to obtain an API key. An API key is required for competition mode and leaderboard submissions.
 
 ---
 
-## Step 2 — Install the ARC-AGI toolkit
+## Step 2 — Install dependencies
 
-**With `uv` (recommended — faster, isolated):**
+**With `uv` (recommended):**
+
+`uv` is a fast Python package and project manager. Install it from [astral.sh/uv](https://astral.sh/uv), then from this repo root:
 
 ```bash
-uv init arc-solver
-cd arc-solver
-uv add arc-agi
+uv sync
 ```
 
 **With pip:**
 
 ```bash
-pip install arc-agi
+pip install arc-agi python-dotenv
 ```
 
 ---
 
-## Step 3 — Set up your API key in VSCode
+## Step 3 — Set up your API key
 
-Create a `.env` file in your project root. Claude Code reads this automatically when it's present:
+Copy `.env.example` to `.env` and fill in your key:
 
 ```
 ARC_API_KEY=your-api-key-here
 ```
 
-To verify Claude Code picks it up, open the terminal in VSCode and check:
+`.env` is already in `.gitignore` — do not commit it.
+
+To verify it's loaded, open the VSCode terminal (`Ctrl+` `` ` ``) and check:
 
 ```bash
 echo $ARC_API_KEY        # macOS / Linux
 $env:ARC_API_KEY         # Windows PowerShell
 ```
 
-Alternatively, add it to your VSCode workspace settings (`Ctrl+Shift+P` → `Open Workspace Settings (JSON)`) if you prefer not to use a `.env` file:
-
-```json
-{
-  "terminal.integrated.env.windows": {
-    "ARC_API_KEY": "your-api-key-here"
-  },
-  "terminal.integrated.env.osx": {
-    "ARC_API_KEY": "your-api-key-here"
-  },
-  "terminal.integrated.env.linux": {
-    "ARC_API_KEY": "your-api-key-here"
-  }
-}
-```
-
-**Do not commit your API key.** Add `.env` to `.gitignore`.
-
 ---
 
-## Step 4 — Verify the toolkit
+## Step 4 — Verify the setup
 
-```python
-import arc_agi
-from arcengine import GameAction
+Open the VSCode terminal (`Ctrl+` `` ` ``) and run:
 
-arc = arc_agi.Arcade()
-env = arc.make("ls20", render_mode="terminal")
-print(env.action_space)
+```bash
+uv run python play.py    # with uv
+python play.py           # with pip
 ```
 
-Run this in the VSCode terminal (`Ctrl+` `` ` ``). You should see available actions for a game environment. If you get an auth error, check your `ARC_API_KEY`.
+Enter a game ID when prompted (e.g. `ls20`). You should see available actions. If you get an auth error, check your `ARC_API_KEY` in `.env`.
 
 ---
 

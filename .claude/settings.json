@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Remove-Item \"c:\\\\git\\\\companion_arc\\\\arc_operator_guide.md\")"
+      "Bash(Remove-Item \"c:\\\\git\\\\companion_arc\\\\arc_operator_guide.md\")",
+      "WebSearch",
+      "WebFetch(domain:docs.arcprize.org)",
+      "WebFetch(domain:pypi.org)"
     ]
   }
 }
