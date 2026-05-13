@@ -282,34 +282,42 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1747180800 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10
+@LAT-10LON10 | created:1747180800 | updated:1778544000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:64
-rev:0
-sal:0
-touched:1747180800
+conf:180
+rev:1
+sal:3
+touched:1778544000
 [/ew]
 
 ## Game State
 
-*Fill this in. `conf:64` until populated with actual competition data.*
+**Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Active games**: [game names / IDs currently being played]
+**Current level**: ls20 — level 2 of 7 (step 29 taken)
 
-**Current level**: [game name — level N of M]
+**Level 1 outcome**:
+- Actions taken: 28
+- Human baseline: unknown (session still active — scorecard pending)
+- Level score: pending
+- Level weight: 1 (lowest — weighted RHAE impact minimal)
+- Revision cycle status: **OPEN** — phases 1–3 not yet run
 
-**Last level outcome**:
-- Actions taken: [N]
-- Human baseline: [N]
-- Level score: [(baseline/ai)²]
-- Revision cycle status: [open phases 1-3 / closed all 4]
+**Level 2 in-progress** (as of step 29):
+- Block: rows 35–36, cols 29–33 (2 rows × 5 cols confirmed)
+- Entity1 state: 1 — need 3 more cluster collections to reach state 0
+- Entity2 target: rows 39–45, cols 12–20 (requires state 0: `9 9 9 / 9 5 5 / 9 5 9`)
+- Cluster: rows 46–48, cols 50–52 (values 0 and 1)
+- Timer: 40 cells remaining (rows 61–62, cols 15–54 remaining; resets each level)
+- Available actions: 0=UP, 1=DOWN, 2=LEFT only (ACTION4/RIGHT absent from current position)
 
 **Overall score to date**:
-- Game scores: [per game]
-- Total RHAE: [aggregate]
+- Level 1: 28 AI actions — score TBD at session end
+- Total RHAE: pending scorecard
 
-**High-EPS mechanics** (from last STATUS scan):
-- [mechanic description — EPS value]
+**High-EPS mechanics** (session 1 scan):
+- 3-direction restriction in level 2: conf low, not yet understood — EPS rising
+- Cluster reach without RIGHT: unresolved routing problem
 
 *Update after every level. Increment `rev` on each material update.*
 
@@ -343,30 +351,108 @@ touched:1747180800
 
 ---
 
-@LAT-50LON10 | created:1747180800 | updated:1747180800 | kind:log | relates:anchored_by>@LAT0LON0
+@LAT-50LON10 | created:1747180800 | updated:1778544000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10
 [ew]
 conf:255
-rev:0
-sal:0
-touched:1747180800
+rev:1
+sal:1
+touched:1778544000
 [/ew]
 
-## Log — [DATE]
+## Log — 2026-05-13
 
 ```session-log
-timestamp: 1747180800
-game: "[game name]"
-level: "[N of M]"
+timestamp: 1778544000
+game: "ls20"
+level: "2 of 7 (in progress)"
 ```
 
-*Template log record. Replace with actual session notes. Add a new log record per significant session — do not overwrite. Coordinates increment south: next log at @LAT-60LON10, then @LAT-70LON10.*
+**Session**: First competition run on ls20. 29 steps taken total — 28 in level 1 (WIN), 1 in level 2.
 
-**Actions taken / human baseline**: [N / N]
-**Level score**: [(baseline/ai)²]
-**Revision cycle status**: [phases completed]
-**Mechanics updated**: [toot links to revised records]
-**What changed**: [brief description of body revisions, rev increments]
-**Open for Phase 4**: [records awaiting next-level validation]
+**Level 1 outcome**:
+- Actions taken: 28
+- Human baseline: pending scorecard
+- Level score: pending
+- Revision cycle: OPEN — level 1 logged, phases 1–3 not yet run
+- Route: block started rows 40–41, navigated UP through center corridor, LEFT across, then UP again to entity2 at rows 10–11, cols 34–38
+
+**Level 2 status (step 29)**:
+- First action: ACTION1 (UP) from level 2 start → block at rows 35–36, cols 29–33
+- Entity1 state 1 entering level 2; entity2 requires state 0; 3 cluster collections needed
+- Critical open problem: ACTION4 (RIGHT) not in available actions from current position — routing to cluster (cols 50–52) unresolved
+
+**Key mechanic discoveries** (→ see [ls20 Mechanics](lat20lon-30)):
+- Block is 2 rows × 5 cols (NOT 5×5 — confirmed from all `12→` diffs)
+- Entity1 state carries between levels (started level 2 at state 1 from level 1 win)
+- Timer resets to full (42 cells) at each new level
+- Collections are free (cluster collection does not tick timer)
+- Level 2 action space: only 3 directions available from entry position
+
+**Revision cycle status**: phases 1–3 OPEN, phase 4 pending level 2 outcome
+**Open for Phase 4**: cluster-reach mechanic, 3-direction restriction cause
+
+---
+
+@LAT20LON-30 | created:1778544000 | updated:1778544000 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10
+[ew]
+conf:180
+rev:0
+sal:0
+touched:1778544000
+[/ew]
+
+## ls20 — Game Mechanics (session 1)
+
+Game ID: ls20. 7 levels. COMPETITION mode.
+
+**Block**
+- Shape: 2 rows × 5 cols (confirmed from `12→` diff pattern across all 28 level 1 steps)
+- Value: 12 in frame grid
+- Moves 5 cells per action in level 1 (spacing confirmed by all position transitions)
+- In level 2: movement may differ; sliding behavior not yet confirmed
+
+**Entities**
+- Entity outer ring: value 5
+- Entity interior: value 9 (marks state pattern cells)
+- Entity1: mobile state-carrier; state persists between levels
+- Entity2: fixed target per level; block must enter entity2 at matching state to win
+- State cycle: 0→1→2→3→0 (one cluster collection per advance)
+- Level 1 win: entity1 at state 1, entity2 interior all-9 (5 cols × 3 rows of 9s)
+- Level 2 target: entity2 at rows 39–45, cols 12–20; requires state 0 pattern `9 9 9 / 9 5 5 / 9 5 9`
+
+**Win condition** (confirmed level 1): block fully inside entity2 while entity1 state matches entity2's interior pattern. Partial overlap does NOT trigger win.
+
+**Cluster**
+- Values: 0 (empty slot) and 1 (filled slot); 3-cell cluster
+- Collecting cluster = entering block over cluster cells
+- Collection advances entity1 state by 1
+- Collection is FREE — does not consume timer
+- Level 1 cluster: collected 0 times (entity1 started state 1 at level 2, implying state 1 was the level 1 entry state — level 1 entity2 required state 1 directly)
+- Level 2 cluster: rows 46–48, cols 50–52
+
+**Timer**
+- 42 total cells at rows 61–62, cols 13–54
+- Each movement action consumes 1 timer cell (left to right)
+- Timer RESETS to full 42 at start of each new level
+- At step 29 start of level 2: 40 cells remaining (2 consumed = 2 movement actions in level 2)
+
+**Action space**
+- Level 1: 4 actions — ACTION1=UP, ACTION2=DOWN, ACTION3=LEFT, ACTION4=RIGHT
+- Level 2 (from entry position rows 35–36, cols 29–33): only 3 actions — ACTION1=UP, ACTION2=DOWN, ACTION3=LEFT
+- ACTION4 (RIGHT) absent from level 2 entry position — cause unknown; entity1 structure may be blocking
+
+**Special tiles (11-bordered mini-boxes)**
+- Left: rows 16–18, cols 15–17 (3×3 box of 11s with center=3)
+- Right: rows 51–53, cols 40–42 (same pattern, in bottom corridor)
+- Function: unknown — possible portals, triggers, or score multipliers. Phase 4 pending.
+
+**Level 2 maze layout (confirmed from step 29 frame)**
+- Wide upper corridor: rows 5–9, cols 19–53 (then broader at rows 10+)
+- Left section: cols 9–23, rows 10–46 (contains entity2 and left mini-box)
+- Center section: cols 29–38, rows 33–44 (block spawns here)
+- Void barrier: cols 24–28 separates left from center at all accessible row ranges
+- Right section / bottom corridor: cols 44–58, rows 44–54 (contains cluster and right mini-box)
+- No direct center-to-right path observed — requires route through upper corridor or portal
 
 ---
 

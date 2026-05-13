@@ -14,7 +14,7 @@ if not os.getenv("ARC_API_KEY"):
     sys.exit(1)
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), "session.log")
-_log = open(LOG_FILE, "w", buffering=1)
+_log = open(LOG_FILE, "w", buffering=1, encoding="utf-8")
 
 
 def log(msg: str = "") -> None:
@@ -69,9 +69,9 @@ def main():
                 if i < len(prev_frames):
                     diff = np.argwhere(grid != prev_frames[i])
                     if len(diff):
-                        log(f"CHANGED cells (row,col): old→new")
+                        log(f"CHANGED cells (row,col): old->new")
                         for r, c in diff:
-                            log(f"  [{r},{c}]: {prev_frames[i][r,c]}→{grid[r,c]}")
+                            log(f"  [{r},{c}]: {prev_frames[i][r,c]}->{grid[r,c]}")
                     else:
                         log("NO CHANGE from previous frame")
             prev_frames = list(obs.frame)
