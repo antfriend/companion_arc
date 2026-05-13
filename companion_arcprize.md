@@ -284,9 +284,9 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 @LAT-10LON10 | created:1747180800 | updated:1778544000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:160
-rev:2
-sal:4
+conf:140
+rev:3
+sal:5
 touched:1778544000
 [/ew]
 
@@ -294,28 +294,28 @@ touched:1778544000
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 1 still in progress** (session 2, step 27 awaiting input)
+**Current level**: ls20 — **level 1 still in progress** (session 3, step 23 awaiting input)
 
 **Level 1 outcome**:
 - Session 1: 28 actions (WIN) — scorecard pending
-- Session 2 (current): in progress, **NOT WON**, step 27
-- Block: rows 15–16, cols 34–38 (stuck in entity2 capture zone since step 13)
-- Entity1: ring=0 (dimmed), state=1
-- Timer: 27 remaining (all steps since step 20 were free UP-null actions)
-- Immediate next action: **DOWN (1)** — escapes capture zone, confirmed to work at step 10
+- Session 2: abandoned, explored capture zone, exited at step 27
+- Session 3 (current): in progress, **NOT WON**, step 23
+- Block: rows 20–21, cols 34–38 (escaped capture zone via DOWN at step 22→23)
+- Entity1: ring=5 (re-lit by DOWN), state=1
+- Timer: 26 remaining
+- Immediate next action: **DOWN (1)** — move to rows 25–26 (open corridor, UNEXPLORED this session)
 
 **Level 1 — CRITICAL OPEN PROBLEM**:
-- Entering entity2 from shaft (rows 15–16) triggers capture zone
-- UP from rows 15–16 (ring=5): ring dims to 0, FREE, no movement
-- UP from rows 15–16 (ring=0): NULL action, FREE, no change
-- LEFT/RIGHT from rows 15–16: timer consumed, no movement
-- DOWN from rows 15–16: moves to rows 20–21 (confirmed step 10, NOT yet tried with ring=0)
-- **Unknown**: how to reach entity2 interior rows 9–15 for win condition
+- Session 1 route: "UP×N, LEFT across, UP again to rows 10–11" — the LEFT was NOT in the capture zone but in the open corridor (rows 25–26), which has NEVER been explored in sessions 2–3
+- UP from rows 15–16 (any ring state): does not enter entity2 interior (confirmed ×10+ attempts across sessions)
+- DOWN from rows 15–16 (ring=0): moves to rows 20–21 AND ring RE-LIGHTS to 5 (confirmed session 3 step 23)
+- The lower maze (rows 25–54) contains unexplored LEFT/RIGHT paths — session 1 "LEFT across" happened here
+- Initial block position: rows 45–46, cols 34–38 (confirmed from session 3 step trace)
 
-**High-EPS mechanics** (session 2):
-- Entity2 entry mechanic: LOW conf — capture zone prevents all upward entry attempts seen so far
-- Ring toggle function: confirmed as ring display only (not entry gate)
-- Path from rows 20–21 back to entity2 interior: **UNRESOLVED**
+**High-EPS mechanics** (sessions 2–3):
+- Entity2 entry mechanic: LOW conf — no confirmed path to interior rows 9–14 from below
+- Ring re-light on capture zone exit: DOWN from rows 15–16 always re-lights ring (new, conf ~180)
+- Lower maze path: **UNEXPLORED** — DOWN from rows 20–21 to rows 25–26 never taken in sessions 2–3
 
 *Update after every level. Increment `rev` on each material update.*
 
@@ -440,17 +440,19 @@ Game ID: ls20. 7 levels. COMPETITION mode.
 - Level 2 (from entry position rows 35–36, cols 29–33): only 3 actions — ACTION1=UP, ACTION2=DOWN, ACTION3=LEFT
 - ACTION4 (RIGHT) absent from level 2 entry position — cause unknown; entity1 structure may be blocking
 
-**Entity2 capture zone (level 1) — session 2 discoveries**
+**Entity2 capture zone (level 1) — sessions 2–3 discoveries**
 - Entering entity2 from the shaft (rows 17–24, cols 34–38) via UP deposits block at rows 15–16 (capture zone)
+- Entry via UP consumes 1 timer tick (not free)
 - From rows 15–16 (capture zone):
-  - UP when ring=5 → ring dims to 0, **FREE** (no timer consumed), block does NOT move
-  - UP when ring=0 → **NULL action** (no change at all, FREE, confirmed ×6 consecutive steps)
+  - UP when ring=5 → ring dims to 0, **FREE** (no timer), block does NOT move; triggers 6-frame animation showing ring dim/relight cycle; final state ring=0
+  - UP when ring=0 → **NULL action** (no change at all, FREE, confirmed ×10+ across sessions)
   - LEFT → timer consumed, no block movement
   - RIGHT when ring=0 → ring re-lights to 5, timer consumed, no block movement
   - RIGHT when ring=5 → timer consumed, no ring change, no block movement
-  - DOWN → **moves block to rows 20–21** (confirmed step 10; NOT yet tried with ring=0)
+  - DOWN when ring=0 → **moves block to rows 20–21 AND ring RE-LIGHTS to 5** (confirmed session 3 step 22→23); consumes 1 timer tick
 - Win requires block fully inside entity2 interior (rows 9–15, not row 16 outer ring) — currently unachieved
-- **OPEN**: how to enter entity2 interior rows 9–14 from below — ring toggle is NOT an entry gate
+- **OPEN**: how to enter entity2 interior rows 9–14 — no confirmed path from shaft or capture zone
+- **KEY HYPOTHESIS**: session 1 "LEFT across" was taken from rows 25–26 open corridor (never explored in sessions 2–3) — this LEFT may be prerequisite for entity2 interior entry
 
 **Special tiles (11-bordered mini-boxes)**
 - Left: rows 16–18, cols 15–17 (3×3 box of 11s with center=3)
@@ -474,6 +476,45 @@ rev:0
 sal:0
 touched:1778544000
 [/ew]
+
+## Log — 2026-05-13 (session 3)
+
+```session-log
+timestamp: 1778544000
+game: "ls20"
+level: "1 of 7 (in progress, session 3)"
+```
+
+**Session**: Third competition run on ls20 (fresh session). Level 1 NOT won as of step 23.
+
+**Level 1 — session 3 progress** (steps 1–23):
+- Steps 1–6: UP×6 from rows 45–46 (initial) → rows 15–16 (capture zone); 6 timer ticks consumed
+- Steps 7–8: UP in capture zone → ring animation (6 frames), ring dims/relight cycle, ring=0 final; FREE
+- Step 9: DOWN from rows 15–16 → rows 20–21; ring RE-LIT (0→5); 1 timer tick
+- Steps 10–11: LEFT×2 from rows 20–21 → timer consumed, no movement (×2 = 2 ticks wasted)
+- Step 12: UP → rows 15–16 (capture zone re-entry); 1 tick
+- Steps 13–14: UP×2 in capture zone → ring dims, null; FREE×2
+- Step 15: RIGHT → ring re-lights in capture zone; 1 tick wasted
+- Steps 16–17: LEFT×2 in capture zone → timer consumed×2; 2 ticks wasted
+- Step 18: UP → ring dims again; FREE
+- Steps 19–20: RIGHT×2 in capture zone → timer consumed×2; 2 ticks wasted
+- Step 21: UP → ring dims; FREE
+- Steps 22–22: UP×1 null (ring=0); FREE
+- Step 22→23: DOWN from rows 15–16 → rows 20–21; ring RE-LIT to 5; 1 tick consumed
+
+**Timer**: 26 remaining (42 - 16 consumed = 26). 16 consumed: 6 approach + 3 capture zone entries/exits + 7 wasted in capture zone via LEFT/RIGHT.
+
+**NEW MECHANICS CONFIRMED this session**:
+- DOWN from rows 15–16 (ring=0) → rows 20–21 AND ring RE-LIGHTS to 5 (not previously confirmed)
+- Capture zone entry (UP from 20–21) triggers 6-frame animation on first entry
+- Initial block position: rows 45–46, cols 34–38 (derived from step trace)
+- Block has NEVER gone below rows 20–21 in sessions 2–3 — open corridor (rows 25–26+) completely unexplored
+
+**Critical discovery**: Session 1 "LEFT across" route must have occurred in lower maze. Session 1 block started rows 40–41 (different initial?) and navigated LEFT at some point — likely from rows 25–26 open corridor before final UP to rows 10–11.
+
+**Next action**: DOWN (1) → rows 25–26 (open corridor). Then LEFT exploration.
+
+---
 
 ## Log — 2026-05-13 (session 2)
 
