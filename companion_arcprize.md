@@ -62,7 +62,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1747180800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT90LON0
+@LAT0LON0 | created:1747180800 | updated:1747180800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT90LON0
 [ew]
 conf:255
 rev:0
@@ -282,42 +282,43 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1778630400 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1778716800 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:140
-rev:4
-sal:5
-touched:1778630400
+rev:5
+sal:6
+touched:1778716800
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 1 still in progress** (session 4, step 0 — awaiting first action)
+**Current level**: ls20 — **level 1 in progress** (session 4, step 2 — block at rows 35–36, cols 34–38)
 
 **Level 1 outcome**:
 - Session 1: 28 actions (WIN) — scorecard pending
 - Session 2: abandoned, explored capture zone, exited at step 27
-- Session 3: ended step 23 — API session ls20-9607627b expired server-side (400 on next action); open corridor never explored
-- Session 4 (current): fresh start — arc.make("ls20") creates NEW game (confirmed: does NOT resume prior session)
-- Block: rows 45–46, cols 34–38 (expected initial; unconfirmed until step 1 frame)
-- Entity1: state=1 (initial level 1 state, confirmed across sessions 1–3), ring state unknown
-- Timer: 42 (fresh reset)
-- Immediate next action: **ACTION1 (0)** — UP; then plan LEFT route via open corridor rows 25–26
+- Session 3: ended step 23 — API session expired server-side; open corridor never explored
+- Session 4 (current): step 2 complete — block at rows 35–36, timer 40/42 remaining
 
-**Level 1 — CRITICAL OPEN PROBLEM**:
-- Session 1 route: "UP×N, LEFT across, UP again to rows 10–11" — the LEFT was NOT in the capture zone but in the open corridor (rows 25–26), which has NEVER been explored in sessions 2–4
-- UP from rows 15–16 (any ring state): does not enter entity2 interior (confirmed ×10+ attempts across sessions)
-- DOWN from rows 15–16 (ring=0): moves to rows 20–21 AND ring RE-LIGHTS to 5 (confirmed session 3 step 23)
-- The lower maze (rows 25–54) contains unexplored LEFT/RIGHT paths — session 1 "LEFT across" happened here
-- Initial block position: rows 45–46, cols 34–38 (confirmed from session 3 step trace)
+**Session 4 — revised route (Phase 3, awaiting Phase 4 validation)**:
+- Step 1: UP → rows 40–41 (confirmed)
+- Step 2: UP → rows 35–36 (confirmed); entity1 trail (3×5 of 9s) visible at rows 37–39
+- Steps 3–4: UP×2 → rows 25–26 (open corridor, LEFT now available)
+- Steps 5–7: LEFT×3 → cols 19–23 (past void barrier; cluster cols 20–22 ⊂ cols 19–23)
+- Steps 8–11: DOWN×4 → rows 45–46 (block row 46 enters cluster at rows 46–48) → **collect cluster** → entity1 state 0→1 → trail pattern changes to match entity2
+- Steps 12–14: RIGHT×3 → cols 34–38 (shaft)
+- Steps 15–19: UP×5 → rows 20–21
+- Step 20: UP → rows 15–16
+- Step 21: UP → rows 10–11 (entity1 trail at rows 12–14 overlaps entity2 pattern) → **WIN hypothesis**
 
-**High-EPS mechanics** (sessions 2–4):
-- Entity2 entry mechanic: LOW conf — no confirmed path to interior rows 9–14 from below
-- Ring re-light on capture zone exit: DOWN from rows 15–16 always re-lights ring (conf ~180)
-- Lower maze path: **UNEXPLORED** — open corridor rows 25–26 never explored in any session
-- Competition session expiration: API sessions expire after inactivity; arc.make() on reconnect creates new game (no resume)
+**Revised entity1 state model** (Phase 3 — contradicts prior sessions 1–3 belief):
+- @PERCEPT:before — entity1 starts level 1 at state 1; sessions 2–3 failed due to wrong entry angle
+- @PERCEPT:after — entity1 starts level 1 at **state 0** (confirmed from session 4 step 1–2 frame: trail is solid 9s = state 0); sessions 2–3 failed because cluster was never collected; capture zone ring-dim was state-mismatch signal, not entry mechanic
+- Cluster in level 1: rows 46–48, cols 20–22 (confirmed from step 1 frame — CONTRADICTS prior "no cluster in level 1" belief)
+
+**Competition session expiration**: arc.make() on reconnect creates new game (no resume). Confirmed session 4.
 
 *Update after every level. Increment `rev` on each material update.*
 
@@ -394,80 +395,78 @@ level: "2 of 7 (in progress)"
 
 ---
 
-@LAT20LON-30 | created:1778544000 | updated:1778544000 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10
+@LAT20LON-30 | created:1778544000 | updated:1778716800 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10
 [ew]
-conf:160
-rev:1
-sal:2
-touched:1778544000
+conf:110
+rev:2
+sal:3
+touched:1778716800
 [/ew]
 
-## ls20 — Game Mechanics (sessions 1–2)
+## ls20 — Game Mechanics (sessions 1–4)
 
 Game ID: ls20. 7 levels. COMPETITION mode.
 
 **Block**
-- Shape: 2 rows × 5 cols (confirmed from `12→` diff pattern across all 28 level 1 steps)
+- Shape: 2 rows × 5 cols (confirmed from `12→` diff pattern)
 - Value: 12 in frame grid
-- Moves 5 cells per action in level 1 (spacing confirmed by all position transitions)
-- In level 2: movement may differ; sliding behavior not yet confirmed
+- Moves 5 rows per UP/DOWN action, 5 cols per LEFT/RIGHT action (confirmed all sessions)
 
-**Entities**
-- Entity outer ring: value 5
-- Entity interior: value 9 (marks state pattern cells)
-- Entity1: mobile state-carrier; state persists between levels
-- Entity2: fixed target per level; block must enter entity2 at matching state to win
+**Entity1 — trailing state-carrier (REVISED session 4)**
+- Entity1 is NOT a separate fixed entity on the map. It is a **3-row × 5-col trailing 9-pattern** that moves with the block, appearing in the 3 rows directly below the block's bottom edge at all times.
+- Value: 9 in frame grid
+- Trail shifts each action: old trail cells clear to 3; new trail cells appear below new block position
+- **State 0** (initial, level 1 start): trail = solid 9s, all 15 cells = 9 (confirmed session 4 step 1–2)
+- **State 1** (after 1 cluster collection): trail pattern changes to match entity2's required 9s pattern
+- State persists between levels (carries into level 2)
 - State cycle: 0→1→2→3→0 (one cluster collection per advance)
-- Level 1 win: entity1 at state 1, entity2 interior all-9 (5 cols × 3 rows of 9s)
-- Level 2 target: entity2 at rows 39–45, cols 12–20; requires state 0 pattern `9 9 9 / 9 5 5 / 9 5 9`
 
-**Win condition** (confirmed level 1): block fully inside entity2 while entity1 state matches entity2's interior pattern. Partial overlap does NOT trigger win.
+**Entity2 — fixed target**
+- Value: outer ring = 5, interior pattern = 9s showing required match state
+- Level 1: rows 8–16, cols 32–40; 9s pattern at rows 11–13
+  - Row 11: 9s at cols 35–37
+  - Row 12: 9 at col 37
+  - Row 13: 9s at cols 35, 37
+- Level 2 target: rows 39–45, cols 12–20; requires state 0 pattern `9 9 9 / 9 5 5 / 9 5 9`
+
+**Win condition** (Phase 3 revised model): block enters entity2 such that entity1's trailing 9-pattern spatially aligns with entity2's interior 9s. Hypothesis: block at rows 9–10 → trail at rows 11–13 → trail matches entity2's rows 11–13 pattern at state 1 → WIN. Phase 4 pending.
+
+**Why sessions 2–3 failed at capture zone** (REVISED):
+- @PERCEPT:before — UP from rows 15–16 was blocked by entry mechanic; ring-dim was an obstacle
+- @PERCEPT:after — entity1 was at state 0 throughout; ring-dim was a state-mismatch signal; trail at rows 17–19 (below entity2's bottom border at row 16) could never match; no win possible without cluster collection first
 
 **Cluster**
-- Values: 0 (empty slot) and 1 (filled slot); 3-cell cluster
-- Collecting cluster = entering block over cluster cells
-- Collection advances entity1 state by 1
+- Values: 0 (empty slot) and 1 (filled slot)
+- Collecting cluster = block entering over cluster cells
+- Collection advances entity1 state by 1; trail pattern updates
 - Collection is FREE — does not consume timer
-- Level 1 cluster: collected 0 times (entity1 started state 1 at level 2, implying state 1 was the level 1 entry state — level 1 entity2 required state 1 directly)
+- **Level 1 cluster**: rows 46–48, cols 20–22 (confirmed from session 4 step 1 frame — PRIOR BELIEF "no cluster in level 1" was WRONG)
 - Level 2 cluster: rows 46–48, cols 50–52
 
 **Timer**
-- 42 total cells at rows 61–62, cols 13–54
-- Each movement action consumes 1 timer cell (left to right)
-- Timer RESETS to full 42 at start of each new level
-- At step 29 start of level 2: 40 cells remaining (2 consumed = 2 movement actions in level 2)
+- 42 total cells; displayed as 11-tiles at rows 61–62, cols 13–54
+- Each movement action consumes 1 cell left-to-right (confirmed session 4: `[61,14]: 11→3` after step 2)
+- Timer RESETS to full 42 at each new level
+
+**Level 1 maze structure (confirmed session 4 frames)**
+- Shaft (cols 34–38): rows 17–40 — connects block start to entity2 bottom
+- Open corridor: rows 25–28, cols 14–53 — LEFT is available here (no void)
+- Void barrier: cols 29–33, rows 29+ — LEFT from shaft blocked below row 29
+- Left section: cols 14–28, rows 29–54 — accessible only via open corridor detour
+- Cluster access: block must enter left section via open corridor (UP to rows 25–28, then LEFT×N), then DOWN to rows 45–46 to enter cluster at rows 46–48, cols 20–22
 
 **Action space**
 - Level 1: 4 actions — ACTION1=UP, ACTION2=DOWN, ACTION3=LEFT, ACTION4=RIGHT
-- Level 2 (from entry position rows 35–36, cols 29–33): only 3 actions — ACTION1=UP, ACTION2=DOWN, ACTION3=LEFT
-- ACTION4 (RIGHT) absent from level 2 entry position — cause unknown; entity1 structure may be blocking
+- Level 2 (entry rows 35–36, cols 29–33): 3 actions — ACTION1=UP, ACTION2=DOWN, ACTION3=LEFT; ACTION4 absent
 
-**Entity2 capture zone (level 1) — sessions 2–3 discoveries**
-- Entering entity2 from the shaft (rows 17–24, cols 34–38) via UP deposits block at rows 15–16 (capture zone)
-- Entry via UP consumes 1 timer tick (not free)
-- From rows 15–16 (capture zone):
-  - UP when ring=5 → ring dims to 0, **FREE** (no timer), block does NOT move; triggers 6-frame animation showing ring dim/relight cycle; final state ring=0
-  - UP when ring=0 → **NULL action** (no change at all, FREE, confirmed ×10+ across sessions)
-  - LEFT → timer consumed, no block movement
-  - RIGHT when ring=0 → ring re-lights to 5, timer consumed, no block movement
-  - RIGHT when ring=5 → timer consumed, no ring change, no block movement
-  - DOWN when ring=0 → **moves block to rows 20–21 AND ring RE-LIGHTS to 5** (confirmed session 3 step 22→23); consumes 1 timer tick
-- Win requires block fully inside entity2 interior (rows 9–15, not row 16 outer ring) — currently unachieved
-- **OPEN**: how to enter entity2 interior rows 9–14 — no confirmed path from shaft or capture zone
-- **KEY HYPOTHESIS**: session 1 "LEFT across" was taken from rows 25–26 open corridor (never explored in sessions 2–3) — this LEFT may be prerequisite for entity2 interior entry
+**Capture zone observations (sessions 2–3) — reinterpreted**
+- From rows 15–16: UP when ring=5 → ring dims (6-frame animation), FREE; now understood as state-mismatch signal at state 0
+- UP when ring=0 → NULL, FREE; consistent with state 0 mismatch
+- These behaviors may differ at state 1 — unvalidated
 
 **Special tiles (11-bordered mini-boxes)**
-- Left: rows 16–18, cols 15–17 (3×3 box of 11s with center=3)
-- Right: rows 51–53, cols 40–42 (same pattern, in bottom corridor)
-- Function: unknown — possible portals, triggers, or score multipliers. Phase 4 pending.
-
-**Level 2 maze layout (confirmed from step 29 frame)**
-- Wide upper corridor: rows 5–9, cols 19–53 (then broader at rows 10+)
-- Left section: cols 9–23, rows 10–46 (contains entity2 and left mini-box)
-- Center section: cols 29–38, rows 33–44 (block spawns here)
-- Void barrier: cols 24–28 separates left from center at all accessible row ranges
-- Right section / bottom corridor: cols 44–58, rows 44–54 (contains cluster and right mini-box)
-- No direct center-to-right path observed — requires route through upper corridor or portal
+- Rows 61–62, cols 14–54: the timer strip (confirmed as 11-tiles)
+- Other 11-tile structures: function unknown — Phase 4 pending
 
 ---
 
@@ -517,6 +516,45 @@ level: "1 of 7 (in progress, session 3)"
 **Next action**: DOWN (1) → rows 25–26 (open corridor). Then LEFT exploration.
 
 **Session 3 end**: API session ls20-9607627b expired server-side. Action submitted after step 23 (intended DOWN to rows 25–26) returned 400 Bad Request. play.py crashed. Session 4 started fresh (new game instance).
+
+---
+
+---
+
+@LAT-70LON10 | created:1778716800 | updated:1778716800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1778716800
+[/ew]
+
+## Log — 2026-05-14 (session 4)
+
+```session-log
+timestamp: 1778716800
+game: "ls20"
+level: "1 of 7 (in progress, session 4)"
+```
+
+**Session**: Fourth competition run on ls20 (fresh game; arc.make creates new game on reconnect — confirmed). Level 1 NOT won as of step 2.
+
+**Steps taken**:
+- Step 1 (UP): rows 45–46 → rows 40–41; entity1 trail revealed at rows 42–44 (all 9s = state 0); cluster visible at rows 46–48, cols 20–22 in left section
+- Step 2 (UP): rows 40–41 → rows 35–36; trail shifted to rows 37–39; timer confirmed `[61,14]: 11→3` = 1 cell per movement action; timer now 40/42
+
+**Critical discoveries this session**:
+1. Entity1 is a 3×5 trailing 9-pattern below the block — NOT a separate map entity
+2. Entity1 starts level 1 at **state 0** (solid 9s trail) — prior "state 1" belief was wrong
+3. Cluster IS present in level 1 at rows 46–48, cols 20–22 — prior "no cluster" belief was wrong
+4. Timer displayed as 11-tiles at rows 61–62; 1 cell consumed per movement action
+5. Void barrier confirmed: cols 29–33, rows 29+ blocks LEFT from shaft; open corridor at rows 25–28 bypasses it
+
+**Revised win hypothesis** (Phase 3):
+- Collect cluster (state 0→1) via: UP×2 (rows 25–26) → LEFT×3 (cols 19–23) → DOWN×4 (rows 45–46, collect) → RIGHT×3 → UP×5 → entity2 entry at state 1
+- Estimated total: ~21 actions
+
+**Revision cycle**: Phase 3 complete. Phase 4 pending — fires when level 1 won this session.
 
 ---
 
