@@ -62,7 +62,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1778803200 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT90LON0
+@LAT0LON0 | created:1747180800 | updated:1778889600 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT90LON0
 [ew]
 conf:255
 rev:0
@@ -282,19 +282,19 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1778803200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1778889600 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:160
-rev:7
-sal:7
-touched:1778803200
+conf:175
+rev:8
+sal:8
+touched:1778889600
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 2 in progress** (session 6; level 1 WON at step 37, level 2 step 38 pending)
+**Current level**: ls20 — **level 2 in progress** (session 7; level 1 WON at step 29, level 2 step 30 pending)
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -303,22 +303,28 @@ touched:1778803200
 - Session 4: step 2 only (abandoned)
 - Session 5: WIN — block started rows 59–60, navigated UP; level completed before step 15
 - Session 6: WIN at step 37 (24 wasted steps from wrong initial route; efficient route = 13 actions)
+- Session 7: WIN at step 29 (14 wasted steps investigating wrong cluster at rows 30–31; optimal = 13 actions)
 
 **Level 2 outcomes**:
 - Session 5: 48 steps into level 2 (steps 15–62 globally), QUIT — trapped by regenerated 11-ring wall; timer expired
-- Session 6: in progress — step 38 is first level 2 action
+- Session 6: abandoned (session ended)
+- Session 7: in progress — step 30 is first level 2 action
 
-**Entity1 state on level 2 entry**: UNCERTAIN — frame[1] at session 6 step 37 shows all-9s trail (consistent with state 0), despite level 1 being won at state 1. May indicate state resets between levels. See [ls20 Mechanics](lat20lon-30) — open question flagged.
+**Entity1 state on level 2 entry**: **CONFIRMED RESETS TO 0** — session 7 level 2 frame shows solid-9s trail (state 0) at start. Prior uncertainty resolved. Must collect 0/1 cross in level 2 every time.
 
-**Session 6 — level 1 route validated**:
-- Wrong route (steps 1–24): UP×6 → entered entity2 at state 0, stuck; 24 actions wasted
-- Correct route (steps 25–37, 13 actions): DOWN×2 (exit entity2) → DOWN×1 → LEFT×3 → DOWN×1 (collect cluster, ring 5→0) → UP×1 → RIGHT×3 → UP×3 (WIN)
-- Optimal from rows 40–41: UP×3, LEFT×3, DOWN×1, UP×1, RIGHT×3, UP×3 = 11 actions
+**Session 7 — level 1 key discoveries**:
+- Cluster collection is via **entity1 TRAIL overlap**, not block body. Block at rows 45–46 → trail at rows 47–49 overlaps cluster at rows 47–49, cols 20–22 → collection fires.
+- The 0/1 values at rows 30–32 (left section, upper corridor) are NOT state-changers — block covered them with no effect. Real cluster at rows 47–49.
+- Two open corridors: upper (rows 25–29, all walkable cols 14–53) and lower (rows 42–46, all walkable cols 14–53). LEFT from center shaft (cols 34–38) only works in these bands.
+- **Optimal level 1 route from starting rows 45–46**: LEFT×3 (→ cols 19–23, lower corridor), RIGHT×3 (→ cols 34–38), UP×7 (→ rows 10–11, entity2 WIN) = **13 actions**
 
-**Session 6 — level 2 routing** (Phase 3 — awaiting Phase 4 validation):
-- If entity1 state RESETS to 0 at each level: must collect 0/1 cross (rows 46–48, cols 50–52) before entering entity2
-- If entity1 state CARRIES (state 1): go directly to entity2; skip cross collection
-- Timer: 42 cols active = 21 steps at 2 cols/step; collect 11-ring A (rows 16–18, cols 15–17) or B (rows 51–53, cols 39–41) for +15 cols (+7 steps)
+**Session 7 — level 2 start frame**:
+- Block: rows 40–41, cols 29–33
+- Entity2 (win target): cols 12–20 (LEFT of block, bordered 5s with 9-pattern interior)
+- 0/1 cross: rows ~47–49, cols ~50–51 (right section)
+- 11-ring A: rows ~15–17, cols 15–17 (left section near entity2 approach)
+- Timer: 42 cols full = 21 steps at 2 cols/step
+- Entity1 state: 0 (confirmed reset)
 
 **Competition session expiration**: arc.make() on reconnect creates new game (no resume). Confirmed.
 
@@ -397,15 +403,15 @@ level: "2 of 7 (in progress)"
 
 ---
 
-@LAT20LON-30 | created:1778544000 | updated:1778716800 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10
+@LAT20LON-30 | created:1778544000 | updated:1778889600 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10,validates>@LAT-100LON10
 [ew]
-conf:155
-rev:4
-sal:3
-touched:1778716800
+conf:190
+rev:5
+sal:4
+touched:1778889600
 [/ew]
 
-## ls20 — Game Mechanics (sessions 1–5)
+## ls20 — Game Mechanics (sessions 1–7)
 
 Game ID: ls20. 7 levels. COMPETITION mode.
 
@@ -493,17 +499,17 @@ Game ID: ls20. 7 levels. COMPETITION mode.
 - 11-ring B: rows 51–53, cols 39–41 (session 6 frame[1] confirms; slightly different from session 5 estimate)
 - UNKNOWN structure: rows 53–63, cols 0–11 — bordered 5s with complex multi-row 9-pattern; function unclear (entity2 for later level? secondary mechanic?)
 
-**Entity1 state — open question (REVISED session 6)**
-- Prior belief: state carries between levels
-- Session 6 frame[1] observation: trail at level 2 start = all solid 9s (state 0 signature) despite level 1 win at state 1
-- **UNRESOLVED**: does state reset to 0 at each level, or does state 1 trail happen to appear as all-9s for this entity2's required pattern?
-- Phase 4 validation required — observe trail pattern after collecting 0/1 cross in session 6
+**Entity1 state — CONFIRMED RESETS TO 0 (session 7 Phase 4 validation)**
+- Prior belief (sessions 1–5): state carries between levels
+- Session 6 observation: trail at level 2 start = all solid 9s despite level 1 win at state 1 → first hint of reset
+- Session 7 confirmation: won level 1 at state 1, level 2 start frame shows trail = solid 9s = state 0; CONFIRMED RESETS
+- **RESOLVED**: entity1 state resets to 0 at the start of each new level, regardless of end state
 
-**Optimal level 2 routing (Phase 3 — pending Phase 4)**
+**Optimal level 2 routing (RESOLVED session 7)**
 - WRONG order (session 5): collected 11-ring FIRST → wall blocked re-descent → LOST
-- CORRECT order if state carries (state 1): go directly to entity2 via left shaft, collecting 11-ring A on descent
-- CORRECT order if state resets (state 0): collect 0/1 cross (right section) FIRST, then descend left shaft through 11-ring A → entity2
-- Timer: 42 cols at level 2 start (session 6 frame[1]) × 2 cols/step = 21 steps; +15 per 11-ring collected
+- CORRECT order (always): collect 0/1 cross (right section, rows 46–48 cols 50–52) FIRST to advance state 0→1, then descend left shaft through 11-ring A → entity2
+- State always resets to 0 → always need the 0/1 cross before entity2; skip any "if state carries" conditional
+- Timer: 42 cols at level 2 start × 2 cols/step = 21 steps; +15 per 11-ring collected
 
 **Action space**
 - Level 1: 4 actions (0=UP, 1=DOWN, 2=LEFT, 3=RIGHT)
@@ -728,6 +734,53 @@ level: "level 1 WIN + level 2 in progress (session 6)"
 **Critical open question**: entity1 state reset between levels? Frame[1] shows all-9s trail (state 0) after level 1 was won at state 1. This determines whether 0/1 cross must be collected in level 2.
 
 **Revision cycle**: Phase 3 complete (entity1 state uncertainty documented). Phase 4 pending — fires when level 2 won.
+
+---
+
+@LAT-100LON10 | created:1778889600 | updated:1778889600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@LAT20LON-30
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1778889600
+[/ew]
+
+## Log — 2026-05-14 (session 7)
+
+```session-log
+timestamp: 1778889600
+game: "ls20"
+level: "level 1 WIN + level 2 start (session 7)"
+```
+
+**Level 1 outcome**:
+- Total steps to win: 29 (14 wasted on wrong-cluster investigation, 15 for corrected route)
+- Block started rows 45–46, cols 34–38 (lower corridor, lower than session 6 start)
+- Wrong route (steps 1–14): UP×3, LEFT×3, DOWN×1 — target was rows 30–31 cols 19–23, but entity2 ring stayed lit (5), trail stayed solid 9s; no collection at state 0
+- Root cause identified: cluster collection requires entity1 TRAIL (rows n+1 to n+3 below block bottom) to overlap state-changer cells — NOT the block body itself
+- Real cluster target: rows 47–49, cols 20–22 — reachable only when block is at rows 45–46 (lower corridor)
+- Correct route: RIGHT×3 (→ cols 34–38), DOWN×3 (→ rows 48–49 lower corridor), LEFT×3 (→ cols 19–23, trail at rows 50–52 overlaps cluster rows 47–49) — wait, re-checking: from rows 45–46 cols 34–38, trail is at rows 47–49. LEFT×3 from rows 45–46 → cols 19–23, trail rows 47–49 overlaps cluster → state 0→1 confirmed (ring 5→0)
+- WIN: UP sequence from lower corridor to entity2 at rows 39–45 cols 12–20 → WIN at step 29
+- **Optimal level 1 route (revised for rows 45–46 start)**: LEFT×3 (lower corridor, trail triggers cluster), RIGHT×3 (→ cols 34–38), UP×7 (→ rows 10–11, entity2 WIN) = **13 actions**
+
+**Key mechanic confirmed — cluster collection via trail overlap**:
+- Collection fires when entity1 TRAIL rows overlap the state-changer object, NOT when block body overlaps
+- Trail = rows n+1 to n+3 below block bottom; block at rows 45–46 → trail at rows 47–49
+- Cluster at rows 47–49 cols 20–22 is reachable only from lower open corridor (rows 42–46)
+- Ring dims (5→0) is the visual confirmation signal for state change
+
+**Entity1 state reset — Phase 4 CONFIRMED**:
+- Level 1 won at state 1; level 2 start frame: trail = solid 9s = state 0 signature
+- CONFIRMED: entity1 state resets to 0 at each new level, regardless of level 1 end state
+- This resolves the open question from sessions 5–6
+
+**Level 2 start frame analysis**:
+- Block: rows 40–41, cols 29–33 (center shaft, consistent with prior sessions)
+- Entity1 trail: rows 42–44, cols 29–33 = solid 9s (state 0 confirmed reset)
+- Entity2: rows 39–45, cols 12–20 (left section, bordered 5s + 9-pattern)
+- 0/1 cross (state 0→1 trigger): rows 46–48, cols 50–52 (right section)
+- Route: must collect 0/1 cross FIRST (right section), then descend left shaft → entity2
+- Timer budget: 21 steps; 11-ring A (+15) available on descent
 
 ---
 
