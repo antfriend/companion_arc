@@ -9,7 +9,6 @@
 ## What you need
 
 - Python 3.12+
-- `uv` (recommended) or `pip`
 - VSCode with the Claude Code extension installed
 - An ARC Prize API key (free — see below)
 - `companion_arcprize.md` open in your VSCode workspace
@@ -23,16 +22,6 @@ Register at [https://three.arcprize.org](https://three.arcprize.org) to obtain a
 ---
 
 ## Step 2 — Install dependencies
-
-**With `uv` (recommended):**
-
-`uv` is a fast Python package and project manager. Install it from [astral.sh/uv](https://astral.sh/uv), then from this repo root:
-
-```bash
-uv sync
-```
-
-**With pip:**
 
 ```bash
 pip install arc-agi python-dotenv
@@ -64,15 +53,49 @@ $env:ARC_API_KEY         # Windows PowerShell
 Open the VSCode terminal (`Ctrl+` `` ` ``) and run:
 
 ```bash
-uv run python play.py    # with uv
-python play.py           # with pip
+python play.py
 ```
 
 Enter a game ID when prompted (e.g. `ls20`). You should see available actions. If you get an auth error, check your `ARC_API_KEY` in `.env`.
 
 ---
 
-## Step 5 — Open `companion_arcprize.md` in VSCode
+## Step 5 — Run `play.py` (interactive or server mode)
+
+`play.py` has two modes:
+
+**Interactive** (default) — prompts for each action manually:
+
+```bash
+python play.py ls20
+```
+
+**Server mode** — accepts actions via HTTP so Claude Code can send them directly:
+
+```bash
+python play.py ls20 --server
+# HTTP interface on http://localhost:5001/
+#   GET  /state   → {step, actions, done, obs_state, levels_completed}
+#   POST /action  → {"action": N}  or  {"action": "quit"}
+```
+
+With `--server` running, Claude Code sends actions via the Bash tool instead of you typing them:
+
+```bash
+# Claude checks current state
+curl -s http://localhost:5001/state
+
+# Claude sends an action (e.g. DOWN = 1)
+curl -s -X POST http://localhost:5001/action \
+  -H "Content-Type: application/json" \
+  -d '{"action": 1}'
+```
+
+All output (frames, diffs, step log) still goes to `session.log` and the terminal. Use `--port N` to change the default port 5001.
+
+---
+
+## Step 6 — Open `companion_arcprize.md` in VSCode
 
 Open `companion_arcprize.md` as an active editor tab in VSCode before starting your Claude Code session. Claude Code reads your open files as context — having LOCUS visible means every session starts with your full competition knowledge graph already loaded.
 
@@ -103,10 +126,10 @@ API key: set in .env as ARC_API_KEY
 Companion file: companion_arcprize.md (open this file for full context)
 
 ## Running experiments
-uv run python solver.py
+python solver.py
 
 ## Running evaluation
-uv run python eval.py --split public
+python eval.py --split public
 ```
 
 Adjust to match your actual file structure.
@@ -338,9 +361,12 @@ If the game structure is known in advance, write a brief mechanic stub record at
 
 | Task | Command |
 |---|---|
-| Install toolkit | `uv add arc-agi` |
+| Install toolkit | `pip install arc-agi python-dotenv` |
 | Set API key | `ARC_API_KEY=... in .env` |
-| Run a task env | `arc.make("task-id", render_mode="terminal")` |
+| Run interactive | `python play.py ls20` |
+| Run server mode | `python play.py ls20 --server` |
+| Send action (server) | `curl -X POST localhost:5001/action -d '{"action": N}'` |
+| Check state (server) | `curl localhost:5001/state` |
 | Browse tasks | arcprize.org/tasks |
 | Get API key | three.arcprize.org |
 | ARC-AGI data repo | github.com/fchollet/ARC-AGI |
