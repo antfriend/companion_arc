@@ -70,9 +70,9 @@ dream_cycle:
 
 ```cursor
 selected:
-  - @LAT-10LON0
+  - @LAT60LON20
 preview:
-  @LAT-10LON0: "Welcome. I'm LOCUS — an ARC-AGI-3 competition agent rooted in the Locus framework. I live in this file. Fill in Game State and we can begin."
+  @LAT60LON20: "Dream Cycle complete. Phase 1 Replay: 4 confirmed Locus Points. Phase 2 Projection: 2 hypothesis candidates. Written to Locus Points."
 ```
 
 ---
@@ -807,8 +807,8 @@ level: "level 1 WIN + level 2 start (session 7)"
 [ew]
 conf:200
 rev:0
-sal:0
-touched:1778889600
+sal:1
+touched:1779062400
 [/ew]
 
 ## Dream Cycle
@@ -831,12 +831,12 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1778889600 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30
+@LAT60LON20 | created:1778889600 | updated:1779062400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10
 [ew]
 conf:255
-rev:0
-sal:0
-touched:1778889600
+rev:1
+sal:1
+touched:1779062400
 [/ew]
 
 ## Locus Points
@@ -860,7 +860,107 @@ source_count:<uint16>
 
 **Query**: `@LOCUS BELIEFS` — lists all `@BELIEF:` nodes sorted by confidence descending.
 
-*No Locus Points yet. The Dream Cycle has not run for this agent. First dream pending.*
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-16)
+
+Walk parameters: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:8), @LAT20LON-30 (sal:4). Clusters extracted: min_cluster_size:3, min_cooccurrence:25, belief_conf_threshold:128.
+
+---
+
+@BELIEF:LAT80LON-20 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT-10LON10,extracted_from>@LAT20LON-30,extracted_from>@LAT-100LON10,extracted_from>@LAT-90LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT80LON-20
+confidence:235
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Entity1 state resets to 0 at the start of each new level**, regardless of end-state at the prior level. Validated Phase 4 in session 7: level 1 won at state 1; level 2 start frame trail = solid 9s = state 0. Must collect state-changer in every level. The "state carries between levels" prior (sessions 1–5) is fully retired.
+
+---
+
+@BELIEF:LAT80LON-10 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT80LON-10
+confidence:220
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**Collected cluster/11-ring sites immediately regenerate as impassable walls.** The spawned wall blocks movement from both directions and is not re-collectible. Any descent through a 11-ring site is a one-way committed pass — the wall spawns behind you. Confirmed session 5: 11-ring at rows 15–17, cols 15–17 became wall on collection, blocking re-descent at steps 57–62 → level LOST.
+
+---
+
+@BELIEF:LAT70LON-20 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-100LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT70LON-20
+confidence:210
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Collect the state-changer before approaching entity2.** In both level 1 (cluster) and level 2 (0/1 cross), state must advance from 0 to 1 before the win condition fires. Approaching entity2 first is legal but produces a mismatch signal (ring dims/dims) and wastes actions retreating. The wrong-order cost in session 5 was a complete level loss — 11-ring collected first → wall blocked re-descent → could not reach entity2.
+
+---
+
+@BELIEF:LAT50LON-10 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT50LON-10
+confidence:155
+scope_lat:15.0
+scope_lon:15.0
+projection_flag:false
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**Timer consumption rate increased from level 1 (1 col/step) to level 2 (2 cols/step).** Two data points only — whether this continues to escalate per level or stabilizes at 2 is unknown. High-priority revision target: observe timer at level 3 step 1 before committing any route assumption. If escalation continues, timer budget becomes the binding constraint on action economy for late levels.
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-16)
+
+Walk parameters: 50 walks × length 10, seeded from boundary nodes into coordinate voids. Targets: level 3–7 structure, timer trajectory, unknown entity mechanics.
+
+---
+
+@BELIEF:LAT30LON-20 | created:1779062400 | updated:1779062400 | relates:projected_from>@LAT20LON-30,projected_from>@BELIEF:LAT80LON-20,projected_from>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
+[lp]
+centroid:LAT30LON-20
+confidence:145
+scope_lat:20.0
+scope_lon:20.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**Projection**: Levels 3–7 likely follow the same structural template — entity1 resets to state 0, one or more state-changers must be collected, then entity2 reached with matching trail pattern. Extrapolated from consistent level 1 and level 2 structure. Unvalidated. Treat as planning prior only. Phase 4 fires when level 3 is won.
+
+---
+
+@BELIEF:LAT20LON-10 | created:1779062400 | updated:1779062400 | relates:projected_from>@BELIEF:LAT50LON-10,projected_from>@LAT20LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT20LON-10
+confidence:128
+scope_lat:20.0
+scope_lon:20.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**Projection**: Timer tightening may continue per level (level 1: 1 col/step, level 2: 2 cols/step → level 3: possibly 3 cols/step). If this holds, 11-ring power-ups become load-bearing infrastructure rather than optional bonuses, and later levels may have critically narrow step budgets. Plan level 3 routes assuming 3 cols/step until validated otherwise.
 
 ---
 
