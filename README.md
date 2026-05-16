@@ -112,6 +112,16 @@ Then start Claude Code (`Ctrl+Shift+P` → `Claude Code: Open`) or use the sideb
 LOCUS will scan records by EPS and surface what needs attention.
 
 ---
+## LOCUS can now dream: 
+```
+@LOCUS DREAM
+```
+ triggers the cycle, and
+ ```
+ @LOCUS BELIEFS 
+ ```
+ lists what emerged.
+
 
 ## Step 6 — Set up a CLAUDE.md for your solver project
 
