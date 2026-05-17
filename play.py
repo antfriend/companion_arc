@@ -108,8 +108,8 @@ def main():
         t = threading.Thread(target=httpd.serve_forever, daemon=True)
         t.start()
         log(f"HTTP interface on http://localhost:{args.port}/")
-        log("  GET  /state   → {step, actions, done, obs_state, levels_completed}")
-        log("  POST /action  → {\"action\": N}  or  {\"action\": \"quit\"}")
+        log("  GET  /state   -> {step, actions, done, obs_state, levels_completed}")
+        log("  POST /action  -> {\"action\": N}  or  {\"action\": \"quit\"}")
         pick_fn = pick_action_server
     else:
         pick_fn = pick_action_interactive
