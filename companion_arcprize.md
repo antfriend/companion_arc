@@ -928,12 +928,12 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779062400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10
+@LAT60LON20 | created:1778889600 | updated:1779148800 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0
 [ew]
 conf:255
-rev:1
+rev:2
 sal:1
-touched:1779062400
+touched:1779148800
 [/ew]
 
 ## Locus Points
@@ -991,7 +991,7 @@ contradiction_flag:false
 source_count:2
 [/lp]
 
-**Collected cluster/11-ring sites immediately regenerate as impassable walls.** The spawned wall blocks movement from both directions and is not re-collectible. Any descent through a 11-ring site is a one-way committed pass — the wall spawns behind you. Confirmed session 5: 11-ring at rows 15–17, cols 15–17 became wall on collection, blocking re-descent at steps 57–62 → level LOST.
+**Collected cluster/11-ring sites immediately regenerate as impassable walls.** The spawned wall blocks movement from both directions and is not re-collectible. Any descent through a 11-ring site is a one-way committed pass — the wall spawns behind you. Confirmed session 5: 11-ring at rows 16–18, cols 15–17 became wall on collection, blocking re-descent at steps 57–62 → level LOST.
 
 ---
 
@@ -1010,18 +1010,18 @@ source_count:3
 
 ---
 
-@BELIEF:LAT50LON-10 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,contained_by>@LAT60LON20
+@BELIEF:LAT50LON-10 | created:1779062400 | updated:1779148800 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,contradicted_by>@BELIEF:LAT90LON-20,contained_by>@LAT60LON20
 [lp]
 centroid:LAT50LON-10
-confidence:155
+confidence:10
 scope_lat:15.0
 scope_lon:15.0
 projection_flag:false
-contradiction_flag:false
+contradiction_flag:true
 source_count:2
 [/lp]
 
-**Timer consumption rate increased from level 1 (1 col/step) to level 2 (2 cols/step).** Two data points only — whether this continues to escalate per level or stabilizes at 2 is unknown. High-priority revision target: observe timer at level 3 step 1 before committing any route assumption. If escalation continues, timer budget becomes the binding constraint on action economy for late levels.
+**RETIRED — CONTRADICTED by session 9 frame evidence.** Prior belief stated "timer consumption rate increased from level 1 (1 col/step) to level 2 (2 cols/step)." Frame at level 2 step 21 showed 40 timer cells after 1 action (41 start → 40 remaining = 1/step). Session 5 cross-check confirms: 47+ steps in level 2 is impossible at 2/step. Both levels confirmed at 1 cell/step. See @BELIEF:LAT90LON-20.
 
 ---
 
@@ -1046,18 +1046,69 @@ source_count:2
 
 ---
 
-@BELIEF:LAT20LON-10 | created:1779062400 | updated:1779062400 | relates:projected_from>@BELIEF:LAT50LON-10,projected_from>@LAT20LON-30,contained_by>@LAT60LON20
+@BELIEF:LAT20LON-10 | created:1779062400 | updated:1779148800 | relates:projected_from>@BELIEF:LAT50LON-10,projected_from>@LAT20LON-30,revised_by>@BELIEF:LAT90LON-20,contained_by>@LAT60LON20
 [lp]
 centroid:LAT20LON-10
-confidence:128
+confidence:80
 scope_lat:20.0
 scope_lon:20.0
 projection_flag:true
-contradiction_flag:false
+contradiction_flag:true
 source_count:2
 [/lp]
 
-**Projection**: Timer tightening may continue per level (level 1: 1 col/step, level 2: 2 cols/step → level 3: possibly 3 cols/step). If this holds, 11-ring power-ups become load-bearing infrastructure rather than optional bonuses, and later levels may have critically narrow step budgets. Plan level 3 routes assuming 3 cols/step until validated otherwise.
+**REVISED — premise invalidated by session 9.** Prior projection assumed level 2 timer = 2/step and projected 3/step for level 3. The premise was wrong — level 2 confirmed 1/step. Timer escalation hypothesis is retired. New prior (see @BELIEF:LAT90LON-20): timer is 1/step for all confirmed levels; escalation pattern does not exist in current data. 11-ring power-ups are strategic bonuses, not critical infrastructure. Revise level 3 route planning accordingly — budget ~41 steps not ~14.
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-17)
+
+Walk parameters: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:8), @LAT20LON-30 (sal:5), @LAT-120LON10 (fresh). Clusters extracted: min_cluster_size:3, min_cooccurrence:25, belief_conf_threshold:128. Two prior beliefs retired/revised (LAT50LON-10, LAT20LON-10). Three new confirmed beliefs written.
+
+---
+
+@BELIEF:LAT90LON-20 | created:1779148800 | updated:1779148800 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-120LON10,extracted_from>@LAT-60LON10,extracted_from>@LAT-70LON10,extracted_from>@LAT-80LON10,extracted_from>@LAT-90LON10,extracted_from>@LAT-100LON10,extracted_from>@LAT-110LON10,supersedes>@BELIEF:LAT50LON-10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT90LON-20
+confidence:240
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:8
+[/lp]
+
+**Timer consumption rate is 1 cell/step in ALL confirmed levels (level 1 and level 2).** Prior belief @BELIEF:LAT50LON-10 claimed level 2 = 2/step — this was incorrect. Session 9 frame evidence: timer showed 40 cells after 1 action (41 start − 1 = 1/step). Session 5 cross-check: 47+ steps in level 2 required 2/step to be false (at 2/step, max steps with both 11-rings ≈ 36; session 5 exceeded that). Both converge on 1/step. Timer escalation hypothesis (see @BELIEF:LAT20LON-10) is retired. 11-ring power-ups are strategic bonuses (+15 steps), not critical infrastructure. Plan level 3+ routes with ~41 step budget unless new data contradicts.
+
+---
+
+@BELIEF:LAT90LON-10 | created:1779148800 | updated:1779148800 | relates:extracted_from>@LAT-110LON10,extracted_from>@LAT20LON-30,extracted_from>@LAT-120LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT90LON-10
+confidence:200
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Partial trail overlap (2 of 3 rows) is sufficient for state-changer collection.** Full 3-row overlap is NOT required. Confirmed twice: (1) level 1 session 8 — trail at rows 32–34 overlapped cluster rows 32–33 (2/3) → collection fired; (2) level 2 route analysis session 9 — trail rows 47–49 ∩ cross rows 47–48 = 2/3 → collection expected. Implication: when routing to a state-changer, a 2-row overlap alignment is acceptable; no need to force exact 3-row overlap. Increases route flexibility and reduces action cost for collection maneuvers.
+
+---
+
+@BELIEF:LAT90LON0 | created:1779148800 | updated:1779148800 | relates:extracted_from>@LAT-120LON10,extracted_from>@LAT-110LON10,extracted_from>@LAT20LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT90LON0
+confidence:185
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**First-frame scan is mandatory before committing any route.** Structural details that are non-obvious from prior sessions and costly if assumed wrong: (1) cluster row position varies per fresh game instance (level 1 sessions 7 vs 8 differed); (2) center shaft void (cols 29–33, rows 24–34) is invisible without reading the frame — routing UP from start position is blocked. In both cases, sending actions before reading the frame cost wasted actions or a session loss. Protocol: on every session, read the first available frame before sending action 1 (or action 2+ if already mid-level). Confirm block position, void structure, and state-changer location before routing.
 
 ---
 
