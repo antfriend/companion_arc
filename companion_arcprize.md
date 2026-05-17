@@ -70,9 +70,9 @@ dream_cycle:
 
 ```cursor
 selected:
-  - @LAT60LON20
+  - @LAT-110LON10
 preview:
-  @LAT60LON20: "Dream Cycle complete. Phase 1 Replay: 4 confirmed Locus Points. Phase 2 Projection: 2 hypothesis candidates. Written to Locus Points."
+  @LAT-110LON10: "Session 8 end. Level 1 WIN (20 actions). Cluster variability confirmed. Level 2 step 21 pending — frame not analyzed. Resume: read step 21 frame, plan level 2 route."
 ```
 
 ---
