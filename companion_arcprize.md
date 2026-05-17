@@ -77,7 +77,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1778889600 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0
+@LAT0LON0 | created:1747180800 | updated:1779148800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0
 [ew]
 conf:255
 rev:0
@@ -301,19 +301,19 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1778889600 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1779148800 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:175
-rev:8
+rev:9
 sal:8
-touched:1778889600
+touched:1779148800
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 2 in progress** (session 7; level 1 WON at step 29, level 2 step 30 pending)
+**Current level**: ls20 — **level 2 in progress** (session 8; level 1 WON at step 20, step 21 UP sent)
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -323,27 +323,29 @@ touched:1778889600
 - Session 5: WIN — block started rows 59–60, navigated UP; level completed before step 15
 - Session 6: WIN at step 37 (24 wasted steps from wrong initial route; efficient route = 13 actions)
 - Session 7: WIN at step 29 (14 wasted steps investigating wrong cluster at rows 30–31; optimal = 13 actions)
+- Session 8: WIN at step 20 (7 wasted — blocked LEFT×3 from wrong position; cluster at rows 31–33 not rows 47–49)
 
 **Level 2 outcomes**:
 - Session 5: 48 steps into level 2 (steps 15–62 globally), QUIT — trapped by regenerated 11-ring wall; timer expired
 - Session 6: abandoned (session ended)
 - Session 7: in progress — step 30 is first level 2 action
+- Session 8: in progress — step 21 (UP) sent; frame not yet analyzed
 
 **Entity1 state on level 2 entry**: **CONFIRMED RESETS TO 0** — session 7 level 2 frame shows solid-9s trail (state 0) at start. Prior uncertainty resolved. Must collect 0/1 cross in level 2 every time.
+
+**Session 8 — level 1 key discoveries**:
+- **Cluster position varies per fresh game**: session 7 cluster at rows 47–49; session 8 cluster at rows 31–33. Cols 20–22 stable. Must scan first frame to locate cluster.
+- **Partial trail overlap (2/3 rows) sufficient**: trail at rows 32–34 (block at rows 30–31) overlapped cluster rows 32–33 → collection confirmed. Full overlap not required.
+- Blocked LEFT from rows 30–31 (void at cols 29–33 in upper corridor): costs timer tick. Avoid.
+- Collection signal: entity2 ring dim (5→0).
 
 **Session 7 — level 1 key discoveries**:
 - Cluster collection is via **entity1 TRAIL overlap**, not block body. Block at rows 45–46 → trail at rows 47–49 overlaps cluster at rows 47–49, cols 20–22 → collection fires.
 - The 0/1 values at rows 30–32 (left section, upper corridor) are NOT state-changers — block covered them with no effect. Real cluster at rows 47–49.
 - Two open corridors: upper (rows 25–29, all walkable cols 14–53) and lower (rows 42–46, all walkable cols 14–53). LEFT from center shaft (cols 34–38) only works in these bands.
-- **Optimal level 1 route from starting rows 45–46**: LEFT×3 (→ cols 19–23, lower corridor), RIGHT×3 (→ cols 34–38), UP×7 (→ rows 10–11, entity2 WIN) = **13 actions**
+- **Optimal level 1 route from starting rows 45–46 (cluster at rows 47–49)**: LEFT×3 (→ cols 19–23, lower corridor), RIGHT×3 (→ cols 34–38), UP×7 (→ rows 10–11, entity2 WIN) = **13 actions**
 
-**Session 7 — level 2 start frame**:
-- Block: rows 40–41, cols 29–33
-- Entity2 (win target): cols 12–20 (LEFT of block, bordered 5s with 9-pattern interior)
-- 0/1 cross: rows ~47–49, cols ~50–51 (right section)
-- 11-ring A: rows ~15–17, cols 15–17 (left section near entity2 approach)
-- Timer: 42 cols full = 21 steps at 2 cols/step
-- Entity1 state: 0 (confirmed reset)
+**Session 8 — level 2 start frame**: not yet read. Step 21 (UP) already sent.
 
 **Competition session expiration**: arc.make() on reconnect creates new game (no resume). Confirmed.
 
@@ -422,15 +424,15 @@ level: "2 of 7 (in progress)"
 
 ---
 
-@LAT20LON-30 | created:1778544000 | updated:1778889600 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10,validates>@LAT-100LON10
+@LAT20LON-30 | created:1778544000 | updated:1779148800 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10,validates>@LAT-100LON10,validates>@LAT-110LON10
 [ew]
-conf:190
-rev:5
-sal:4
-touched:1778889600
+conf:195
+rev:6
+sal:5
+touched:1779148800
 [/ew]
 
-## ls20 — Game Mechanics (sessions 1–7)
+## ls20 — Game Mechanics (sessions 1–8)
 
 Game ID: ls20. 7 levels. COMPETITION mode.
 
@@ -494,13 +496,19 @@ Game ID: ls20. 7 levels. COMPETITION mode.
 - Timer RESETS to full at each new level
 - 11-ring power-up adds +15 cols to the current timer total
 
+**Cluster position variability (NEW, session 8)**
+- Cluster rows vary per fresh game instance: session 7 = rows 47–49, session 8 = rows 31–33 (cols 20–22 stable both sessions)
+- **Partial trail overlap sufficient**: trail at rows 32–34 (block at rows 30–31) overlapped cluster rows 32–33 (2 of 3 rows) → collection fired. Full 3-row overlap not required.
+- **Strategy**: scan first frame for 0/1 cluster row position before committing route. Cols 20–22 appear stable; plan collection based on actual row location.
+- Blocked LEFT from rows 30–31: void at cols 29–33 in the upper corridor band — LEFT moves consume timer with no movement. Always verify open corridor position before sending LEFT.
+
 **Level 1 maze structure (confirmed session 4)**
-- Block start: rows 59–60 (session 5) — may vary; confirmed UP moves from rows 59–60
+- Block start: rows 45–46 or 59–60 (varies); confirmed lower corridor start rows 45–46 in sessions 7–8
 - Shaft (cols 34–38): rows 17–40 — connects block start to entity2 bottom
-- Open corridor: rows 25–28, cols 14–53 — LEFT available here (no void)
-- Void barrier: cols 29–33, rows 29+ — LEFT from shaft blocked below row 29
+- Open corridors: rows 25–28 (upper, cols 14–53 walkable) and rows 42–46 (lower, cols 14–53 walkable)
+- Void barrier: cols 29–33, rows 29–41 — LEFT from shaft blocked in this band
 - Left section: cols 14–28, rows 29–54 — accessible only via open corridor detour
-- Cluster access: UP to rows 25–28, then LEFT×N, then DOWN to rows 45–46
+- Cluster access (position-dependent): locate cluster in first frame; align trail to cluster rows via appropriate UP/DOWN; LEFT to cols 19–23 to reach collection position
 
 **Level 2 maze structure (confirmed session 5 + session 6 frame[1])**
 - Block start: rows 40–41, cols 29–33 (center shaft) — confirmed both sessions
@@ -800,6 +808,44 @@ level: "level 1 WIN + level 2 start (session 7)"
 - 0/1 cross (state 0→1 trigger): rows 46–48, cols 50–52 (right section)
 - Route: must collect 0/1 cross FIRST (right section), then descend left shaft → entity2
 - Timer budget: 21 steps; 11-ring A (+15) available on descent
+
+---
+
+@LAT-110LON10 | created:1779148800 | updated:1779148800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@LAT20LON-30
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779148800
+[/ew]
+
+## Log — 2026-05-17 (session 8)
+
+```session-log
+timestamp: 1779148800
+game: "ls20"
+level: "level 1 WIN (session 8)"
+```
+
+**Level 1 outcome**:
+- Total steps to win: 20 (7 wasted; 13 effective)
+- Block started rows 45–46, cols 34–38 (same lower corridor as session 7)
+- Wrong initial route: UP×2 from rows 40–41 reached rows 30–31 (should be UP×3 for open corridor at rows 25–26); LEFT×3 attempted from rows 30–31 — all 3 blocked by void (cols 29–33); timer consumed for all 3 blocked moves. DOWN×1 backwards to rows 35–36. UP×2 recovery to rows 25–26.
+- Wasted actions: UP×2 to wrong position (rows 30–31) + LEFT×3 blocked + DOWN×1 backwards + UP×2 recovery = 8. Net vs. optimal: 7 excess (2 initial UPs were directionally correct but short; the pair of recovery UPs was necessary but avoidable)
+- Correct collection route: LEFT×3 (rows 25–26 → cols 19–23), DOWN×1 (rows 30–31, trail at rows 32–34) → collection fires
+- Collection signal: entity2 ring dim `[9,33]: 5→0` confirmed at step 13
+
+**NEW MECHANIC — cluster position varies per fresh game instance**:
+- Session 7 cluster: rows 47–49, cols 20–22
+- Session 8 cluster: rows 31–33, cols 20–22 (cols stable; rows shifted significantly)
+- Implication: cannot assume cluster is at rows 47–49; must scan first frame to locate cluster before committing route
+
+**NEW MECHANIC — partial trail overlap (2 of 3 rows) sufficient for collection**:
+- Trail at rows 32–34 (block at rows 30–31) overlapped cluster rows 32–33 (2 of 3 cluster rows 31–33)
+- Collection fired successfully — full overlap not required
+- Validates the trail-overlap mechanism; extends it: partial coverage works
+
+**Level 2 status**: step 21 (UP) sent; frame not yet analyzed. Entity1 state resets to 0.
 
 ---
 
