@@ -947,9 +947,9 @@ Winning action sequences for each learned level of ls20. Executed by `play.py ls
 
 **Action map**: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT
 
-### Level 1 — 14 actions `[0,0,0,0,2,2,1,0,3,3,3,0,0,0]`
+### Level 1 — 15 actions `[0,0,0,0,0,2,2,1,0,3,3,3,0,0,0]`
 
-UP×4, LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 10 validated (WIN at step 15, described as "1 probe + 14 route"). Collection fires on DOWN step: trail at rows ~32-34 overlaps cluster cols 20-22. Block re-ascends, routes RIGHT through shaft to entity2 at rows 10-11 cols 34-38.
+UP×5 (1 probe + 4 ascent), LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 10 validated (WIN at step 15 = 1 probe + 14 route). Collection fires on DOWN step: trail at rows ~32-34 overlaps cluster cols 20-22. Block re-ascends, routes RIGHT through shaft to entity2 at rows 10-11 cols 34-38.
 
 **Confidence caveat (conf:220 not conf:255)**: cluster row varies per game instance (session 7: rows 47-49, session 8: rows 31-33). Route assumes cluster reachable from DOWN at rows 25-26 cols 19-23 (trail rows 27-29). If cluster is at rows 47-49, trail won't overlap — level 1 will fail autopilot. Fall back to interactive for level 1, then use `--auto` for level 2.
 

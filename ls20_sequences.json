@@ -5,9 +5,9 @@
   "levels": [
     {
       "level": 1,
-      "description": "14-step route: UP×4, LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 10 validated.",
+      "description": "15-step route: UP×5 (probe + ascent), LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 10 validated (1 probe + 14 route = 15 steps).",
       "note": "CAUTION: cluster row position varies per fresh game instance (sessions 7: rows 47-49; session 8: rows 31-33). Route validated once (session 10, cluster ~rows 31-33). May fail if cluster is elsewhere. If level 1 fails, replay interactively to locate cluster; level 2 autopilot is the reliable path.",
-      "sequence": [0, 0, 0, 0, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]
+      "sequence": [0, 0, 0, 0, 0, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]
     },
     {
       "level": 2,
