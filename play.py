@@ -281,13 +281,21 @@ def load_sequences(path: str) -> list:
         return json.load(f).get("levels", [])
 
 
-def run_auto(env, arc, seq_path: str, args) -> None:
-    """Execute winning sequences for all learned levels without user input."""
+def run_auto(env, arc, seq_path: str, pick_fn, args) -> None:
+    """
+    Hybrid autopilot: levels with a sequence run automatically; levels with
+    sequence=null fall back to pick_fn (server or interactive).
+    """
     levels = load_sequences(seq_path)
-    log(f"[AUTO] {len(levels)} level sequence(s) loaded from {os.path.basename(seq_path)}")
+    level_map = {cfg.get("level", i + 1): cfg for i, cfg in enumerate(levels)}
+    log(f"[AUTO] Sequences loaded from {os.path.basename(seq_path)}")
+    for lvl, cfg in level_map.items():
+        seq = cfg.get("sequence")
+        mode = f"{len(seq)}-step autopilot" if seq is not None else "manual (server/interactive)"
+        log(f"[AUTO]   level {lvl}: {mode}")
 
     completed = 0       # mirrors obs.levels_completed
-    lvl_idx = 0         # index into levels[]
+    lvl_num = 1         # 1-indexed current level
     seq_pos = 0         # position within current level's action sequence
     global_step = 0
     start_checked = False
@@ -299,30 +307,35 @@ def run_auto(env, arc, seq_path: str, args) -> None:
             log("\n[AUTO] No actions available — game complete.")
             break
 
-        if lvl_idx >= len(levels):
-            log(f"\n[AUTO] Level {lvl_idx + 1}: no recorded sequence. Stopping autopilot.")
-            break
+        cfg = level_map.get(lvl_num, {})
+        seq = cfg.get("sequence")
 
-        cfg = levels[lvl_idx]
-        seq = cfg["sequence"]
-        lvl_num = cfg.get("level", lvl_idx + 1)
+        # -- Determine next action ------------------------------------------
+        if seq is not None:
+            if seq_pos >= len(seq):
+                log(f"\n[AUTO] Level {lvl_num}: sequence exhausted ({len(seq)} steps) without win.")
+                break
+            ai = seq[seq_pos]
+            if ai >= len(actions):
+                log(f"[AUTO] Action index {ai} out of range ({len(actions)} available). Aborting.")
+                break
+            action = actions[ai]
+            global_step += 1
+            log(f"\n[AUTO] step={global_step} level={lvl_num} seq={seq_pos}/{len(seq)} action={ai}")
+            seq_pos += 1
+        else:
+            with _state_lock:
+                _game_state.update({"step": global_step, "actions": list(range(len(actions))), "done": False})
+            log(f"\n[MANUAL] level={lvl_num} — waiting for action (POST /action or keyboard input).")
+            action = pick_fn(actions)
+            if action is None:
+                log("\n[MANUAL] Session ended by user.")
+                break
+            global_step += 1
+            log(f"[MANUAL] step={global_step} level={lvl_num} action selected")
 
-        if seq_pos >= len(seq):
-            log(f"\n[AUTO] Sequence for level {lvl_num} exhausted ({len(seq)} steps) without win.")
-            break
-
-        ai = seq[seq_pos]
-        if ai >= len(actions):
-            log(f"[AUTO] Action index {ai} out of range ({len(actions)} available). Aborting.")
-            break
-
-        action = actions[ai]
-        global_step += 1
-        log(f"\n[AUTO] step={global_step} level={lvl_num} seq={seq_pos}/{len(seq)} action={ai}")
-
+        # -- Step environment -----------------------------------------------
         obs = env.step(action)
-        seq_pos += 1
-
         log(f"state={obs.state}  levels_completed={obs.levels_completed}  win_levels={obs.win_levels}")
 
         if obs.frame:
@@ -347,10 +360,10 @@ def run_auto(env, arc, seq_path: str, args) -> None:
             with _state_lock:
                 _game_state["frame_compact"] = compact_frames
 
-            if seq_pos == 1 and not start_checked:
+            if seq is not None and seq_pos == 1 and not start_checked:
                 result = _verify_level_start(compact_frames[0], cfg)
                 if result == "WARN":
-                    log(f"[AUTO] Start mismatch on level {lvl_num}. Sequence may fail. Proceeding.")
+                    log(f"[AUTO] Start mismatch on level {lvl_num}. Proceeding.")
                 start_checked = True
 
         with _state_lock:
@@ -362,9 +375,11 @@ def run_auto(env, arc, seq_path: str, args) -> None:
             })
 
         if obs.levels_completed > completed:
-            log(f"\n[AUTO] Level {lvl_num} WON in {seq_pos} steps! Advancing to level {lvl_num + 1}.")
+            next_lvl = lvl_num + 1
+            next_mode = "autopilot" if level_map.get(next_lvl, {}).get("sequence") is not None else "manual"
+            log(f"\n[AUTO] Level {lvl_num} WON. Switching to level {next_lvl} ({next_mode}).")
             completed = obs.levels_completed
-            lvl_idx += 1
+            lvl_num += 1
             seq_pos = 0
             start_checked = False
             prev_frames = []
@@ -421,7 +436,7 @@ def main():
             log(f"Sequences file not found: {seq_path}")
             sys.exit(1)
         log(f"[AUTO] Autopilot mode — sequences from {seq_path}")
-        run_auto(env, arc, seq_path, args)
+        run_auto(env, arc, seq_path, pick_fn, args)
     else:
         if not args.server:
             log("Consult @LOCUS in Claude Code before committing each action.\n")

@@ -72,7 +72,7 @@ dream_cycle:
 selected:
   - @LAT-140LON10
 preview:
-  @LAT-140LON10: "Autopilot sequences for ls20. Level 1: [0,0,0,0,2,2,1,0,3,3,3,0,0,0] (14 steps, session 10, cluster-position dependent). Level 2: [3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1] (17 steps, deterministic, state-0 precondition). Run: python play.py ls20 --auto"
+  @LAT-140LON10: "Hybrid mode: level 1 manual (sequence=null, cluster-position dependent), level 2 autopilot (17-step deterministic route). Run: python play.py ls20 --auto --server. Level 1: send actions via curl. Level 2: script takes over automatically on levels_completed increment."
 ```
 
 ---
