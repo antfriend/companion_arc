@@ -70,14 +70,14 @@ dream_cycle:
 
 ```cursor
 selected:
-  - @LAT-130LON10
+  - @LAT-140LON10
 preview:
-  @LAT-130LON10: "Session 10 end. Level 1 WON (15 actions). Level 2 NOT won — timer 2 cols/step confirmed (21 steps max). Entity1 state RESETS on timer restart. Block stuck near start (cols 29-33 dead-end). WINNING ROUTE identified: 3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1 (RIGHT+UP×6+LEFT×4+DOWN×6, 17 steps). Timer: 5 steps remaining on reconnect — let restart fire, then execute route."
+  @LAT-140LON10: "Autopilot sequences for ls20. Level 1: [0,0,0,0,2,2,1,0,3,3,3,0,0,0] (14 steps, session 10, cluster-position dependent). Level 2: [3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1] (17 steps, deterministic, state-0 precondition). Run: python play.py ls20 --auto"
 ```
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1779235200 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0
+@LAT0LON0 | created:1747180800 | updated:1779235200 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0
 [ew]
 conf:255
 rev:0
@@ -930,6 +930,42 @@ level: "level 1 WIN + level 2 NOT won (session 10)"
 5. **Root cause of failure**: Post-restart routes never went RIGHT first. Block went UP to rows 35-36 cols 29-33 (dead end: UP blocked above, LEFT blocked by void, DOWN blocked below), bounced back, timer expired. The winning route requires RIGHT as step 1.
 
 **WINNING ROUTE IDENTIFIED**: 3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1 (17 steps, RIGHT+UP×6+LEFT×4+DOWN×6).
+
+---
+
+@LAT-140LON10 | created:1779235200 | updated:1779235200 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10
+[ew]
+conf:220
+rev:0
+sal:0
+touched:1779235200
+[/ew]
+
+## ls20 — Autopilot Sequences
+
+Winning action sequences for each learned level of ls20. Executed by `play.py ls20 --auto` using `ls20_sequences.json` in the same directory. Kaggle usage: `!python play.py ls20 --auto` (set `ARC_API_KEY` via Kaggle secrets).
+
+**Action map**: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT
+
+### Level 1 — 14 actions `[0,0,0,0,2,2,1,0,3,3,3,0,0,0]`
+
+UP×4, LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 10 validated (WIN at step 15, described as "1 probe + 14 route"). Collection fires on DOWN step: trail at rows ~32-34 overlaps cluster cols 20-22. Block re-ascends, routes RIGHT through shaft to entity2 at rows 10-11 cols 34-38.
+
+**Confidence caveat (conf:220 not conf:255)**: cluster row varies per game instance (session 7: rows 47-49, session 8: rows 31-33). Route assumes cluster reachable from DOWN at rows 25-26 cols 19-23 (trail rows 27-29). If cluster is at rows 47-49, trail won't overlap — level 1 will fail autopilot. Fall back to interactive for level 1, then use `--auto` for level 2.
+
+### Level 2 — 17 actions `[3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1]`
+
+RIGHT, UP×6, LEFT×4, DOWN×6. Identified session 10 from verified maze structure. **Not yet executed as a complete sequence** — treat as high-confidence hypothesis pending session 11 validation.
+
+**Preconditions** (all consistent at fresh level 2 start):
+- Block rows 40-41 cols 29-33 (confirmed all sessions)
+- Entity1 state 0 (resets at every level start or timer restart)
+- Timer 42 cols = 21 steps max
+- RIGHT (action 3) available at state 0
+
+**Route logic**: RIGHT escapes dead end (cols 29-33 LEFT-blocked by void); UP×6 ascends center-right track to wide connector rows 10-11; LEFT×4 crosses to left track cols 14-18; DOWN×6 descends to entity2 interior rows 40-41 cols 14-18 → WIN. Timer: 17/21 steps used.
+
+**`play.py --auto` verify_start check**: after first action (RIGHT), script confirms block is at rows 40-41 cols 34-38. WARN logged if mismatch.
 
 ---
 

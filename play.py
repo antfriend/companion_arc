@@ -233,61 +233,97 @@ def pick_action_server(actions: list) -> object | None:
 
 
 # ---------------------------------------------------------------------------
-# Main
+# Autopilot — sequence execution for learned levels
 # ---------------------------------------------------------------------------
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("game_id", nargs="?", help="Game ID (e.g. ls20)")
-    parser.add_argument("--server", action="store_true", help="Accept actions via HTTP (default port 5001)")
-    parser.add_argument("--port", type=int, default=5001)
-    parser.add_argument("--full", action="store_true",
-                        help="Log full numpy arrays instead of compact sparse format")
-    args = parser.parse_args()
+def _find_block_in_compact(compact_frame: dict, block_val: int = 12) -> list:
+    """Return (row, col) list of positions where block_val appears in a compact grid."""
+    cells = []
+    for run in compact_frame.get("runs", []):
+        if run["v"] == block_val:
+            for c in range(run["c0"], run["c1"] + 1):
+                cells.append((run["r"], c))
+    return cells
 
-    game_id = args.game_id or input("Game ID (e.g. ls20): ").strip()
 
-    if args.server:
-        httpd = HTTPServer(("localhost", args.port), _Handler)
-        t = threading.Thread(target=httpd.serve_forever, daemon=True)
-        t.start()
-        log(f"HTTP interface on http://localhost:{args.port}/")
-        log("  GET  /state          -> {step, actions, done, obs_state, levels_completed, frame_compact}")
-        log("  GET  /frame          -> {frames: [sparse_grid, ...]}  (compact JSON, no numpy)")
-        log("  GET  /log/tail?n=N   -> last N lines of session.log  (default 50)")
-        log("  GET  /log/grep?q=PAT&n=N -> first N lines matching PAT")
-        log("  POST /action         -> {\"action\": N}  or  {\"action\": \"quit\"}")
-        pick_fn = pick_action_server
-    else:
-        pick_fn = pick_action_interactive
+def _verify_level_start(compact_frame: dict, cfg: dict) -> str:
+    """
+    Check block position after first action of a level against expected values.
+    Returns 'PASS', 'WARN', or 'SKIP' (no verify_start key in cfg).
+    """
+    vc = cfg.get("verify_start")
+    if not vc:
+        return "SKIP"
+    cells = _find_block_in_compact(compact_frame, vc.get("block_val", 12))
+    if not cells:
+        log("[AUTO] verify: block value not found in frame.")
+        return "WARN"
+    rows = sorted({r for r, _ in cells})
+    cols = sorted({c for _, c in cells})
+    log(f"[AUTO] block at rows {rows[0]}-{rows[-1]}, cols {cols[0]}-{cols[-1]}")
+    ok = True
+    exp_rows = vc.get("rows")
+    exp_cols = vc.get("cols")
+    if exp_rows and [rows[0], rows[-1]] != exp_rows:
+        log(f"[AUTO] verify WARN: expected rows {exp_rows}, got [{rows[0]},{rows[-1]}]")
+        ok = False
+    if exp_cols and (cols[0] < exp_cols[0] or cols[-1] > exp_cols[1]):
+        log(f"[AUTO] verify WARN: expected cols {exp_cols[0]}-{exp_cols[1]}, got {cols[0]}-{cols[-1]}")
+        ok = False
+    if ok:
+        log("[AUTO] verify PASS")
+    return "PASS" if ok else "WARN"
 
-    arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
-    env = arc.make(game_id)
 
-    log(f"\nStarted '{game_id}' in COMPETITION mode.")
-    if not args.server:
-        log("Consult @LOCUS in Claude Code before committing each action.\n")
+def load_sequences(path: str) -> list:
+    """Load level sequences from a JSON file. Returns the 'levels' list."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f).get("levels", [])
 
-    prev_frames = []
-    step = 0
+
+def run_auto(env, arc, seq_path: str, args) -> None:
+    """Execute winning sequences for all learned levels without user input."""
+    levels = load_sequences(seq_path)
+    log(f"[AUTO] {len(levels)} level sequence(s) loaded from {os.path.basename(seq_path)}")
+
+    completed = 0       # mirrors obs.levels_completed
+    lvl_idx = 0         # index into levels[]
+    seq_pos = 0         # position within current level's action sequence
+    global_step = 0
+    start_checked = False
+    prev_frames: list = []
 
     while True:
         actions = env.action_space
         if not actions:
-            log("\nNo actions available — level complete.")
+            log("\n[AUTO] No actions available — game complete.")
             break
 
-        with _state_lock:
-            _game_state.update({"step": step, "actions": list(range(len(actions))), "done": False})
-
-        action = pick_fn(actions)
-        if action is None:
-            log("\nSession ended by user.")
+        if lvl_idx >= len(levels):
+            log(f"\n[AUTO] Level {lvl_idx + 1}: no recorded sequence. Stopping autopilot.")
             break
 
-        step += 1
+        cfg = levels[lvl_idx]
+        seq = cfg["sequence"]
+        lvl_num = cfg.get("level", lvl_idx + 1)
+
+        if seq_pos >= len(seq):
+            log(f"\n[AUTO] Sequence for level {lvl_num} exhausted ({len(seq)} steps) without win.")
+            break
+
+        ai = seq[seq_pos]
+        if ai >= len(actions):
+            log(f"[AUTO] Action index {ai} out of range ({len(actions)} available). Aborting.")
+            break
+
+        action = actions[ai]
+        global_step += 1
+        log(f"\n[AUTO] step={global_step} level={lvl_num} seq={seq_pos}/{len(seq)} action={ai}")
+
         obs = env.step(action)
-        log(f"\n=== STEP {step} | state={obs.state}  levels_completed={obs.levels_completed}  win_levels={obs.win_levels} ===")
+        seq_pos += 1
+
+        log(f"state={obs.state}  levels_completed={obs.levels_completed}  win_levels={obs.win_levels}")
 
         if obs.frame:
             compact_frames = []
@@ -311,17 +347,139 @@ def main():
             with _state_lock:
                 _game_state["frame_compact"] = compact_frames
 
+            if seq_pos == 1 and not start_checked:
+                result = _verify_level_start(compact_frames[0], cfg)
+                if result == "WARN":
+                    log(f"[AUTO] Start mismatch on level {lvl_num}. Sequence may fail. Proceeding.")
+                start_checked = True
+
         with _state_lock:
             _game_state.update({
-                "step": step,
+                "step": global_step,
                 "obs_state": obs.state,
                 "levels_completed": obs.levels_completed,
                 "done": obs.state in ("win", "game_over"),
             })
 
-        if hasattr(obs, "state") and obs.state in ("win", "game_over"):
-            log(f"\nLevel ended: {obs.state}")
+        if obs.levels_completed > completed:
+            log(f"\n[AUTO] Level {lvl_num} WON in {seq_pos} steps! Advancing to level {lvl_num + 1}.")
+            completed = obs.levels_completed
+            lvl_idx += 1
+            seq_pos = 0
+            start_checked = False
+            prev_frames = []
+
+        if obs.state in ("win", "game_over"):
+            log(f"\n[AUTO] Game ended: {obs.state}")
             break
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("game_id", nargs="?", help="Game ID (e.g. ls20)")
+    parser.add_argument("--server", action="store_true", help="Accept actions via HTTP (default port 5001)")
+    parser.add_argument("--port", type=int, default=5001)
+    parser.add_argument("--full", action="store_true",
+                        help="Log full numpy arrays instead of compact sparse format")
+    parser.add_argument("--auto", action="store_true",
+                        help="Autopilot mode: execute winning sequences from JSON file (no user input required)")
+    parser.add_argument("--sequences", type=str,
+                        help="Path to sequences JSON (default: <game_id>_sequences.json in script directory)")
+    args = parser.parse_args()
+
+    if args.auto and not args.game_id:
+        parser.error("--auto requires game_id as a positional argument")
+    game_id = args.game_id or input("Game ID (e.g. ls20): ").strip()
+
+    if args.server:
+        httpd = HTTPServer(("localhost", args.port), _Handler)
+        t = threading.Thread(target=httpd.serve_forever, daemon=True)
+        t.start()
+        log(f"HTTP interface on http://localhost:{args.port}/")
+        log("  GET  /state          -> {step, actions, done, obs_state, levels_completed, frame_compact}")
+        log("  GET  /frame          -> {frames: [sparse_grid, ...]}  (compact JSON, no numpy)")
+        log("  GET  /log/tail?n=N   -> last N lines of session.log  (default 50)")
+        log("  GET  /log/grep?q=PAT&n=N -> first N lines matching PAT")
+        log("  POST /action         -> {\"action\": N}  or  {\"action\": \"quit\"}")
+        pick_fn = pick_action_server
+    else:
+        pick_fn = pick_action_interactive
+
+    arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
+    env = arc.make(game_id)
+
+    log(f"\nStarted '{game_id}' in COMPETITION mode.")
+
+    if args.auto:
+        seq_default = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{game_id}_sequences.json")
+        seq_path = args.sequences or seq_default
+        if not os.path.isfile(seq_path):
+            log(f"Sequences file not found: {seq_path}")
+            sys.exit(1)
+        log(f"[AUTO] Autopilot mode — sequences from {seq_path}")
+        run_auto(env, arc, seq_path, args)
+    else:
+        if not args.server:
+            log("Consult @LOCUS in Claude Code before committing each action.\n")
+
+        prev_frames = []
+        step = 0
+
+        while True:
+            actions = env.action_space
+            if not actions:
+                log("\nNo actions available — level complete.")
+                break
+
+            with _state_lock:
+                _game_state.update({"step": step, "actions": list(range(len(actions))), "done": False})
+
+            action = pick_fn(actions)
+            if action is None:
+                log("\nSession ended by user.")
+                break
+
+            step += 1
+            obs = env.step(action)
+            log(f"\n=== STEP {step} | state={obs.state}  levels_completed={obs.levels_completed}  win_levels={obs.win_levels} ===")
+
+            if obs.frame:
+                compact_frames = []
+                for i, grid in enumerate(obs.frame):
+                    if args.full:
+                        log(f"frame[{i}]:\n{grid}")
+                    else:
+                        log(f"frame[{i}]:\n{compact_grid_str(grid)}")
+                    compact_frames.append(compact_grid_json(grid))
+
+                    if i < len(prev_frames):
+                        diff = np.argwhere(grid != prev_frames[i])
+                        if len(diff):
+                            log(f"DIFF frame[{i}]: {len(diff)} cell(s)")
+                            for r, c in diff:
+                                log(f"  [{r},{c}]: {prev_frames[i][r,c]}->{grid[r,c]}")
+                        else:
+                            log(f"NO CHANGE frame[{i}]")
+
+                prev_frames = list(obs.frame)
+                with _state_lock:
+                    _game_state["frame_compact"] = compact_frames
+
+            with _state_lock:
+                _game_state.update({
+                    "step": step,
+                    "obs_state": obs.state,
+                    "levels_completed": obs.levels_completed,
+                    "done": obs.state in ("win", "game_over"),
+                })
+
+            if hasattr(obs, "state") and obs.state in ("win", "game_over"):
+                log(f"\nLevel ended: {obs.state}")
+                break
 
     log("\n--- Scorecard ---")
     log(str(arc.get_scorecard()))
