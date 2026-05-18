@@ -1052,10 +1052,10 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779235200 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0
+@LAT60LON20 | created:1778889600 | updated:1779235200 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10
 [ew]
 conf:255
-rev:3
+rev:4
 sal:1
 touched:1779235200
 [/ew]
@@ -1104,25 +1104,10 @@ source_count:4
 
 ---
 
-@BELIEF:LAT80LON-10 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,contained_by>@LAT60LON20
+@BELIEF:LAT80LON-10 | created:1779062400 | updated:1779235200 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-150LON10,contained_by>@LAT60LON20
 [lp]
 centroid:LAT80LON-10
-confidence:220
-scope_lat:10.0
-scope_lon:10.0
-projection_flag:false
-contradiction_flag:false
-source_count:2
-[/lp]
-
-**Collected cluster/11-ring sites immediately regenerate as impassable walls.** The spawned wall blocks movement from both directions and is not re-collectible. Any descent through a 11-ring site is a one-way committed pass — the wall spawns behind you. Confirmed session 5: 11-ring at rows 16–18, cols 15–17 became wall on collection, blocking re-descent at steps 57–62 → level LOST.
-
----
-
-@BELIEF:LAT70LON-20 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-100LON10,contained_by>@LAT60LON20
-[lp]
-centroid:LAT70LON-20
-confidence:210
+confidence:230
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
@@ -1130,7 +1115,22 @@ contradiction_flag:false
 source_count:3
 [/lp]
 
-**Collect the state-changer before approaching entity2.** In both level 1 (cluster) and level 2 (0/1 cross), state must advance from 0 to 1 before the win condition fires. Approaching entity2 first is legal but produces a mismatch signal (ring dims/dims) and wastes actions retreating. The wrong-order cost in session 5 was a complete level loss — 11-ring collected first → wall blocked re-descent → could not reach entity2.
+**Collected cluster/11-ring sites immediately regenerate as impassable walls.** The wall is one-way: it blocks movement back through the collection site, but does NOT block continued movement past it in the same direction. Session 11 refinement: 11-ring A at rows 16-18 was collected on DOWN (block from rows 10-11 to rows 15-16); wall spawned above the block at rows 16-18; block continued descending to rows 40-41 without obstruction. "One-way committed pass" means you cannot RETURN through the site — you cannot go back UP past the wall. Confirmed session 5: 11-ring at rows 16–18 became wall; attempting to re-descend (i.e., going UP then DOWN again) was blocked. Confirmed session 11: descent past the wall site continues freely.
+
+---
+
+@BELIEF:LAT70LON-20 | created:1779062400 | updated:1779235200 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-100LON10,extracted_from>@LAT-150LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT70LON-20
+confidence:235
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Collect the state-changer before approaching entity2.** In both level 1 (cluster) and level 2 (0/1 cross), state must advance from 0 to 1 before the win condition fires. Session 11 direct confirmation: block entered entity2 interior at rows 40-41 cols 14-18 with state 0 → `NOT_FINISHED` (game did not register a win). Signal is NOT_FINISHED (observable in obs.levels_completed remaining unchanged), not just "ring dims." The wrong-order cost in session 5 was a complete level loss — 11-ring collected first → wall blocked re-descent → could not reach entity2. Session 11 cost: 17 wasted steps + full timer cycle.
 
 ---
 
@@ -1286,6 +1286,63 @@ source_count:2
 [/lp]
 
 **Level 2 has three disconnected corridor tracks; cross-track travel requires the wide connector at rows 10–14 (c9-53).** Left (c14-18), center-right (c29-43), far-right (c49-58). From block start cols 29-33: LEFT is void-blocked; one UP reaches rows 35-36 (dead end). Must go RIGHT to c34-38, UP×6 to rows 10-11, LEFT×4 to c14-18, then DOWN to entity2. Sessions 10 post-restart routes skipped the RIGHT-first step → stuck in c29-33 dead-end both times.
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-18, session 11)
+
+Walk parameters: 100 walks × length 20. Source: @LAT-150LON10 (session 11 log). High-sal pull: @LAT-10LON10 (sal:8), @LAT20LON-30 (sal:5), @LAT-150LON10 (sal:5). Clusters passing min_cooccurrence:25, belief_conf_threshold:128. Two existing beliefs updated (LAT80LON-10, LAT70LON-20). One new confirmed belief written. Two projection candidates.
+
+---
+
+@BELIEF:LAT50LON0 | created:1779235200 | updated:1779235200 | relates:extracted_from>@LAT-150LON10,extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT50LON0
+confidence:230
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**11-ring A collection is a geometric certainty on every left-track descent from rows 10-11.** When the block descends from rows 10-11 to rows 15-16 in the left track (cols 14-18), the 5-row trail occupies rows 17-21, which overlaps 11-ring A at rows 16-18 (2/3 rows). Collection fires automatically — this is not a positioning choice but a structural consequence of the track geometry. Session 11 DIFF=94 confirmed: the 15-step sequence fires 11-ring A at seq=12 with no special action needed. Timer +15 cols. Wall spawns at rows 16-18 behind (above) the descending block; continued descent is unobstructed. Any route via the left track inherits this +15 timer bonus and the one-way commitment.
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-18, session 11)
+
+Walk parameters: 50 walks × length 10, seeded from boundary nodes into coordinate voids. Targets: corrected level 2 route structure, 11-ring B accessibility, cross collection approach.
+
+---
+
+@BELIEF:LAT40LON0 | created:1779235200 | updated:1779235200 | relates:projected_from>@LAT-150LON10,projected_from>@BELIEF:LAT80LON0,projected_from>@BELIEF:LAT50LON0,projected_from>@BELIEF:LAT60LON0,contained_by>@LAT60LON20
+[lp]
+centroid:LAT40LON0
+confidence:150
+scope_lat:15.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Projection: corrected level 2 route requires both 11-ring bonuses (+30 cols total) to fit within the timer budget.** A route that collects cross (far-right track) then reaches entity2 (left track) traverses the full maze width twice. Minimum step count: ~35 steps × 2 cols/step = 70 cols consumed. 11-ring A (+15, auto-collected on left-track descent) brings net to 55 cols — still 13 cols short of the 42-col budget. Both 11-rings (+30 total) yield 72 cols budget vs. 70 needed: 2 cols margin. 11-ring B (rows 51-53, cols 40-42) accessibility is the critical unknown. If 11-ring B is not on a practical route, single-timer-cycle win may be impossible and a fundamentally different strategy is needed. Unvalidated — requires session 12 reconnaissance.
+
+---
+
+@BELIEF:LAT40LON10 | created:1779235200 | updated:1779235200 | relates:projected_from>@LAT-80LON10,projected_from>@LAT-150LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT40LON10
+confidence:165
+scope_lat:15.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**Projection: RIGHT×3 from the center-right track at rows 15-16 connects directly to the far-right track, saving 2 steps vs. ascending to rows 10-11 first.** Session 5 route analysis (@LAT-80LON10) traced a route of "UP×5 → rows 15-16 at cols 34-38; RIGHT×3 → cols 49-53" which places the block in the far-right track without passing through the wide connector at rows 10-14. This yields an optimized cross approach: RIGHT + UP×5 + RIGHT×3 + DOWN×6 = 15 steps to cross collection (vs. 17 steps via rows 10-11). Saves 2 steps = 4 timer cols. Not yet directly executed in level 2 play — derived from session 5 route trace. If confirmed, reduces the total corrected route from ~37 to ~35 steps, enabling the two-11-ring budget to cover it. Validate in session 12.
 
 ---
 
