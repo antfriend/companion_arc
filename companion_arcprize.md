@@ -77,7 +77,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1779235200 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0
+@LAT0LON0 | created:1747180800 | updated:1779235200 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0
 [ew]
 conf:255
 rev:0
@@ -301,7 +301,7 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1779235200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1779235200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:175
 rev:11
@@ -313,7 +313,7 @@ touched:1779235200
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 2 in progress**. Session 10 ended at step 75. Block at rows 40-41 cols 29-33, entity1 state 0, timer ~10 cols remaining (5 steps before restart). Competition API session alive — reconnect with `python play.py ls20 --server`.
+**Current level**: ls20 — **level 2 in progress, NOT WON**. Session 11 completed hybrid run: level 1 WON (step 15), level 2 NOT WON (state 0 insufficient — cross required). New route design pending. See @LAT-150LON10.
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -333,15 +333,17 @@ touched:1779235200
 - Session 8: level 1 WIN at step 20; step 21 UP entered level 2 (session continued as session 9)
 - Session 9: analyzed step 21 frame; sent RIGHT, UP, UP (steps 22–24); server offline; level 2 NOT completed
 - **Session 10**: 75 steps, two timer-exhaustion restarts. NOT WON. See @LAT-130LON10.
+- **Session 11**: Hybrid run. Autopilot executed 17-step route. Block entered entity2 at rows 40-41 cols 14-18 (DIFF=76 confirmed). State 0 → NOT_FINISHED. NOT WON. See @LAT-150LON10.
 
 **Session 10 — critical mechanic corrections** (see @LAT-130LON10 + @LAT20LON-30):
 - **Timer level 2 = 2 cols/step** (NOT 1 col/step — session 9 belief was wrong). 42 cols = 21 steps max.
 - **Entity1 state RESETS on timer restart** (within level). Not just on new level — EVERY restart.
 - **Entity1 carrier = large entity rows 53-60 cols 1-10**. State 0: r55-56 full c3-8=9. State 1: r55-56 partial, r59-60 full.
 - **Corridor structure**: three separate tracks. Wide connection ONLY at rows 10-14 (c9-53).
-- **WINNING ROUTE**: 3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1 (17 steps) — RIGHT, UP×6, LEFT×4, DOWN×6 → block enters entity2 interior at rows 40-41 cols 14-18.
+- **ROUTE GEOMETRY CONFIRMED** (session 11): 3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1 → block correctly reaches entity2 interior at rows 40-41 cols 14-18. BUT state 0 = NOT_FINISHED. Cross collection (state 0→1) required before entity2 entry.
+- **11-ring A auto-collects** on left-track first DOWN (DIFF=94, trail at rows 17-19 overlaps rows 16-18). +15 cols timer.
 
-**Session 11 plan**: reconnect → timer fires within 5 steps → restart (entity1 state 0) → execute 17-step route.
+**Session 12 plan**: design new level 2 route that collects cross (far-right track, rows 46-48 cols 50-52) before entering entity2. Estimated 35+ steps — needs both 11-rings (+30 cols bonus) to fit in timer budget. 11-ring B accessibility (rows 51-53 cols 40-42) is the key unknown requiring session 12 reconnaissance. See @LAT-150LON10.
 
 **Session 8 — level 1 key discoveries**:
 - **Cluster position varies per fresh game**: session 7 cluster at rows 47–49; session 8 cluster at rows 31–33. Cols 20–22 stable. Must scan first frame to locate cluster.
@@ -479,7 +481,7 @@ Game ID: ls20. 7 levels. COMPETITION mode.
   - r46 c51=0; r47 c50=1,c51-52=0; r48 c51=1
   - Block at rows 45-46 cols 49-53 → collection fires (DIFF=62 at session 10 step 32)
   - Collection DOES consume timer (counted as a movement step)
-  - NOTE: state resets on restart → cross collection benefit is lost on any restart. For session 11 winning route, cross collection is NOT needed (block wins at state 0).
+  - NOTE: state resets on restart → cross collection benefit is lost on any restart. **Cross IS required for level 2 win** — session 11 confirmed state 0 → NOT_FINISHED (see @LAT-150LON10). State 1 required at entity2 entry.
 
 **11-ring — timer power-up**
 - Collection: block entering cluster cells → timer **+15 cols** (FREE, does not cost a tick)
@@ -515,13 +517,15 @@ Game ID: ls20. 7 levels. COMPETITION mode.
 - **CRITICAL void**: from start (rows 40-41 cols 29-33), LEFT is blocked (void between c18 and c29 at rows 35-45). Must go RIGHT to c34-38 first, then UP through center-right track.
 - Entity2 ring: rows 38–46, cols 12–20. Interior value 5 (passable). WIN = block inside at rows 40-41 cols 14-18.
 - Entity1 state carrier: rows 53–60, cols 1–10 (previously "UNKNOWN structure" — now identified).
-- 11-ring A: rows 16–18, cols 15–17 (left track — NOT needed for session 11 route)
-- 11-ring B: rows 51–53, cols 40–42 (right-center — NOT needed for session 11 route)
-- Cross: rows 46–48, cols 50–52 (far-right track — NOT needed for session 11 route)
+- 11-ring A: rows 16–18, cols 15–17 (left track — AUTO-COLLECTED session 11: trail at rows 17-19 always overlaps on first DOWN from rows 10-11; +15 cols, wall spawns behind block)
+- 11-ring B: rows 51–53, cols 40–42 (right-center — ACCESSIBILITY UNKNOWN; needed for corrected route budget)
+- Cross: rows 46–48, cols 50–52 (far-right track — REQUIRED for win; state must be 1 at entity2 entry)
 
-**WINNING ROUTE for level 2 (session 10 analysis, 17 steps)**
-Actions: **3, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1**
-= RIGHT + UP×6 + LEFT×4 + DOWN×6
+**WINNING ROUTE for level 2 — UNDER REVISION (session 11)**
+Session 11: block entered entity2 rows 40-41 cols 14-18 at state 0 → NOT_FINISHED. State 1 (cross collection) IS required. "State 0 wins" hypothesis RETIRED. See @LAT-150LON10.
+
+**Previous route (FAILED at state 0):**
+Actions: 3, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1 (RIGHT + UP×6 + LEFT×4 + DOWN×6)
 
 Step-by-step:
 1. RIGHT (3): rows 40-41 c29-33 → c34-38 (escape dead end)
@@ -530,13 +534,9 @@ Step-by-step:
 12-16. DOWN×5: rows 10-11 c14-18 → 15-16 → 20-21 → 25-26 → 30-31 → 35-36 (descend left track)
 17. DOWN (1): rows 35-36 c14-18 → rows 40-41 c14-18 = **INSIDE entity2 ring → WIN**
 
-Uses 17 of 21 available steps. No cross collection needed. No 11-ring needed.
-Entity1 must be at state 0 (RIGHT available) — state is 0 after any restart.
+Uses 17 of 21 available steps. Route geometry CONFIRMED session 11 (DIFF=76 = entity2 entry). Cross required — state 0 = NOT_FINISHED. 11-ring A auto-collects on this route (trail overlap at rows 17-19). Net timer at entity2 entry: 23 cols remaining.
 
-**Session 11 execution plan**:
-- On reconnect: ~5 steps remaining in current timer → restart fires automatically
-- After restart (entity1 state 0, timer 42, block at rows 40-41 cols 29-33): execute the 17-step route
-- If restart does not fire immediately: any 5 steps (all will be blocked at c29-33 if going LEFT/UP-again/DOWN) will exhaust timer
+**Session 12 design goal**: find route that collects cross (far-right track) before descending left shaft. Estimated 35 steps total. Both 11-rings (+30 cols) needed to fit in 42-col budget. 11-ring B (rows 51-53 cols 40-42) accessibility is the critical unknown.
 
 **Action space**
 - Level 1: 4 actions (0=UP, 1=DOWN, 2=LEFT, 3=RIGHT)
@@ -933,7 +933,7 @@ level: "level 1 WIN + level 2 NOT won (session 10)"
 
 ---
 
-@LAT-140LON10 | created:1779235200 | updated:1779235200 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10
+@LAT-140LON10 | created:1779235200 | updated:1779235200 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10
 [ew]
 conf:220
 rev:0
@@ -955,7 +955,7 @@ UP×5 (1 probe + 4 ascent), LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 10 valid
 
 ### Level 2 — 17 actions `[3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1]`
 
-RIGHT, UP×6, LEFT×4, DOWN×6. Identified session 10 from verified maze structure. **Not yet executed as a complete sequence** — treat as high-confidence hypothesis pending session 11 validation.
+RIGHT, UP×6, LEFT×4, DOWN×6. **Session 11 EXECUTED — route geometry CONFIRMED, win condition WRONG.** Block reached entity2 interior (DIFF=76) but state 0 → NOT_FINISHED. Cross collection (state 1) required. Sequence set to null in ls20_sequences.json pending redesign. See @LAT-150LON10.
 
 **Preconditions** (all consistent at fresh level 2 start):
 - Block rows 40-41 cols 29-33 (confirmed all sessions)
@@ -965,7 +965,62 @@ RIGHT, UP×6, LEFT×4, DOWN×6. Identified session 10 from verified maze structu
 
 **Route logic**: RIGHT escapes dead end (cols 29-33 LEFT-blocked by void); UP×6 ascends center-right track to wide connector rows 10-11; LEFT×4 crosses to left track cols 14-18; DOWN×6 descends to entity2 interior rows 40-41 cols 14-18 → WIN. Timer: 17/21 steps used.
 
-**`play.py --auto` verify_start check**: after first action (RIGHT), script confirms block is at rows 40-41 cols 34-38. WARN logged if mismatch.
+**`play.py --auto` verify_start check**: after first action (RIGHT), script confirms block is at rows 40-41 cols 34-38. WARN logged if mismatch. (Level 2 sequence now null — verify_start not invoked until new sequence is written.)
+
+---
+
+@LAT-150LON10 | created:1779235200 | updated:1779235200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@LAT20LON-30,validates>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:5
+touched:1779235200
+[/ew]
+
+## ls20 — Session 11 Log (2026-05-18)
+
+**Mode**: Hybrid (`python play.py ls20 --auto --server`). Level 1 manual via curl, level 2 autopilot from `ls20_sequences.json`.
+
+### Level 1 — WIN at step 15
+
+- Step 1 (probe): UP. Block at rows 40-41 cols 34-38 post-move. Cluster at rows 32-33, cols 20-22.
+- Steps 2–15: route UP×3, LEFT×2, DOWN, UP, RIGHT×3, UP×3.
+  - DOWN step: trail at rows 33-35 overlapped cluster rows 32-33 → state 0→1 collection.
+  - Final UP×3: block ascended to rows 10-11 cols 34-38, entered entity2 ring.
+- `levels_completed=1` confirmed. ✓
+
+### Level 2 — NOT WON (17 steps exhausted)
+
+Autopilot executed `[3,0,0,0,0,0,0,2,2,2,2,1,1,1,1,1,1]`.
+
+**seq=1 (RIGHT)**: Block → rows 40-41, cols 34-38. `verify_start` PASS. ✓
+**seq=2–7 (UP×6)**: Ascended center-right track → rows 10-11, cols 34-38.
+**seq=8–11 (LEFT×4)**: Wide corridor → rows 10-11, cols 14-18 (left track entry).
+**seq=12 (DOWN, global step 27)**: `DIFF=94`. Block → rows 15-16, cols 14-18. **11-ring A AUTO-COLLECTED**: trail at rows 17-19 overlapped 11-ring at rows 16-18. Timer +15 cols (33 cols remaining). Wall spawned at 11-ring site behind block.
+**seq=13–16 (DOWN×4)**: Descended left track → rows 35-36, cols 14-18.
+**seq=17 (DOWN, global step 32)**: `DIFF=76`. Block → rows 40-41, cols 14-18. **Entity2 interior entered**. State: `NOT_FINISHED`.
+
+`[AUTO] Level 2: sequence exhausted (17 steps) without win.`
+
+### Key Findings
+
+1. **State 0 does NOT win level 2.** Block entered entity2 at rows 40-41 cols 14-18 with entity1 at state 0 → `NOT_FINISHED`. Cross collection (state 0→1) is required. "State 0 wins" hypothesis RETIRED.
+
+2. **11-ring A auto-collects on every left-track descent.** Trail at rows 17-19 always overlaps 11-ring rows 16-18 when block moves DOWN from rows 10-11. +15 cols bonus. Wall spawns behind block (does not block continued descent). Timer accounting: seq=12 consumes 2 cols (20→18), then +15 → 33 remaining. At seq=17: 33 - 5×2 = 23 cols remaining.
+
+3. **Route geometry is CORRECT.** DIFF=76 at seq=17 confirms block body at rows 40-41, cols 14-18 (entity2 interior). The 17-step physical path is valid. Only the state prerequisite was wrong.
+
+4. **Net budget with 11-ring A**: 42 + 15 = 57 cols = 28.5 steps if 11-ring A is collected. Cross collection adds ~18 steps of detour (far-right track + return). A route including cross + entity2 totals ~35 steps = 70 cols needed vs. 57 available. Deficit: 13 cols.
+
+5. **Both 11-rings needed.** 11-ring A (+15) + 11-ring B (+15) = +30 cols → 72 col budget vs. ~70 needed for a 35-step route. 11-ring B at rows 51-53, cols 40-42 must be collected. Access route unknown.
+
+### Revised Win Hypothesis
+
+Cross collection → state 1 → descend left track (auto-collect 11-ring A) → entity2. A 35-step route via far-right (cross) requires both 11-ring bonuses (+30 cols). Minimum route: RIGHT+UP×5+RIGHT×3+DOWN×6 (cross, 15 steps) + UP×7+LEFT×7+DOWN×6-with-11-ring-A (entity2, ~20 steps) = ~35 steps. 11-ring B needed to cover the deficit.
+
+**Optimized cross approach (untested)**: RIGHT+UP×5+RIGHT×3+DOWN×6 = 15 steps (vs. prior 17-step cross attempt at rows 10-11 → far-right). RIGHT×3 is passable from rows 15-16 to cols 49-53 (confirmed @LAT-80LON10 session 5 route analysis). Saves 2 steps vs. ascending to rows 10-11 first.
+
+**Session 12 priority**: reconnaissance for 11-ring B access. Is there a passable corridor below the block start at rows 40-41, cols 34-38 leading toward rows 51-53? A single DOWN after the opening RIGHT may reveal it.
 
 ---
 

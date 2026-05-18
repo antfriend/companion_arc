@@ -11,9 +11,9 @@
     },
     {
       "level": 2,
-      "description": "17-step route: RIGHT, UP×6, LEFT×4, DOWN×6. Session 10 analysis — fully deterministic.",
-      "note": "Preconditions: block at rows 40-41 cols 29-33, entity1 state 0, timer 42 cols. Uses 17 of 21 available steps. No cross or 11-ring needed. Route identified session 10 but not yet executed end-to-end — treat as high-confidence hypothesis.",
-      "sequence": [3, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1],
+      "description": "PENDING REDESIGN — session 11 executed 17-step route, block entered entity2 at state 0, NOT_FINISHED. Cross collection (state 0→1) IS required. New route design pending.",
+      "note": "Session 11 finding: state 0 is insufficient — entity1 must be at state 1 (after cross collection at rows 46-48 cols 50-52). 11-ring A auto-collects on left-track descent (rows 16-18, trail overlap, DIFF=94). Both 11-rings (+30 cols total) may be needed for a feasible route. Feasibility analysis pending session 12 reconnaissance.",
+      "sequence": null,
       "verify_start": {
         "note": "After first action (RIGHT), block should be at rows 40-41 cols 34-38.",
         "block_val": 12,
