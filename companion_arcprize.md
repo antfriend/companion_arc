@@ -1097,8 +1097,8 @@ Timer budget at entity2 entry: if B resets (42) → 42-20=22 remaining at WIN (c
 [ew]
 conf:200
 rev:0
-sal:1
-touched:1779062400
+sal:2
+touched:1779321600
 [/ew]
 
 ## Dream Cycle
@@ -1121,10 +1121,10 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779321600 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10
+@LAT60LON20 | created:1778889600 | updated:1779321600 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10
 [ew]
 conf:255
-rev:5
+rev:6
 sal:1
 touched:1779321600
 [/ew]
@@ -1173,18 +1173,24 @@ source_count:4
 
 ---
 
-@BELIEF:LAT80LON-10 | created:1779062400 | updated:1779235200 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-150LON10,contained_by>@LAT60LON20
+@BELIEF:LAT80LON-10 | created:1779062400 | updated:1779321600 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-150LON10,extracted_from>@LAT-160LON10,contained_by>@LAT60LON20
 [lp]
 centroid:LAT80LON-10
-confidence:230
+confidence:235
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:3
+source_count:4
 [/lp]
 
-**Collected cluster/11-ring sites immediately regenerate as impassable walls.** The wall is one-way: it blocks movement back through the collection site, but does NOT block continued movement past it in the same direction. Session 11 refinement: 11-ring A at rows 16-18 was collected on DOWN (block from rows 10-11 to rows 15-16); wall spawned above the block at rows 16-18; block continued descending to rows 40-41 without obstruction. "One-way committed pass" means you cannot RETURN through the site — you cannot go back UP past the wall. Confirmed session 5: 11-ring at rows 16–18 became wall; attempting to re-descend (i.e., going UP then DOWN again) was blocked. Confirmed session 11: descent past the wall site continues freely.
+**Collected cluster/11-ring sites immediately regenerate as impassable walls. The wall is one-way: it blocks entry FROM ABOVE (going DOWN through the site after you have risen above it), but does NOT block continued movement PAST it in the original direction OR movement away from it.** Precise mechanics for 11-ring A (confirmed sessions 5, 11, 12):
+- Block descends from rows 10-11 to rows 15-16 (DOWN). Ring at rows 16-18 collects via trail overlap. Wall spawns at ring site (rows 16-18), just below the block's landing position (rows 15-16).
+- Continued DOWN from rows 15-16 → rows 20-21: VALID (session 11 confirmed — block descended to rows 40-41 without obstruction). The 5-row discrete jump from rows 15-16 lands at rows 20-21, skipping over the wall at rows 16-18.
+- UP from rows 15-16 → rows 10-11: VALID (session 12 route design; block moves away from wall upward; landing at rows 10-11 is above the wall).
+- DOWN from rows 10-11 → rows 15-16: BLOCKED (re-entry from above through the wall site — session 5 confirmed "re-descend blocked").
+- UP from below the wall (rows 20+ → trying to pass through rows 16-18): BLOCKED ("cannot go back UP past the wall").
+Summary: once you have descended past the ring site OR risen above it after collection, you are committed. You cannot cross the wall again in either direction.
 
 ---
 
@@ -1412,6 +1418,27 @@ source_count:1
 [/lp]
 
 **At rows 15-16, center-right track (c29-38) and far-right track (c44-53) are isolated by void gap at c39-43.** Session 12 initial frame (level 2 step 16) confirmed: c29-38=3, c39-43=4 (void), c44-53=3. RIGHT from c34-38 at rows 15-16 moves into void = BLOCKED. The only cross-track path is the wide connector at rows 10-14 (c9-53). Any route requiring track switching must first ascend to rows 10-11, cross, then descend. This invalidates the "optimized 15-step cross approach via RIGHT×3 from rows 15-16" projected in session 11.
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-18, session 12)
+
+Walk parameters: 50 walks × length 10, seeded from @BELIEF:LAT30LON0 (11-ring full reset) into coordinate void LAT20LON10. Target: 11-ring B behavior extrapolated from A. One new projection written.
+
+---
+
+@BELIEF:LAT20LON10 | created:1779321600 | updated:1779321600 | relates:projected_from>@BELIEF:LAT30LON0,projected_from>@LAT-160LON10,projected_from>@LAT20LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT20LON10
+confidence:155
+scope_lat:20.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Projection: 11-ring B (rows 51-53, cols 40-42) likely causes a FULL TIMER RESET, same as 11-ring A.** Both rings are the same entity type ("11-ring" power-up), same visual pattern, same game mechanic description. Session 12 confirmed A = full reset to 42 cols (see @BELIEF:LAT30LON0). By entity-type generalization, B should behave identically. If confirmed, B-collection in the 51-step session 13 route (step 30) resets timer to 42 at rows 50-51 c39-43, enabling the 20-step phase 4 to reach entity2 with timer=2 remaining (comfortable margin). If B = "+15 additive" or some other mechanic, the session 13 route may fail at phase 4. Unvalidated — requires session 13 B-probe execution.
 
 ---
 
