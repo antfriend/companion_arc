@@ -482,7 +482,10 @@ def main():
                 break
 
     log("\n--- Scorecard ---")
-    log(str(arc.get_scorecard()))
+    try:
+        log(str(arc.get_scorecard()))
+    except Exception as e:
+        log(f"Scorecard unavailable: {e}")
     _log.close()
 
 
