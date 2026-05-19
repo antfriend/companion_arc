@@ -1637,3 +1637,63 @@ touched:<unix_int>
 ```ttdb-special
 kind: discovery_tour_off
 ```
+
+---
+
+## SECTION 1 — New Session Log Record
+
+```
+@LAT-170LON10 | created:1779408000 | updated:1779408000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informed_by>@LAT-160LON10,informed_by>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779408000
+[/ew]
+```
+
+## ls20 — Session 13 Log (2026-05-18)
+
+```session-log
+timestamp: 1779408000
+game: "ls20"
+level: "level 1 NOT WON (session 13)"
+scorecard_guid: "646a3aa1-c528-4c8b-bb62-52a25bc9bd81"
+actions: 50
+levels_completed: 0
+score: 0.0
+```
+
+**Session outcome**: Level 1 NOT WON. 50 actions consumed entirely in level 1. `levels_completed=0`. Score 0.0. Fresh game instance — `arc.make()` created new environment `ls20-9607627b` with a new run guid.
+
+**Scorecard data**:
+- `level_baseline_actions`: [22, 123, 73, 84, 96, 192, 186]
+- `level_actions`: [50, 0, 0, 0, 0, 0, 0]
+- Level 1 human baseline: **22 actions**
+- Level 1 result: 50 actions, score 0.0, NOT completed
+
+**Critical new discovery — level 1 baseline**:
+- Human baseline for level 1 = **22 actions** (previously unknown — first scorecard data received)
+- Session 10/11/12 level 1 WIN at step 15 → RHAE = (22/15)² = 2.15 → capped at 1.15 (faster than baseline). Level 1 was being won below the human baseline; 15 actions beats 22 by a wide margin.
+- Current session: 50 actions in level 1 without win. Either the probe-first protocol misfired, or a fresh game reset changed maze structure materially.
+
+**Level 1 chronology** (reconstructed from scorecard — no frame log available):
+- All 50 actions consumed in level 1 with no win. Level 2 received 0 actions.
+- Probable cause: fresh game instance creates a new maze configuration. Cluster row position varies per instance (confirmed sessions 7 vs 8). The session 13 route assumed a specific cluster position without first scanning the frame, OR the probe-first protocol (designed for level 2) was applied to level 1 navigation and disrupted the efficient route.
+- No frame data available for this session log — observations are inferred from scorecard only.
+
+**What this session reveals**:
+
+1. **Level 1 baseline = 22 actions** — CONFIRMED from scorecard. Sessions 10–12 WIN at 15 steps = above-baseline efficiency. The optimal level 1 route (13 actions from session 7 analysis) is well below baseline.
+
+2. **Fresh game = fresh maze** — each `arc.make()` call creates a new environment ID and new run. Prior sessions may have been replaying the same environment or a similar seed. If cluster position is newly randomized each run, a scan-first protocol is mandatory every session regardless of prior cluster-position knowledge.
+
+3. **50 actions in level 1 without win** — consistent with being trapped in the wrong section of the maze (e.g., approaching entity2 at wrong state, or attempting routes blocked by maze structure changes). Without frame data the exact failure mode is unknown.
+
+4. **Level 2 baseline = 123 actions** — revealed by scorecard. This is the human baseline for a proficient first-time player. Given 21-step timer cycles and FULL RESET mechanics, a route of 35–51 steps is well under baseline. Level 2 is winnable at significant above-baseline efficiency once level 1 is passed.
+
+**Baseline data (new — all levels)**:
+| Level | Baseline actions |
+|-------|-----------------|
+| 1 | 22 |
+|
