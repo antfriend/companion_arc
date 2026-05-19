@@ -7,6 +7,15 @@ Usage:
     client, companion = setup()
     result = run_training_attempt("ls20", client, companion)
     print(result)
+
+LOCUS interaction points in run_training_attempt:
+  - Session start : FOCUS lat-10lon10 → STATUS (EPS scan)
+  - Each step     : state + frame → action choice
+  - Level win     : LOG level N complete + REVISION CYCLE (phases 1-3)
+  - Game end      : LOG win/game_over with final frame
+  - Post-run      : session log written to locus_<game_id>_session.txt
+                    Open that file and apply LOCUS's suggested updates to
+                    companion_arcprize.md via Claude Code (@LOCUS LOG ...).
 """
 
 import os
@@ -65,6 +74,23 @@ def compact_grid_str(grid, bg: int | None = None) -> str:
     return "\n".join(lines)
 
 
+def _frame_summary(frames: list) -> str:
+    """Compact multi-frame description for LOCUS log entries."""
+    if not frames:
+        return ""
+    parts = []
+    for i, grid in enumerate(frames):
+        bg = _infer_bg(grid)
+        non_bg = int(np.sum(grid != bg))
+        unique_vals = sorted(int(v) for v in np.unique(grid) if int(v) != bg)
+        parts.append(
+            f"frame[{i}]: {grid.shape[0]}x{grid.shape[1]} "
+            f"bg={bg} non_bg_cells={non_bg} colors={unique_vals}"
+        )
+        parts.append(compact_grid_str(grid, bg))
+    return "\n" + "\n".join(parts)
+
+
 # ---------------------------------------------------------------------------
 # LOCUS query — companion file is a cached system prompt
 # ---------------------------------------------------------------------------
@@ -102,7 +128,6 @@ def locus_query(
 
 def parse_action(text: str, n_actions: int) -> int | None:
     """Extract an action index from LOCUS's response. Returns None if not found."""
-    # Explicit patterns first
     for pattern in (
         r"\baction[:\s]+(\d+)",
         r"\bchoose[:\s]+(\d+)",
@@ -126,12 +151,7 @@ def parse_action(text: str, n_actions: int) -> int | None:
 # State formatter
 # ---------------------------------------------------------------------------
 
-def _format_state(
-    step: int,
-    actions: list,
-    obs,
-    prev_frames: list,
-) -> str:
+def _format_state(step: int, actions: list, obs, prev_frames: list) -> str:
     lines = [f"@LOCUS — game step {step}"]
     if obs is not None:
         lines += [
@@ -151,6 +171,29 @@ def _format_state(
 
 
 # ---------------------------------------------------------------------------
+# Session log writer
+# ---------------------------------------------------------------------------
+
+def _write_locus_log(entries: list[dict], path: str) -> None:
+    sep = "=" * 60
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("LOCUS SESSION LOG\n")
+        f.write(
+            "Apply LOCUS's suggested record updates to companion_arcprize.md\n"
+            "via Claude Code: open the file, paste each @LOCUS LOG line,\n"
+            "and let Claude Code write the updated records.\n"
+        )
+        f.write(f"{sep}\n\n")
+        for e in entries:
+            f.write(f"[{e['label']}]\n")
+            f.write(f"SENT:\n{e['sent']}\n\n")
+            f.write(f"LOCUS:\n{e['received']}\n\n")
+            f.write(f"{sep}\n\n")
+    print(f"[agent] LOCUS session log → {path}")
+    print("[agent] Open that file and apply LOCUS's suggested updates to companion_arcprize.md")
+
+
+# ---------------------------------------------------------------------------
 # Agent loop
 # ---------------------------------------------------------------------------
 
@@ -165,8 +208,12 @@ def run_training_attempt(
     """
     Run one training attempt on game_id using LOCUS to pick each action.
 
-    Returns dict with: game_id, steps, levels_completed, final_state, scorecard.
-    Set competition_mode=True only when ready for leaderboard submission.
+    LOCUS is consulted at every step and at every key event (level win,
+    game end). A session log is written to locus_<game_id>_session.txt —
+    use it to update companion_arcprize.md via Claude Code after the run.
+
+    Returns dict: game_id, steps, levels_completed, final_state, scorecard,
+                  locus_session_log (path), locus_entries (list).
     """
     from arc_agi import OperationMode
 
@@ -176,7 +223,6 @@ def run_training_attempt(
         try:
             arc = arc_agi.Arcade()
         except TypeError:
-            # Fallback if Arcade requires operation_mode
             arc = arc_agi.Arcade(operation_mode=OperationMode.PRACTICE)
 
     env = arc.make(game_id)
@@ -184,16 +230,29 @@ def run_training_attempt(
     obs = None
     prev_frames: list = []
     step = 0
+    prev_levels = 0
+    level_start_step = 0
+    locus_entries: list[dict] = []
+
+    def _locus(msg: str, label: str) -> str:
+        """Send a LOCUS message, accumulate to session log, optionally print."""
+        reply = locus_query(client, companion_text, msg)
+        locus_entries.append({"label": label, "sent": msg, "received": reply})
+        if verbose:
+            print(f"\n[LOCUS {label}]\n{reply}\n")
+        return reply
 
     mode_label = "COMPETITION" if competition_mode else "practice"
     if verbose:
         print(f"[agent] '{game_id}' started ({mode_label} mode)")
 
-    # Give LOCUS session context before the first action
-    status = locus_query(client, companion_text, "@LOCUS STATUS")
-    if verbose:
-        print(f"[LOCUS STATUS]\n{status}\n")
+    # -- Session start -------------------------------------------------------
+    # FOCUS pulls the game state record into cursor and increments its sal,
+    # signalling that it's being actively consulted this session.
+    _locus("@LOCUS FOCUS lat-10lon10", "FOCUS game_state")
+    _locus("@LOCUS STATUS", "STATUS")
 
+    # -- Main loop -----------------------------------------------------------
     while step < max_steps:
         actions = env.action_space
         if not actions:
@@ -202,19 +261,15 @@ def run_training_attempt(
             break
 
         state_msg = _format_state(step, actions, obs, prev_frames)
-        reply = locus_query(client, companion_text, state_msg)
-
-        if verbose:
-            print(f"[LOCUS step={step}]\n{reply}\n")
+        reply = _locus(state_msg, f"ACTION step={step}")
 
         action_idx = parse_action(reply, len(actions))
 
-        # One retry if parse failed
+        # One retry with explicit instruction if parse failed
         if action_idx is None:
-            retry = locus_query(
-                client,
-                companion_text,
+            retry = _locus(
                 "Please respond with only the action number (e.g. 0).",
+                f"ACTION RETRY step={step}",
             )
             action_idx = parse_action(retry, len(actions))
 
@@ -236,16 +291,54 @@ def run_training_attempt(
         if obs.frame:
             prev_frames = list(obs.frame)
 
+        # -- Level transition ------------------------------------------------
+        if obs.levels_completed > prev_levels:
+            level_steps = step - level_start_step
+            frame_note = _frame_summary(prev_frames)
+
+            _locus(
+                f"@LOCUS LOG level {obs.levels_completed} complete — "
+                f"{level_steps} actions{frame_note}",
+                f"LOG level {obs.levels_completed}",
+            )
+
+            # Revision cycle phases 1-3 (phase 4 validates on the next level).
+            # Skip if the game is already over — no next level to validate against.
+            if obs.state not in ("win", "game_over"):
+                _locus(
+                    "@LOCUS what mechanics should I revise before the next level?",
+                    f"REVISION after level {obs.levels_completed}",
+                )
+
+            prev_levels = obs.levels_completed
+            level_start_step = step
+
+        # -- Game end --------------------------------------------------------
         if obs.state in ("win", "game_over"):
+            level_steps = step - level_start_step
+            frame_note = _frame_summary(prev_frames)
+
+            _locus(
+                f"@LOCUS LOG {obs.state} — "
+                f"{obs.levels_completed} levels completed, "
+                f"{step} total steps, {level_steps} steps on final level"
+                f"{frame_note}",
+                f"LOG {obs.state}",
+            )
             if verbose:
                 print(f"[agent] Episode ended: {obs.state}")
             break
 
+    # -- Scorecard -----------------------------------------------------------
     scorecard = None
     try:
         scorecard = str(arc.get_scorecard())
     except Exception:
         pass
+
+    # -- Persist session log -------------------------------------------------
+    log_path = f"locus_{game_id}_session.txt"
+    _write_locus_log(locus_entries, log_path)
 
     return {
         "game_id": game_id,
@@ -253,6 +346,8 @@ def run_training_attempt(
         "levels_completed": obs.levels_completed if obs else 0,
         "final_state": obs.state if obs else "not_started",
         "scorecard": scorecard,
+        "locus_session_log": log_path,
+        "locus_entries": locus_entries,
     }
 
 
