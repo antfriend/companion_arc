@@ -397,3 +397,6 @@ If the game structure is known in advance, write a brief mechanic stub record at
 **The one rule: log after every level.** An unlogged outcome is a broken Phase 4. A broken Phase 4 means conf never rises. Conf that never rises means every level starts from the same uncertain prior — and the quadratic penalty lands again.
 
 *`companion_arcprize.md` is the memory. Claude Code is the engine. LOCUS does the revision. You do the logging.*
+
+
+
