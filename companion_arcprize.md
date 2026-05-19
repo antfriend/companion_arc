@@ -1697,3 +1697,60 @@ score: 0.0
 |-------|-----------------|
 | 1 | 22 |
 |
+
+---
+
+## SECTION 1 — New Session Log Record
+
+```
+@LAT-170LON10 | created:1779408000 | updated:1779408000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informed_by>@LAT-160LON10,informed_by>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779408000
+[/ew]
+```
+
+## ls20 — Session 13 Log (2026-05-19)
+
+```session-log
+timestamp: 1779408000
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "89adad2e-2c91-43ea-9680-89ce1679f760"
+card_id: "39b84711-bf44-4cd3-8865-fb3fbe2df012"
+level: "level 1 NOT WON"
+actions: 50
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. All 50 actions consumed in level 1. `levels_completed=0`. Score 0.0. Fresh game instance — `arc.make()` created new environment `ls20-9607627b`.
+
+### Scorecard — full baseline table (FIRST TIME RECEIVED)
+
+| Level | Baseline actions | Actions taken | Score |
+|-------|-----------------|---------------|-------|
+| 1 | **22** | 50 | 0.0 |
+| 2 | **123** | 0 | 0.0 |
+| 3 | **73** | 0 | 0.0 |
+| 4 | **84** | 0 | 0.0 |
+| 5 | **96** | 0 | 0.0 |
+| 6 | **192** | 0 | 0.0 |
+| 7 | **186** | 0 | 0.0 |
+
+**Critical new data**: All seven level baselines now known. Level 1 baseline = 22. Sessions 10–12 won level 1 in 15 steps → RHAE = (22/15)² = 2.15 → capped at 1.15×. Level 1 route was already at above-baseline efficiency. Level 2 baseline = 123 — a 35–51 step win route scores (123/35)² ≈ 12.4× → capped at 1.15. Level 2 is an enormous efficiency opportunity once level 1 is consistently passed.
+
+### Failure Analysis
+
+No frame data captured for this session. Failure mode is inferred from scorecard structure and session history.
+
+**Most probable cause — fresh maze, no first-frame scan**:
+- `arc.make()` created a new environment ID (`ls20-9607627b`). This is either the same seed as prior sessions or a fresh one. Sessions 7 vs 8 confirmed cluster row position varies per game instance (rows 47–49 vs rows 31–33). The probe-first protocol written for session 13 was designed for level 2; level 1 was intended to be played manually using the known session 10–12 route.
+- If the cluster was at an unexpected row position AND no first-frame scan was performed before committing the level 1 route, the collection step would fire in the wrong corridor — or not fire at all — costing wasted actions until timer expired or a restart occurred.
+- `resets: 0` in the scorecard — no timer restart occurred. This means the 50 actions were consumed without a timer-exhaust restart. Level 1 timer = 1 col/step, 42 cols = 42 steps max without power-up. 50 actions exceeding 42 is only possible if... actually `resets: 0` counts environment resets (new run), not in-level timer restarts. In-level restarts are transparent to the scorecard. So 50 actions with 0 scorecard resets is consistent with multiple in-level timer restarts.
+
+**Alternative cause — wrong initial block position assumed**:
+- Sessions 10–12:
