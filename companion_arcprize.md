@@ -944,8 +944,8 @@ level: "level 1 WIN + level 2 NOT won (session 10)"
 
 @LAT-140LON10 | created:1779235200 | updated:1779321600 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10
 [ew]
-conf:165
-rev:1
+conf:80
+rev:2
 sal:0
 touched:1779321600
 [/ew]
@@ -962,17 +962,24 @@ UP×5 (1 probe + 4 ascent), LEFT×2, DOWN, UP, RIGHT×3, UP×3 worked for sessio
 
 ### Level 2 — 51-step hypothesis `[3,0,0,0,0,0,0,2,2,2,2,1,0,3,3,3,3,3,3,3,1,1,1,1,1,1,1,1,2,2,3,0,0,0,0,0,0,0,0,2,2,2,2,2,2,1,1,1,1,1,1]`
 
-**Status: HYPOTHESIS — not yet executed. Confidence:165.** Session 12 discovered 11-ring A = FULL TIMER RESET, enabling this route. Sequence is written to ls20_sequences.json for session 13. See @LAT-160LON10 for full step-by-step.
+**Status: HYPOTHESIS — TWO FATAL FLAWS DISCOVERED (session 12 @locus log analysis). Confidence:80. DO NOT execute blindly.** See @LAT-160LON10 "Post-Summary Findings" section.
 
 **Route summary** (51 steps, 4 phases):
 1. Steps 1-12: RIGHT+UP×6+LEFT×4+DOWN → 11-ring A at rows 15-16, c14-18 → **FULL TIMER RESET to 42**
 2. Steps 13-27: UP+RIGHT×7+DOWN×7 → cross at rows 45-46 c49-53 → **state 0→1. Timer=12.**
-3. Steps 28-31: DOWN+LEFT×2+RIGHT → 11-ring B probe at rows 50-51 c39-43 (IF full reset: timer=42)
-4. Steps 32-51: UP×8+LEFT×6+DOWN×6 → entity2 rows 40-41 c14-18, state=1 → **WIN**
+3. Steps 28-31: DOWN+LEFT×2+RIGHT → 11-ring B probe at rows 50-51 c39-43 (**Flaw 1: step 31 RIGHT may be BLOCKED at state 1**)
+4. Steps 32-51: UP×8+LEFT×6+DOWN×6 → entity2 rows 40-41 c14-18 (**Flaw 2: A-wall at c15-17 blocks DOWN from c14-18; phase 4 geometrically impossible**)
 
-**Preconditions**: Block rows 40-41 cols 29-33; entity1 state 0; timer 42 cols; RIGHT available.
+**Flaw 1**: Step 31 (RIGHT) fires at entity1 state 1. Session 10 evidence suggests RIGHT is blocked at state 1. If true, B-probe exit is impossible and timer ticks with no movement.
 
-**Three unknowns**: (1) 11-ring B collects at 1/3 row overlap; (2) 11-ring B = full reset; (3) WIN before timer=0 at step 51. If B probe fails or no reset: phase 4 exhausts timer mid-route.
+**Flaw 2**: Phase 4 requires DOWN from rows 10-11 c14-18 to entity2. A-wall is at rows 16-18 c15-17. Block at c14-18 includes c15-17 = BLOCKED. c9-13 bypass is geometrically valid but also requires RIGHT at state 1 (same restriction as Flaw 1).
+
+**Both flaws share the same critical unknown**: is RIGHT (action 3) truly blocked at entity1 state 1, or was session 10 observation a corridor void collision?
+
+**Session 13 protocol** (replaces blind execution):
+1. Execute steps 1-27 (A-reset + cross collection, state 0→1, timer=12).
+2. **Probe**: send RIGHT (action 3). If movement occurs → direction restriction NOT real → use c9-13 bypass for entity2. If blocked → direction restriction confirmed → redesign required.
+3. Based on probe result, execute corrected phase 3-4 or abort for redesign.
 
 **`play.py --auto` verify_start check**: after first action (RIGHT), script confirms block at rows 40-41 cols 34-38.
 
@@ -1091,6 +1098,49 @@ Timer budget at entity2 entry: if B resets (42) → 42-20=22 remaining at WIN (c
 2. Does 11-ring B = FULL TIMER RESET?
 3. Does WIN fire before timer=0 restart at step 51 (timer hits exactly 0)?
 
+### @locus log Analysis — Post-Summary Findings (2026-05-18)
+
+**Source**: session.log frame[0]-[5] read during session 12 @locus log command. These findings were NOT available when the 51-step route was designed.
+
+**Frame[1] timer confirmation (step 17 frame)**:
+- r61: c13-20=3 (8 consumed), c21-54=11 (34 remaining). Timer at step 17 = 34 cols remaining.
+- 11-ring A at step 12 → FULL RESET to 42. Steps 13-17 = 5 steps × 2 cols = 10 consumed. But c13-20=3 = only 8 consumed (4 step-widths). Timer track row 61 offset: c13=leftmost = 8 consumed aligns with 4 post-reset steps before frame[0] at step 17. Confirms FULL RESET mechanics. ✓
+
+**B-ring structure confirmed from log frames**:
+- r50: c39-58=3 (corridor valid, B-probe approach clear)
+- r51: c39=3, c40-42=11 (B-ring row 1), c43-58=3
+- r52: c40=11, c41=3, c42=11 (B-ring row 2, cross-pattern)
+- r53: (not directly read but ring spans rows 51-53). B-ring cols 40-42.
+- Corridor at rows 50-54 is wide (c39-58=3). B-probe at rows 50-51 c39-43 is accessible.
+
+**Far-right corridor narrowing (new)**:
+- rows 15-34: c49-58=3 (10-col wide far-right track)
+- rows 35-39: c49-53=3 only (c44-48=void). Block at c44-48 rows 40-41 CANNOT go UP to rows 35-36 (c44-48 is void at rows 35-39).
+- rows 40-49: c44-58=3 (15-col section; includes c44-48)
+- rows 50-54: c39-58=3 (20-col section)
+- Cross at rows 46-48 c50-52 sits within c44-58 section. Block at rows 45-46 c49-53 is valid for cross collection.
+
+**A-wall alignment — geometry flaw in 51-step route (CRITICAL)**:
+- A-wall spawns at rows 16-18, cols **15-17** (3 cols). Ring center is c15-17.
+- Block occupies 5 cols. Left-track block at c14-18 = cols 14,15,16,17,18.
+- DOWN from rows 10-11 c14-18: destination rows 15-16 c14-18. Destination row 16 includes c15-17 (wall cells). → **BLOCKED**.
+- This is Flaw 2 of the 51-step route: Phase 4 (steps 32-51) requires descending through c14-18 to reach entity2, but the A-wall blocks this re-entry from rows 10-11.
+- **c9-13 bypass**: Block at c9-13 (cols 9,10,11,12,13). No overlap with wall c15-17. DOWN from rows 10-11 c9-13 → rows 15-16 c9-13 is VALID (no wall cells in destination). Block continues DOWN to rows 20-21 c9-13 (discrete jump past wall). From rows 20-21 c9-13, RIGHT → c14-18 is physically valid (corridor c9-23=3 at rows 20-24). But RIGHT at state 1 = direction restriction applies (see Flaw 1).
+
+**Direction restriction at state 1 (Flaw 1 of 51-step route)**:
+- Session 10 log (analyzed during session 11): after cross collection (state 0→1 at step 32), a RIGHT (action 3) step at rows 35-36 c49-53 produced no movement. This was interpreted as direction restriction at state 1.
+- **Alternative explanation**: c49-53 at rows 35-36... actually, the far-right track is c49-53 only at rows 35-39. Block at rows 35-36 c49-53 going RIGHT → c54-58. Is c54-58 valid at rows 35-36? Needs verification. The blocked RIGHT may have been a corridor void collision, not a state restriction.
+- **Impact on 51-step route**: Step 31 (RIGHT, action 3) fires at rows 50-51 c39-43 with entity1 at state 1. If direction restriction is real, step 31 is BLOCKED (timer tick, no movement). If it was a void collision in session 10, RIGHT should work at rows 50-51 where c44-58=3 is valid.
+- **Validation protocol for session 13**: After cross collection (state 1), test RIGHT from rows 45-46 c49-53. Valid corridor extends to c54-58 at that row range (rows 40-49 c44-58). If block moves → direction restriction does NOT exist for RIGHT. If blocked → direction restriction confirmed.
+
+**51-step route summary — TWO FATAL FLAWS**:
+1. **Flaw 1 (step 31)**: RIGHT (action 3) at state 1 = potentially blocked. If direction restriction is real, B-probe EXIT is impossible.
+2. **Flaw 2 (phase 4 entity2 approach)**: DOWN from rows 10-11 c14-18 hits A-wall at rows 16-18 c15-17. Block at c14-18 includes c15-17 → BLOCKED. Phase 4 as written is geometrically impossible post-A-collection.
+
+**Both flaws depend on the same critical unknown**: if the state-1 direction restriction does NOT apply to RIGHT (session 10 evidence was void collision), then c9-13 bypass becomes the fix — but still requires RIGHT at rows 20-21 c9-13→c14-18 at state 1. If restriction IS real, fundamentally different route design required (cross before A? multi-cycle? no-B route?).
+
+**Session 13 recommended first action**: Do NOT execute 51-step route blindly. Insert RIGHT-probe step immediately after cross collection (step 27) to validate direction restriction before committing to B-probe phase.
+
 ---
 
 @LAT50LON30 | created:1778889600 | updated:1778889600 | relates:anchored_by>@LAT0LON0,writes_to>@LAT60LON20
@@ -1121,10 +1171,10 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779321600 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10
+@LAT60LON20 | created:1778889600 | updated:1779321600 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10
 [ew]
 conf:255
-rev:6
+rev:7
 sal:1
 touched:1779321600
 [/ew]
@@ -1438,7 +1488,43 @@ contradiction_flag:false
 source_count:3
 [/lp]
 
-**Projection: 11-ring B (rows 51-53, cols 40-42) likely causes a FULL TIMER RESET, same as 11-ring A.** Both rings are the same entity type ("11-ring" power-up), same visual pattern, same game mechanic description. Session 12 confirmed A = full reset to 42 cols (see @BELIEF:LAT30LON0). By entity-type generalization, B should behave identically. If confirmed, B-collection in the 51-step session 13 route (step 30) resets timer to 42 at rows 50-51 c39-43, enabling the 20-step phase 4 to reach entity2 with timer=2 remaining (comfortable margin). If B = "+15 additive" or some other mechanic, the session 13 route may fail at phase 4. Unvalidated — requires session 13 B-probe execution.
+**Projection: 11-ring B (rows 51-53, cols 40-42) likely causes a FULL TIMER RESET, same as 11-ring A.** Both rings are the same entity type ("11-ring" power-up), same visual pattern, same game mechanic description. Session 12 confirmed A = full reset to 42 cols (see @BELIEF:LAT30LON0). By entity-type generalization, B should behave identically. If confirmed, B-collection in the 51-step session 13 route (step 30) resets timer to 42 at rows 50-51 c39-43, enabling the 20-step phase 4 to reach entity2 with timer=2 remaining (comfortable margin). If B = "+15 additive" or some other mechanic, the session 13 route may fail at phase 4. Unvalidated — requires session 13 B-probe execution. **ADDITIONAL RISK (session 12 log analysis)**: B-probe exit (step 31 RIGHT) fires at entity1 state 1. If direction restriction at state 1 is real, B-probe cannot be exited via RIGHT → B collection remains unvalidated regardless of reset type. The B reset projection is contingent on direction restriction being resolved. See @LAT-160LON10 "Post-Summary Findings".
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-18, session 12 @locus log)
+
+Walk parameters: 100 walks × length 20. Source: @LAT-160LON10 "Post-Summary Findings" (session 12 log frame analysis). High-sal pull: @LAT-160LON10, @LAT-140LON10, @LAT20LON-30. Two new confirmed beliefs written (LAT10LON0, LAT10LON10). @LAT-140LON10 confidence revised downward. @BELIEF:LAT20LON10 updated with direction restriction risk.
+
+---
+
+@BELIEF:LAT10LON0 | created:1779321600 | updated:1779321600 | relates:extracted_from>@LAT-160LON10,related_to>@BELIEF:LAT50LON0,related_to>@BELIEF:LAT80LON-10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT10LON0
+confidence:220
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**A-wall (rows 16-18) occupies only cols 15-17 (3 cols), NOT the full c14-18 left-track width.** After 11-ring A collection, the wall spawns at the ring's center cols c15-17. The left track is c14-18 (5 cols). Block at c14-18 going DOWN from rows 10-11: destination row 16 includes c15-17 (wall cells) → BLOCKED. **c9-13 bypass**: block shifted LEFT to c9-13 (5 cols: 9,10,11,12,13). No overlap with wall c15-17. DOWN from rows 10-11 c9-13 → rows 20-21 c9-13 (discrete 5-row jump clears wall rows 16-18). From rows 20-21 c9-13, RIGHT → c14-18 is corridor-valid (c9-23=3 at rows 20-24) and enters left track above entity2. This bypass is geometrically correct; its feasibility depends on whether RIGHT is available at entity1 state 1. See @BELIEF:LAT10LON10.
+
+---
+
+@BELIEF:LAT10LON10 | created:1779321600 | updated:1779321600 | relates:extracted_from>@LAT-160LON10,related_to>@BELIEF:LAT70LON0,contained_by>@LAT60LON20
+[lp]
+centroid:LAT10LON10
+confidence:140
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**UNRESOLVED: RIGHT (action 3) may be blocked when entity1 is at state 1 (cross collected).** Session 10 evidence: after cross collection (state 0→1 at step 32), a RIGHT step at rows 35-36 c49-53 produced no movement (DIFF=4, timer-only). This was recorded as "direction restriction at state 1." Alternative explanation: at rows 35-36, far-right track is c49-53 (10-col section); RIGHT from c49-53 → c54-58 may be void at rows 35-36 (track narrows to c49-53 at rows 35-39 = c54-58 is void). The session 10 block may have simply hit a corridor wall, not a state-based restriction. **This is the single most critical unknown for any session 13 route**: if RIGHT is blocked at state 1, both the B-probe exit (step 31) and the c9-13 bypass RIGHT step (rows 20-21 c9-13→c14-18) are impossible. If RIGHT is NOT restricted by state, both work. Validate in session 13 by probing RIGHT from a corridor-valid position after cross collection (e.g., rows 45-46 c49-53 → c54-58 within c44-58=3 at rows 40-49). See @LAT-160LON10.
 
 ---
 

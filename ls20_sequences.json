@@ -11,8 +11,8 @@
     },
     {
       "level": 2,
-      "description": "HYPOTHESIS (session 13) — 51-step route. 11-ring A FULL TIMER RESET confirmed. Cross collection (state 0->1) at step 27. 11-ring B probe at steps 28-30. Entity2 entry at step 51, state=1.",
-      "note": "Session 12 key findings: (1) 11-ring A = FULL TIMER RESET to 42 cols (not +15 additive). (2) Corridor isolation at rows 15-16 confirmed — void gap c39-43 blocks RIGHT from center-right track. Three unknowns: B collectability at 1/3 overlap, B reset type, WIN-before-timer-0 at step 51. See @LAT-160LON10.",
+      "description": "HYPOTHESIS (session 13) — 51-step route. TWO FATAL FLAWS DISCOVERED — DO NOT EXECUTE BLINDLY. See note.",
+      "note": "FLAWS (session 12 @locus log analysis): Flaw 1 — Step 31 (RIGHT) fires at entity1 state 1; direction restriction may block it (session 10 evidence; unvalidated vs void collision). Flaw 2 — Phase 4 DOWN from rows 10-11 c14-18 hits A-wall at c15-17; block at c14-18 includes c15-17 = BLOCKED. c9-13 bypass exists geometrically but also requires RIGHT at state 1. SESSION 13 PROTOCOL: execute steps 1-27 (A-reset + cross), then PROBE RIGHT — if movement occurs direction restriction is NOT real and c9-13 bypass works; if blocked redesign required. See @LAT-160LON10 Post-Summary Findings and @LAT-140LON10.",
       "sequence": [3,0,0,0,0,0,0,2,2,2,2,1,0,3,3,3,3,3,3,3,1,1,1,1,1,1,1,1,2,2,3,0,0,0,0,0,0,0,0,2,2,2,2,2,2,1,1,1,1,1,1],
       "verify_start": {
         "note": "After first action (RIGHT), block should be at rows 40-41 cols 34-38.",
