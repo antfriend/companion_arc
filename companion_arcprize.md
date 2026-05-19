@@ -304,7 +304,7 @@ What LOCUS does between sessions — background activity that keeps the competit
 @LAT-10LON10 | created:1747180800 | updated:1779321600 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:175
-rev:12
+rev:13
 sal:8
 touched:1779321600
 [/ew]
@@ -348,7 +348,11 @@ touched:1779321600
 - **11-ring A = FULL TIMER RESET** (session 12 timer trace): at seq=10 (LEFT, step 26) timer was c13-34=3 (22 consumed). At seq=11 (first DOWN, step 27) timer became c13-54=11 (full 42 = RESET). "+15 additive" prior belief is RETIRED.
 - **Corridor isolation at rows 15-16 CONFIRMED**: c29-38 (center-right) and c44-53 (far-right) are SEPARATED by void gap c39-43 at rows 15-16. RIGHT×3 from center-right at rows 15-16 is BLOCKED. Wide connector (rows 10-14) is the only cross-track path.
 
-**Session 13 plan**: execute 51-step hypothesis: RIGHT+UP×6+LEFT×4+DOWN[A-reset]+UP+RIGHT×7+DOWN×7[cross,state1]+DOWN+LEFT×2[B-probe]+RIGHT+UP×8+LEFT×6+DOWN×6[entity2 WIN]. See @LAT-160LON10 for full route table.
+**Session 12 @locus log — TWO FATAL FLAWS in 51-step route** (see @LAT-160LON10 "Post-Summary Findings", @BELIEF:LAT10LON0, @BELIEF:LAT10LON10):
+- **Flaw 1 (step 31)**: RIGHT at entity1 state 1 may be blocked (direction restriction — session 10 evidence, unvalidated vs void collision).
+- **Flaw 2 (phase 4)**: DOWN from rows 10-11 c14-18 hits A-wall at rows 16-18 c15-17. Block at c14-18 overlaps wall → BLOCKED. c9-13 bypass valid geometrically but requires RIGHT at state 1.
+
+**Session 13 plan — PROBE-FIRST PROTOCOL**: DO NOT execute 51-step sequence blindly. Steps 1-27 (A-reset + cross, state 0→1, timer=12), then probe RIGHT (action 3) from rows 45-46 c49-53. If movement → direction restriction not real → execute c9-13 bypass route. If blocked → redesign. See @LAT-140LON10 for corrected autopilot record.
 
 **Session 8 — level 1 key discoveries**:
 - **Cluster position varies per fresh game**: session 7 cluster at rows 47–49; session 8 cluster at rows 31–33. Cols 20–22 stable. Must scan first frame to locate cluster.
