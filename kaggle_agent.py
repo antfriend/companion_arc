@@ -37,9 +37,19 @@ _MODEL = "claude-sonnet-4-6"
 # Companion loader
 # ---------------------------------------------------------------------------
 
-def load_companion(url: str = COMPANION_URL, timeout: int = 30) -> str:
-    with urllib.request.urlopen(url, timeout=timeout) as r:
-        return r.read().decode("utf-8")
+def load_companion(source: str = COMPANION_URL, timeout: int = 30) -> str:
+    """Load companion_arcprize.md from a local path or a URL.
+
+    Local path (Kaggle Dataset):
+        load_companion("/kaggle/input/<dataset-name>/companion_arcprize.md")
+    URL (GitHub raw, internet must be on):
+        load_companion()  # uses COMPANION_URL default
+    """
+    if source.startswith("http://") or source.startswith("https://"):
+        with urllib.request.urlopen(source, timeout=timeout) as r:
+            return r.read().decode("utf-8")
+    with open(source, encoding="utf-8") as f:
+        return f.read()
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +162,8 @@ def parse_action(text: str, n_actions: int) -> int | None:
 # ---------------------------------------------------------------------------
 
 def _format_state(step: int, actions: list, obs, prev_frames: list) -> str:
-    lines = [f"@LOCUS — game step {step}"]
+    lines = ["@LOCUS what should I do next?", ""]
+    lines.append(f"step: {step}")
     if obs is not None:
         lines += [
             f"obs_state: {obs.state}",
@@ -166,7 +177,7 @@ def _format_state(step: int, actions: list, obs, prev_frames: list) -> str:
         for i, grid in enumerate(prev_frames):
             lines.append(f"frame[{i}]:")
             lines.append(compact_grid_str(grid))
-    lines += ["", "Which action should I take? Respond with only the action number."]
+    lines += ["", "Respond with only the action number."]
     return "\n".join(lines)
 
 
@@ -268,7 +279,7 @@ def run_training_attempt(
         # One retry with explicit instruction if parse failed
         if action_idx is None:
             retry = _locus(
-                "Please respond with only the action number (e.g. 0).",
+                "@LOCUS please respond with only the action number (e.g. 0).",
                 f"ACTION RETRY step={step}",
             )
             action_idx = parse_action(retry, len(actions))
@@ -356,12 +367,18 @@ def run_training_attempt(
 # ---------------------------------------------------------------------------
 
 def setup(
-    companion_url: str = COMPANION_URL,
+    companion_source: str = COMPANION_URL,
     model: str = _MODEL,
 ) -> tuple[anthropic.Anthropic, str]:
     """
-    Validate env vars, fetch companion file, return (client, companion_text).
+    Validate env vars, load companion file, return (client, companion_text).
     Call once at the top of your notebook.
+
+    companion_source can be:
+      - A local path  (preferred on Kaggle — upload as a Dataset):
+            "/kaggle/input/<dataset-name>/companion_arcprize.md"
+      - A GitHub URL  (requires internet enabled in notebook settings):
+            "https://raw.githubusercontent.com/antfriend/companion_arc/main/companion_arcprize.md"
 
     In Kaggle: add ANTHROPIC_API_KEY and ARC_API_KEY under
     notebook Settings → Add-ons → Secrets, then inject them:
@@ -381,8 +398,8 @@ def setup(
                 f"{var} not set. In Kaggle: add it under notebook Settings → Secrets."
             )
 
-    print(f"[setup] Fetching companion from {companion_url} ...")
-    companion_text = load_companion(companion_url)
+    print(f"[setup] Loading companion from {companion_source} ...")
+    companion_text = load_companion(companion_source)
     print(f"[setup] Loaded {len(companion_text):,} chars")
 
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
