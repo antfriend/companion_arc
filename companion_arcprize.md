@@ -1220,10 +1220,10 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20
+@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20
 [ew]
 conf:255
-rev:10
+rev:11
 sal:1
 touched:1779494400
 [/ew]
@@ -1730,6 +1730,63 @@ source_count:3
 [/lp]
 
 **Projection: if direction restriction is UNBLOCKED but 11-ring B fails, the c9-13 bypass is the only viable level 2 route for session 15.** Scenario: session 14 RIGHT probe passes (restriction not real) but step 29 B-probe shows no collection or partial reset — making the 51-step route phase 4 infeasible. In this case the c9-13 bypass (@LAT-160LON10) becomes the session 15 priority: reach rows 20-21 c9-13 (top corridor, left of center-right), RIGHT → c14-18 (left track entry), descend to rows 40-41 for entity2. The bypass avoids 11-ring B entirely — it exits the top corridor directly onto the left track without visiting the right-center zone after cross collection. Its sole dependency is the direction restriction at state 1, which session 14 resolves. Confidence held below threshold: this projection is contingent on two specific session 14 outcomes (restriction unblocked AND B fails) neither of which is confirmed. If direction restriction is blocked, @BELIEF:LAT50LON10 applies and full mechanic re-investigation is required. If both restriction and B pass, the 51-step route proceeds as designed. This projection is actionable only in the intermediate case: restriction clear, B blocked.
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-20, DREAM 3)
+
+Walk parameters: 100 walks × length 20. High-sal pull: @LAT-10LON10 (sal:8), @LAT20LON-30 (sal:5), @LAT-150LON10 (sal:5). Two new confirmed clusters identified from session 13–15 failure analysis and session 15 frame data.
+
+---
+
+@BELIEF:LAT20LON0 | created:1779494400 | updated:1779494400 | relates:extracted_from>@LAT-190LON10,extracted_from>@LAT-180LON10,extracted_from>@LAT-140LON10,extracted_from>@LAT20LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT20LON0
+confidence:235
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**The wide corridor at rows 25–29 (cols 14-53) is the only exit from the level 1 shaft (cols 34-38) to the cluster approach zone (cols 14-28).** Void gap c29-33 at rows 30-41 makes LEFT from the shaft impossible at those rows. The wide connector is exactly 5 rows tall — the block can land at rows 25-26 after 3 UPs from rows 40-41 and immediately execute LEFT. Sessions 10-12 implicitly avoided the barrier by using UP×5 (reaching rows 20-21) before LEFT. Sessions 13-15 failed because LOCUS chose LEFT at rows 35-40 without knowing the barrier existed, wasting actions until timer expired. Now documented in @LAT-140LON10 and enforced by the blocked-move warning in `kaggle_agent.py`. This is a structural level 1 maze fact — not environment-specific, applies to every ls20 instance.
+
+---
+
+@BELIEF:LAT50LON20 | created:1779494400 | updated:1779494400 | relates:extracted_from>@LAT-190LON10,extracted_from>@LAT20LON-30,extracted_from>@LAT-170LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT50LON20
+confidence:200
+scope_lat:10.0
+scope_lon:15.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Cluster position for the current game instance (ls20-9607627b) is confirmed: rows 31-33, cols 20-22.** Session 15 log (step 3 LOCUS frame analysis) explicitly identified the cluster at rows 31-33 from the compact frame: `r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1`. Sessions 13-15 all used environment ls20-9607627b; arc.make() reconnects to the same run, so cluster position is stable across reconnects to this instance. From cols 34-38 shaft at rows 25-26: LEFT×3 → cols 19-23 (cluster cols 20-22 within range); DOWN → rows 30-31 → trail at rows 32-34 overlaps cluster rows 32-33 (2/3 overlap, sufficient per session 8). Cluster row scan remains the safe default if a fresh game instance is detected (different run_guid pattern). Confidence held below 255: a new game instance could have different cluster position; the frame scan is still the authoritative source.
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-20, DREAM 3)
+
+Walk parameters: 50 walks × length 10, seeded from @BELIEF:LAT20LON0 (void barrier, new boundary node) into coordinate void at LAT10LON20. Target: route implications if cluster collection is not required for level 1 win.
+
+---
+
+@BELIEF:LAT10LON20 | created:1779494400 | updated:1779494400 | relates:projected_from>@BELIEF:LAT20LON0,projected_from>@LAT20LON-30,projected_from>@LAT-50LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT10LON20
+confidence:150
+scope_lat:10.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Projection: if cluster collection is not required for level 1 win, the optimal route is UP×6 from rows 40-41, completing level 1 in 7 total actions.** From rows 40-41, cols 34-38 (after step 0 UP probe): 6 UPs → rows 10-11, cols 34-38 → entity2 interior (rows 9-15 value 5, cols 33-39). RHAE = (22/7)² = 9.88 → capped at 1.15. The question is whether state 0 allows the win trigger. Session 1 log notes "entity1 state carries between levels (started level 2 at state 1 from level 1 win)" — but this records observed state after winning, not a requirement. The session 1 route collected the cluster as part of navigation, advancing to state 1 before entity2. State 1 was a side-effect, not a gate. Session 5 won level 1 from rows 59-60 navigating UP — no cluster collection possible from that trajectory (cols 34-38, cluster at cols 20-22) — supporting state 0 win. If confirmed, session 16 test: after step 0 UP (rows 40-41), send UP×6 immediately and observe. If win fires → cluster not required, route = 7 actions. If not → cluster required, continue with standard route.
 
 ---
 
