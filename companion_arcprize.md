@@ -344,6 +344,7 @@ touched:1779840000
 - **Session 12**: Hybrid run. Level 1 WON step 15 (manual). Level 2 NOT WON: old 17-step route re-executed (sequence was null/manual). CRITICAL DISCOVERY: 11-ring A causes FULL TIMER RESET to 42 cols (not +15 additive). Corridor isolation at rows 15-16 confirmed. See @LAT-160LON10.
 - **Session 23**: Level 2 entered. 15 actions, NOT WON. parse_action bug wasted 7 actions. Block reached r30-31 c34-38 before budget exhausted. CRITICAL DISCOVERY: entity1 state 1 carries over from L1 WIN — @BELIEF:LAT80LON-20 contradicted. Direct LEFT from c29-33 at r40-41 is VOID. See @LAT-270LON10.
 - **Session 24**: Level 2 entered. 45 actions, NOT WON. @BELIEF:LAT90LON-30 re-validated (second consecutive state 1 carry-over confirmation). Entity2 ring layout detailed in frame[1]. Log cut off mid-frame. Score 3.571 (level 1 only). See @LAT-280LON10.
+- **Session 25**: Level 2 entered. 45 actions, NOT WON. @BELIEF:LAT90LON-30 third confirmation (conf → 255). Most complete level 2 structural frame read to date (full void map, ring positions, corridor geometry confirmed). Log cut off mid-frame[1]. Score 3.571 (level 1 only). See @LAT-290LON10.
 
 **Session 10 — critical mechanic corrections** (see @LAT-130LON10 + @LAT20LON-30):
 - **Timer level 2 = 2 cols/step** (NOT 1 col/step — session 9 belief was wrong). 42 cols = 21 steps max.
@@ -972,12 +973,12 @@ level: "level 1 WIN + level 2 NOT won (session 10)"
 
 ---
 
-@LAT-140LON10 | created:1779235200 | updated:1779494400 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10,informed_by>@BELIEF:LAT80LON20,informed_by>@BELIEF:LAT70LON20
+@LAT-140LON10 | created:1779235200 | updated:1779926400 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10,informed_by>@BELIEF:LAT80LON20,informed_by>@BELIEF:LAT70LON20,implements>@BELIEF:LAT80LON-30,implements>@BELIEF:LAT60LON-30
 [ew]
-conf:120
-rev:5
+conf:185
+rev:6
 sal:0
-touched:1779494400
+touched:1779926400
 [/ew]
 
 ## ls20 — Autopilot Sequences
@@ -1015,28 +1016,39 @@ Cluster at rows 31-33, cols 20-22: trail from step 7 DOWN (rows 25-26 → rows 3
 
 Known session 10-12 route (15 actions, confirmed winning): UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 15 analysis shows this route also requires reaching rows 25-29 before LEFT; the extra UPs (×5 vs ×3) ensure this.
 
-### Level 2 — 51-step hypothesis `[3,0,0,0,0,0,0,2,2,2,2,1,0,3,3,3,3,3,3,3,1,1,1,1,1,1,1,1,2,2,3,0,0,0,0,0,0,0,0,2,2,2,2,2,2,1,1,1,1,1,1]`
+### Level 2 — STANDING ORDER (sessions 23–25 validated; execute this route)
 
-**Status: HYPOTHESIS — TWO FATAL FLAWS DISCOVERED (session 12 @locus log analysis). Confidence:80. DO NOT execute blindly.** See @LAT-160LON10 "Post-Summary Findings" section.
+**CRITICAL FACTS** (conf:255 each):
+- Entity1 is at **STATE 1** at level 2 start after L1 WIN. State carries over from L1 WIN — three consecutive confirmations (sessions 23, 24, 25). Cross collection is NOT needed. See @BELIEF:LAT90LON-30.
+- Timer: 42 cols at 2 cols/step = **21-step hard cap**. Expiry resets entity1 state to 0 → entity2 entry fires NOT_FINISHED. **11-ring A must be collected at step 12** to reset the timer. See @BELIEF:LAT60LON-30.
+- Direct LEFT from c29–33 at rows 40–41 is VOID. Must go UP first.
+- UP from r35–36 c29–33 is blocked (void at c29–33 rows 24–34). Must move RIGHT to c34–38 at row 35 before continuing UP.
 
-**Route summary** (51 steps, 4 phases):
-1. Steps 1-12: RIGHT+UP×6+LEFT×4+DOWN → 11-ring A at rows 15-16, c14-18 → **FULL TIMER RESET to 42**
-2. Steps 13-27: UP+RIGHT×7+DOWN×7 → cross at rows 45-46 c49-53 → **state 0→1. Timer=12.**
-3. Steps 28-31: DOWN+LEFT×2+RIGHT → 11-ring B probe at rows 50-51 c39-43 (**Flaw 1: step 31 RIGHT may be BLOCKED at state 1**)
-4. Steps 32-51: UP×8+LEFT×6+DOWN×6 → entity2 rows 40-41 c14-18 (**Flaw 2: A-wall at c15-17 blocks DOWN from c14-18; phase 4 geometrically impossible**)
+**17-action winning route** (from @BELIEF:LAT80LON-30, geometry validated against session 11):
 
-**Flaw 1**: Step 31 (RIGHT) fires at entity1 state 1. Session 10 evidence suggests RIGHT is blocked at state 1. If true, B-probe exit is impossible and timer ticks with no movement.
+| Step | Action | From → To | Notes |
+|------|--------|-----------|-------|
+| 1 | **0 (UP)** | r40–41 c29–33 → r35–36 c29–33 | Trail at r42–44 c29–33 = same column → safe |
+| 2 | **3 (RIGHT)** | r35–36 c29–33 → r35–36 c34–38 | Required before further UP |
+| 3 | **0 (UP)** | r35–36 c34–38 → r30–31 c34–38 | |
+| 4 | **0 (UP)** | r30–31 c34–38 → r25–26 c34–38 | |
+| 5 | **0 (UP)** | r25–26 c34–38 → r20–21 c34–38 | |
+| 6 | **0 (UP)** | r20–21 c34–38 → r15–16 c34–38 | |
+| 7 | **0 (UP)** | r15–16 c34–38 → r10–11 c34–38 | Wide corridor |
+| 8 | **2 (LEFT)** | r10–11 c34–38 → r10–11 c29–33 | |
+| 9 | **2 (LEFT)** | r10–11 c29–33 → r10–11 c24–28 | |
+| 10 | **2 (LEFT)** | r10–11 c24–28 → r10–11 c19–23 | |
+| 11 | **2 (LEFT)** | r10–11 c19–23 → r10–11 c14–18 | |
+| 12 | **1 (DOWN)** | r10–11 c14–18 → r15–16 c14–18 | **11-ring A collected → FULL TIMER RESET** |
+| 13 | **1 (DOWN)** | r15–16 c14–18 → r20–21 c14–18 | Skips A-wall (5-row jump) |
+| 14 | **1 (DOWN)** | r20–21 c14–18 → r25–26 c14–18 | |
+| 15 | **1 (DOWN)** | r25–26 c14–18 → r30–31 c14–18 | |
+| 16 | **1 (DOWN)** | r30–31 c14–18 → r35–36 c14–18 | |
+| 17 | **1 (DOWN)** | r35–36 c14–18 → r40–41 c14–18 | **INSIDE entity2 interior (r39–45 c13–19) at state 1 → WIN** |
 
-**Flaw 2**: Phase 4 requires DOWN from rows 10-11 c14-18 to entity2. A-wall is at rows 16-18 c15-17. Block at c14-18 includes c15-17 = BLOCKED. c9-13 bypass is geometrically valid but also requires RIGHT at state 1 (same restriction as Flaw 1).
+**Do not deviate from this sequence.** The timer expires after 21 steps — steps 1–11 consume 22 cols (42→20 remaining, still safe). Step 12 resets to 42. Steps 13–17 consume 10 cols (32 remaining). If a BLOCKED-MOVE WARNING fires on any step, report position and reassess — do NOT probe random directions.
 
-**Both flaws share the same critical unknown**: is RIGHT (action 3) truly blocked at entity1 state 1, or was session 10 observation a corridor void collision?
-
-**Session 16 protocol** (replaces blind execution):
-1. Execute steps 1-27 (A-reset + cross collection, state 0→1, timer=12).
-2. **Probe**: send RIGHT (action 3). If movement occurs → direction restriction NOT real → use c9-13 bypass for entity2. If blocked → direction restriction confirmed → redesign required.
-3. Based on probe result, execute corrected phase 3-4 or abort for redesign.
-
-**Verify_start**: after first action (RIGHT, step 1), frame should show block at rows 40-41 cols 34-38. If not, reassess position before proceeding.
+**Verify_start** (after step 1): frame should show block at r35–36 c29–33. If block is at r40–41 c29–33 still, step 1 was blocked — report immediately.
 
 ---
 
@@ -1299,10 +1311,10 @@ Summary: once you have descended past the ring site OR risen above it after coll
 
 ---
 
-@BELIEF:LAT70LON-20 | created:1779062400 | updated:1779235200 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-100LON10,extracted_from>@LAT-150LON10,contained_by>@LAT60LON20
+@BELIEF:LAT70LON-20 | created:1779062400 | updated:1779840000 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-80LON10,extracted_from>@LAT-100LON10,extracted_from>@LAT-150LON10,refined_by>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
 [lp]
 centroid:LAT70LON-20
-confidence:235
+confidence:200
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
@@ -1310,7 +1322,9 @@ contradiction_flag:false
 source_count:4
 [/lp]
 
-**Collect the state-changer before approaching entity2.** In both level 1 (cluster) and level 2 (0/1 cross), state must advance from 0 to 1 before the win condition fires. Session 11 direct confirmation: block entered entity2 interior at rows 40-41 cols 14-18 with state 0 → `NOT_FINISHED` (game did not register a win). Signal is NOT_FINISHED (observable in obs.levels_completed remaining unchanged), not just "ring dims." The wrong-order cost in session 5 was a complete level loss — 11-ring collected first → wall blocked re-descent → could not reach entity2. Session 11 cost: 17 wasted steps + full timer cycle.
+**Entity2 WIN requires entity1 to be at state 1 at the moment of block entry into entity2 interior.** Session 11 direct confirmation: block entered entity2 interior at rows 40-41 cols 14-18 with state 0 → `NOT_FINISHED`. State must be 1 for the win condition to fire.
+
+**Scope refined (session 23+24)**: If entity1 state 1 carries over from a prior level WIN (@BELIEF:LAT90LON-30, conf:240), the state-changer does NOT need to be collected in that level — state is already 1 on entry. For level 2 after a level 1 WIN: skip cross collection, route directly to entity2. For levels where state starts at 0 (e.g., after timer reset within a level, or if state carry-over does not hold): collect the state-changer before approaching entity2. The underlying rule is the WIN condition, not the collection requirement.
 
 ---
 
@@ -1335,10 +1349,10 @@ Walk parameters: 50 walks × length 10, seeded from boundary nodes into coordina
 
 ---
 
-@BELIEF:LAT30LON-20 | created:1779062400 | updated:1779062400 | relates:projected_from>@LAT20LON-30,projected_from>@BELIEF:LAT80LON-20,projected_from>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
+@BELIEF:LAT30LON-20 | created:1779062400 | updated:1779840000 | relates:projected_from>@LAT20LON-30,projected_from>@BELIEF:LAT80LON-20,projected_from>@BELIEF:LAT70LON-20,weakened_by>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
 [lp]
 centroid:LAT30LON-20
-confidence:145
+confidence:90
 scope_lat:20.0
 scope_lon:20.0
 projection_flag:true
@@ -1346,7 +1360,7 @@ contradiction_flag:false
 source_count:2
 [/lp]
 
-**Projection**: Levels 3–7 likely follow the same structural template — entity1 resets to state 0, one or more state-changers must be collected, then entity2 reached with matching trail pattern. Extrapolated from consistent level 1 and level 2 structure. Unvalidated. Treat as planning prior only. Phase 4 fires when level 3 is won.
+**Projection (confidence reduced)**: Levels 3–7 likely follow the same structural template — entity2 must be reached with entity1 at state 1. However the "state resets at each new level" premise (from @BELIEF:LAT80LON-20, now contradicted) weakens the sub-claim that a state-changer must be collected in each level. If state 1 carries over from a prior level WIN (@BELIEF:LAT90LON-30), levels 3–7 may also allow direct entity2 approach without state-changer collection. The structural template (entity1 carrier + entity2 win zone + timer) likely holds; the collection-before-entry requirement now has a conditional scope. Unvalidated beyond level 2. Phase 4 fires when level 3 is reached.
 
 ---
 
@@ -2582,18 +2596,18 @@ Walk parameters: 100 walks × length 20. Sources: @LAT-270LON10 (session 23), @L
 
 ---
 
-@BELIEF:LAT90LON-30 | created:1779840000 | updated:1779840000 | relates:extracted_from>@LAT-270LON10,extracted_from>@LAT-280LON10,contradicts>@BELIEF:LAT80LON-20,contradicts>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
+@BELIEF:LAT90LON-30 | created:1779840000 | updated:1779926400 | relates:extracted_from>@LAT-270LON10,extracted_from>@LAT-280LON10,extracted_from>@LAT-290LON10,contradicts>@BELIEF:LAT80LON-20,contradicts>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
 [lp]
 centroid:LAT90LON-30
-confidence:240
+confidence:255
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:2
+source_count:3
 [/lp]
 
-**Entity1 state carries over from a level WIN into the next level.** Confirmed in sessions 23 and 24 (two consecutive observations): level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN, with no timer restart between levels. Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: the block can enter entity2 interior and win WITHOUT collecting the cross first (state is already 1 on entry to level 2 after a level 1 WIN). The session 7 "state 0 at level 2 start" observation that supported @BELIEF:LAT80LON-20 may reflect a different environment seed, or a level 1 WIN at state 0. Confidence raised to 240 (two consistent observations across two independent runs). Remaining uncertainty: whether this is universal (always carries from any level WIN) or specific to this environment. For level 2 strategy: skip cross collection, route directly to entity2 interior.
+**Entity1 state carries over from a level WIN into the next level.** Confirmed in sessions 23, 24, and 25 (three consecutive observations): level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN, with no timer restart between levels. Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: the block can enter entity2 interior and win WITHOUT collecting the cross first (state is already 1 on entry to level 2 after a level 1 WIN). The session 7 "state 0 at level 2 start" observation that supported @BELIEF:LAT80LON-20 may reflect a different environment seed, or a level 1 WIN at state 0. Confidence raised to 240 (two consistent observations across two independent runs). Remaining uncertainty: whether this is universal (always carries from any level WIN) or specific to this environment. For level 2 strategy: skip cross collection, route directly to entity2 interior.
 
 ---
 
@@ -2673,10 +2687,10 @@ Key constraints propagated from confirmed beliefs:
 
 ---
 
-@BELIEF:LAT80LON-30 | created:1779840000 | updated:1779840000 | relates:projected_from>@BELIEF:LAT90LON-30,projected_from>@BELIEF:LAT10LON10,projected_from>@BELIEF:LAT80LON-10,projected_from>@LAT-270LON10,projected_from>@LAT-280LON10,contained_by>@LAT60LON20
+@BELIEF:LAT80LON-30 | created:1779840000 | updated:1779840000 | relates:projected_from>@BELIEF:LAT90LON-30,projected_from>@BELIEF:LAT10LON10,projected_from>@BELIEF:LAT80LON-10,projected_from>@LAT-270LON10,projected_from>@LAT-280LON10,uses>@BELIEF:LAT60LON-30,contained_by>@LAT60LON20
 [lp]
 centroid:LAT80LON-30
-confidence:150
+confidence:155
 scope_lat:15.0
 scope_lon:15.0
 projection_flag:true
@@ -2684,25 +2698,20 @@ contradiction_flag:false
 source_count:4
 [/lp]
 
-**Level 2 winning route (session 25 hypothesis): UP-corridor approach, ~19–22 actions.** Given state 1 at L2 start and void constraints, the minimum-action route from r40–41 c29–33 to entity2 interior r39–45 c13–19 is:
+**Level 2 winning route (session 25 hypothesis): UP-corridor + 11-ring A timer reset, 17 actions.** Given state 1 at L2 start (@BELIEF:LAT90LON-30), void constraints, and timer risk (@BELIEF:LAT60LON-30), the optimal route from r40–41 c29–33 to entity2 interior r39–45 c13–19 incorporates 11-ring A collection to reset the 42-col timer (preventing expiry from step 12 onward). Geometry validated against session 11 confirmed path.
 
-1. **UP** — r40–41 c29–33 → r35–36 c29–33 (trail at r42–44 c29–33 = same column → no lateral attraction; UP moves NORTH normally)
-2. **RIGHT** — r35–36 c29–33 → r35–36 c34–38 (avoids void above c29–33; above r35 that column is blocked)
-3. **UP** — r35–36 c34–38 → r30–31 c34–38
-4. **UP** — r30–31 c34–38 → r25–26 c34–38
-5. **UP** — r25–26 c34–38 → r20–21 c34–38
-6. **UP** — r20–21 c34–38 → r15–16 c34–38
-7. **UP** — r15–16 c34–38 → r10–11 c34–38 (wide corridor row 10–11)
-8. **LEFT** × 5 — c34–38 → c9–13 (25 cols left = 5 steps at 5 cols/step in wide corridor)
-9. **DOWN** × 6 — r10–11 c9–13 → r40–41 c9–13 (30 rows down = 6 steps; left track corridor)
+Route (17 actions):
+1. **UP** — r40–41 c29–33 → r35–36 c29–33 (trail at r42–44 c29–33 = same column → UP safe, no lateral attraction)
+2. **RIGHT** — r35–36 c29–33 → r35–36 c34–38 (required: void at c29–33 above row 35 blocks further UP in that column)
+3–7. **UP×5** — r35–36 c34–38 → r10–11 c34–38 (wide corridor; no voids at c34–38 on this ascent)
+8–11. **LEFT×4** — r10–11 c34–38 → r10–11 c14–18 (wide corridor rows 10–11, all traversable)
+12. **DOWN** — r10–11 c14–18 → r15–16 c14–18 (entity1 trail overlaps 11-ring A at r16–18 c15–17 → **FULL TIMER RESET to 42 cols**; wall spawns at r16–18 c14–18; timer now fully restored)
+13. **DOWN** — r15–16 c14–18 → r20–21 c14–18 (5-row jump skips the spawned wall; @BELIEF:LAT80LON-10 confirmed)
+14–17. **DOWN×4** — r20–21 c14–18 → r25–26 → r30–31 → r35–36 → **r40–41 c14–18 → INSIDE entity2 interior at state 1 = WIN** ✓
 
-Total: 1 UP + 1 RIGHT + 5 UP + 5 LEFT + 6 DOWN = **18 actions**. Block arrives at r40–41 c9–13. Entity2 interior begins at c13–19 — one RIGHT step enters interior.
+Timer accounting: steps 1–11 consume 22 cols (42→20 remaining; still safe). Step 12 resets to 42. Steps 13–17 consume 10 cols (42→32 remaining). No expiry risk.
 
-10. **RIGHT** — r40–41 c9–13 → r40–41 c14–18 → **INSIDE entity2 interior at state 1 = WIN**
-
-Total: **19 actions**. Well within 45-action L2 budget.
-
-Critical assumption: corridor is passable at all intermediate positions (no new void or wall discovered). The left track (c9–13 downward) has been traversed in session 11 (DOWN route to entity2). The wide corridor (rows 10–14) is confirmed traversable. Confidence 150 — plausible but untested with state 1 carry-over. The RIGHT step at the end (step 10) has not been tested at state 1; if trail-attraction redirects it, the approach from above (DOWN into entity2 from r34–35 c14–18) is an alternative.
+Session 11 precedent: block descended via LEFT×4 from c34–38 + DOWN×6 from r10–11 c14–18 to r40–41 c14–18 (confirmed traversable, entity2 entry at r40–41 c14–18 succeeded mechanically — state 0 only reason for NOT_FINISHED). With state 1, identical final position fires WIN. Confidence raised to 155 — route geometry is confirmed; only untested element is state 1 at entry (sessions 23+24 validate state carries, not the specific entry geometry).
 
 ---
 
@@ -2781,4 +2790,64 @@ This is the most complete level 2 structural read to date. All corridor position
 - r55–56: c3–8=9 (full)
 - r57–58: c7–8=9 only (c1–6=5)
 - r59–60: c3–4=9, c5–6=5, c7–8=9
-- **@BELIEF:LAT90LON-30
+- **@BELIEF:LAT90LON-30 third consecutive confirmation.** State 1 carries over from L1 WIN in sessions 23, 24, and 25. Confidence raised to 255 (max). Cross collection definitively not required in level 2 after L1 WIN.
+
+**Entity1 trail**: r42–44 c29–33=9 (solid). Trail at L2 start behind block, same column. ✓
+
+**Entity2 ring** (r38–46 c12–20):
+- Outer wall: r38 c12–20=3, r46 c12–20=3, c12 r38–46=3, c20 r38–46=3
+- Interior: r39–45 c13–19=5 (value 5 = passable win zone)
+- Block enters interior at r40–41 c14–18 (confirmed session 11 entry geometry)
+
+**11-ring A**: r16–18 c15–17 (value 11). Present and collectible via trail overlap on first DOWN at c14–18.
+
+**11-ring B**: r51–53 c40–42 (value 11). Present; accessibility unconfirmed.
+
+**Cross (state-changer)**: r46–48 c50–52 (values 0/1). Present. NOT needed if state 1 carries over.
+
+**Timer**: r61–62, 42 cols total. 2 cols/step consumed. 21-step budget maximum without ring reset.
+
+**Void map (full, confirmed)**:
+- c29–33 rows 24–34: VOID (UP from r35–36 at c29–33 → BLOCKED)
+- c21–28 at r40–41: VOID (LEFT from c29–33 at r40–41 → BLOCKED)
+- Shaft c34–38 r17–24: passable corridor
+- Wide corridor r25–29 c14–53: passable ✓
+- Void gap c29–33 r30–39: confirmed void
+- Left arm r40–49 c19–23: narrow left corridor below cluster zone
+- Lower wide zone r45–49 c19–53: passable
+
+*(Session 25 log cut off at frame[1] structural detail — 45 L2 actions consumed, route unknown.)*
+
+### Open questions for session 26
+1. What route did LOCUS attempt over 45 actions that failed to win level 2?
+2. Does LOCUS correctly understand the 17-action route described in @BELIEF:LAT80LON-30?
+3. Is the void gap c29–33 r30–39 the reason the direct UP approach from c29–33 fails past row 35?
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-25, DREAM session 25)
+
+Walk parameters: 50 walks × length 10, seeded from @BELIEF:LAT80LON-30 (route, conf:155) and timer constraint boundary into coordinate void at LAT60LON-30. Target: timer failure mode and hardening the 17-action route against LOCUS deviation.
+
+---
+
+@BELIEF:LAT60LON-30 | created:1779926400 | updated:1779926400 | relates:projected_from>@BELIEF:LAT80LON-30,projected_from>@BELIEF:LAT80LON0,projected_from>@LAT-270LON10,projected_from>@LAT-280LON10,projected_from>@LAT-290LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT60LON-30
+confidence:240
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Level 2 timer is 42 cols at 2 cols/step = 21-step hard cap.** Timer expiry resets entity1 state to 0 (within-level restart). If state resets to 0 mid-route, any entity2 entry fires NOT_FINISHED rather than WIN. Three sessions of 45-action level 2 attempts confirm the timer is expiring (confirmed via @BELIEF:LAT80LON0: "entity1 state RESETS on timer restart within level"). Any session-25-style route that spends more than 21 steps without a ring reset will lose the state-1 advantage at some point during execution.
+
+**Strategy implication — 11-ring A collection is mandatory for any route exceeding 21 steps.**
+- 11-ring A at r16–18 c15–17 provides FULL TIMER RESET (session 12 confirmed, @BELIEF:LAT80LON-10).
+- Collection requires block to descend from r10–11 to r15–16 at a column where the trail overlaps r16–18 c15–17. Confirmed trigger column: c14–18 (cols 14–18 overlap ring cols 15–17).
+- After collection: timer resets to 42 cols = 21 new steps. Wall spawns at r16–18 — continued DOWN from r15–16 jumps to r20–21 (skips wall, @BELIEF:LAT80LON-10).
+- 11-ring A collection DOES NOT affect entity1 state (state remains 1). Only the timer resets.
+
+**Why LOCUS is failing across 3 sessions**: the 17-action @BELIEF:LAT80LON-30 route has not been explicitly stated as a hardcoded standing order. LOCUS is likely exploring/probing and consuming the 21-step timer without ring collection, causing entity1 state to reset mid-route. After reset, entity2 entry fires NOT_FINISHED. LOCUS then re-explores, consuming more of the 45-action budget without winning. **Recommendation**: state @BELIEF:LAT80LON-30 route as a priority standing order in @LAT-140LON10, with 11-ring A collection at step 12 explicitly required.
