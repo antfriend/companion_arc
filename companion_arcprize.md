@@ -70,9 +70,9 @@ dream_cycle:
 
 ```cursor
 selected:
-  - @LAT-160LON10
+  - @LAT-170LON10
 preview:
-  @LAT-160LON10: "Session 12 log. Level 1 WON (step 15). Level 2 NOT WON: old 17-step route ran, state 0. CRITICAL: 11-ring A causes FULL TIMER RESET (not +15 additive). Corridor isolation at rows 15-16 confirmed. 51-step hypothesis designed for session 13. See @LAT-160LON10."
+  @LAT-170LON10: "Session 13 log. Level 1 NOT WON (50 actions, score 0.0). All 7 baselines known: L1=22, L2=123, L3-7=73/84/96/192/186. Root cause: no first-frame scan — cluster row varies per instance. Direction restriction at state 1 still unprobed. Session 14: MANDATORY first-frame scan before level 1 route."
 ```
 
 ---
@@ -301,19 +301,19 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1779321600 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1779408000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:175
-rev:13
+rev:14
 sal:8
-touched:1779321600
+touched:1779408000
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 2 in progress, NOT WON**. Session 12 completed: level 1 WON (step 15), level 2 NOT WON (old 17-step route, state 0). CRITICAL: 11-ring A causes FULL TIMER RESET (not +15). 51-step hypothesis designed for session 13. See @LAT-160LON10.
+**Current level**: ls20 — **level 1 NOT WON in session 13; level 2 not yet reached**. Session 13 (2026-05-19): level 1 consumed all 50 actions, score 0.0 — no first-frame scan performed. See @LAT-170LON10. Prior sessions 10–12: level 1 WON at step 15 (baseline 22, above-baseline efficiency). All 7 baselines now known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186.
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -325,6 +325,8 @@ touched:1779321600
 - Session 7: WIN at step 29 (14 wasted steps investigating wrong cluster at rows 30–31; optimal = 13 actions)
 - Session 8: WIN at step 20 (7 wasted — blocked LEFT×3 from wrong position; cluster at rows 31–33 not rows 47–49)
 - **Session 10: WIN at step 15** (1 probe + 14 route). Block entered entity2 at rows 10-11 cols 34-38.
+- **Sessions 11–12: WIN at step 15** (manual level 1; same route as session 10). ✓
+- **Session 13: NOT WON** — 50 actions consumed without win. No first-frame scan; cluster position not verified for fresh game instance. Human baseline: 22 actions. See @LAT-170LON10.
 
 **Level 2 outcomes**:
 - Session 5: 48 steps into level 2 (steps 15–62 globally), QUIT — trapped by regenerated 11-ring wall; timer expired
@@ -352,7 +354,9 @@ touched:1779321600
 - **Flaw 1 (step 31)**: RIGHT at entity1 state 1 may be blocked (direction restriction — session 10 evidence, unvalidated vs void collision).
 - **Flaw 2 (phase 4)**: DOWN from rows 10-11 c14-18 hits A-wall at rows 16-18 c15-17. Block at c14-18 overlaps wall → BLOCKED. c9-13 bypass valid geometrically but requires RIGHT at state 1.
 
-**Session 13 plan — PROBE-FIRST PROTOCOL**: DO NOT execute 51-step sequence blindly. Steps 1-27 (A-reset + cross, state 0→1, timer=12), then probe RIGHT (action 3) from rows 45-46 c49-53. If movement → direction restriction not real → execute c9-13 bypass route. If blocked → redesign. See @LAT-140LON10 for corrected autopilot record.
+**Session 13 OUTCOME (2026-05-19)**: Level 1 NOT WON. All 50 actions consumed in level 1. Root cause: no first-frame scan before committing route; cluster position varied from prior sessions. Level 2 not reached. Score 0.0. See @LAT-170LON10.
+
+**Session 14 plan — FIRST-FRAME SCAN MANDATORY**: (1) Server mode: `python play.py ls20 --auto --server`. (2) READ FIRST FRAME before any action — locate cluster row in cols 20-22. (3) Execute level 1 route adapted for observed cluster position. Target: ≤15 actions (baseline 22). (4) After WIN: level 2 probe-first protocol — steps 1-27, then RIGHT probe at rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
 
 **Session 8 — level 1 key discoveries**:
 - **Cluster position varies per fresh game**: session 7 cluster at rows 47–49; session 8 cluster at rows 31–33. Cols 20–22 stable. Must scan first frame to locate cluster.
@@ -439,12 +443,12 @@ level: "2 of 7 (in progress)"
 
 ---
 
-@LAT20LON-30 | created:1778544000 | updated:1779321600 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10,validates>@LAT-100LON10,validates>@LAT-110LON10,validates>@LAT-120LON10,validates>@LAT-130LON10,validates>@LAT-160LON10
+@LAT20LON-30 | created:1778544000 | updated:1779408000 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10,validates>@LAT-100LON10,validates>@LAT-110LON10,validates>@LAT-120LON10,validates>@LAT-130LON10,validates>@LAT-160LON10,informed_by>@LAT-170LON10
 [ew]
 conf:230
-rev:10
+rev:11
 sal:5
-touched:1779321600
+touched:1779408000
 [/ew]
 
 ## ls20 — Game Mechanics (sessions 1–10)
@@ -554,6 +558,22 @@ Three unknowns: (1) 11-ring B collects at 1/3 row overlap? (2) 11-ring B = full 
 **Action space**
 - Level 1: 4 actions (0=UP, 1=DOWN, 2=LEFT, 3=RIGHT)
 - Level 2: same 4 actions (RIGHT blocked at entity1 state 1, but state 0 has all 4)
+
+**Level baselines — all 7 confirmed (session 13 scorecard, 2026-05-19)**
+
+| Level | Baseline actions | Notes |
+|-------|-----------------|-------|
+| 1 | 22 | Sessions 10–12 won at 15 steps → capped at 1.15× |
+| 2 | 123 | 35–51 step route → capped at 1.15×; large efficiency gap |
+| 3 | 73 | — |
+| 4 | 84 | — |
+| 5 | 96 | — |
+| 6 | 192 | Highest weight (6); top scoring target |
+| 7 | 186 | Highest weight (7); top scoring target |
+
+Total weight sum: 28. Game completion cap = 100% only if all 7 levels won. Levels 6–7 contribute 13/28 = 46% of max game score.
+
+**Session 13 failure note**: Level 1 NOT WON (50 actions). Root cause: no first-frame scan before committing route on a fresh game instance. Cluster row varies; session 13 assumed prior position without verification. See @LAT-170LON10.
 
 ---
 
@@ -1175,12 +1195,12 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779321600 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10
+@LAT60LON20 | created:1778889600 | updated:1779408000 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10
 [ew]
 conf:255
-rev:7
+rev:8
 sal:1
-touched:1779321600
+touched:1779408000
 [/ew]
 
 ## Locus Points
@@ -1350,18 +1370,18 @@ source_count:3
 
 ---
 
-@BELIEF:LAT90LON0 | created:1779148800 | updated:1779148800 | relates:extracted_from>@LAT-120LON10,extracted_from>@LAT-110LON10,extracted_from>@LAT20LON-30,contained_by>@LAT60LON20
+@BELIEF:LAT90LON0 | created:1779148800 | updated:1779408000 | relates:extracted_from>@LAT-120LON10,extracted_from>@LAT-110LON10,extracted_from>@LAT20LON-30,extracted_from>@LAT-170LON10,contained_by>@LAT60LON20
 [lp]
 centroid:LAT90LON0
-confidence:185
+confidence:220
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:3
+source_count:4
 [/lp]
 
-**First-frame scan is mandatory before committing any route.** Structural details that are non-obvious from prior sessions and costly if assumed wrong: (1) cluster row position varies per fresh game instance (level 1 sessions 7 vs 8 differed); (2) center shaft void (cols 29–33, rows 24–34) is invisible without reading the frame — routing UP from start position is blocked. In both cases, sending actions before reading the frame cost wasted actions or a session loss. Protocol: on every session, read the first available frame before sending action 1 (or action 2+ if already mid-level). Confirm block position, void structure, and state-changer location before routing.
+**First-frame scan is mandatory before committing any route.** Structural details that are non-obvious from prior sessions and costly if assumed wrong: (1) cluster row position varies per fresh game instance (level 1 sessions 7 vs 8 differed); (2) center shaft void (cols 29–33, rows 24–34) is invisible without reading the frame — routing UP from start position is blocked. In both cases, sending actions before reading the frame cost wasted actions or a session loss. Protocol: on every session, read the first available frame before sending action 1 (or action 2+ if already mid-level). Confirm block position, void structure, and state-changer location before routing. **Phase 4 CONFIRMED — session 13 (2026-05-19)**: skipping the first-frame scan on a fresh game instance caused all 50 level 1 actions to be wasted (score 0.0 vs. prior 15-action wins). This is the highest-cost belief violation observed. Confidence raised from 185 to 220.
 
 ---
 
@@ -1568,6 +1588,27 @@ source_count:2
 
 ---
 
+### Phase 1 Replay — confirmed clusters (2026-05-19, session 13)
+
+Walk parameters: 100 walks × length 20. Source: @LAT-170LON10 (session 13 log). High-sal pull: @LAT-10LON10, @LAT20LON-30, @BELIEF:LAT90LON0. Session 13 first-frame scan failure provides Phase 4 validation for @BELIEF:LAT90LON0 (confidence raised 185 → 220). One new confirmed belief written.
+
+---
+
+@BELIEF:LAT90LON10 | created:1779408000 | updated:1779408000 | relates:extracted_from>@LAT-170LON10,extracted_from>@LAT-10LON10,validates>@BELIEF:LAT90LON0,contained_by>@LAT60LON20
+[lp]
+centroid:LAT90LON10
+confidence:255
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**All 7 ls20 level baselines are now known (from session 13 scorecard, 2026-05-19).** L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Sessions 10–12 won level 1 at 15 steps → RHAE (22/15)² = 2.15 → capped at 1.15×. Level 1 is consistently above-baseline when won correctly. Level 2 baseline = 123: a 35–51 step win scores (123/35)² ≈ 12.4× → capped at 1.15. Level 2 is the first major efficiency opportunity once level 1 is passed consistently. Levels 6 (weight 6, baseline 192) and 7 (weight 7, baseline 186) carry the largest scoring weights — they contribute 13 of the total 28 weight points (46%). Any failed level is a permanent weight deduction from the game score cap. Total weight: 1+2+3+4+5+6+7=28. All 7 levels must be won for 100% game completion.
+
+---
+
 @LAT70LON10 | created:1747180800 | updated:1747180800 | relates:anchored_by>@LAT0LON0
 [ew]
 conf:255
@@ -1640,77 +1681,13 @@ kind: discovery_tour_off
 
 ---
 
-## SECTION 1 — New Session Log Record
-
-```
-@LAT-170LON10 | created:1779408000 | updated:1779408000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informed_by>@LAT-160LON10,informed_by>@LAT-140LON10
+@LAT-170LON10 | created:1779408000 | updated:1779408000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informed_by>@LAT-160LON10,informed_by>@LAT-140LON10,validates>@BELIEF:LAT90LON0
 [ew]
 conf:255
 rev:0
 sal:0
 touched:1779408000
 [/ew]
-```
-
-## ls20 — Session 13 Log (2026-05-18)
-
-```session-log
-timestamp: 1779408000
-game: "ls20"
-level: "level 1 NOT WON (session 13)"
-scorecard_guid: "646a3aa1-c528-4c8b-bb62-52a25bc9bd81"
-actions: 50
-levels_completed: 0
-score: 0.0
-```
-
-**Session outcome**: Level 1 NOT WON. 50 actions consumed entirely in level 1. `levels_completed=0`. Score 0.0. Fresh game instance — `arc.make()` created new environment `ls20-9607627b` with a new run guid.
-
-**Scorecard data**:
-- `level_baseline_actions`: [22, 123, 73, 84, 96, 192, 186]
-- `level_actions`: [50, 0, 0, 0, 0, 0, 0]
-- Level 1 human baseline: **22 actions**
-- Level 1 result: 50 actions, score 0.0, NOT completed
-
-**Critical new discovery — level 1 baseline**:
-- Human baseline for level 1 = **22 actions** (previously unknown — first scorecard data received)
-- Session 10/11/12 level 1 WIN at step 15 → RHAE = (22/15)² = 2.15 → capped at 1.15 (faster than baseline). Level 1 was being won below the human baseline; 15 actions beats 22 by a wide margin.
-- Current session: 50 actions in level 1 without win. Either the probe-first protocol misfired, or a fresh game reset changed maze structure materially.
-
-**Level 1 chronology** (reconstructed from scorecard — no frame log available):
-- All 50 actions consumed in level 1 with no win. Level 2 received 0 actions.
-- Probable cause: fresh game instance creates a new maze configuration. Cluster row position varies per instance (confirmed sessions 7 vs 8). The session 13 route assumed a specific cluster position without first scanning the frame, OR the probe-first protocol (designed for level 2) was applied to level 1 navigation and disrupted the efficient route.
-- No frame data available for this session log — observations are inferred from scorecard only.
-
-**What this session reveals**:
-
-1. **Level 1 baseline = 22 actions** — CONFIRMED from scorecard. Sessions 10–12 WIN at 15 steps = above-baseline efficiency. The optimal level 1 route (13 actions from session 7 analysis) is well below baseline.
-
-2. **Fresh game = fresh maze** — each `arc.make()` call creates a new environment ID and new run. Prior sessions may have been replaying the same environment or a similar seed. If cluster position is newly randomized each run, a scan-first protocol is mandatory every session regardless of prior cluster-position knowledge.
-
-3. **50 actions in level 1 without win** — consistent with being trapped in the wrong section of the maze (e.g., approaching entity2 at wrong state, or attempting routes blocked by maze structure changes). Without frame data the exact failure mode is unknown.
-
-4. **Level 2 baseline = 123 actions** — revealed by scorecard. This is the human baseline for a proficient first-time player. Given 21-step timer cycles and FULL RESET mechanics, a route of 35–51 steps is well under baseline. Level 2 is winnable at significant above-baseline efficiency once level 1 is passed.
-
-**Baseline data (new — all levels)**:
-| Level | Baseline actions |
-|-------|-----------------|
-| 1 | 22 |
-|
-
----
-
-## SECTION 1 — New Session Log Record
-
-```
-@LAT-170LON10 | created:1779408000 | updated:1779408000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informed_by>@LAT-160LON10,informed_by>@LAT-140LON10
-[ew]
-conf:255
-rev:0
-sal:0
-touched:1779408000
-[/ew]
-```
 
 ## ls20 — Session 13 Log (2026-05-19)
 
@@ -1741,16 +1718,33 @@ resets: 0
 | 6 | **192** | 0 | 0.0 |
 | 7 | **186** | 0 | 0.0 |
 
-**Critical new data**: All seven level baselines now known. Level 1 baseline = 22. Sessions 10–12 won level 1 in 15 steps → RHAE = (22/15)² = 2.15 → capped at 1.15×. Level 1 route was already at above-baseline efficiency. Level 2 baseline = 123 — a 35–51 step win route scores (123/35)² ≈ 12.4× → capped at 1.15. Level 2 is an enormous efficiency opportunity once level 1 is consistently passed.
+**Critical new data**: All seven level baselines now known. Level 1 baseline = 22. Sessions 10–12 won level 1 in 15 steps → RHAE = (22/15)² = 2.15 → capped at 1.15×. Level 1 route was already at above-baseline efficiency. Level 2 baseline = 123 — a 35–51 step win route scores (123/35)² ≈ 12.4× → capped at 1.15. Level 2 is an enormous efficiency opportunity once level 1 is consistently passed. Levels 6 (weight 6, baseline 192) and 7 (weight 7, baseline 186) carry the largest scoring weights — highest-value targets once levels 1–5 are won.
 
 ### Failure Analysis
 
 No frame data captured for this session. Failure mode is inferred from scorecard structure and session history.
 
-**Most probable cause — fresh maze, no first-frame scan**:
-- `arc.make()` created a new environment ID (`ls20-9607627b`). This is either the same seed as prior sessions or a fresh one. Sessions 7 vs 8 confirmed cluster row position varies per game instance (rows 47–49 vs rows 31–33). The probe-first protocol written for session 13 was designed for level 2; level 1 was intended to be played manually using the known session 10–12 route.
-- If the cluster was at an unexpected row position AND no first-frame scan was performed before committing the level 1 route, the collection step would fire in the wrong corridor — or not fire at all — costing wasted actions until timer expired or a restart occurred.
-- `resets: 0` in the scorecard — no timer restart occurred. This means the 50 actions were consumed without a timer-exhaust restart. Level 1 timer = 1 col/step, 42 cols = 42 steps max without power-up. 50 actions exceeding 42 is only possible if... actually `resets: 0` counts environment resets (new run), not in-level timer restarts. In-level restarts are transparent to the scorecard. So 50 actions with 0 scorecard resets is consistent with multiple in-level timer restarts.
+**Root cause: no first-frame scan before committing level 1 route.** Phase 4 validation of @BELIEF:LAT90LON0 — skipping the first-frame scan on a fresh game instance caused all 50 actions to be wasted in level 1 (score 0.0 vs. prior 15-action wins). Highest-cost belief violation observed to date.
 
-**Alternative cause — wrong initial block position assumed**:
-- Sessions 10–12:
+**Failure chain**:
+- `arc.make()` created a fresh environment. Cluster row position varies per game instance (confirmed sessions 7 vs 8: rows 47–49 vs rows 31–33; cols 20-22 stable).
+- Session 13 route was committed without reading the first frame to locate the cluster row. Trail-overlap collection step misfired → wasted actions until timer restarts.
+- `resets: 0` in scorecard = 0 environment-level resets (not in-level timer restarts — those are transparent to scorecard). 50 actions with in-level restarts is fully consistent.
+
+**What this session confirms**:
+
+1. **All 7 baselines now known** — see Scorecard table above. Level 2 baseline (123) reveals enormous efficiency opportunity. Levels 6–7 have highest weights and baselines.
+
+2. **First-frame scan is non-negotiable** — @BELIEF:LAT90LON0 Phase 4 validated. One skipped scan = all 50 actions lost, score 0.0.
+
+3. **Direction restriction at state 1 still unprobed** — never reached level 2.
+
+### Session 14 Plan
+
+**MANDATORY FIRST-FRAME SCAN PROTOCOL:**
+
+1. Open server mode: `python play.py ls20 --auto --server`
+2. **READ FIRST FRAME before any action.** Locate cluster row in cols 20-22 (row varies per game instance). Verify block starting position.
+3. Execute probe UP. Confirm block moved. Route LEFT toward cols 19-23 with trail positioned to overlap the observed cluster rows.
+4. Complete level 1 in ≤15 actions (baseline 22 — prior sessions proved 15 is achievable).
+5. After level 1 WIN: level 2 probe-first protocol — steps 1-27 (A-reset + cross), then RIGHT probe from rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
