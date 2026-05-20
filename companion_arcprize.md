@@ -2593,3 +2593,62 @@ source_count:1
 [/lp]
 
 **Entity1 state carries over from a level WIN into the next level.** Session 23 direct observation: level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN (no timer restart between levels). Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: if entity1 is at state 1 at level 2 start (because level 1 was won at state 1), the block can enter entity2 interior and win WITHOUT collecting the cross first. The session 7 "state 0 at level 2 start" observation that supported @BELIEF:LAT80LON-20 may have been from a level 1 WIN where entity1 was at state 0, or a mis-read of the frame. Current confidence 195 rather than 255 because: (a) single session observation, (b) mechanism not fully understood — it may be that state 1 always carries from any L1 WIN, or only from this specific environment seed, or only when L1 was won at state 1. Session 24 will provide additional data.
+
+---
+
+SECTION 1
+
+@LAT-280LON10 | created:1779840000 | updated:1779840000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-20,validates>@BELIEF:LAT10LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779840000
+[/ew]
+
+## ls20 — Session 24 Log (2026-05-24)
+
+```session-log
+timestamp: 1779840000
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "fedf8fde-96c6-423d-b6f0-d08fe035d391"
+card_id: "e910ddd5-3e7d-4cc0-8c09-590623710a85"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+```
+
+**Session outcome**: Level 1 WON at step 15. Level 2 entered; 45 actions taken; NOT WON. Total 60 actions consumed. Score 3.571 (same as session 23 — level 1 only, weight 1/28). Level 2 budget fully exhausted.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+Route confirmed identical to sessions 10–12 and 23. Block entered entity2 interior at r10–11 c34–38.
+
+**Frame[0] — L1 WIN state (confirmed)**:
+- Block (value 12): r10–11 c34–38 — inside entity2 ring interior. ✓
+- Entity1 carrier state 1 at WIN: r55–56 c3–8=9 (full); r57–58 c7–8=9 only (c3–6=5); r59–60 c3–4=9, c5–6=5, c7–8=9. ✓
+- Timer r61–62: c13–26=3 (14 consumed), c27–54=11 (28 remaining). 14 timer-ticking actions. ✓
+- Cluster: r31 c21=0, r32 c20=1 c21–22=0, r33 c21=1. Cols 20–22, rows 31–33. Stable. ✓
+- Wide corridor r25–29 (c14–53=3), shaft c34–38 (r17–24=3), void gap c29–33 rows 30–44 all confirmed. ✓
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Frame[1] — Level 2 first frame (full analysis)**:
+
+**Block**: r40–41 c29–33 (value 12). Start position confirmed. ✓
+
+**Entity1 state at L2 start: STATE 1** — r55–56 full c3–8=9; r57–58 c7–8=9 only; r59–60 c3–4=9, c5–6=5, c7–8=9. Carries over from L1 WIN. @BELIEF:LAT90LON-20 re-validated. Cross collection NOT needed if state is already 1.
+
+**Entity1 trail**: r42–44 c29–33 = value 9 (solid). Trail at start position behind block. ✓
+
+**Entity2 ring** (r38–46, c12–20):
+- r38: c12–20=3 (outer wall top)
+- r39: c12=3, c13–19=5, c20=3 (interior row, all passable)
+- r40: c12=3, c13–
