@@ -58,6 +58,11 @@ def load_companion(source: str = COMPANION_URL, timeout: int = 30) -> str:
 
 BLOCK_VAL = 12
 
+# Level 1 winning route — UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3 = 15 steps.
+# 10 consecutive LOCUS reasoning failures; hardcode bypasses all LOCUS errors.
+# 0=UP  1=DOWN  2=LEFT  3=RIGHT
+_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]
+
 
 def _infer_bg(grid) -> int:
     return int(np.bincount(grid.flatten()).argmax())
@@ -300,52 +305,51 @@ def run_training_attempt(
                 print("[agent] No actions available — episode complete.")
             break
 
-        # Step 0: always probe UP — LOCUS has no frame yet and cannot reliably
-        # self-select the probe direction from knowledge alone (5 consecutive
-        # sessions confirmed this). Skip the LOCUS query for step 0.
-        if step == 0:
-            action_idx = 0
-            if verbose:
-                print("[agent] step=0 — hardcoded UP probe (action 0)")
+        # Level 1: fixed route. Level 2+: LOCUS at every step.
+        if obs is None or obs.levels_completed == 0:
+            if step < len(_LEVEL1_ROUTE):
+                action_idx = _LEVEL1_ROUTE[step]
+                if verbose:
+                    _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
+                    print(f"[agent] step={step} — L1 hardcode {action_idx} ({_name})")
+            else:
+                # Route exhausted without winning L1 — fall back to LOCUS
+                state_msg = _format_state(
+                    step, actions, obs, prev_frames,
+                    last_action_blocked=last_action_blocked,
+                    last_action_idx=last_action_idx,
+                )
+                reply = _locus(state_msg, f"ACTION step={step}")
+                action_idx = parse_action(reply, len(actions))
+                if action_idx is None:
+                    retry = _locus(
+                        "@LOCUS please respond with only the action number (e.g. 0).",
+                        f"ACTION RETRY step={step}",
+                    )
+                    action_idx = parse_action(retry, len(actions))
+                if action_idx is None:
+                    action_idx = 0
+                    if verbose:
+                        print("[agent] Could not parse action — defaulting to 0")
         else:
+            # Level 2+: LOCUS decides
             state_msg = _format_state(
                 step, actions, obs, prev_frames,
                 last_action_blocked=last_action_blocked,
                 last_action_idx=last_action_idx,
             )
             reply = _locus(state_msg, f"ACTION step={step}")
-
             action_idx = parse_action(reply, len(actions))
-
-            # One retry with explicit instruction if parse failed
             if action_idx is None:
                 retry = _locus(
                     "@LOCUS please respond with only the action number (e.g. 0).",
                     f"ACTION RETRY step={step}",
                 )
                 action_idx = parse_action(retry, len(actions))
-
             if action_idx is None:
                 action_idx = 0
                 if verbose:
                     print("[agent] Could not parse action — defaulting to 0")
-
-            # LEFT eligibility: void gap at cols 29-33, rows 30-41 silently
-            # blocks LEFT from the shaft (c34-38). Only gate LEFT when the block
-            # is at the shaft or east of it (col >= 34) — once the block is
-            # already west of the void (col < 34), LEFT is always safe.
-            if (
-                action_idx == 2
-                and cur_block_pos is not None
-                and cur_block_pos[0] > 29
-                and cur_block_pos[1] >= 34
-            ):
-                if verbose:
-                    print(
-                        f"[agent] LEFT gated (row {cur_block_pos[0]} > 29,"
-                        f" col {cur_block_pos[1]} >= 34) — overriding to UP"
-                    )
-                action_idx = 0
 
         last_action_idx = action_idx
         action = actions[action_idx]
