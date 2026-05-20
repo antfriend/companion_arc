@@ -159,7 +159,7 @@ def main() -> None:
         game_id=GAME_ID,
         client=client,
         companion_text=companion,
-        max_steps=50,
+        max_steps=30,
         competition_mode=False,
         verbose=True,
     )
