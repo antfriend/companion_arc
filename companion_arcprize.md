@@ -1220,10 +1220,10 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20
+@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20
 [ew]
 conf:255
-rev:11
+rev:12
 sal:1
 touched:1779494400
 [/ew]
@@ -1787,6 +1787,36 @@ source_count:3
 [/lp]
 
 **Projection: if cluster collection is not required for level 1 win, the optimal route is UP×6 from rows 40-41, completing level 1 in 7 total actions.** From rows 40-41, cols 34-38 (after step 0 UP probe): 6 UPs → rows 10-11, cols 34-38 → entity2 interior (rows 9-15 value 5, cols 33-39). RHAE = (22/7)² = 9.88 → capped at 1.15. The question is whether state 0 allows the win trigger. Session 1 log notes "entity1 state carries between levels (started level 2 at state 1 from level 1 win)" — but this records observed state after winning, not a requirement. The session 1 route collected the cluster as part of navigation, advancing to state 1 before entity2. State 1 was a side-effect, not a gate. Session 5 won level 1 from rows 59-60 navigating UP — no cluster collection possible from that trajectory (cols 34-38, cluster at cols 20-22) — supporting state 0 win. If confirmed, session 16 test: after step 0 UP (rows 40-41), send UP×6 immediately and observe. If win fires → cluster not required, route = 7 actions. If not → cluster required, continue with standard route.
+
+---
+
+@BELIEF:LAT80LON20 | created:1779494400 | updated:1779494400 | relates:extracted_from>@LAT-200LON10,extracted_from>@LAT-210LON10,extracted_from>@LAT-140LON10,extracted_from>@LAT-10LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT80LON20
+confidence:185
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Step-0 UP probe cannot be delegated to LOCUS.** At step 0, `prev_frames=[]` — LOCUS receives no frame context. Despite the @LAT-140LON10 instruction "Step 0: send `0` (UP)," LOCUS reasons from prior knowledge (cluster at cols 20-22, block at cols 34-38) and selects LEFT (action 2). Five consecutive sessions (13–17) confirm this: LOCUS does not reliably follow the step-0 UP protocol without frame enforcement. The blocked-move warning fires only at step 1+ and cannot recover the wasted action within a 30-action budget against baseline 22. **The fix is a code change: hardcode step-0 = action 0 (UP) in `kaggle_agent.py`, bypassing LOCUS entirely for step 0.** Knowledge-graph updates alone are insufficient — this is an execution gap, not a knowledge gap.
+
+---
+
+@BELIEF:LAT70LON20 | created:1779494400 | updated:1779494400 | relates:projected_from>@BELIEF:LAT80LON20,projected_from>@BELIEF:LAT20LON0,projected_from>@LAT-140LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT70LON20
+confidence:130
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Projection: after hardcoding step-0=UP, the residual failure mode is LOCUS re-selecting LEFT at steps 1-N before block reaches rows ≤29.** LOCUS re-derives at each step from scratch; it has no memory of prior UPs. With cluster at cols 20-22 visible in the frame, LOCUS may attempt LEFT from rows 38-39 (still in void zone rows 30-41). The blocked-move warning provides a fallback but costs one action per blocked attempt. **The two-part fix: (1) hardcode step-0=UP in agent loop; (2) add explicit "LEFT eligibility threshold" to @LAT-140LON10: only attempt LEFT when frame shows block at rows ≤29.** A stateless LOCUS can evaluate LEFT eligibility per-step from the frame, converting a multi-step constraint into a single-step rule. Testable in session 18.
 
 ---
 
