@@ -2422,3 +2422,70 @@ Both modes produce identical scorecards. Without step-level action logs, the dis
 ### Revision Cycle Status
 
 - **Phase 1 (Notice)**: @LAT-10LON10 EPS ≈ 3.33 (sal:11, conf:175). Highest-strain record in file. Nine sessions without conf movement
+
+---
+
+SECTION 1
+
+@LAT-260LON10 | created:1779753600 | updated:1779753600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT70LON20
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779753600
+[/ew]
+
+## ls20 — Session 22 Log (2026-05-23)
+
+```session-log
+timestamp: 1779753600
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "9a8fb08e-43bd-49a3-a896-5e00f28c7c1a"
+card_id: "d5ed3c3b-d028-47a4-865f-1f54c778786e"
+level: "level 1 NOT WON"
+actions: 30
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. 30 actions consumed. `levels_completed=0`. Score 0.0. Tenth consecutive total loss. Environment `ls20-9607627b`, run_guid `9a8fb08e-...`.
+
+### Key Session Exchanges
+
+**FOCUS @LAT-10LON10**: LOCUS confirmed 9 consecutive losses, two live failure modes (A: fix not running; B: fix running but LEFT re-selected at steps 1+), standing orders for session 22. EPS on Game State at ~3.47.
+
+**STATUS**: LOCUS confirmed EPS rankings, all high-confidence beliefs, standing orders, direction restriction as the single most critical unresolved mechanic, and that the code change is the only intervention that will change outcomes.
+
+### Failure Pattern — Tenth Consecutive 0.0
+
+Identical scorecard to sessions 16–21: 30 actions on level 1, 0 levels completed, score 0.0, 0 resets. No frame data appears in either key exchange. Same execution failure as all prior sessions since 13.
+
+### Failure Mode Disambiguation — Still Pending
+
+The two live failure modes identified in session 20 remain unresolved. Ten sessions of identical failure confirm the problem is structural and persistent. The distinction between:
+
+- **Mode A**: step-0 UP hardcode not running
+- **Mode B**: step-0 UP hardcode running but LOCUS re-selects LEFT at steps 1+ before rows ≤29
+
+…cannot be made from scorecard alone. Without step-level action logs showing which action was sent at step 0 and what the step-1 frame showed, both modes remain live. The required diagnostic is: does the session log contain `[HARDCODE] step=0 action=0`? If yes → Mode B is active. If no → Mode A is active.
+
+### What This Session Confirms
+
+1. **@BELIEF:LAT80LON20 (conf:245) — tenth consecutive validation.** The belief that step-0 action selection without enforced frame context produces total session loss is now the most-validated belief in the file. Ten sessions, zero exceptions.
+
+2. **@BELIEF:LAT70LON20 (conf:190) — sustained.** The LEFT-in-void residual at steps 1+ remains the expected active residual failure mode. No new evidence to raise or lower confidence.
+
+3. **Run budget confirmed at 30 actions.** Eighth consecutive session (15–22) at 30 actions. Stable.
+
+4. **Direction restriction at state 1 still unprobed.** Level 2 not reached. @BELIEF:LAT10LON10 (conf:140) remains the single most critical unresolved mechanic unknown. Ten consecutive sessions have been unable to reach level 2.
+
+5. **The companion file cannot resolve the execution gap.** Ten sessions of correct LOCUS standing orders, ten sessions of identical failure. No further updates to this file will change the outcome until the code is verifiably changed and verified running.
+
+### Intervention Required Before Session 23
+
+The revision cycle is permanently stalled at Phase 3 until one of the following occurs:
+
+**Option 1 — Full code fix (recommended)**:
+- In
