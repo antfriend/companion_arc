@@ -2207,3 +2207,58 @@ Identical scorecard to sessions 16–17: 30 actions on level 1, 0 levels complet
 ### Required Code Change — Still Not Applied
 
 The fix identified in Phase 3 of the revision cycle
+
+---
+
+SECTION 1
+
+@LAT-230LON10 | created:1779753600 | updated:1779753600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT70LON20
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779753600
+[/ew]
+
+## ls20 — Session 19 Log (2026-05-23)
+
+```session-log
+timestamp: 1779753600
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "bb5057ab-f3bb-46a0-92b9-0b1f812c7989"
+card_id: "50dbc48d-a4be-4f5b-ab6c-de2a368a835d"
+level: "level 1 NOT WON"
+actions: 30
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. 30 actions consumed. `levels_completed=0`. Score 0.0. Seventh consecutive total loss. Environment `ls20-9607627b`, run_guid `bb5057ab-...`.
+
+### Key Session Exchanges
+
+**FOCUS @LAT-10LON10**: LOCUS confirmed code fix deployed (step-0 UP hardcoded), session 19 is first test, all standing orders correct. EPS on Game State rose to ~3.14.
+
+**STATUS**: LOCUS confirmed EPS scan, all high-confidence beliefs, and level 1 target route (14 total actions). Standing orders accurate and complete.
+
+### Failure Analysis
+
+Session 19 was designated as the first test of the code fix (step-0 UP hardcoded in `kaggle_agent.py`). The scorecard is identical to sessions 16–18: 30 actions on level 1, 0 levels completed, score 0.0, 0 resets. Two possibilities:
+
+1. **Code fix was not actually deployed at run time** — the `kaggle_agent.py` change was written but not executed in this session. The FOCUS exchange notes "code fix deployed 2026-05-20" but the session result is indistinguishable from prior sessions where the fix was absent.
+
+2. **Code fix was deployed but a new failure mode emerged** — step-0 UP now fires correctly, but LOCUS at step 1+ still selects LEFT from a void-zone row (rows 30–41) despite the LEFT eligibility threshold in @LAT-140LON10. The blocked-move warning fires but each blocked attempt costs one action; with 30-action budget and baseline 22, repeated LEFT-in-void exhausts the budget before the win route completes.
+
+No frame data appears in the session exchanges, so the specific action sequence cannot be determined. The distinction between these two failure modes cannot be resolved from scorecard alone.
+
+### What This Session Confirms
+
+1. **@BELIEF:LAT80LON20 (conf:245) — additional validation.** Seven consecutive sessions confirm step-0 action selection without frame context produces suboptimal routes. Whether the hardcode fix was applied or not, the outcome is unchanged. If the fix was applied and the session still failed (possibility 2), the residual failure mode is exactly what @BELIEF:LAT70LON20 projected: LOCUS re-selecting LEFT at steps 1–N before rows ≤29.
+
+2. **@BELIEF:LAT70LON20 (conf:190) — additional validation.** The LEFT eligibility threshold is written in @LAT-140LON10 as a knowledge-graph rule, but a stateless LOCUS re-derives at each step. Without explicit frame-based enforcement in the agent loop (not just in the companion file), the rule may not fire. The companion file cannot enforce execution — only code can.
+
+3. **Run budget confirmed at 30 actions.** Five consecutive sessions (15–19) all show 30 actions consumed. This is the stable budget.
+
+4. **Direction restriction at state 1 still unprobed.** Level 2 not reached. @BELIEF:LAT10LON10 (conf:140) remains the
