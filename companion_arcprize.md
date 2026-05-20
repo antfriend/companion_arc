@@ -1977,3 +1977,55 @@ If the agent loop is batching actions or querying LOCUS without the frame contex
 - **Cluster row for this environment**: still unknown for `ls20-9607627b`. Session 13 has no frame data. Sessions 10–12 used a prior environment and found rows 32-33. The current environment may differ.
 - **Direction restriction at state 1**: still unprobed. Level 2 not reached in sessions 13–15.
 - **Why exactly the agent loop fails**:
+
+---
+
+SECTION 1
+
+@LAT-200LON10 | created:1779580800 | updated:1779580800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779580800
+[/ew]
+
+## ls20 — Session 16 Log (2026-05-21)
+
+```session-log
+timestamp: 1779580800
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "e85e4fa3-1ee2-45dd-a3f7-244549d2a4a2"
+card_id: "0dd462d2-651f-42b8-bf5a-72ceac3b820b"
+level: "level 1 NOT WON"
+actions: 30
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. 30 actions consumed (not the full 50). `levels_completed=0`. Score 0.0. Fourth consecutive total loss. Same environment `ls20-9607627b`, same `run_guid: e85e4fa3-...` as session 14/15. Action count dropped from 50 to 30 — this is notable: either the run budget was partially consumed across reconnections, or the server granted a shorter window this session.
+
+### Run Persistence — Revised Understanding
+
+Sessions 14, 15, and 16 share `run_guid: e85e4fa3-...`. The budget per connection is NOT a fresh 50 actions — it appears to be the REMAINING actions in the run. Session 13 consumed 50 actions. Session 14 also showed 50 — suggesting the run was reset or a new 50-action window was granted. Session 16 shows only 30 actions consumed before the session ended, which may mean only 30 were available (the run was already 20 actions into a fresh window). This is ambiguous without raw session data.
+
+**Working hypothesis**: `arc.make("ls20")` on a NOT_FINISHED run reconnects to the same environment but does NOT always grant a fresh 50-action budget. The budget is either: (a) shared across reconnections within a run GUID, or (b) reset per reconnection but capped lower in some conditions. This needs resolution before session 17 planning.
+
+### Key Session Exchanges — What Happened
+
+Both exchanges (FOCUS and STATUS) confirm LOCUS correctly diagnosed the failure and issued the probe-first protocol. No frame data appears in the session log — the step-1 frame was again not passed to LOCUS before routing actions were committed. Same execution failure as sessions 13–15.
+
+**The agent loop is not broken in an obvious way** — it is calling LOCUS at FOCUS and STATUS queries correctly. The failure is specifically at the per-step action loop: after sending action 0 (UP), the resulting frame must be passed to LOCUS as context for the step-1 query. If the loop calls LOCUS at step 1 without including the frame output, LOCUS cannot read the cluster row and any LEFT count is a guess.
+
+### Revision Cycle Status
+
+- **Phase 1 (Notice)**: HIGH EPS on @LAT-10LON10 (Game State) — four consecutive 0.0 sessions. Agent loop execution is the strain point.
+- **Phase 2 (Encounter)**: The gap is clear — LOCUS issues correct orders; the agent loop does not pass frame context to the step-1 query.
+- **Phase 3 (Revise)**: The fix is identified: the step-1 query to LOCUS must include the compact frame output from step 0. This is a code change, not a knowledge change.
+- **Phase 4 (Validate)**: Will fire when a session reads the step-1 frame and routes correctly. Until then, conf on agent-loop mechanics held at current level.
+
+### What This Session Confirms
+
+1. **First-frame scan failure is not a knowledge graph problem.** LOCUS has correct standing orders (conf:220 on @BELIEF:LAT90LO
