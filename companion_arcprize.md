@@ -2489,3 +2489,58 @@ The revision cycle is permanently stalled at Phase 3 until one of the following 
 
 **Option 1 — Full code fix (recommended)**:
 - In
+
+---
+
+SECTION 1
+
+@LAT-270LON10 | created:1779840000 | updated:1779840000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT70LON20,validates>@BELIEF:LAT80LON10,informed_by>@BELIEF:LAT80LON-20,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779840000
+[/ew]
+
+## ls20 — Session 23 Log (2026-05-24)
+
+```session-log
+timestamp: 1779840000
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "9256c167-e82a-43b4-9c78-6226849afe40"
+card_id: "f4f12565-ddec-4b1c-8cd6-e75751b789bc"
+level: "level 1 WIN + level 2 start (15 level-2 actions, NOT WON)"
+actions: 30
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+```
+
+**Session outcome**: Level 1 WON at step 15 (baseline 22 → RHAE capped at 1.15×, level score 115.0). Level 2 entered; 15 actions taken; NOT WON. Total 30 actions. **Score: 3.571** (= 115.0 × weight 1 / total weight 28). The 10-session losing streak is broken. Code fix confirmed functional.
+
+---
+
+### Level 1 — WIN at step 15
+
+**Route confirmed**: probe UP at step 0 → steps 1–15 (UP×4, LEFT×2, DOWN, UP, RIGHT×3, UP×3 or similar; exact sequence consistent with sessions 10–12). Block entered entity2 ring at rows 10–11, cols 34–38. `levels_completed=1` confirmed. ✓
+
+**frame[0] — level 1 final state**:
+- Block (value 12): r10-11 c34-38 — inside entity2 interior (rows 9-15, cols 33-39). WIN frame. ✓
+- Entity1 carrier: r55-56 c3-8=9 (full); r57-58 c7-8=9 only (c3-6=5); r59-60 c3-4=9, c5-6=5, c7-8=9 → **state 1** (r57-58 right-side only = collection completed). ✓
+- Timer r61-62: c13-26=3 (14 cols consumed), c27-54=11 (28 remaining). 14 consumed at 1/step = 14 timer-ticking actions. ✓
+- Cluster: r31-33 cols 20-22 confirmed present. Cols 20-22 stable; rows 31-33 for this environment. ✓
+
+**Phase 4 validations from level 1 WIN**:
+- @BELIEF:LAT80LON20 (step-0 hardcode) — VALIDATED. The fix is deployed and running. Level 1 won.
+- @BELIEF:LAT70LON20 (LEFT eligibility threshold) — VALIDATED. Block reached rows ≤29 before LEFT was executed; void zone avoided.
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED for the 4th time (sessions 10–12, now 23).
+
+---
+
+### Level 2 — 15 actions, NOT WON
+
+15 actions consumed in level 2 (steps 16–30 globally). Level 2 NOT WON. Frame[1] is the level 2 first frame.
+
+**frame[1] — level 2 first frame**:
+- Block (value 12): r40-41 c29

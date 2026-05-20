@@ -153,13 +153,24 @@ def locus_query(
 # ---------------------------------------------------------------------------
 
 def parse_action(text: str, n_actions: int) -> int | None:
-    """Extract an action index from LOCUS's response. Returns None if not found."""
+    """Extract an action index from LOCUS's response. Returns None if not found.
+
+    Checks the last non-empty line first — LOCUS ends with just the number.
+    This prevents false matches when LOCUS echoes "action N" in its reasoning
+    (e.g. "Last action 0 produced no movement" in blocked-move warnings).
+    """
+    # Priority: last non-empty line bare number
+    for line in reversed(text.strip().splitlines()):
+        stripped = line.strip()
+        if re.match(r"^\d+$", stripped):
+            idx = int(stripped)
+            if 0 <= idx < n_actions:
+                return idx
+    # Secondary: explicit keyword patterns (skipping "action" to avoid warning echo)
     for pattern in (
-        r"\baction[:\s]+(\d+)",
         r"\bchoose[:\s]+(\d+)",
         r"\bselect[:\s]+(\d+)",
         r"\bpick[:\s]+(\d+)",
-        r"^(\d+)$",  # bare number on its own line
     ):
         for m in re.finditer(pattern, text, re.IGNORECASE | re.MULTILINE):
             idx = int(m.group(1))
@@ -193,9 +204,10 @@ def _format_state(
             f"levels_completed: {obs.levels_completed}",
         ]
     if last_action_blocked and last_action_idx is not None:
+        _dir = ["UP", "DOWN", "LEFT", "RIGHT"][last_action_idx] if last_action_idx < 4 else str(last_action_idx)
         lines += [
             "",
-            f"WARNING: last action {last_action_idx} produced NO movement — "
+            f"WARNING: last move ({_dir}) produced NO movement — "
             "block position unchanged. That direction is blocked by a void. "
             "Choose a different direction.",
         ]
