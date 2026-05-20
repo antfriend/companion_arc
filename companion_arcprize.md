@@ -1206,12 +1206,12 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779408000 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10
+@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10
 [ew]
 conf:255
-rev:8
+rev:9
 sal:1
-touched:1779408000
+touched:1779494400
 [/ew]
 
 ## Locus Points
@@ -1617,6 +1617,63 @@ source_count:2
 [/lp]
 
 **All 7 ls20 level baselines are now known (from session 13 scorecard, 2026-05-19).** L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Sessions 10–12 won level 1 at 15 steps → RHAE (22/15)² = 2.15 → capped at 1.15×. Level 1 is consistently above-baseline when won correctly. Level 2 baseline = 123: a 35–51 step win scores (123/35)² ≈ 12.4× → capped at 1.15. Level 2 is the first major efficiency opportunity once level 1 is passed consistently. Levels 6 (weight 6, baseline 192) and 7 (weight 7, baseline 186) carry the largest scoring weights — they contribute 13 of the total 28 weight points (46%). Any failed level is a permanent weight deduction from the game score cap. Total weight: 1+2+3+4+5+6+7=28. All 7 levels must be won for 100% game completion.
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-20, DREAM)
+
+Walk parameters: 100 walks × length 20. High-sal pull: @LAT-10LON10 (sal:8), @LAT20LON-30 (sal:5), @LAT-150LON10 (sal:5). Two new confirmed beliefs written. One prior updated.
+
+---
+
+@BELIEF:LAT80LON10 | created:1779494400 | updated:1779494400 | relates:extracted_from>@LAT-130LON10,extracted_from>@LAT-150LON10,extracted_from>@LAT-160LON10,extracted_from>@LAT-170LON10,extracted_from>@BELIEF:LAT90LON0,contained_by>@LAT60LON20
+[lp]
+centroid:LAT80LON10
+confidence:245
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:5
+[/lp]
+
+**Level 1 is solved. The only failure mode is skipping the first-frame scan.** Sessions 10, 11, and 12 all won level 1 at step 15 using the same route (UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3) when the cluster was at rows 32-33. Session 13 failed with 50 actions consumed — not because the route was wrong, but because the cluster position was not verified before committing. The route itself is not in question. Cluster cols 20-22 are stable; rows vary per fresh game instance. Protocol: send action 0 (UP) at step 0 as a probe (no frame available), read cluster row from the step 1 frame, adapt LEFT distance to match. Level 1 efficiency target: ≤15 actions against baseline 22. This is reliably achievable when the frame is read.
+
+---
+
+@BELIEF:LAT70LON10 | created:1779494400 | updated:1779494400 | relates:extracted_from>@BELIEF:LAT10LON10,extracted_from>@BELIEF:LAT10LON0,extracted_from>@BELIEF:LAT20LON10,extracted_from>@LAT-140LON10,extracted_from>@LAT-160LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT70LON10
+confidence:190
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:5
+[/lp]
+
+**Every viable level 2 win route post-cross requires RIGHT (action 3) at entity1 state 1.** Three routes have been analyzed and all three are gated on this single unknown: (1) 51-step route Flaw 1 exit — step 31 RIGHT from rows 50-51 c39-43 to exit B-probe zone; (2) c9-13 bypass — RIGHT from rows 20-21 c9-13 → c14-18 to enter left track above entity2; (3) 11-ring B probe exit — same constraint as Flaw 1. Session 10 evidence (DIFF=4 after RIGHT at state 1 = timer only, no movement) suggests restriction exists, but the observation may have been a corridor void collision at rows 35-36 c54-58. Until probed from a valid corridor position (rows 45-46 c49-53, within c44-58=3), the restriction is unresolved. **The direction restriction at state 1 is the single critical unknown for all level 2 progress.** Confidence held below 200 until a session probes RIGHT from a corridor-valid position after cross collection.
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-20, DREAM)
+
+Walk parameters: 50 walks × length 10, seeded from @BELIEF:LAT10LON10 (boundary node, conf:140) into void at LAT50LON10. Target: route implications if direction restriction is confirmed.
+
+---
+
+@BELIEF:LAT50LON10 | created:1779494400 | updated:1779494400 | relates:projected_from>@BELIEF:LAT10LON10,projected_from>@LAT-140LON10,projected_from>@BELIEF:LAT80LON-10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT50LON10
+confidence:120
+scope_lat:20.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Projection: if direction restriction at state 1 is confirmed, the current session 13 route design has no fallback. A completely different sequencing is required.** With RIGHT blocked at state 1, entity2 can only be approached from above via the left track — but: (a) A-wall blocks left-track re-entry from rows 10-11 (Flaw 2), and (b) c9-13 bypass also requires RIGHT. The only geometrically feasible alternative would be to reach state 1 WITHOUT needing to cross tracks afterward. One candidate: collect the cross (far-right track, rows 45-46 c49-53 → state 0→1) and then descend DIRECTLY to entity2 in the same motion if a path exists from far-right to left track below the A-wall level — but corridor analysis shows no such connection below rows 40-49 (far-right c44-58 does not connect to left c14-18 without going through rows 10-14). The implication: if direction restriction is real and A-wall bypass requires RIGHT, entity2 at state 1 may be unreachable under the current mechanic understanding. Session 14 probe result is therefore not just route-selection data — it is a fundamental feasibility test. If RIGHT is blocked, a full mechanic re-investigation is required before any further level 2 attempts.
 
 ---
 
