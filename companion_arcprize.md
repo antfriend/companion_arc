@@ -2718,3 +2718,67 @@ source_count:3
 [/lp]
 
 **Trail attraction (state 1) is avoidable by same-column alignment before each action.** The session 23 observation was: action 0 (UP) moved toward trail column when trail column ≠ block column. The observation when trail column = block column (step 18): UP moved normally NORTH. Projection: the full range of actions (UP/DOWN/LEFT/RIGHT) are similarly safe when trail column = block column, and potentially redirected when trail column ≠ block column. Strategy implication for @BELIEF:LAT80LON-30 route: after each movement step, the entity1 trail column updates to the block's new column. The first step (UP from r40–41 c29–33) is safe because trail is already at c29–33 (same column). After moving to r35–36 c29–33, trail updates — the block then moves RIGHT to c34–38, which should be safe (trail is at c29–33 = to the LEFT, not a column the block is moving into). After RIGHT, trail updates to c34–38 → now trail column = block column again for the next UP. Each UP step keeps trail aligned. Confidence 120 — based on two data points (steps 16 and 18 of session 23); mechanism could be more complex.
+
+---
+
+SECTION 1
+
+@LAT-290LON10 | created:1779926400 | updated:1779926400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT10LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779926400
+[/ew]
+
+## ls20 — Session 25 Log (2026-05-25)
+
+```session-log
+timestamp: 1779926400
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "b34a193b-e49c-449a-8cc0-9aee05e9088b"
+card_id: "b0665fd5-3600-46e8-9953-a0d3d1725d0d"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded route, confirmed functional). Level 2 entered; 45 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Same as sessions 23 and 24.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+Hardcoded `_LEVEL1_ROUTE` confirmed functional again. Block entered entity2 interior at r10–11 c34–38.
+
+**Frame[0] — Level 1 WIN state (full structural read)**:
+
+- **Block**: r10–11 c34–38 (value 12). Inside entity2 ring. ✓
+- **Entity1 carrier — STATE 1**: r55–56 c3–8=9 (full); r57–58 c7–8=9 only (c1–6=5); r59–60 c3–4=9, c5–6=5, c7–8=9. State 1 at L1 WIN. ✓
+- **Entity1 trail**: r12–14 c34–38=9 (trail inside entity2 ring below block body). ✓
+- **Timer**: r61–62 c13–26=3 (14 consumed), c27–54=11 (28 remaining). 14 ticking actions. ✓
+- **Cluster**: r31 c21=0, r32 c20=1 c21–22=0, r33 c21=1. Cols 20–22, rows 31–33. Stable. ✓
+
+**Level 1 maze — full structural confirmation from frame[0]**:
+- Shaft (c34–38): r17–24 confirmed (value 3)
+- Wide corridor: r25–29 c14–53 confirmed ✓
+- Void gap c29–33 at r30–39 confirmed ✓
+- Left arm r40–49 c19–23 (narrow left corridor below cluster zone)
+- Lower wide zone r45–49 c19–53
+
+---
+
+### Level 2 — First Frame Full Analysis (frame[1])
+
+This is the most complete level 2 structural read to date. All corridor positions confirmed.
+
+**Block**: r40–41 c29–33 (value 12). Start position. ✓
+
+**Entity1 carrier — STATE 1** at L2 start:
+- r55–56: c3–8=9 (full)
+- r57–58: c7–8=9 only (c1–6=5)
+- r59–60: c3–4=9, c5–6=5, c7–8=9
+- **@BELIEF:LAT90LON-30
