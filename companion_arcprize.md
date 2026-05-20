@@ -301,19 +301,19 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1779667200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1779840000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:175
-rev:15
-sal:9
-touched:1779667200
+conf:195
+rev:16
+sal:12
+touched:1779840000
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 1 NOT WON in sessions 13–18 (6 consecutive losses); level 2 not yet reached**. Root cause identified and code fix deployed (2026-05-20): step-0 UP probe now hardcoded in `kaggle_agent.py`; LEFT eligibility threshold (rows ≤29) added to @LAT-140LON10. Session 19 is the first test of the fix. Prior sessions 10–12: level 1 WON at step 15 (baseline 22, above-baseline efficiency). All 7 baselines known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Budget: 30 actions per run (sessions 15–18 confirmed).
+**Current level**: ls20 — **level 1 SOLVED (hardcoded route, sessions 10–12 + 23 confirmed). Level 2 active — 15 actions taken, NOT WON (session 23). Sessions 19–22: 10-session L1 losing streak. Session 23: streak broken.** All 7 baselines known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Budget: 60 actions per run (session 24+). Level 1 uses 15 actions (hardcode). Level 2 remaining budget: 45 actions.
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -330,6 +330,8 @@ touched:1779667200
 - **Sessions 14–15: NOT WON** — 50 actions each. LOCUS chose LEFT at step 0 (no frame); void gap c29-33 blocked silently. See @LAT-180LON10, @LAT-190LON10.
 - **Sessions 16–17: NOT WON** — 30 actions each (budget confirmed at 30). Blocked-move warning deployed; step-0 LEFT still chosen by LOCUS. See @LAT-200LON10, @LAT-210LON10.
 - **Session 18: NOT WON** — 30 actions. Code fix not yet applied at run time. Validated @BELIEF:LAT80LON20 (conf→245), @BELIEF:LAT70LON20 (conf→190). See @LAT-220LON10.
+- **Sessions 19–22: NOT WON** — 30 actions each. LOCUS execution failures despite code fix. 10-consecutive-loss streak. See @LAT-230LON10–@LAT-260LON10.
+- **Session 23: WIN at step 15** ✓ — `_LEVEL1_ROUTE` full hardcode confirmed functional. 10-loss streak broken. Score 3.571. See @LAT-270LON10.
 
 **Level 2 outcomes**:
 - Session 5: 48 steps into level 2 (steps 15–62 globally), QUIT — trapped by regenerated 11-ring wall; timer expired
@@ -340,6 +342,7 @@ touched:1779667200
 - **Session 10**: 75 steps, two timer-exhaustion restarts. NOT WON. See @LAT-130LON10.
 - **Session 11**: Hybrid run. Autopilot executed 17-step route. Block entered entity2 at rows 40-41 cols 14-18 (DIFF=76 confirmed). State 0 → NOT_FINISHED. NOT WON. See @LAT-150LON10.
 - **Session 12**: Hybrid run. Level 1 WON step 15 (manual). Level 2 NOT WON: old 17-step route re-executed (sequence was null/manual). CRITICAL DISCOVERY: 11-ring A causes FULL TIMER RESET to 42 cols (not +15 additive). Corridor isolation at rows 15-16 confirmed. See @LAT-160LON10.
+- **Session 23**: Level 2 entered. 15 actions, NOT WON. parse_action bug wasted 7 actions. Block reached r30-31 c34-38 before budget exhausted. CRITICAL DISCOVERY: entity1 state 1 carries over from L1 WIN — @BELIEF:LAT80LON-20 contradicted. Direct LEFT from c29-33 at r40-41 is VOID. See @LAT-270LON10.
 
 **Session 10 — critical mechanic corrections** (see @LAT-130LON10 + @LAT20LON-30):
 - **Timer level 2 = 2 cols/step** (NOT 1 col/step — session 9 belief was wrong). 42 cols = 21 steps max.
@@ -353,13 +356,11 @@ touched:1779667200
 - **11-ring A = FULL TIMER RESET** (session 12 timer trace): at seq=10 (LEFT, step 26) timer was c13-34=3 (22 consumed). At seq=11 (first DOWN, step 27) timer became c13-54=11 (full 42 = RESET). "+15 additive" prior belief is RETIRED.
 - **Corridor isolation at rows 15-16 CONFIRMED**: c29-38 (center-right) and c44-53 (far-right) are SEPARATED by void gap c39-43 at rows 15-16. RIGHT×3 from center-right at rows 15-16 is BLOCKED. Wide connector (rows 10-14) is the only cross-track path.
 
-**Session 12 @locus log — TWO FATAL FLAWS in 51-step route** (see @LAT-160LON10 "Post-Summary Findings", @BELIEF:LAT10LON0, @BELIEF:LAT10LON10):
-- **Flaw 1 (step 31)**: RIGHT at entity1 state 1 may be blocked (direction restriction — session 10 evidence, unvalidated vs void collision).
-- **Flaw 2 (phase 4)**: DOWN from rows 10-11 c14-18 hits A-wall at rows 16-18 c15-17. Block at c14-18 overlaps wall → BLOCKED. c9-13 bypass valid geometrically but requires RIGHT at state 1.
-
-**Session 13 OUTCOME (2026-05-19)**: Level 1 NOT WON. All 50 actions consumed in level 1. Root cause: no first-frame scan before committing route; cluster position varied from prior sessions. Level 2 not reached. Score 0.0. See @LAT-170LON10.
-
-**Session 19 plan**: `python launch_training.py ls20`. Code fix deployed: step-0 UP is hardcoded in `kaggle_agent.py` (LOCUS not queried at step 0). LOCUS reads LEFT eligibility from frame at steps 1+: LEFT only when block at rows ≤29. Target: ≤14 actions on level 1 (baseline 22). After level 1 WIN: level 2 probe-first — steps 1-27 (A-reset + cross), then RIGHT probe at rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
+**Session 23 — critical mechanic discoveries** (see @LAT-270LON10):
+- **Entity1 state 1 carries over from L1 WIN** — level 2 first frame shows state 1, not state 0. @BELIEF:LAT80LON-20 contradicted. Cross (state-changer) may be unnecessary if state already 1; can proceed directly to entity2 interior.
+- **Void at c21-28 r40-41**: LEFT from c29-33 at r40-41 is blocked. Direct approach to entity2 from start position is impossible.
+- **Direction restriction (trail attraction) at state 1**: action 0 (UP) in start zone moves toward entity1 trail column rather than NORTH when trail column ≠ block column. See @BELIEF:LAT10LON10.
+- **parse_action bug fixed**: `r"\baction[:\s]+(\d+)"` removed; last-line-first priority added. Budget raised to 60.
 
 **Session 8 — level 1 key discoveries**:
 - **Cluster position varies per fresh game**: session 7 cluster at rows 47–49; session 8 cluster at rows 31–33. Cols 20–22 stable. Must scan first frame to locate cluster.
@@ -1261,18 +1262,18 @@ Walk parameters: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-
 
 ---
 
-@BELIEF:LAT80LON-20 | created:1779062400 | updated:1779062400 | relates:extracted_from>@LAT-10LON10,extracted_from>@LAT20LON-30,extracted_from>@LAT-100LON10,extracted_from>@LAT-90LON10,contained_by>@LAT60LON20
+@BELIEF:LAT80LON-20 | created:1779062400 | updated:1779840000 | relates:extracted_from>@LAT-10LON10,extracted_from>@LAT20LON-30,extracted_from>@LAT-100LON10,extracted_from>@LAT-90LON10,contradicted_by>@LAT-270LON10,contained_by>@LAT60LON20
 [lp]
 centroid:LAT80LON-20
-confidence:235
+confidence:40
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
-contradiction_flag:false
+contradiction_flag:true
 source_count:4
 [/lp]
 
-**Entity1 state resets to 0 at the start of each new level**, regardless of end-state at the prior level. Validated Phase 4 in session 7: level 1 won at state 1; level 2 start frame trail = solid 9s = state 0. Must collect state-changer in every level. The "state carries between levels" prior (sessions 1–5) is fully retired.
+**CONTRADICTED (session 23) — Entity1 state does NOT reliably reset to 0 at new level start.** Prior belief (conf:235): "level 1 won at state 1; level 2 start frame trail = solid 9s = state 0." Session 23 directly contradicts this: level 2 first frame shows entity1 carrier at state 1 (partial trail) carrying over from level 1 WIN. The session 7 "state 0 at level 2 start" observation may have been from a different run state, a different environment seed, or the state was never correctly read. The consequence: the cross (state-changer) in level 2 may already be collected at level 2 start if entity1 is at state 1. This fundamentally changes the level 2 route — if state is already 1, block can proceed directly to entity2 interior without collecting the cross first. Requires validation in session 24.
 
 ---
 
@@ -1566,18 +1567,24 @@ source_count:2
 
 ---
 
-@BELIEF:LAT10LON10 | created:1779321600 | updated:1779321600 | relates:extracted_from>@LAT-160LON10,related_to>@BELIEF:LAT70LON0,contained_by>@LAT60LON20
+@BELIEF:LAT10LON10 | created:1779321600 | updated:1779840000 | relates:extracted_from>@LAT-160LON10,extracted_from>@LAT-270LON10,related_to>@BELIEF:LAT70LON0,contained_by>@LAT60LON20
 [lp]
 centroid:LAT10LON10
-confidence:140
+confidence:155
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:1
+source_count:2
 [/lp]
 
-**UNRESOLVED: RIGHT (action 3) may be blocked when entity1 is at state 1 (cross collected).** Session 10 evidence: after cross collection (state 0→1 at step 32), a RIGHT step at rows 35-36 c49-53 produced no movement (DIFF=4, timer-only). This was recorded as "direction restriction at state 1." Alternative explanation: at rows 35-36, far-right track is c49-53 (10-col section); RIGHT from c49-53 → c54-58 may be void at rows 35-36 (track narrows to c49-53 at rows 35-39 = c54-58 is void). The session 10 block may have simply hit a corridor wall, not a state-based restriction. **This is the single most critical unknown for any session 13 route**: if RIGHT is blocked at state 1, both the B-probe exit (step 31) and the c9-13 bypass RIGHT step (rows 20-21 c9-13→c14-18) are impossible. If RIGHT is NOT restricted by state, both work. Validate in session 13 by probing RIGHT from a corridor-valid position after cross collection (e.g., rows 45-46 c49-53 → c54-58 within c44-58=3 at rows 40-49). See @LAT-160LON10.
+**PARTIALLY CONFIRMED (session 23): Direction anomaly exists at entity1 state 1, but mechanism is trail-attraction not cardinal block.** Prior belief framed this as "RIGHT may be blocked at state 1." Session 23 reveals a different mechanic: block is *attracted toward the entity1 trail column* at state 1 when in the start zone.
+
+Session 23 evidence:
+- Step 16: action 0 (UP) from r40-41 c34-38 → moved WEST to r40-41 c29-33 (entity1 trail at c29-33).
+- Step 18: action 0 (UP) from r40-41 c34-38 → moved NORTH to r35-36 (entity1 trail now at c34-38, same column as block).
+
+The key difference: when trail column ≠ block column, action 0 moves toward trail column; when trail column = block column, action 0 moves normally (NORTH). This is not a blanket direction restriction — it is positional attraction. The "RIGHT blocked at state 1" session 10 observation may have been a corridor wall collision rather than state-based restriction. **Revised priority for session 24**: validate whether trail-attraction is a general rule (any action redirects toward trail?) or specific to action 0 (UP) in start zone.
 
 ---
 
@@ -2543,4 +2550,46 @@ resets: 0
 15 actions consumed in level 2 (steps 16–30 globally). Level 2 NOT WON. Frame[1] is the level 2 first frame.
 
 **frame[1] — level 2 first frame**:
-- Block (value 12): r40-41 c29
+- Block (value 12): r40-41 c29-33 — start position confirmed. NOT inside entity2.
+- Entity1 carrier: **state 1** — carries over from level 1 WIN. Does NOT reset to 0 at new level. @BELIEF:LAT80LON-20 directly contradicted.
+- Entity2 ring: r38-46 c12-20 (value 3 wall, value 5 interior). Interior: r39-45 c13-19. Win = block inside interior at state 1.
+- Void confirmed: c21-28 at r40-41 = VOID (LEFT from c29-33 at r40-41 blocked — direct approach to entity2 impossible).
+- Void confirmed: c29-33 rows 24-34 = VOID above (UP from r35-36 c29-33 is blocked).
+
+**Direction restriction (state 1) — partial confirmation**:
+- Step 16: action 0 (UP) from r40-41 c34-38 → moved WEST to r40-41 c29-33 (not NORTH). Entity1 trail was at c29-33 (L1 start wake).
+- Step 18: action 0 (UP) from r40-41 c34-38 → moved NORTH to r35-36. Entity1 trail was at c34-38 (new wake).
+- Observation: block attracted toward entity1 trail column at state 1 when in start zone. Behavior depends on trail position, not a simple cardinal block. @BELIEF:LAT10LON10 partially confirmed.
+
+**parse_action bug (identified post-session)**:
+- Steps 20–26: LOCUS echoed "Last action 0 (UP) produced no movement" in its reasoning text. Pattern `r"\baction[:\s]+(\d+)"` matched "action 0" → returned 0 (UP) instead of LOCUS's intended 3 (RIGHT). Seven consecutive wrong UP actions executed at r35-36 c29-33 (void above). Seven actions wasted.
+- Fix deployed for session 24: check last non-empty line of response first; removed `r"\baction[:\s]+(\d+)"` from keyword scan. Blocked-move warning now uses direction name not integer to eliminate the echo source.
+- Budget also increased from 30 → 60 for session 24 (giving 45 level-2 actions after L1 hardcode).
+
+**Level 2 block position at session end (step 29)**: r30-31 c34-38. Budget exhausted. LOCUS had proposed DOWN×2 LEFT×4 from r40-41 c34-38 → c14-18, but c21-28 at r40-41 is VOID — this route cannot pass directly LEFT from that row.
+
+### Open questions for session 24
+1. Full void map above r35-36: can block reach entity2 corridor by going UP from r35-36 c34-38 into wide corridor (rows 5-14), then LEFT, then DOWN?
+2. Direction restriction at state 1: is the attraction to entity1 trail column a persistent mechanic, or was it a one-time positional coincidence?
+3. Does @BELIEF:LAT80LON-20 failure mean cross-collection order is different for level 2, or does entity1 carry state 1 generically on any level-WIN carry-over?
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-20, DREAM session 23)
+
+Walk parameters: 100 walks × length 20. Source: @LAT-270LON10 (session 23 log). High-sal pull: @LAT-10LON10 (sal:12), @BELIEF:LAT80LON-20 (contradiction trigger), @BELIEF:LAT10LON10 (partial confirm). One new confirmed belief written. @BELIEF:LAT80LON-20 marked contradicted. @BELIEF:LAT10LON10 updated to confidence 155.
+
+---
+
+@BELIEF:LAT90LON-20 | created:1779840000 | updated:1779840000 | relates:extracted_from>@LAT-270LON10,contradicts>@BELIEF:LAT80LON-20,informs>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
+[lp]
+centroid:LAT90LON-20
+confidence:195
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**Entity1 state carries over from a level WIN into the next level.** Session 23 direct observation: level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN (no timer restart between levels). Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: if entity1 is at state 1 at level 2 start (because level 1 was won at state 1), the block can enter entity2 interior and win WITHOUT collecting the cross first. The session 7 "state 0 at level 2 start" observation that supported @BELIEF:LAT80LON-20 may have been from a level 1 WIN where entity1 was at state 0, or a mis-read of the frame. Current confidence 195 rather than 255 because: (a) single session observation, (b) mechanism not fully understood — it may be that state 1 always carries from any L1 WIN, or only from this specific environment seed, or only when L1 was won at state 1. Session 24 will provide additional data.
