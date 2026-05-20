@@ -331,14 +331,19 @@ def run_training_attempt(
                     print("[agent] Could not parse action — defaulting to 0")
 
             # LEFT eligibility: void gap at cols 29-33, rows 30-41 silently
-            # blocks LEFT from the shaft. LOCUS sees the cluster at cols 20-22
-            # and may select LEFT before the block clears the void zone.
-            # Enforce the threshold in code — same pattern as the step-0 hardcode.
-            if action_idx == 2 and cur_block_pos is not None and cur_block_pos[0] > 29:
+            # blocks LEFT from the shaft (c34-38). Only gate LEFT when the block
+            # is at the shaft or east of it (col >= 34) — once the block is
+            # already west of the void (col < 34), LEFT is always safe.
+            if (
+                action_idx == 2
+                and cur_block_pos is not None
+                and cur_block_pos[0] > 29
+                and cur_block_pos[1] >= 34
+            ):
                 if verbose:
                     print(
-                        f"[agent] LEFT blocked (row {cur_block_pos[0]} > 29)"
-                        " — overriding to UP"
+                        f"[agent] LEFT gated (row {cur_block_pos[0]} > 29,"
+                        f" col {cur_block_pos[1]} >= 34) — overriding to UP"
                     )
                 action_idx = 0
 

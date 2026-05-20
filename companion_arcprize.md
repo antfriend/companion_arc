@@ -472,8 +472,9 @@ Game ID: ls20. 7 levels. COMPETITION mode.
 **Entity1 — fixed state-carrier (REVISED session 10)**
 - @PERCEPT:before — "entity1 is a 3-row × 5-col trailing 9-pattern below the block" (sessions 1–9)
 - @PERCEPT:after — entity1 is a **fixed entity at rows 53–60, cols 1–10** (bordered value-5 outer, value-9 interior). Its interior 9-cells CHANGE when a state-changer is collected. The trailing 9-cells below the block are a visual trail artifact, not entity1.
-- **State 0** (initial): r55-56 full c3-8=9; r59-60 partial c3-4=9 + c7-8=9 (gap at c5-6). Also r57-58 c7-8=9.
-- **State 1** (after 1 cross collection): r55-56 partial c3-4=9 + c7-8=9 (gap); r59-60 full c3-8=9. Pattern "shifts" downward.
+- **State 0** (confirmed session 21 level 1 frames): r55-56 full c3-8=9; **r57-58 c3-4=9 only** (NOT c7-8=9); r59-60 partial c3-4=9 + c7-8=9 (gap at c5-6).
+- **State 1** (confirmed session 21 level 1 frame 5): r55-56 remains full c3-8=9 **(UNCHANGED — do NOT use r55-56 to detect state change)**; **r57-58 transitions to c7-8=9 only (c3-4 disappears)** — this is the reliable collection signal for level 1. r59-60 unchanged. Also: entity1 carrier border transitions 5→0 during the collection animation, then back to 5. The ring dims (5→0) in the animation but restores; the r57-58 change persists.
+- **State 2+** (level 2 session 10 DIFF): r55-56 partial, r59-60 full — level 2 transition differs from level 1.
 - State cycle: 0→1→2→3→0. Each cross collection = 1 advance.
 - **State RESETS on TIMER RESTART** (within level). Confirmed session 10: step 32 advanced state 0→1; restart at step 37 reset state back to 0 (step 47 frame shows state 0 pattern). Restarts inside a level do NOT preserve state.
 - State also resets on new level (confirmed session 7).
