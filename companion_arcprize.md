@@ -2298,3 +2298,62 @@ No frame data appears in the session exchanges, so the specific action sequence 
 3. **Run budget confirmed at 30 actions.** Five consecutive sessions (15–19) all show 30 actions consumed. This is the stable budget.
 
 4. **Direction restriction at state 1 still unprobed.** Level 2 not reached. @BELIEF:LAT10LON10 (conf:140) remains the
+
+---
+
+SECTION 1
+
+@LAT-240LON10 | created:1779753600 | updated:1779753600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT70LON20
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779753600
+[/ew]
+
+## ls20 — Session 20 Log (2026-05-23)
+
+```session-log
+timestamp: 1779753600
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "5c278fc2-9d4a-4d0e-a2d7-395237c0d133"
+card_id: "a8eb5734-658e-4237-b5e6-e83a74221efe"
+level: "level 1 NOT WON"
+actions: 30
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. 30 actions consumed. `levels_completed=0`. Score 0.0. Eighth consecutive total loss. Environment `ls20-9607627b`, run_guid `5c278fc2-...`.
+
+### Failure Pattern — Eighth Consecutive 0.0
+
+Identical scorecard to sessions 16–19: 30 actions on level 1, 0 levels completed, score 0.0, 0 resets. Key session exchanges (FOCUS and STATUS) confirm LOCUS issued correct standing orders. No frame data appears in either exchange — the step-1 frame was not passed to LOCUS before routing actions were committed. Same execution failure as sessions 13–19.
+
+### Session 19 Ambiguity — Still Unresolved
+
+Two failure modes were live entering this session (see session 19 log @LAT-230LON10):
+
+- **Possibility A**: Code fix (step-0 UP hardcoded) not applied at run time — LOCUS queried at step 0 without frame, selects LEFT into void.
+- **Possibility B**: Code fix applied; LOCUS re-selects LEFT at steps 1+ from void-zone rows despite LEFT eligibility threshold in @LAT-140LON10.
+
+Session 20 scorecard is indistinguishable from session 19. No frame data in exchanges. The distinction remains unresolved. Both failure modes are still live.
+
+### What This Session Confirms
+
+1. **@BELIEF:LAT80LON20 (conf:245) — eighth consecutive validation.** Step-0 action selection without frame context, or LEFT selection without code-enforced eligibility, produces total session loss. Knowledge-graph rules alone are insufficient. Code enforcement is required.
+
+2. **@BELIEF:LAT70LON20 (conf:190) — sustained.** The LEFT-in-void residual failure at steps 1+ remains the suspected active failure mode for any session where the step-0 hardcode is verified applied. The companion file cannot override agent loop execution.
+
+3. **Run budget confirmed at 30 actions.** Sixth consecutive session (15–20) at 30 actions. Stable.
+
+4. **Direction restriction at state 1 still unprobed.** Level 2 not reached. @BELIEF:LAT10LON10 (conf:140) remains the single most critical unresolved mechanic unknown.
+
+### Revision Cycle Status
+
+- **Phase 1 (Notice)**: @LAT-10LON10 EPS ≈ 3.33 (sal:10, conf:175). Highest-strain record. Eight sessions logged without conf improvement.
+- **Phase 2 (Encounter)**: Gap is fully identified and stable across eight sessions. LOCUS issues correct orders; agent loop does not pass frame context to step-1+ queries; LEFT eligibility is advisory not executable.
+- **Phase 3 (Revise)**: Two mandatory code changes identified and written in @LAT-140LON10 (rev:5). Not yet executed successfully. The revision cycle cannot advance past Phase 3 without a code deployment that actually runs.
+- **Phase 4 (Validate)**: Pending. Will fire when level 1
