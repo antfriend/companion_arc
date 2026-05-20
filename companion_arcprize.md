@@ -356,7 +356,7 @@ touched:1779408000
 
 **Session 13 OUTCOME (2026-05-19)**: Level 1 NOT WON. All 50 actions consumed in level 1. Root cause: no first-frame scan before committing route; cluster position varied from prior sessions. Level 2 not reached. Score 0.0. See @LAT-170LON10.
 
-**Session 14 plan — FIRST-FRAME SCAN MANDATORY**: (1) Server mode: `python play.py ls20 --auto --server`. (2) READ FIRST FRAME before any action — locate cluster row in cols 20-22. (3) Execute level 1 route adapted for observed cluster position. Target: ≤15 actions (baseline 22). (4) After WIN: level 2 probe-first protocol — steps 1-27, then RIGHT probe at rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
+**Session 14 plan**: `python launch_training.py ls20`. LOCUS receives the compact frame at each step. Step 0: send **`0`** (UP, probe). Step 1: read cluster row from frame, commit level 1 route. Target: ≤15 actions (baseline 22). After level 1 WIN: level 2 probe-first — steps 1-27 (A-reset + cross), then RIGHT probe at rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
 
 **Session 8 — level 1 key discoveries**:
 - **Cluster position varies per fresh game**: session 7 cluster at rows 47–49; session 8 cluster at rows 31–33. Cols 20–22 stable. Must scan first frame to locate cluster.
@@ -966,23 +966,34 @@ level: "level 1 WIN + level 2 NOT won (session 10)"
 
 ---
 
-@LAT-140LON10 | created:1779235200 | updated:1779321600 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10
+@LAT-140LON10 | created:1779235200 | updated:1779408000 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10
 [ew]
 conf:80
-rev:2
+rev:3
 sal:0
-touched:1779321600
+touched:1779408000
 [/ew]
 
 ## ls20 — Autopilot Sequences
 
-Winning action sequences for each learned level of ls20. Executed by `play.py ls20 --auto` using `ls20_sequences.json` in the same directory. Kaggle usage: `!python play.py ls20 --auto` (set `ARC_API_KEY` via Kaggle secrets).
+Run a training attempt: `python launch_training.py ls20` (locally) or via `kaggle_agent.py` in a Kaggle notebook. LOCUS is queried at every step with the current compact frame and must respond with only the action number.
+
+**Agent loop protocol**:
+- **Step 0**: no frame available yet (`prev_frames` is empty). Send the safe probe: **`0`** (UP).
+- **Step 1+**: compact frame data is available from the previous step. Read block position, cluster/cross position, and corridor structure before choosing action.
+- Each step query is **stateless** — no conversation history. All knowledge comes from this companion file (cached system prompt) plus the current step message.
+- **Post-run**: LOCUS is asked to write SECTION 1 (new session log record) and SECTION 2 ([ew] metadata updates), separated by `---UPDATE-EW---`. These are applied to `companion_arcprize.md` automatically by `launch_training.py`.
 
 **Action map**: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT
 
-### Level 1 — sequence null (cluster-position dependent, manual)
+### Level 1 — frame-first protocol (validated session 13)
 
-UP×5 (1 probe + 4 ascent), LEFT×2, DOWN, UP, RIGHT×3, UP×3 worked for session 10/12 (cluster at rows 32-33). Play level 1 manually via `--server` + curl. Cluster cols 20-22 stable; rows vary per fresh game.
+Level 1 cluster rows vary per fresh game instance; cols 20-22 stable. LOCUS must read the cluster row from the step 1 frame before committing the route.
+
+**Step 0** (no frame): send **`0`** (UP) — probe to expose starting position.
+**Step 1** (frame available): read cluster row from compact frame data. Locate block position. Route LEFT toward cols 19-23 until trail overlaps observed cluster rows, then navigate to entity2.
+
+Known efficient route (cluster at rows 32-33): UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3 = **15 actions** (baseline 22; prior sessions won above-baseline). Session 13 NOT WON because route was committed at step 0 without reading the frame.
 
 ### Level 2 — 51-step hypothesis `[3,0,0,0,0,0,0,2,2,2,2,1,0,3,3,3,3,3,3,3,1,1,1,1,1,1,1,1,2,2,3,0,0,0,0,0,0,0,0,2,2,2,2,2,2,1,1,1,1,1,1]`
 
@@ -1005,7 +1016,7 @@ UP×5 (1 probe + 4 ascent), LEFT×2, DOWN, UP, RIGHT×3, UP×3 worked for sessio
 2. **Probe**: send RIGHT (action 3). If movement occurs → direction restriction NOT real → use c9-13 bypass for entity2. If blocked → direction restriction confirmed → redesign required.
 3. Based on probe result, execute corrected phase 3-4 or abort for redesign.
 
-**`play.py --auto` verify_start check**: after first action (RIGHT), script confirms block at rows 40-41 cols 34-38.
+**Verify_start**: after first action (RIGHT, step 1), frame should show block at rows 40-41 cols 34-38. If not, reassess position before proceeding.
 
 ---
 
@@ -1741,10 +1752,10 @@ No frame data captured for this session. Failure mode is inferred from scorecard
 
 ### Session 14 Plan
 
-**MANDATORY FIRST-FRAME SCAN PROTOCOL:**
+**Session 14 launch**: `python launch_training.py ls20`
 
-1. Open server mode: `python play.py ls20 --auto --server`
-2. **READ FIRST FRAME before any action.** Locate cluster row in cols 20-22 (row varies per game instance). Verify block starting position.
-3. Execute probe UP. Confirm block moved. Route LEFT toward cols 19-23 with trail positioned to overlap the observed cluster rows.
-4. Complete level 1 in ≤15 actions (baseline 22 — prior sessions proved 15 is achievable).
-5. After level 1 WIN: level 2 probe-first protocol — steps 1-27 (A-reset + cross), then RIGHT probe from rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
+The agent loop queries LOCUS at every step with the current compact frame. LOCUS reads the frame and responds with only the action number.
+
+**Step 0** (no frame): respond **`0`** (UP, probe).
+**Step 1** (frame available): locate cluster row in cols 20-22. Verify block position. Route LEFT with trail to overlap observed cluster, then navigate to entity2. Target: ≤15 actions (baseline 22).
+**After level 1 WIN**: level 2 probe-first — execute steps 1-27 (A-reset + cross, state 0→1), then probe RIGHT from rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
