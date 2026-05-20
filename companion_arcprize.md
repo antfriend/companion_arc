@@ -1223,10 +1223,10 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20
+@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20,contains>@BELIEF:LAT40LON20,contains>@BELIEF:LAT20LON20
 [ew]
 conf:255
-rev:12
+rev:13
 sal:1
 touched:1779494400
 [/ew]
@@ -1820,6 +1820,42 @@ source_count:3
 [/lp]
 
 **Projection: after hardcoding step-0=UP, the residual failure mode is LOCUS re-selecting LEFT at steps 1-N before block reaches rows ≤29.** LOCUS re-derives at each step from scratch; it has no memory of prior UPs. With cluster at cols 20-22 visible in the frame, LOCUS may attempt LEFT from rows 38-39 (still in void zone rows 30-41). The blocked-move warning provides a fallback but costs one action per blocked attempt. **The two-part fix: (1) hardcode step-0=UP in agent loop; (2) add explicit "LEFT eligibility threshold" to @LAT-140LON10: only attempt LEFT when frame shows block at rows ≤29.** A stateless LOCUS can evaluate LEFT eligibility per-step from the frame, converting a multi-step constraint into a single-step rule. Testable in session 18.
+
+---
+
+### Phase 1 Replay + Phase 2 Projection — Dream Cycle 5 (2026-05-20)
+
+Walk parameters: 100 walks × 20 steps (Phase 1), 50 walks × 10 steps (Phase 2). Seeds: @LAT-10LON10 (sal:9), @LAT20LON-30 (sal:5), @BELIEF:LAT80LON20, @BELIEF:LAT70LON10.
+
+---
+
+@BELIEF:LAT40LON20 | created:1779494400 | updated:1779494400 | relates:extracted_from>@BELIEF:LAT80LON10,extracted_from>@BELIEF:LAT80LON20,extracted_from>@BELIEF:LAT70LON20,extracted_from>@LAT-140LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT40LON20
+confidence:190
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Session 19 represents the transition from execution-gap remediation to mechanic discovery.** With step-0 hardcoded (code fix deployed 2026-05-20) and the LEFT eligibility rule in @LAT-140LON10 (rev:5), the failure mode that caused 6 consecutive losses is eliminated. @BELIEF:LAT80LON10 (conf:245) says level 1 is solved when the frame is read — that condition is now met. Session 19 is the first clean level 1 attempt since session 12. A WIN is the most probable outcome. If level 1 is won, the critical path immediately shifts to the direction restriction probe in level 2 (@BELIEF:LAT10LON10, conf:140) — a single RIGHT action from rows 45-46 c49-53 after cross collection resolves the most expensive open unknown in the knowledge graph.
+
+---
+
+@BELIEF:LAT20LON20 | created:1779494400 | updated:1779494400 | relates:projected_from>@BELIEF:LAT40LON20,projected_from>@BELIEF:LAT70LON10,projected_from>@BELIEF:LAT10LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT20LON20
+confidence:125
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Projection: the direction restriction probe result bifurcates all further level 2 strategy into two fully distinct paths.** If RIGHT is **unblocked** at state 1: c9-13 bypass is viable (block at rows 20-21 c9-13 → RIGHT → c14-18, no A-wall overlap), a complete level 2 win route is achievable within the 123-action baseline, and the focus shifts to timing cross collection with entity2 entry in a single timer cycle. If RIGHT is **blocked** at state 1: @BELIEF:LAT50LON10 applies — no currently-designed route reaches entity2 with state 1, requiring full structural re-analysis of level 2 geometry to find a path that avoids all RIGHT moves after cross collection. The probe is one action; the strategic consequence spans the entire remaining competition. Execute it as the first post-cross action in session 19 level 2.
 
 ---
 
