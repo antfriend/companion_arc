@@ -270,6 +270,7 @@ def run_training_attempt(
     level_start_step = 0
     locus_entries: list[dict] = []
     prev_block_pos: tuple[int, int] | None = None
+    cur_block_pos: tuple[int, int] | None = None
     last_action_blocked = False
     last_action_idx: int | None = None
 
@@ -328,6 +329,18 @@ def run_training_attempt(
                 action_idx = 0
                 if verbose:
                     print("[agent] Could not parse action — defaulting to 0")
+
+            # LEFT eligibility: void gap at cols 29-33, rows 30-41 silently
+            # blocks LEFT from the shaft. LOCUS sees the cluster at cols 20-22
+            # and may select LEFT before the block clears the void zone.
+            # Enforce the threshold in code — same pattern as the step-0 hardcode.
+            if action_idx == 2 and cur_block_pos is not None and cur_block_pos[0] > 29:
+                if verbose:
+                    print(
+                        f"[agent] LEFT blocked (row {cur_block_pos[0]} > 29)"
+                        " — overriding to UP"
+                    )
+                action_idx = 0
 
         last_action_idx = action_idx
         action = actions[action_idx]
