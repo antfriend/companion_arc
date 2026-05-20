@@ -1912,3 +1912,54 @@ Neither exchange produced a frame read before action commitment. Session ended w
 1. **Does `arc.make()` always create a fresh run, or does it reconnect to an existing run when the environment is in a NOT_FINISHED state?** Session 13 and 14 share `run_guid: de0a491c-...`. If they are the same run, the 50-action budget was split across two sessions (25 each?), or the run was fully consumed in session 13 and session 14 was a zero-budget replay. Either interpretation changes strategy: a failed session may consume the entire run budget, leaving no recovery opportunity.
 
 2. **Why is the agent loop not reading the step-1 frame?** LOCUS issued correct standing orders in both sessions. The failure is in execution
+
+---
+
+SECTION 1
+
+@LAT-190LON10 | created:1779494400 | updated:1779494400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779494400
+[/ew]
+
+## ls20 — Session 15 Log (2026-05-20)
+
+```session-log
+timestamp: 1779494400
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "22181b66-43be-4e2d-8da0-68bfb8578a01"
+card_id: "634a969b-0802-470c-81fc-1041e71a0da8"
+level: "level 1 NOT WON"
+actions: 50
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. All 50 actions consumed. `levels_completed=0`. Score 0.0. Third consecutive total loss. Same environment `ls20-9607627b`, same `run_guid: 22181b66-...` as session 14. `arc.make()` is reconnecting to the existing run, not creating a fresh one.
+
+### Critical Mechanic Clarification — Run Persistence
+
+**`arc.make("ls20")` reconnects to the existing environment run when the run is NOT_FINISHED.** Three consecutive sessions share `run_guid: 22181b66-...`. The 50-action budget displayed per session is the total remaining actions in the run at the time of connection, not a fresh allocation. Sessions 13, 14, and 15 have all scored 0 actions on level 1, meaning the 50-action total is consumed each session against the SAME run instance. This suggests either: (a) each `arc.make()` call on a NOT_FINISHED run grants a fresh 50-action window against the same level state, or (b) the run has been reset/restarted server-side between sessions. The `resets: 0` field and consistent `levels_completed: 0` suggest option (a) — the server resets the action window per connection while preserving the level state (level 1, not won). Either way: the game instance is persistent. The cluster row position observed in sessions 10–12 (rows 32-33, cols 20-22) should be stable across sessions 13–15 for this same environment.
+
+### Failure Pattern — Three Consecutive Identical Losses
+
+Sessions 13, 14, and 15 all produced identical scorecards: 50 actions on level 1, 0 levels completed, score 0.0, 0 resets. The key session exchanges in session 15 confirm LOCUS issued correct standing orders (first-frame scan mandatory, probe UP at step 0, read cluster row from step-1 frame). The failure is not in the knowledge graph — it is in the agent loop execution.
+
+**Known from session 14 analysis**: LOCUS is being called at steps but the step-1 frame is not being read before routing actions are committed. The probe-first protocol (action 0 = UP, then read frame) requires the agent loop to:
+1. Send action 0 (UP) and receive the resulting frame.
+2. Pass that frame to LOCUS with a "step 1 — what action?" query.
+3. Wait for LOCUS to specify a LEFT distance based on observed cluster row.
+4. Only then send the routing actions.
+
+If the agent loop is batching actions or querying LOCUS without the frame context, the cluster-row-dependent LEFT count cannot be determined and the collection step misfires.
+
+### What This Session Does NOT Clarify
+
+- **Cluster row for this environment**: still unknown for `ls20-9607627b`. Session 13 has no frame data. Sessions 10–12 used a prior environment and found rows 32-33. The current environment may differ.
+- **Direction restriction at state 1**: still unprobed. Level 2 not reached in sessions 13–15.
+- **Why exactly the agent loop fails**:
