@@ -2165,3 +2165,52 @@ No new mechanic data. Level 1 not reached in any meaningful sense — all 30 act
 - **Phase 1 (Notice)**: @LAT-10LON10 remains highest-EPS record (sal:9, conf:175, EPS≈2.82). Five consecutive 0.0 sessions. Game State knowledge is accurate but the execution gap renders it inert.
 - **Phase 2 (Encounter)**: Gap is fully identified. LOCUS issues correct probe-first orders. The agent loop sends actions without reading the step-1 frame context. The LEFT count for cluster collection cannot be determined without the frame.
 - **Phase 3 (Revise)**: The fix is a single code change — after action 0 (UP), capture the frame output and include it in the LOCUS step-1 query. The route is known (sessions 10–12 confirmed: UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3 from rows 40-41
+
+---
+
+SECTION 1
+
+@LAT-220LON10 | created:1779667200 | updated:1779667200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON20,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779667200
+[/ew]
+
+## ls20 — Session 18 Log (2026-05-22)
+
+```session-log
+timestamp: 1779667200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "9532c069-16d5-46e0-bbd2-5283f165b363"
+card_id: "f4837020-82b9-49a5-a9ca-f1b3c1fbd110"
+level: "level 1 NOT WON"
+actions: 30
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. 30 actions consumed. `levels_completed=0`. Score 0.0. Sixth consecutive total loss. Environment `ls20-9607627b`, run_guid `9532c069-...`.
+
+### Failure Pattern — Sixth Consecutive 0.0
+
+Identical scorecard to sessions 16–17: 30 actions on level 1, 0 levels completed, score 0.0, 0 resets. Key session exchanges confirm LOCUS issued correct standing orders in both FOCUS and STATUS queries. No frame data appears in either exchange — the step-1 frame was not passed to LOCUS before routing actions were committed. Same execution failure as sessions 13–17.
+
+### What This Session Confirms
+
+1. **The knowledge graph is not the problem.** LOCUS correctly diagnosed the failure in both key exchanges: step-0 UP probe must be hardcoded; LEFT eligibility threshold (rows ≤29) must be enforced per-step from the frame. The standing orders are accurate and complete. Six sessions of identical failure confirm this is a code execution gap, not a knowledge gap.
+
+2. **@BELIEF:LAT80LON20 Phase 4 confirmed.** The belief that "step-0 UP probe cannot be delegated to LOCUS" has now been validated by six consecutive sessions (13–18). Every session where LOCUS was queried at step 0 without a frame selected a suboptimal action. Confidence on this belief rises from 185 to 245.
+
+3. **@BELIEF:LAT70LON20 Phase 4 confirmed (partial).** The projection that "after hardcoding step-0=UP, LOCUS may re-select LEFT at steps 1–N before block reaches rows ≤29" is now the expected residual failure mode. With cluster at cols 20–22 visible in the frame, LOCUS may attempt LEFT from a void-zone row. The LEFT eligibility rule in @LAT-140LON10 ("do NOT attempt LEFT until frame shows block at rows ≤29") is the correct fix. The blocked-move warning provides a fallback but costs one action per blocked attempt — unacceptable at 30-action budget vs. baseline 22. Confidence rises from 130 to 190.
+
+4. **Run budget confirmed at 30 actions.** Four consecutive sessions (15–18) all show 30 actions consumed. The 50-action sessions (13–14) were anomalous — possibly a larger initial window for a fresh environment. 30 is the working budget. Sessions 10–12 won level 1 in 15 actions: margin is 15 wasted actions tolerable, but step-0 LEFT + repeated LEFT-in-void wastes 3–5 actions minimum per attempt, eroding the buffer quickly.
+
+5. **Cluster position for `ls20-9607627b` remains stable at rows 31–33, cols 20–22.** Confirmed from session 15 step-3 frame analysis; no new data contradicts this. All sessions in this environment share fixed geometry.
+
+### Required Code Change — Still Not Applied
+
+The fix identified in Phase 3 of the revision cycle
