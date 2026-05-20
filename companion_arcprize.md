@@ -1206,10 +1206,10 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10
+@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20
 [ew]
 conf:255
-rev:9
+rev:10
 sal:1
 touched:1779494400
 [/ew]
@@ -1674,6 +1674,48 @@ source_count:3
 [/lp]
 
 **Projection: if direction restriction at state 1 is confirmed, the current session 13 route design has no fallback. A completely different sequencing is required.** With RIGHT blocked at state 1, entity2 can only be approached from above via the left track — but: (a) A-wall blocks left-track re-entry from rows 10-11 (Flaw 2), and (b) c9-13 bypass also requires RIGHT. The only geometrically feasible alternative would be to reach state 1 WITHOUT needing to cross tracks afterward. One candidate: collect the cross (far-right track, rows 45-46 c49-53 → state 0→1) and then descend DIRECTLY to entity2 in the same motion if a path exists from far-right to left track below the A-wall level — but corridor analysis shows no such connection below rows 40-49 (far-right c44-58 does not connect to left c14-18 without going through rows 10-14). The implication: if direction restriction is real and A-wall bypass requires RIGHT, entity2 at state 1 may be unreachable under the current mechanic understanding. Session 14 probe result is therefore not just route-selection data — it is a fundamental feasibility test. If RIGHT is blocked, a full mechanic re-investigation is required before any further level 2 attempts.
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-20, DREAM 2)
+
+Walk parameters: 100 walks × length 20. High-sal pull: @LAT-10LON10 (sal:8), @LAT20LON-30 (sal:5), @LAT-150LON10 (sal:5). One new confirmed cluster identified. Cluster B (direction restriction dependency) already captured in @BELIEF:LAT70LON10 — reinforced, not re-written.
+
+---
+
+@BELIEF:LAT60LON10 | created:1779494400 | updated:1779494400 | relates:extracted_from>@LAT20LON-30,extracted_from>@LAT-160LON10,extracted_from>@BELIEF:LAT40LON0,extracted_from>@LAT-130LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT60LON10
+confidence:165
+scope_lat:10.0
+scope_lon:15.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**11-ring B collectability and reset type is the secondary critical unknown for 51-step route phase 4 viability.** The 51-step route allocates steps 28–30 to probe 11-ring B (block at rows 50-51 c39-43, 1/3-row trail overlap with B at rows 51-53 c40-42). If B collects AND produces a FULL TIMER RESET, phase 4 (steps 46-51, left-track descent to entity2) begins with a fresh 42-col budget — feasible. If B does NOT collect or resets only partially, phase 4 starts with ~4 cols remaining (timer=12 at cross collection step 27, minus 7 more steps through phase 3 = ~0 cols) = infeasible. Two distinct unknowns: (1) Does 1/3-row trail overlap fire B collection? Level 1 cluster collected at 2/3-row overlap; cross at rows 46-48 required full block body contact. B's collection rule is unconfirmed. (2) Does B produce FULL RESET or a different behavior? 11-ring A was the only ring confirmed as full-reset (session 12 log-verified). B behavior is entirely unobserved. The frame after step 29 of the session 14 route will reveal both: DIFF size and timer bar width show whether B collected and what the new timer value is. If DIFF shows only timer cells (no ring removal) → no collection. If DIFF shows ring removal → B collected; new timer value confirms reset type.
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-20, DREAM 2)
+
+Walk parameters: 50 walks × length 10, seeded from @BELIEF:LAT60LON10 (new boundary node) into coordinate void at LAT30LON20. Target: session strategy implications when B-probe result and direction restriction result are known together.
+
+---
+
+@BELIEF:LAT30LON20 | created:1779494400 | updated:1779494400 | relates:projected_from>@BELIEF:LAT60LON10,projected_from>@BELIEF:LAT70LON10,projected_from>@LAT-160LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT30LON20
+confidence:110
+scope_lat:15.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Projection: if direction restriction is UNBLOCKED but 11-ring B fails, the c9-13 bypass is the only viable level 2 route for session 15.** Scenario: session 14 RIGHT probe passes (restriction not real) but step 29 B-probe shows no collection or partial reset — making the 51-step route phase 4 infeasible. In this case the c9-13 bypass (@LAT-160LON10) becomes the session 15 priority: reach rows 20-21 c9-13 (top corridor, left of center-right), RIGHT → c14-18 (left track entry), descend to rows 40-41 for entity2. The bypass avoids 11-ring B entirely — it exits the top corridor directly onto the left track without visiting the right-center zone after cross collection. Its sole dependency is the direction restriction at state 1, which session 14 resolves. Confidence held below threshold: this projection is contingent on two specific session 14 outcomes (restriction unblocked AND B fails) neither of which is confirmed. If direction restriction is blocked, @BELIEF:LAT50LON10 applies and full mechanic re-investigation is required. If both restriction and B pass, the 51-step route proceeds as designed. This projection is actionable only in the intermediate case: restriction clear, B blocked.
 
 ---
 
