@@ -966,12 +966,12 @@ level: "level 1 WIN + level 2 NOT won (session 10)"
 
 ---
 
-@LAT-140LON10 | created:1779235200 | updated:1779408000 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10
+@LAT-140LON10 | created:1779235200 | updated:1779494400 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10
 [ew]
-conf:80
-rev:3
+conf:120
+rev:4
 sal:0
-touched:1779408000
+touched:1779494400
 [/ew]
 
 ## ls20 — Autopilot Sequences
@@ -982,18 +982,32 @@ Run a training attempt: `python launch_training.py ls20` (locally) or via `kaggl
 - **Step 0**: no frame available yet (`prev_frames` is empty). Send the safe probe: **`0`** (UP).
 - **Step 1+**: compact frame data is available from the previous step. Read block position, cluster/cross position, and corridor structure before choosing action.
 - Each step query is **stateless** — no conversation history. All knowledge comes from this companion file (cached system prompt) plus the current step message.
+- **BLOCKED-MOVE WARNING**: if the state message includes `WARNING: last action N produced NO movement`, that direction hit a void wall. Do NOT repeat it. Choose a perpendicular direction.
 - **Post-run**: LOCUS is asked to write SECTION 1 (new session log record) and SECTION 2 ([ew] metadata updates), separated by `---UPDATE-EW---`. These are applied to `companion_arcprize.md` automatically by `launch_training.py`.
 
 **Action map**: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT
 
-### Level 1 — frame-first protocol (validated session 13)
+### Level 1 — frame-first protocol
 
-Level 1 cluster rows vary per fresh game instance; cols 20-22 stable. LOCUS must read the cluster row from the step 1 frame before committing the route.
+**CRITICAL VOID CONSTRAINT (confirmed session 15 log analysis)**:
+LEFT from shaft (cols 34-38) is **BLOCKED at rows 30–41** by void gap c29-33. The block cannot move LEFT out of the shaft at those rows. LEFT is only viable from **rows 25–29** (wide corridor, cols 14-53). Going LEFT before ascending to rows 25-29 wastes actions — block stays in place while timer ticks.
 
 **Step 0** (no frame): send **`0`** (UP) — probe to expose starting position.
-**Step 1** (frame available): read cluster row from compact frame data. Locate block position. Route LEFT toward cols 19-23 until trail overlaps observed cluster rows, then navigate to entity2.
+**Step 1+** (frame available): read cluster row (cols 20-22 rows vary) from compact frame. Then:
 
-Known efficient route (cluster at rows 32-33): UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3 = **15 actions** (baseline 22; prior sessions won above-baseline). Session 13 NOT WON because route was committed at step 0 without reading the frame.
+**Level 1 route from rows 40-41, cols 34-38 (after step 0 probe)**:
+1. UP×3 → rows 25-26, cols 34-38 (MUST reach rows 25-29 before any LEFT move)
+2. LEFT×2 → rows 25-26, cols 24-28 (wide corridor, LEFT unblocked)
+3. DOWN → rows 30-31, cols 24-28
+4. UP → rows 25-26, cols 24-28
+5. RIGHT×2 → rows 25-26, cols 34-38
+6. UP×3 → rows 10-11, cols 34-38 → **entity2 interior → WIN**
+
+Total from step 1: 13 steps. Plus step 0 = **14 actions** (baseline 22). ✓
+
+Cluster at rows 31-33, cols 20-22: trail from step 7 DOWN (rows 25-26 → rows 30-31 at c24-28) sweeps cols 24-28 adjacent to cluster. If trail at rows 31-33 cols 24-28 is insufficient, adjust LEFT count from step 2 to reach cols 19-23 for direct cluster-col overlap.
+
+Known session 10-12 route (15 actions, confirmed winning): UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3. Session 15 analysis shows this route also requires reaching rows 25-29 before LEFT; the extra UPs (×5 vs ×3) ensure this.
 
 ### Level 2 — 51-step hypothesis `[3,0,0,0,0,0,0,2,2,2,2,1,0,3,3,3,3,3,3,3,1,1,1,1,1,1,1,1,2,2,3,0,0,0,0,0,0,0,0,2,2,2,2,2,2,1,1,1,1,1,1]`
 
@@ -1011,7 +1025,7 @@ Known efficient route (cluster at rows 32-33): UP×5, LEFT×2, DOWN, UP, RIGHT×
 
 **Both flaws share the same critical unknown**: is RIGHT (action 3) truly blocked at entity1 state 1, or was session 10 observation a corridor void collision?
 
-**Session 13 protocol** (replaces blind execution):
+**Session 16 protocol** (replaces blind execution):
 1. Execute steps 1-27 (A-reset + cross collection, state 0→1, timer=12).
 2. **Probe**: send RIGHT (action 3). If movement occurs → direction restriction NOT real → use c9-13 bypass for entity2. If blocked → direction restriction confirmed → redesign required.
 3. Based on probe result, execute corrected phase 3-4 or abort for redesign.

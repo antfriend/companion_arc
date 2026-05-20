@@ -56,8 +56,19 @@ def load_companion(source: str = COMPANION_URL, timeout: int = 30) -> str:
 # Compact grid encoding (mirrors play.py)
 # ---------------------------------------------------------------------------
 
+BLOCK_VAL = 12
+
+
 def _infer_bg(grid) -> int:
     return int(np.bincount(grid.flatten()).argmax())
+
+
+def _find_block_pos(grid) -> tuple[int, int] | None:
+    """Return (min_row, min_col) of the block (value BLOCK_VAL), or None."""
+    positions = np.argwhere(grid == BLOCK_VAL)
+    if len(positions) == 0:
+        return None
+    return (int(positions[:, 0].min()), int(positions[:, 1].min()))
 
 
 def compact_grid_str(grid, bg: int | None = None) -> str:
@@ -161,13 +172,27 @@ def parse_action(text: str, n_actions: int) -> int | None:
 # State formatter
 # ---------------------------------------------------------------------------
 
-def _format_state(step: int, actions: list, obs, prev_frames: list) -> str:
+def _format_state(
+    step: int,
+    actions: list,
+    obs,
+    prev_frames: list,
+    last_action_blocked: bool = False,
+    last_action_idx: int | None = None,
+) -> str:
     lines = ["@LOCUS what should I do next?", ""]
     lines.append(f"step: {step}")
     if obs is not None:
         lines += [
             f"obs_state: {obs.state}",
             f"levels_completed: {obs.levels_completed}",
+        ]
+    if last_action_blocked and last_action_idx is not None:
+        lines += [
+            "",
+            f"WARNING: last action {last_action_idx} produced NO movement — "
+            "block position unchanged. That direction is blocked by a void. "
+            "Choose a different direction.",
         ]
     lines += ["", "Available actions:"]
     for i, a in enumerate(actions):
@@ -244,6 +269,9 @@ def run_training_attempt(
     prev_levels = 0
     level_start_step = 0
     locus_entries: list[dict] = []
+    prev_block_pos: tuple[int, int] | None = None
+    last_action_blocked = False
+    last_action_idx: int | None = None
 
     def _locus(msg: str, label: str) -> str:
         """Send a LOCUS message, accumulate to session log, optionally print."""
@@ -271,7 +299,11 @@ def run_training_attempt(
                 print("[agent] No actions available — episode complete.")
             break
 
-        state_msg = _format_state(step, actions, obs, prev_frames)
+        state_msg = _format_state(
+            step, actions, obs, prev_frames,
+            last_action_blocked=last_action_blocked,
+            last_action_idx=last_action_idx,
+        )
         reply = _locus(state_msg, f"ACTION step={step}")
 
         action_idx = parse_action(reply, len(actions))
@@ -289,6 +321,7 @@ def run_training_attempt(
             if verbose:
                 print("[agent] Could not parse action — defaulting to 0")
 
+        last_action_idx = action_idx
         action = actions[action_idx]
         obs = env.step(action)
         step += 1
@@ -301,6 +334,15 @@ def run_training_attempt(
 
         if obs.frame:
             prev_frames = list(obs.frame)
+            cur_block_pos = _find_block_pos(prev_frames[0])
+            last_action_blocked = (
+                prev_block_pos is not None
+                and cur_block_pos is not None
+                and cur_block_pos == prev_block_pos
+            )
+            prev_block_pos = cur_block_pos
+        else:
+            last_action_blocked = False
 
         # -- Level transition ------------------------------------------------
         if obs.levels_completed > prev_levels:
