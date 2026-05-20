@@ -299,27 +299,35 @@ def run_training_attempt(
                 print("[agent] No actions available — episode complete.")
             break
 
-        state_msg = _format_state(
-            step, actions, obs, prev_frames,
-            last_action_blocked=last_action_blocked,
-            last_action_idx=last_action_idx,
-        )
-        reply = _locus(state_msg, f"ACTION step={step}")
-
-        action_idx = parse_action(reply, len(actions))
-
-        # One retry with explicit instruction if parse failed
-        if action_idx is None:
-            retry = _locus(
-                "@LOCUS please respond with only the action number (e.g. 0).",
-                f"ACTION RETRY step={step}",
-            )
-            action_idx = parse_action(retry, len(actions))
-
-        if action_idx is None:
+        # Step 0: always probe UP — LOCUS has no frame yet and cannot reliably
+        # self-select the probe direction from knowledge alone (5 consecutive
+        # sessions confirmed this). Skip the LOCUS query for step 0.
+        if step == 0:
             action_idx = 0
             if verbose:
-                print("[agent] Could not parse action — defaulting to 0")
+                print("[agent] step=0 — hardcoded UP probe (action 0)")
+        else:
+            state_msg = _format_state(
+                step, actions, obs, prev_frames,
+                last_action_blocked=last_action_blocked,
+                last_action_idx=last_action_idx,
+            )
+            reply = _locus(state_msg, f"ACTION step={step}")
+
+            action_idx = parse_action(reply, len(actions))
+
+            # One retry with explicit instruction if parse failed
+            if action_idx is None:
+                retry = _locus(
+                    "@LOCUS please respond with only the action number (e.g. 0).",
+                    f"ACTION RETRY step={step}",
+                )
+                action_idx = parse_action(retry, len(actions))
+
+            if action_idx is None:
+                action_idx = 0
+                if verbose:
+                    print("[agent] Could not parse action — defaulting to 0")
 
         last_action_idx = action_idx
         action = actions[action_idx]

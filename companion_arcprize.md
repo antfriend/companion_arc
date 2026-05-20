@@ -966,10 +966,10 @@ level: "level 1 WIN + level 2 NOT won (session 10)"
 
 ---
 
-@LAT-140LON10 | created:1779235200 | updated:1779494400 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10
+@LAT-140LON10 | created:1779235200 | updated:1779494400 | relates:anchored_by>@LAT0LON0,derived_from>@LAT20LON-30,derived_from>@LAT-130LON10,informs_strategy>@LAT-10LON10,validated_by>@LAT-150LON10,informed_by>@LAT-160LON10,informed_by>@BELIEF:LAT80LON20,informed_by>@BELIEF:LAT70LON20
 [ew]
 conf:120
-rev:4
+rev:5
 sal:0
 touched:1779494400
 [/ew]
@@ -992,8 +992,8 @@ Run a training attempt: `python launch_training.py ls20` (locally) or via `kaggl
 **CRITICAL VOID CONSTRAINT (confirmed session 15 log analysis)**:
 LEFT from shaft (cols 34-38) is **BLOCKED at rows 30–41** by void gap c29-33. The block cannot move LEFT out of the shaft at those rows. LEFT is only viable from **rows 25–29** (wide corridor, cols 14-53). Going LEFT before ascending to rows 25-29 wastes actions — block stays in place while timer ticks.
 
-**Step 0** (no frame): send **`0`** (UP) — probe to expose starting position.
-**Step 1+** (frame available): read cluster row (cols 20-22 rows vary) from compact frame. Then:
+**Step 0** (no frame): the agent loop **hardcodes action 0 (UP)** — LOCUS is not queried. Five consecutive sessions confirmed LOCUS does not reliably self-select UP without frame context.
+**Step 1+** (frame available): read block row from compact frame. **LEFT ELIGIBILITY RULE: do NOT attempt LEFT until frame shows block at rows ≤29.** If block is at rows 30–41, choose UP. Only when block row ≤29 is LEFT valid (wide corridor, void gap cleared). Read cluster row (cols 20-22) and proceed. Then:
 
 **Level 1 route from rows 40-41, cols 34-38 (after step 0 probe)**:
 1. UP×3 → rows 25-26, cols 34-38 (MUST reach rows 25-29 before any LEFT move)
