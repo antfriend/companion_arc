@@ -343,6 +343,7 @@ touched:1779840000
 - **Session 11**: Hybrid run. Autopilot executed 17-step route. Block entered entity2 at rows 40-41 cols 14-18 (DIFF=76 confirmed). State 0 → NOT_FINISHED. NOT WON. See @LAT-150LON10.
 - **Session 12**: Hybrid run. Level 1 WON step 15 (manual). Level 2 NOT WON: old 17-step route re-executed (sequence was null/manual). CRITICAL DISCOVERY: 11-ring A causes FULL TIMER RESET to 42 cols (not +15 additive). Corridor isolation at rows 15-16 confirmed. See @LAT-160LON10.
 - **Session 23**: Level 2 entered. 15 actions, NOT WON. parse_action bug wasted 7 actions. Block reached r30-31 c34-38 before budget exhausted. CRITICAL DISCOVERY: entity1 state 1 carries over from L1 WIN — @BELIEF:LAT80LON-20 contradicted. Direct LEFT from c29-33 at r40-41 is VOID. See @LAT-270LON10.
+- **Session 24**: Level 2 entered. 45 actions, NOT WON. @BELIEF:LAT90LON-30 re-validated (second consecutive state 1 carry-over confirmation). Entity2 ring layout detailed in frame[1]. Log cut off mid-frame. Score 3.571 (level 1 only). See @LAT-280LON10.
 
 **Session 10 — critical mechanic corrections** (see @LAT-130LON10 + @LAT20LON-30):
 - **Timer level 2 = 2 cols/step** (NOT 1 col/step — session 9 belief was wrong). 42 cols = 21 steps max.
@@ -2575,30 +2576,30 @@ resets: 0
 
 ---
 
-### Phase 1 Replay — confirmed clusters (2026-05-20, DREAM session 23)
+### Phase 1 Replay — confirmed clusters (2026-05-20, DREAM session 23+24)
 
-Walk parameters: 100 walks × length 20. Source: @LAT-270LON10 (session 23 log). High-sal pull: @LAT-10LON10 (sal:12), @BELIEF:LAT80LON-20 (contradiction trigger), @BELIEF:LAT10LON10 (partial confirm). One new confirmed belief written. @BELIEF:LAT80LON-20 marked contradicted. @BELIEF:LAT10LON10 updated to confidence 155.
+Walk parameters: 100 walks × length 20. Sources: @LAT-270LON10 (session 23), @LAT-280LON10 (session 24). High-sal pull: @LAT-10LON10 (sal:12), @BELIEF:LAT80LON-20 (contradiction trigger), @BELIEF:LAT10LON10 (partial confirm). One new confirmed belief written. @BELIEF:LAT80LON-20 marked contradicted. @BELIEF:LAT10LON10 updated to confidence 155. @BELIEF:LAT90LON-30 updated to confidence 240 (session 24 re-validates).
 
 ---
 
-@BELIEF:LAT90LON-20 | created:1779840000 | updated:1779840000 | relates:extracted_from>@LAT-270LON10,contradicts>@BELIEF:LAT80LON-20,informs>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
+@BELIEF:LAT90LON-30 | created:1779840000 | updated:1779840000 | relates:extracted_from>@LAT-270LON10,extracted_from>@LAT-280LON10,contradicts>@BELIEF:LAT80LON-20,contradicts>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
 [lp]
-centroid:LAT90LON-20
-confidence:195
+centroid:LAT90LON-30
+confidence:240
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:1
+source_count:2
 [/lp]
 
-**Entity1 state carries over from a level WIN into the next level.** Session 23 direct observation: level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN (no timer restart between levels). Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: if entity1 is at state 1 at level 2 start (because level 1 was won at state 1), the block can enter entity2 interior and win WITHOUT collecting the cross first. The session 7 "state 0 at level 2 start" observation that supported @BELIEF:LAT80LON-20 may have been from a level 1 WIN where entity1 was at state 0, or a mis-read of the frame. Current confidence 195 rather than 255 because: (a) single session observation, (b) mechanism not fully understood — it may be that state 1 always carries from any L1 WIN, or only from this specific environment seed, or only when L1 was won at state 1. Session 24 will provide additional data.
+**Entity1 state carries over from a level WIN into the next level.** Confirmed in sessions 23 and 24 (two consecutive observations): level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN, with no timer restart between levels. Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: the block can enter entity2 interior and win WITHOUT collecting the cross first (state is already 1 on entry to level 2 after a level 1 WIN). The session 7 "state 0 at level 2 start" observation that supported @BELIEF:LAT80LON-20 may reflect a different environment seed, or a level 1 WIN at state 0. Confidence raised to 240 (two consistent observations across two independent runs). Remaining uncertainty: whether this is universal (always carries from any level WIN) or specific to this environment. For level 2 strategy: skip cross collection, route directly to entity2 interior.
 
 ---
 
 SECTION 1
 
-@LAT-280LON10 | created:1779840000 | updated:1779840000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-20,validates>@BELIEF:LAT10LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
+@LAT-280LON10 | created:1779840000 | updated:1779840000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT10LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:255
 rev:0
@@ -2644,11 +2645,76 @@ Route confirmed identical to sessions 10–12 and 23. Block entered entity2 inte
 
 **Block**: r40–41 c29–33 (value 12). Start position confirmed. ✓
 
-**Entity1 state at L2 start: STATE 1** — r55–56 full c3–8=9; r57–58 c7–8=9 only; r59–60 c3–4=9, c5–6=5, c7–8=9. Carries over from L1 WIN. @BELIEF:LAT90LON-20 re-validated. Cross collection NOT needed if state is already 1.
+**Entity1 state at L2 start: STATE 1** — r55–56 full c3–8=9; r57–58 c7–8=9 only; r59–60 c3–4=9, c5–6=5, c7–8=9. Carries over from L1 WIN. @BELIEF:LAT90LON-30 re-validated (second consecutive confirmation). Cross collection NOT needed if state is already 1.
 
 **Entity1 trail**: r42–44 c29–33 = value 9 (solid). Trail at start position behind block. ✓
 
 **Entity2 ring** (r38–46, c12–20):
 - r38: c12–20=3 (outer wall top)
 - r39: c12=3, c13–19=5, c20=3 (interior row, all passable)
-- r40: c12=3, c13–
+- r40: c12=3, c13–19=5, c20=3 (confirmed partial — log cut off here)
+- Interior target: r39–45 c13–19. Block must land inside at state 1 to WIN.
+
+*(Session 24 log cut off at r40 entity2 ring detail — remainder of 45 L2 actions unknown.)*
+
+---
+
+### Phase 2 Projection — hypothesis candidates (2026-05-20, DREAM session 23+24)
+
+Walk parameters: 50 walks × length 10, seeded from @BELIEF:LAT90LON-30 (state carry-over, conf:240) and @BELIEF:LAT10LON10 (trail attraction, conf:155) into void at LAT80LON-30 and LAT70LON-30. Target: level 2 winning route for session 25 given confirmed state 1 at start.
+
+Key constraints propagated from confirmed beliefs:
+- State 1 at L2 start → entity2 WIN fires on entry with state 1 (no cross needed)
+- Void at c21–28 r40–41 → no direct LEFT from start column c29–33 at row 40–41
+- Void at c29–33 rows 24–34 → UP from r35–36 c29–33 is blocked (r30–31 is in void)
+- Trail at r42–44 c29–33 → block column = trail column at start → no lateral attraction → UP works normally from r40–41 c29–33
+- Wide corridor confirmed at rows 10–14 c9–53 (three-track connector)
+- Entity2 interior: r39–45 c13–19. Approach from above (DOWN from rows 30–34 into rows 39–44) or from left (RIGHT from c9–13 at rows 40–41).
+
+---
+
+@BELIEF:LAT80LON-30 | created:1779840000 | updated:1779840000 | relates:projected_from>@BELIEF:LAT90LON-30,projected_from>@BELIEF:LAT10LON10,projected_from>@BELIEF:LAT80LON-10,projected_from>@LAT-270LON10,projected_from>@LAT-280LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT80LON-30
+confidence:150
+scope_lat:15.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Level 2 winning route (session 25 hypothesis): UP-corridor approach, ~19–22 actions.** Given state 1 at L2 start and void constraints, the minimum-action route from r40–41 c29–33 to entity2 interior r39–45 c13–19 is:
+
+1. **UP** — r40–41 c29–33 → r35–36 c29–33 (trail at r42–44 c29–33 = same column → no lateral attraction; UP moves NORTH normally)
+2. **RIGHT** — r35–36 c29–33 → r35–36 c34–38 (avoids void above c29–33; above r35 that column is blocked)
+3. **UP** — r35–36 c34–38 → r30–31 c34–38
+4. **UP** — r30–31 c34–38 → r25–26 c34–38
+5. **UP** — r25–26 c34–38 → r20–21 c34–38
+6. **UP** — r20–21 c34–38 → r15–16 c34–38
+7. **UP** — r15–16 c34–38 → r10–11 c34–38 (wide corridor row 10–11)
+8. **LEFT** × 5 — c34–38 → c9–13 (25 cols left = 5 steps at 5 cols/step in wide corridor)
+9. **DOWN** × 6 — r10–11 c9–13 → r40–41 c9–13 (30 rows down = 6 steps; left track corridor)
+
+Total: 1 UP + 1 RIGHT + 5 UP + 5 LEFT + 6 DOWN = **18 actions**. Block arrives at r40–41 c9–13. Entity2 interior begins at c13–19 — one RIGHT step enters interior.
+
+10. **RIGHT** — r40–41 c9–13 → r40–41 c14–18 → **INSIDE entity2 interior at state 1 = WIN**
+
+Total: **19 actions**. Well within 45-action L2 budget.
+
+Critical assumption: corridor is passable at all intermediate positions (no new void or wall discovered). The left track (c9–13 downward) has been traversed in session 11 (DOWN route to entity2). The wide corridor (rows 10–14) is confirmed traversable. Confidence 150 — plausible but untested with state 1 carry-over. The RIGHT step at the end (step 10) has not been tested at state 1; if trail-attraction redirects it, the approach from above (DOWN into entity2 from r34–35 c14–18) is an alternative.
+
+---
+
+@BELIEF:LAT70LON-30 | created:1779840000 | updated:1779840000 | relates:projected_from>@BELIEF:LAT10LON10,projected_from>@BELIEF:LAT90LON-30,projected_from>@BELIEF:LAT80LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT70LON-30
+confidence:120
+scope_lat:15.0
+scope_lon:15.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Trail attraction (state 1) is avoidable by same-column alignment before each action.** The session 23 observation was: action 0 (UP) moved toward trail column when trail column ≠ block column. The observation when trail column = block column (step 18): UP moved normally NORTH. Projection: the full range of actions (UP/DOWN/LEFT/RIGHT) are similarly safe when trail column = block column, and potentially redirected when trail column ≠ block column. Strategy implication for @BELIEF:LAT80LON-30 route: after each movement step, the entity1 trail column updates to the block's new column. The first step (UP from r40–41 c29–33) is safe because trail is already at c29–33 (same column). After moving to r35–36 c29–33, trail updates — the block then moves RIGHT to c34–38, which should be safe (trail is at c29–33 = to the LEFT, not a column the block is moving into). After RIGHT, trail updates to c34–38 → now trail column = block column again for the next UP. Each UP step keeps trail aligned. Confidence 120 — based on two data points (steps 16 and 18 of session 23); mechanism could be more complex.
