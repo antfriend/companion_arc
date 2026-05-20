@@ -2086,3 +2086,52 @@ Both exchanges (FOCUS and STATUS) confirm LOCUS correctly diagnosed the failure 
 ### What This Session Confirms
 
 1. **First-frame scan failure is not a knowledge graph problem.** LOCUS has correct standing orders (conf:220 on @BELIEF:LAT90LO
+
+---
+
+SECTION 1
+
+@LAT-210LON10 | created:1779580800 | updated:1779580800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON10,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779580800
+[/ew]
+
+## ls20 — Session 17 Log (2026-05-21)
+
+```session-log
+timestamp: 1779580800
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "d7aa1ebc-2cce-4f72-946f-0e888339834a"
+card_id: "228d5b97-427e-4dc2-8119-ec65cae9ca21"
+level: "level 1 NOT WON"
+actions: 30
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. 30 actions consumed. `levels_completed=0`. Score 0.0. Fifth consecutive total loss. Environment `ls20-9607627b`, new `run_guid: d7aa1ebc-...` — this is a different GUID from session 16 (`e85e4fa3-...`), confirming `arc.make()` created a new run within the same environment. The 30-action budget (vs. 50 in sessions 13–15) persists — this is now the consistent budget for new runs in this environment.
+
+### Run Budget Clarification
+
+Sessions 13–15 all showed 50 actions consumed. Session 16 showed 30. Session 17 shows 30 again (new GUID, same budget). **Working hypothesis revised**: the run budget for `ls20-9607627b` is **30 actions**, not 50. Sessions 13–15 may have had a different budget window (possibly the environment was in a different state, or 50 was a legacy window that has since expired). Going forward: treat 30 actions as the available budget per run on this environment. At 30 actions and baseline 22, there is still a winning window — sessions 10–12 won level 1 in 15 actions, well within 30. But there is zero margin for wasted moves from a failed first-frame scan.
+
+### Failure Pattern — Fifth Consecutive Loss
+
+Key session exchanges show LOCUS correctly issued standing orders (FOCUS on Game State, STATUS with EPS rankings). Both exchanges identify the agent loop execution failure: step-1 frame not passed to LOCUS before routing. No frame data appears in this session's exchanges either. Same failure mode as sessions 13–16.
+
+### Mechanic Observations
+
+No new mechanic data. Level 1 not reached in any meaningful sense — all 30 actions consumed without frame-informed routing. No cluster position confirmed for this specific run GUID.
+
+**Cluster position for environment `ls20-9607627b`**: confirmed at rows 31–33, cols 20–22 from session 15 step-3 frame analysis. This position should be stable within the environment even across new run GUIDs (environment geometry is fixed; only the run/timer state changes on reconnect).
+
+### Revision Cycle Status
+
+- **Phase 1 (Notice)**: @LAT-10LON10 remains highest-EPS record (sal:9, conf:175, EPS≈2.82). Five consecutive 0.0 sessions. Game State knowledge is accurate but the execution gap renders it inert.
+- **Phase 2 (Encounter)**: Gap is fully identified. LOCUS issues correct probe-first orders. The agent loop sends actions without reading the step-1 frame context. The LEFT count for cluster collection cannot be determined without the frame.
+- **Phase 3 (Revise)**: The fix is a single code change — after action 0 (UP), capture the frame output and include it in the LOCUS step-1 query. The route is known (sessions 10–12 confirmed: UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3 from rows 40-41

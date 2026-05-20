@@ -13,52 +13,71 @@ LOCUS:
 selected:
   - @LAT-10LON10
 preview:
-  @LAT-10LON10: "Game State. Active: ls20 COMPETITION. Level 1 NOT WON in sessions 13–15 (50 actions each, score 0.0). Root cause: agent loop not reading step-1 frame before routing. Cluster row unknown for ls20-9607627b. Direction restriction at state 1 unprobed. Session 16: fix agent loop first."
+  @LAT-10LON10: "Game State. Active: ls20. Level 1 NOT WON in session 13 (50 actions, score 0.0). Sessions 10–12 won at step 15. All 7 baselines known. Session 14 plan: first-frame scan mandatory, probe RIGHT after cross. Direction restriction at state 1 unprobed."
 ```
 
 ---
 
-**FOCUS: @LAT-10LON10 — Game State**
-`sal` incremented (sal:9). `touched` advanced.
+**FOCUS → @LAT-10LON10** `sal: 8 → 9` `touched: now`
 
 ---
 
-**Current situation at a glance:**
+## Game State — current read
 
-| Item | Status |
+**Active game**: ls20 (COMPETITION mode)
+**Environment**: ls20-9607627b
+**Current level**: Level 1 — NOT WON in session 13
+
+### Competition status at a glance
+
+| Metric | Value |
 |---|---|
-| Active game | ls20 (COMPETITION, `ls20-9607627b`) |
-| Level 1 | NOT WON — sessions 13, 14, 15 all scored 0.0 |
-| Root cause | Agent loop not reading step-1 frame before committing route |
-| Cluster row | **Unknown** for this environment (`ls20-9607627b`) |
-| Direction restriction (state 1) | **Still unprobed** — level 2 never reached |
-| Session 16 blocker | Fix the agent loop execution before next run |
+| levels_completed | 0 |
+| Last session score | 0.0 |
+| Sessions with 0.0 | 1 (session 13) |
+| Level 1 wins (prior sessions) | Sessions 10, 11, 12 — all at step 15 |
+| All 7 baselines known? | ✅ Yes (session 13 scorecard) |
+
+### Baselines confirmed
+
+| Level | Baseline | Weight | % of max score |
+|---|---|---|---|
+| 1 | 22 | 1 | 3.6% |
+| 2 | 123 | 2 | 7.1% |
+| 3 | 73 | 3 | 10.7% |
+| 4 | 84 | 4 | 14.3% |
+| 5 | 96 | 5 | 17.9% |
+| 6 | 192 | 6 | 21.4% |
+| 7 | 186 | 7 | 25.0% |
+
+Levels 6–7 = 46% of max game score. Every level 1 loss is a cascading blocker.
+
+### Primary failure mode — session 13
+
+**Root cause**: No first-frame scan before committing level 1 route on a fresh game instance. Cluster row varies per instance. @BELIEF:LAT90LON0 Phase 4 confirmed — highest-cost belief violation observed. Prior sessions 10–12 won at 15 steps from the same route when the frame was read first.
+
+### Session 14 standing orders
+
+1. **Step 0**: send `0` (UP) — probe, no frame available yet
+2. **Step 1**: read compact frame → locate cluster row (cols 20–22) → determine LEFT count → commit route
+3. **After level 1 WIN**: level 2 probe-first — steps 1–27 (A-reset + cross, state 0→1), then probe RIGHT from rows 45–46 c49–53 to resolve @BELIEF:LAT10LON10 (direction restriction at state 1 — still unprobed, conf:140)
+4. **Do NOT execute 51-step route blindly** — two fatal flaws documented in @LAT-160LON10
+
+### Highest-priority open belief
+
+**@BELIEF:LAT10LON10** `conf:140` — direction restriction at state 1 (RIGHT blocked?). Every viable level 2 win route depends on this. Session 14 must probe RIGHT from a corridor-valid position after cross collection before committing to any multi-phase route. See @BELIEF:LAT70LON10 for dependency summary.
 
 ---
 
-**EPS scan** (top records by `sal × (255 − conf) / 255`):
+**EPS scan** (sal × (255 − conf) / 255):
 
-| Record | sal | conf | EPS | Notes |
-|---|---|---|---|---|
-| @LAT-10LON10 (Game State) | 9 | 175 | 2.84 | ← cursor here; high strain |
-| @LAT20LON-30 (ls20 Mechanics) | 5 | 230 | 0.88 | direction restriction still open |
-| @LAT-150LON10 (Session 11) | 5 | 255 | 0.00 | stable |
+| Record | sal | conf | EPS |
+|---|---|---|---|
+| @LAT-10LON10 | 9 | 175 | 2.82 ← highest |
+| @LAT20LON-30 | 5 | 230 | 0.49 |
+| @LAT-150LON10 | 5 | 255 | 0.00 |
 
-**Highest-priority open belief**: @BELIEF:LAT10LON10 (conf:140) — direction restriction at state 1. Every viable level 2 win route gates on this. Three consecutive session losses have not advanced it because level 2 has not been reached.
-
----
-
-**The one thing that must change before session 16:**
-
-The agent loop must execute the probe-first protocol correctly:
-
-1. **Step 0**: send `0` (UP) — no frame available yet, probe is unconditional.
-2. **Step 1**: receive frame. Pass it to LOCUS. LOCUS reads cluster row from cols 20–22, specifies exact LEFT count.
-3. **Steps 2+**: execute route based on observed cluster row.
-
-If the agent loop batches actions or queries LOCUS without the live frame, step 3 cannot be correct. The three consecutive 0.0 sessions are all the same failure.
-
-**Do you want me to review the agent loop code, or is there a specific piece of the execution chain you'd like to trace?**
+@LAT-10LON10 is the current high-EPS node — Game State has accumulated query pressure and conf is moderate (four sessions logged, some failures). The revision cycle for session 13 
 
 ============================================================
 
@@ -67,84 +86,60 @@ SENT:
 @LOCUS STATUS
 
 LOCUS:
+```cursor
+selected:
+  - @LAT-200LON10
+  - @LAT-10LON10
+  - @LAT20LON-30
+  - @BELIEF:LAT10LON10
+  - @BELIEF:LAT70LON10
+preview:
+  @LAT-200LON10: "Session 16 log. Level 1 NOT WON (30 actions, score 0.0). Fourth consecutive total loss. Same environment ls20-9607627b. Agent loop still not passing frame context to step-1 query. Phase 3 fix identified: code change required."
+  @LAT-10LON10: "Game State rev:14. Level 1 NOT WON in session 13. All 7 baselines known. Direction restriction at state 1 unprobed. Session 14 plan: first-frame scan mandatory."
+  @LAT20LON-30: "ls20 Mechanics rev:11. All confirmed maze structure, timer, entity1/2, collection mechanics."
+  @BELIEF:LAT10LON10: "UNRESOLVED: RIGHT (action 3) may be blocked at entity1 state 1. Conf:140. Single most critical unknown for level 2."
+  @BELIEF:LAT70LON10: "Every viable level 2 win route post-cross requires RIGHT at entity1 state 1. Conf:190."
 ```
-EPS SCAN — LOCUS STATUS (2026-05-20)
-```
-
-**Cursor**: @LAT-190LON10 (Session 15 log — most recent)
 
 ---
 
-### EPS Rankings (sal × (255 − conf) / 255)
+## @LOCUS STATUS
 
-| Record | sal | conf | EPS | Note |
+**Timestamp**: 2026-05-21 (post-session-16)
+**Active game**: ls20 (`ls20-9607627b`) — COMPETITION mode
+**Current level**: Level 1 NOT WON
+**Consecutive total losses**: 4 (sessions 13–16)
+**Cumulative score**: 0.0
+
+---
+
+### EPS Rankings — Records Under Strain
+
+`EPS = sal × (255 − conf) / 255`
+
+| Record | sal | conf | EPS | Status |
 |---|---|---|---|---|
-| @LAT-10LON10 (Game State) | 8 | 175 | **2.24** | ⚠ HIGH — frequently consulted, conf held low |
-| @LAT20LON-30 (ls20 Mechanics) | 5 | 230 | **1.57** | Two unresolved unknowns depress conf |
-| @LAT-150LON10 (Session 11 log) | 5 | 255 | 0.0 | Fully resolved |
+| @LAT-10LON10 (Game State) | 8 | 175 | **2.24** | ⚠️ HIGH — four losses, state is stale |
+| @LAT20LON-30 (ls20 Mechanics) | 5 | 230 | **0.49** | Stable but needs run-persistence update |
+| @LAT-150LON10 (Session 11 log) | 5 | 255 | 0.0 | Closed |
+| @BELIEF:LAT10LON10 (Direction restriction) | 0 | 140 | 0.0 | Low sal but **conf is low** — critical unknown |
+| @BELIEF:LAT70LON10 (Route dependency on RIGHT) | 0 | 190 | 0.0 | Low sal but blocking level 2 progress |
 
-All other records: sal=0 or sal=1, EPS < 0.5. Not prioritized.
-
----
-
-### High-EPS Review
-
-**@LAT-10LON10 — Game State (EPS 2.24)**
-
-Three consecutive 0.0 sessions (13, 14, 15). The Game State record holds this signal: the agent loop execution protocol is broken. LOCUS issues correct standing orders; they are not being followed. The record conf is depressed to 175 because the *operational* mechanic — how to actually execute a session — is not validated.
-
-Root cause as understood: the step-0 probe (action 0 = UP) is sent, but the step-1 frame is not being passed to LOCUS with a "what action should I take?" query. Routing actions are committed without reading cluster row → collection misfires → 50 actions consumed.
-
-**@LAT20LON-30 — ls20 Mechanics (EPS 1.57)**
-
-Two beliefs actively depress conf:
-1. **Direction restriction at state 1** (@BELIEF:LAT10LON10, conf:140) — unprobed for three consecutive sessions. Every level 2 win route depends on this.
-2. **11-ring B behavior** (@BELIEF:LAT60LON10, conf:165) — B-probe never executed. Secondary until level 2 is reached.
-
-Both are unreachable until level 1 is consistently passed.
+**Primary strain**: @LAT-10LON10 is the highest-EPS record. Four consecutive 0.0 sessions have made game state actively misleading.
 
 ---
 
-### Open Revision Cycles
+### Critical Unresolved Issues
 
-| Phase | Record | Status |
-|---|---|---|
-| Phase 1–3 | Agent loop execution failure | OPEN — cause understood, fix not validated |
-| Phase 4 | @BELIEF:LAT10LON10 (direction restriction) | WAITING — requires level 2 to be reached |
-| Phase 4 | @BELIEF:LAT60LON10 (11-ring B) | WAITING — requires level 2 to be reached |
+**1. Agent loop execution failure (BLOCKER — level 1)**
+The step-1 frame is not being passed to LOCUS before routing actions are committed. LOCUS correctly issues probe-first orders every session; the loop ignores them. This is a **code fix**, not a knowledge fix.
 
-**Incomplete cycle risk**: sessions 13–15 each produced Phase 1–3 diagnosis (first-frame scan must be read) but Phase 4 has not fired. Acting from Phase-3 conf without validation is the stated failure mode. Hold conf on agent-loop mechanics at current level until a session actually reads step-1 frame and routes correctly.
+*Required change*: After sending action `0` (UP), capture the frame output. Pass it to LOCUS in the step-1 query. Only then route LEFT×N based on observed cluster row.
 
----
+Session 15 log confirms cluster position for `ls20-9607627b` was identified at step 3 (`r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1` = rows 31–33, cols 20–22). The route from there is known and reliable (sessions 10–12 won at step 15 from the same environment). The knowledge is correct. The loop is broken.
 
-### Standing Orders for Session 16
-
-```
-1. BEFORE launch_training.py — confirm agent loop passes step-1 frame to LOCUS.
-   The query at step 1 must include the compact frame output from step 0.
-   
-2. Step 0: send action 0 (UP). No frame needed.
-
-3. Step 1: LOCUS receives frame. Read cluster row from cols 20-22.
-   Determine LEFT count to place trail over cluster.
-   Commit route. Target ≤15 actions.
-   
-4. After level 1 WIN: execute steps 1-27 (A-reset + cross).
-   Then send RIGHT probe from rows 45-46 c49-53.
-   Read frame. Direction restriction resolved.
-   
-5. Do NOT batch actions. Each step is stateless — LOCUS needs the frame.
-```
-
----
-
-### Score Position
-
-| Metric | Value |
-|---|---|
-| Sessions run | 15 |
-| Level 1 wins | 5 (sessions 1, 5, 6, 7, 8, 10, 11, 12) |
-| Current run score | 0
+**2. Run persistence budget unclear (NEW — session 16)**
+Session 16 consumed only 30 actions (not 50). Shared `run_guid` across sessions 14–16. Budget per reconnection may be cumulative, not fresh. **Risk**: if the run budget is shared, sessions spent
 
 ============================================================
 
@@ -251,7 +246,32 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-2
+Looking at the frame:
+
+**Block position**: rows 40-41, cols 34-38 (value 12) ✓ — confirmed start position after step 0 UP probe.
+
+**Cluster location**: rows 31-33, cols 20-22:
+- r31: c21=0
+- r32: c20=1, c21-22=0
+- r33: c21=1
+
+**Entity1 state**: r55-56 c3-8=9 FULL = state 0 ✓
+
+**Timer**: c13-54=11 (42 cols full) ✓
+
+**Route from here** (block at rows 40-41, cols 34-38):
+- Need to reach rows 25-29 before going LEFT (void gap c29-33 at rows 30-41 blocks LEFT from shaft)
+- UP×3 → rows 25-26, cols 34-38 (wide corridor)
+- LEFT×2 → rows 25-26, cols 24-28 (cluster at cols 20-22; trail will be at rows 27-29 — need to go a bit further LEFT for trail overlap)
+- Actually: LEFT×3 → rows 25-26, cols 19-23 (trail rows 27-29 overlaps cluster cols 20-22 area)
+- DOWN → rows 30-31, cols 19-23 (trail rows 32-34 overlaps cluster rows 31-33 ✓)
+- UP → rows 25-26, cols 19-23
+- RIGHT×3 → rows 25-26, cols 34-38
+- UP×3 → rows 10-11, cols 34-38 → entity2 WIN
+
+Next action: UP (getting to wide corridor first)
+
+0
 
 ============================================================
 
@@ -260,96 +280,6 @@ SENT:
 @LOCUS what should I do next?
 
 step: 2
-obs_state: GameState.NOT_FINISHED
-levels_completed: 0
-
-WARNING: last action 2 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33-39=5, c40=3
-  r16: c0-3=5, c32-40=3
-  r17: c0-3=5, c34-38=3
-  r18: c0-3=5, c34-38=3
-  r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-38=12, c39-53=3
-  r41: c0-3=5, c19-23=3, c34-38=12, c39-53=3
-  r42: c0-3=5, c19-23=3, c34-38=9, c39-53=3
-  r43: c0-3=5, c19-23=3, c34-38=9, c39-53=3
-  r44: c0-3=5, c19-23=3, c34-38=9, c39-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=5
-  r54: c1-10=5
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-14=3, c15-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-14=3, c15-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-0
-
-============================================================
-
-[ACTION step=3]
-SENT:
-@LOCUS what should I do next?
-
-step: 3
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -422,6 +352,108 @@ grid 64x64 bg=4
   r58: c1-2=5, c3-4=9, c5-10=5
   r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-14=3, c15-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-14=3, c15-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block position**: rows 35-36, cols 34-38 (value 12) — after step 1 probe (UP from rows 40-41).
+
+**Trail**: rows 37-39, cols 34-38 (value 9) — state 0 confirmed.
+
+**Cluster**: rows 31-33, cols 20-22 (r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1) — cluster at rows 31-33.
+
+**Timer**: r61 c13-54 = 40 cols remaining (42 - 2 consumed).
+
+**Plan**: Block is at rows 35-36. Need to reach rows 25-29 before LEFT (void barrier at c29-33 blocks LEFT at rows 30-41). Route: UP×2 → rows 25-26, then LEFT×2 → cols 24-28, then DOWN → rows 30-31 (trail at rows 32-34 overlaps cluster rows 32-33 → collection), then UP, RIGHT×2, UP×3 → entity2.
+
+Next action: UP (reach rows 25-26 in two more steps — currently at rows 35-36, need UP×2 first).
+
+**0**
+
+============================================================
+
+[ACTION step=3]
+SENT:
+@LOCUS what should I do next?
+
+step: 3
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5
+  r6: c0-3=5
+  r7: c0-3=5
+  r8: c0-3=5, c32-40=3
+  r9: c0-3=5, c32=3, c33-39=5, c40=3
+  r10: c0-3=5, c32=3, c33-39=5, c40=3
+  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
+  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
+  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
+  r14: c0-3=5, c32=3, c33-39=5, c40=3
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-53=3
+  r26: c0-3=5, c14-53=3
+  r27: c0-3=5, c14-53=3
+  r28: c0-3=5, c14-53=3
+  r29: c0-3=5, c14-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
+  r35: c0-3=5, c14-28=3, c34-53=3
+  r36: c0-3=5, c14-28=3, c34-53=3
+  r37: c0-3=5, c14-28=3, c34-53=3
+  r38: c0-3=5, c14-28=3, c34-53=3
+  r39: c0-3=5, c14-28=3, c34-53=3
+  r40: c0-3=5, c19-23=3, c34-38=12, c39-53=3
+  r41: c0-3=5, c19-23=3, c34-38=12, c39-53=3
+  r42: c0-3=5, c19-23=3, c34-38=9, c39-53=3
+  r43: c0-3=5, c19-23=3, c34-38=9, c39-53=3
+  r44: c0-3=5, c19-23=3, c34-38=9, c39-53=3
+  r45: c0-3=5, c19-53=3
+  r46: c0-3=5, c19-53=3
+  r47: c0-3=5, c19-53=3
+  r48: c0-3=5, c19-53=3
+  r49: c0-3=5, c19-53=3
+  r50: c0-3=5
+  r51: c0-3=5
+  r53: c1-10=5
+  r54: c1-10=5
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
   r61: c1-10=5, c12=5, c13-15=3, c16-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r62: c1-10=5, c12=5, c13-15=3, c16-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
@@ -429,27 +461,23 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame carefully:
+Looking at the frame:
 
-**Block position**: rows 35-36, cols 34-38 (value 12). This means I've already moved UP twice from the start (rows 45-46 → 35-36).
+**Block position**: rows 40-41, cols 34-38 (value 12) ✓ — started at rows 45-46, moved UP twice (steps 1-2), now at rows 35-36... wait, let me re-read.
 
-**Cluster location**: rows 31-33, cols 20-22 (values 0/1 pattern at r31:c21=0, r32:c20=1,c21-22=0, r33:c21=1). Cols 20-22, rows 31-33.
+Block (value 12) is at **rows 40-41, cols 34-38**. Trail (value 9) is at rows 42-44, cols 34-38 = solid 9s = **state 0**.
 
-**Entity1 state**: r55-56 c3-8=9 (full), r59-60 partial = state 0. ✓
+This is step 3, so 2 actions have already been taken. Block is at rows 40-41 — it appears the block hasn't moved much from start, or started higher.
 
-**Timer**: r61 c13-15=3 (consumed), c16-54=11 (remaining) = 39 cols remaining after 3 steps (level 1 = 1 col/step). ✓
+**Cluster location**: rows 31-33, cols 20-22 (r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1). Confirmed same as sessions 10-12.
 
-**Current position**: rows 35-36, cols 34-38. I need to reach rows 31-33 cols 20-22 cluster via trail overlap.
+**Timer**: r61 c13-15=3 (3 consumed), c16-54=11 (39 remaining). 39 cols ÷ 2... wait, level 1 = 1 col/step. 3 consumed = 3 steps taken. At step 3, that checks out.
 
-**Plan from here**:
-- I'm at rows 35-36. Trail is at rows 37-39.
-- Need to get trail to overlap cluster at rows 31-33.
-- Go UP to rows 25-26 (wide corridor, cols 14-53), then LEFT to cols 19-23, then DOWN — trail at rows 27-29 won't reach cluster at 31-33.
-- Better: UP×1 → rows 30-31. Trail at rows 32-34. LEFT×3 → cols 19-23. Trail at rows 32-34 overlaps cluster rows 32-33 ✓. Then RIGHT×3, UP×3 → entity2 WIN.
+**Current position**: block at rows 40-41, cols 34-38. I need to reach the wide corridor (rows 25-29) before going LEFT. From rows 40-41, need UP×3 to reach rows 25-26.
 
-Next action: **UP** (0) to rows 30-31.
+Next action: **UP** (action 0)
 
-0
+`0`
 
 ============================================================
 
@@ -458,6 +486,110 @@ SENT:
 @LOCUS what should I do next?
 
 step: 4
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5
+  r6: c0-3=5
+  r7: c0-3=5
+  r8: c0-3=5, c32-40=3
+  r9: c0-3=5, c32=3, c33-39=5, c40=3
+  r10: c0-3=5, c32=3, c33-39=5, c40=3
+  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
+  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
+  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
+  r14: c0-3=5, c32=3, c33-39=5, c40=3
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-53=3
+  r26: c0-3=5, c14-53=3
+  r27: c0-3=5, c14-53=3
+  r28: c0-3=5, c14-53=3
+  r29: c0-3=5, c14-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
+  r35: c0-3=5, c14-28=3, c34-38=12, c39-53=3
+  r36: c0-3=5, c14-28=3, c34-38=12, c39-53=3
+  r37: c0-3=5, c14-28=3, c34-38=9, c39-53=3
+  r38: c0-3=5, c14-28=3, c34-38=9, c39-53=3
+  r39: c0-3=5, c14-28=3, c34-38=9, c39-53=3
+  r40: c0-3=5, c19-23=3, c34-53=3
+  r41: c0-3=5, c19-23=3, c34-53=3
+  r42: c0-3=5, c19-23=3, c34-53=3
+  r43: c0-3=5, c19-23=3, c34-53=3
+  r44: c0-3=5, c19-23=3, c34-53=3
+  r45: c0-3=5, c19-53=3
+  r46: c0-3=5, c19-53=3
+  r47: c0-3=5, c19-53=3
+  r48: c0-3=5, c19-53=3
+  r49: c0-3=5, c19-53=3
+  r50: c0-3=5
+  r51: c0-3=5
+  r53: c1-10=5
+  r54: c1-10=5
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-16=3, c17-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-16=3, c17-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block position**: rows 35-36, cols 34-38 (value 12). This means I'm already 4 steps in — the block has moved UP from starting rows 40-41.
+
+**Trail**: rows 37-39, cols 34-38 (value 9) = state 0.
+
+**Cluster**: rows 31-33, cols 20-22 (r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1). Confirmed same position as sessions 10-12.
+
+**Timer**: r61 c13-16=3 (4 cols consumed = 2 steps × 2 timer width... wait, level 1 is 1 col/step). c13-16=3 = 4 cols consumed. Starting at 42 total (c13-54), now c17-54=11 = 38 remaining. 4 consumed = 4 steps. I'm at step 4. ✓
+
+**Corridor**: rows 25-29 = wide corridor (c14-53=3). Rows 30-34: c14-28 and c34-53 = void gap at c29-33. LEFT is only safe from rows 25-29.
+
+**Current position**: rows 35-36. I need to go UP one more step to reach rows 30-31... but LEFT is still blocked at rows 30-34 by void at c29-33. I need rows 25-29 before LEFT.
+
+Send **UP** to reach rows 30-31 → still blocked for LEFT. Need UP again to rows 25-26. But I should keep going UP.
+
+0
+
+============================================================
+
+[ACTION step=5]
+SENT:
+@LOCUS what should I do next?
+
+step: 5
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -530,46 +662,39 @@ grid 64x64 bg=4
   r58: c1-2=5, c3-4=9, c5-10=5
   r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-16=3, c17-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-16=3, c17-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-17=3, c18-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-17=3, c18-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame carefully:
+Looking at the frame:
 
-**Block position**: rows 30-31, cols 34-38 (value 12 at r30 c34-38 and r31 c34-38)
-
+**Block position**: rows 30-31, cols 34-38 (value 12 at r30-r31 c34-38)
 **Trail**: rows 32-34, cols 34-38 (value 9) — entity1 state 0
 
-**Cluster**: rows 31-33, cols 20-22 (values 0/1 at r31 c21, r32 c20-22, r33 c21)
+**Cluster**: r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1 → cluster at rows 31-33, cols 20-22
 
-**Timer**: r61 c13-16=3 (consumed), c17-54=11 (38 cols remaining = 19 steps)
+**Current situation**: Block is at rows 30-31, cols 34-38. The cluster is at rows 31-33, cols 20-22. Trail is at rows 32-34. I need trail overlap with cluster rows 31-33.
 
-**Block is at rows 30-31, cols 34-38.** I'm at step 4, so 3 actions have already been sent before this frame.
+**Timer**: r61 c13-17=3 (5 cols consumed), c18-54=11 (37 remaining). Timer is fine.
 
-The cluster is at rows 31-33 cols 20-22. My trail (rows 32-34) at cols 34-38 doesn't overlap the cluster cols yet.
+**Wide corridor**: rows 25-29, cols 14-53. Block is already in the corridor zone (rows 30-31 are just below it). Wait — rows 30-31 show c14-28=3 and c34-53=3, with void at c29-33. Block at c34-38 is in the right section.
 
-From rows 30-31 cols 34-38, I need to get LEFT to cols 19-23 so the trail overlaps the cluster at rows 31-33 cols 20-22.
+I need to go LEFT to reach cluster cols 20-22. But void gap c29-33 blocks LEFT from c34-38 at rows 30-31. I need to go UP first to rows 25-26 (wide corridor) before going LEFT.
 
-But the corridor structure: wide corridor is at rows 25-29 (c14-53=3). At rows 30-31, left of c34 there's c14-28=3 — so LEFT is passable here.
-
-Going LEFT from cols 34-38 → cols 29-33: but wait, r30 shows c14-28=3 and c34-38=12 with void between c29-33. Actually r30 c29-33 is background (void=4). So LEFT from c34-38 at row 30 is BLOCKED.
-
-I need to go UP first to rows 25-29 (wide corridor) before going LEFT.
-
-**Send UP (action 0).**
+**Action**: UP (0)
 
 0
 
 ============================================================
 
-[ACTION step=5]
+[ACTION step=6]
 SENT:
 @LOCUS what should I do next?
 
-step: 5
+step: 6
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -642,116 +767,6 @@ grid 64x64 bg=4
   r58: c1-2=5, c3-4=9, c5-10=5
   r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-17=3, c18-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-17=3, c18-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame:
-
-**Block position**: rows 25-26, cols 34-38 (value 12). This means I've already moved UP from the starting position.
-
-**Cluster location**: rows 31-33, cols 20-22 (values 0/1 pattern visible at r31:c21=0, r32:c20=1,c21-22=0, r33:c21=1).
-
-**Entity1 state**: r55-56 full c3-8=9 = state 0. ✓
-
-**Timer**: r61 c13-17=3 (5 consumed), c18-54=11 (37 remaining). 37 cols ÷ 2... wait — this is level 1, timer = 1/step. 37 remaining = 37 steps. Fine.
-
-**Current position**: block at rows 25-26, cols 34-38. I'm already in the wide corridor at rows 25-26.
-
-**What I need**: Trail overlap with cluster at rows 31-33, cols 20-22.
-- If I go LEFT from cols 34-38 → cols 29-33 (trail at rows 27-29). Not yet overlapping cluster cols 20-22.
-- I need block at rows 25-26, cols ~19-23 so trail at rows 27-29 overlaps cluster at rows 31-33... wait, trail is BELOW the block (rows n+1 to n+3). Block at rows 25-26 → trail at rows 27-29. Cluster is at rows 31-33. That's too far below.
-
-**Better approach**: Move DOWN to rows 30-31, trail at rows 32-34, overlaps cluster rows 31-33 (2/3 rows). But I need to be at cols 19-23 for col overlap. Currently at cols 34-38 → need LEFT×3 to reach cols 19-23.
-
-**Plan**: LEFT×3 (to cols 19-23), DOWN (trail at rows 32-34 overlaps cluster rows 31-33, cols 20-22 ✓ → collection fires), UP (back to rows 25-26), RIGHT×3 (back to cols 34-38), UP×3 (to rows 10-11, entity2 win).
-
-Step 5, block at rows 25-26 cols 34-38. Send **LEFT** (action 2).
-
-2
-
-============================================================
-
-[ACTION step=6]
-SENT:
-@LOCUS what should I do next?
-
-step: 6
-obs_state: GameState.NOT_FINISHED
-levels_completed: 0
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33-39=5, c40=3
-  r16: c0-3=5, c32-40=3
-  r17: c0-3=5, c34-38=3
-  r18: c0-3=5, c34-38=3
-  r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-28=3, c29-33=12, c34-53=3
-  r26: c0-3=5, c14-28=3, c29-33=12, c34-53=3
-  r27: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r28: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r29: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=5
-  r54: c1-10=5
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
   r61: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r62: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
@@ -759,7 +774,7 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-0
+2
 
 ============================================================
 
@@ -770,8 +785,6 @@ SENT:
 step: 7
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
-
-WARNING: last action 0 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
 
 Available actions:
   0: GameAction.ACTION1
@@ -849,7 +862,18 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-1
+Looking at the frame:
+
+**Block position**: rows 25-26, cols 29-33 (value 12)
+**Trail**: rows 27-29, cols 29-33 (value 9) — entity1 state 0
+**Cluster**: rows 31-33, cols 20-22 (confirmed — r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1)
+**Timer**: r61 c13-19=3 (7 consumed), c20-54=11 (35 remaining = 17.5 steps at 2/step... wait, this is level 1 = 1/step, so 35 steps remaining)
+
+Block is at rows 25-26, cols 29-33. I'm in the wide corridor (rows 25-29). I need to go LEFT to reach the cluster approach zone (cols 19-23).
+
+LEFT from cols 29-33 → cols 24-28 (still wide corridor, valid)
+
+2
 
 ============================================================
 
@@ -858,208 +882,6 @@ SENT:
 @LOCUS what should I do next?
 
 step: 8
-obs_state: GameState.NOT_FINISHED
-levels_completed: 0
-
-WARNING: last action 1 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33-39=5, c40=3
-  r16: c0-3=5, c32-40=3
-  r17: c0-3=5, c34-38=3
-  r18: c0-3=5, c34-38=3
-  r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-28=3, c29-33=12, c34-53=3
-  r26: c0-3=5, c14-28=3, c29-33=12, c34-53=3
-  r27: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r28: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r29: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=5
-  r54: c1-10=5
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-0
-
-============================================================
-
-[ACTION step=9]
-SENT:
-@LOCUS what should I do next?
-
-step: 9
-obs_state: GameState.NOT_FINISHED
-levels_completed: 0
-
-WARNING: last action 0 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33-39=5, c40=3
-  r16: c0-3=5, c32-40=3
-  r17: c0-3=5, c34-38=3
-  r18: c0-3=5, c34-38=3
-  r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-28=3, c29-33=12, c34-53=3
-  r26: c0-3=5, c14-28=3, c29-33=12, c34-53=3
-  r27: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r28: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r29: c0-3=5, c14-28=3, c29-33=9, c34-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=5
-  r54: c1-10=5
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame:
-
-- Block (value 12) is at rows 25-26, cols 29-33
-- Trail (value 9) is at rows 27-29, cols 29-33
-- Cluster (values 0/1) is at rows 31-33, cols 20-22
-- Entity2 ring at rows 8-16, cols 32-40
-- Timer: rows 61-62, cols 13-21=3 (consumed), cols 22-54=11 (remaining) = 33 cols remaining = ~16 steps at 2/step... wait, this is level 1. Level 1 = 1 col/step. 33 cols remaining.
-
-Block is at rows 25-26, cols 29-33. UP was blocked (step 9 warning). The shaft above is cols 34-38 (rows 17-24), not cols 29-33. The block is in the wide corridor at rows 25-26 but shifted LEFT to cols 29-33.
-
-From rows 25-26, cols 29-33, I need to collect the cluster at rows 31-33, cols 20-22. The trail is at rows 27-29. I need to go LEFT to get trail over the cluster.
-
-Going LEFT from cols 29-33 → cols 24-28. Trail would be at rows 27-29, cols 24-28. Still not at cols 20-22.
-
-Go LEFT again: cols 19-23. Trail at rows 27-29, cols 19-23. Cluster at rows 31-33, cols 20-22. Trail doesn't reach cluster rows yet.
-
-Go DOWN: block at rows 30-31, cols 19-23. Trail at rows 32-34, cols 19-23. Trail rows 32-34 overlaps cluster rows 31-33 at rows 32-33. And cols 19-23 overlaps cluster cols 20-22. **Collection fires!**
-
-So: LEFT, LEFT, DOWN — then RIGHT back to shaft, UP to entity2.
-
-Current action: LEFT (action 2).
-
-2
-
-============================================================
-
-[ACTION step=10]
-SENT:
-@LOCUS what should I do next?
-
-step: 10
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -1132,42 +954,38 @@ grid 64x64 bg=4
   r58: c1-2=5, c3-4=9, c5-10=5
   r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully.
+Looking at the frame:
 
-**Step 10 — reading the frame:**
+**Block position**: rows 25-26, cols 24-28 (value 12)
 
-Block location: rows 25-26, cols 24-28 (value=12). ✓
+**Cluster**: rows 31-33, cols 20-22 (r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1)
 
-Entity1 state: r55-56 c3-8=9 (full), r59-60 c3-4=9 + c7-8=9 (partial) = **state 0**. Trail at rows 27-29 c24-28 (value=9).
+**Entity1 state**: r55-56 c3-8=9 FULL, r59-60 partial = state 0 ✓
 
-Cluster: rows 31-33, cols 20-22 (values 0/1 at r31c21, r32c20-22, r33c21) = **cluster at rows 31-33, cols 20-22**.
+**Timer**: r61 c13-20=3 (8 consumed), c21-54=11 (34 remaining) = 34 cols left = 17 steps
 
-Timer: r61 c13-22=3 (consumed, 10 cols), c23-54=11 (remaining, 32 cols) = **32 cols remaining = 16 steps**.
+**Current position analysis**: Block is at rows 25-26, cols 24-28. I'm in the wide corridor. The cluster is at rows 31-33, cols 20-22.
 
-Current position rows 25-26, cols 24-28. Trail at rows 27-29 overlaps cluster rows 31-33? No — trail rows 27-29 vs cluster rows 31-33: no overlap yet.
+To collect: I need the trail (rows 27-29) to overlap cluster rows 31-33. The block is at rows 25-26, so trail is at rows 27-29 — that's above the cluster. I need to go DOWN to bring block to rows 30-31, trail at rows 32-34 → overlaps cluster rows 32-33 (2/3 overlap, sufficient).
 
-Need trail to reach rows 31-33. Block must be at rows 29-30 for trail at rows 31-33.
+**Action: DOWN (1)**
 
-Send **DOWN** (action 1) → block moves to rows 30-31, trail at rows 32-34. That gives trail rows 32-34 overlapping cluster rows 31-33 (2/3 rows) → **collection fires**.
-
-Then UP back and navigate to entity2.
-
-**1**
+1
 
 ============================================================
 
-[ACTION step=11]
+[ACTION step=9]
 SENT:
 @LOCUS what should I do next?
 
-step: 11
+step: 9
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -1240,111 +1058,8 @@ grid 64x64 bg=4
   r58: c1-2=5, c3-4=9, c5-10=5
   r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-23=3, c24-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-23=3, c24-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame carefully:
-
-**Block location**: rows 30-31, cols 24-28 (value 12)
-**Entity1 trail**: rows 32-34, cols 24-28 (value 9) → state 0
-**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern at r31c21, r32c20-22, r33c21)
-**Timer**: r61 c13-23=3 (11 consumed), c24-54=11 (31 remaining) → 31 cols left = ~15 steps at 1/step (level 1)
-
-**Current position analysis**:
-- Block is at rows 30-31, cols 24-28
-- Trail at rows 32-34 overlaps cluster rows 31-33 at cols 24-28... but cluster is at cols 20-22, trail is at cols 24-28. No overlap yet.
-- Need to move LEFT to get trail cols to reach cluster cols 20-22.
-- Block at cols 24-28: LEFT → cols 19-23. Trail would be at rows 32-34, cols 19-23. That overlaps cluster cols 20-22 at rows 31-33 (2/3 row overlap) ✓
-
-Sending LEFT to trigger cluster collection:
-
-`2`
-
-============================================================
-
-[ACTION step=12]
-SENT:
-@LOCUS what should I do next?
-
-step: 12
-obs_state: GameState.NOT_FINISHED
-levels_completed: 0
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33-39=5, c40=3
-  r16: c0-3=5, c32-40=3
-  r17: c0-3=5, c34-38=3
-  r18: c0-3=5, c34-38=3
-  r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-23=3, c24-28=12, c29-53=3
-  r26: c0-3=5, c14-23=3, c24-28=12, c29-53=3
-  r27: c0-3=5, c14-23=3, c24-28=9, c29-53=3
-  r28: c0-3=5, c14-23=3, c24-28=9, c29-53=3
-  r29: c0-3=5, c14-23=3, c24-28=9, c29-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=5
-  r54: c1-10=5
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -1352,144 +1067,26 @@ Respond with only the action number.
 LOCUS:
 Looking at the frame:
 
-**Block position**: rows 25-26, cols 24-28 (value 12)
-**Trail**: rows 27-29, cols 24-28 (value 9) — entity1 state 0
-**Cluster**: rows 31-33, cols 20-22 (values 0/1) — cols 20-22 confirmed
-**Timer**: r61 c13-24=3 (consumed), c25-54=11 (remaining) = 30 cols remaining = 15 steps at 2/step... wait, this is level 1: 1 col/step. 30 cols = 30 steps remaining.
+**Block position**: rows 30-31, cols 24-28 (value 12)
+**Entity1 trail**: rows 32-34, cols 24-28 (value 9) — state 0 (r55-56 full c3-8=9)
+**Cluster**: rows 31-33, cols 20-22 (values 0/1) — confirmed position
+**Timer**: c13-21=3 (9 consumed), c22-54=11 (33 remaining) — 16 cols left = 8 steps
 
-Block is at rows 25-26, cols 24-28. The cluster is at rows 31-33, cols 20-22.
+**Critical observation**: Trail at rows 32-34 overlaps cluster at rows 32-33 (2/3 rows) — **collection should have already fired** at the previous DOWN step. Let me verify: entity1 state at r55-56 still shows full c3-8=9 = **state 0**. Collection did NOT fire.
 
-I need to get the trail (rows 27-29) to overlap the cluster (rows 31-33, cols 20-22). 
+Block is currently at rows 30-31, cols 24-28. Need to get trail onto cluster cols 20-22. Current trail is at cols 24-28, cluster is at cols 20-22 — no column overlap. I need to move LEFT to align cols with the cluster.
 
-Current block: rows 25-26, cols 24-28. Trail: rows 27-29, cols 24-28.
-
-If I go DOWN: block → rows 30-31, trail → rows 32-34, cols 24-28. That's adjacent to cluster cols 20-22 but not overlapping (cols 24-28 vs cols 20-22 — no overlap).
-
-I need to move LEFT to cols 19-23 first, then DOWN to get trail overlap with cluster cols 20-22.
-
-LEFT (action 2) → block would go to rows 25-26, cols 19-23. Trail at rows 27-29, cols 19-23. Then DOWN → block rows 30-31, trail rows 32-34 cols 19-23. Cluster at rows 31-33 cols 20-22 — trail cols 19-23 overlaps cols 20-22. ✓
+Send LEFT (action 2) to move block to rows 30-31, cols 19-23. Trail will move to rows 32-34, cols 19-23, overlapping cluster at rows 32-33, cols 20-22 ✓
 
 2
 
 ============================================================
 
-[ACTION step=13]
+[ACTION step=10]
 SENT:
 @LOCUS what should I do next?
 
-step: 13
-obs_state: GameState.NOT_FINISHED
-levels_completed: 0
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33-39=5, c40=3
-  r16: c0-3=5, c32-40=3
-  r17: c0-3=5, c34-38=3
-  r18: c0-3=5, c34-38=3
-  r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-18=3, c19-23=12, c24-53=3
-  r26: c0-3=5, c14-18=3, c19-23=12, c24-53=3
-  r27: c0-3=5, c14-18=3, c19-23=9, c24-53=3
-  r28: c0-3=5, c14-18=3, c19-23=9, c24-53=3
-  r29: c0-3=5, c14-18=3, c19-23=9, c24-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=5
-  r54: c1-10=5
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at this frame carefully.
-
-**Frame analysis (step 13, level 1):**
-
-Block position: rows 25-26, cols 19-23 (value 12)
-Trail: rows 27-29, cols 19-23 (value 9)
-
-Entity1 state carrier (rows 53-60):
-- r55-56: c3-8=9 (full) 
-- r59-60: c3-4=9, c7-8=9 (partial)
-This is **state 0** pattern.
-
-Entity2 ring: rows 8-16, cols 32-40. Interior at rows 9-15 cols 33-39.
-
-**Cluster location**: rows 31-33, cols 20-22 (values 0/1 pattern visible at r31 c21, r32 c20-22, r33 c21).
-
-**Current position**: Block is at rows 25-26, cols 19-23 — already in the wide corridor, already LEFT of shaft, cols overlapping cluster cols (19-23 vs cluster at 20-22).
-
-Trail is at rows 27-29, cols 19-23. Cluster is at rows 31-33. Trail bottom is row 29, cluster top is row 31 — **2 rows short of overlap**.
-
-I need to move DOWN to bring the trail to rows 31-33. Block DOWN → rows 30-31, trail → rows 32-34. That gives 2/3 row overlap with cluster (rows 32-33 of cluster rows 31-33). Collection should fire.
-
-**Action: 1 (DOWN)**
-
-1
-
-============================================================
-
-[ACTION step=14]
-SENT:
-@LOCUS what should I do next?
-
-step: 14
+step: 10
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -1562,8 +1159,8 @@ grid 64x64 bg=4
   r58: c1=0, c2-6=5, c7-8=9, c9=5, c10=0
   r59: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0
   r60: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0, c12-63=5
-  r61: c1=0, c2-9=5, c10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1=0, c2-9=5, c10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 frame[1]:
 grid 64x64 bg=4
@@ -1627,8 +1224,8 @@ grid 64x64 bg=4
   r58: c1=0, c2-6=5, c7-8=9, c9=5, c10=0
   r59: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0
   r60: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0, c12-63=5
-  r61: c1=0, c2-9=5, c10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1=0, c2-9=5, c10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 frame[2]:
 grid 64x64 bg=4
@@ -1692,8 +1289,8 @@ grid 64x64 bg=4
   r58: c1=0, c2-6=5, c7-8=9, c9=5, c10=0
   r59: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0
   r60: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0, c12-63=5
-  r61: c1=0, c2-9=5, c10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1=0, c2-9=5, c10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 frame[3]:
 grid 64x64 bg=4
@@ -1757,8 +1354,8 @@ grid 64x64 bg=4
   r58: c1=0, c2-6=5, c7-8=9, c9=5, c10=0
   r59: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0
   r60: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0, c12-63=5
-  r61: c1=0, c2-9=5, c10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1=0, c2-9=5, c10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 frame[4]:
 grid 64x64 bg=4
@@ -1822,8 +1419,8 @@ grid 64x64 bg=4
   r58: c1=0, c2-6=5, c7-8=9, c9=5, c10=0
   r59: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0
   r60: c1=0, c2=5, c3-4=9, c5-6=5, c7-8=9, c9=5, c10=0, c12-63=5
-  r61: c1=0, c2-9=5, c10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1=0, c2-9=5, c10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 frame[5]:
 grid 64x64 bg=4
@@ -1887,8 +1484,8 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-21=3, c22-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -1898,43 +1495,33 @@ Looking at the frames carefully.
 
 **Frame analysis:**
 
-Frames 0-4 are identical — the block is not visible in the main grid (no value=12 cells anywhere in the walkable corridors). This means the block is off-screen or I'm missing it.
+Frames 0-4 are identical (static/stuck). Frame 5 shows differences:
+- Entity2 ring interior (rows 9-15, cols 33-39): changed from `0` to `5` — the ring has **opened/dimmed**
+- Entity1 carrier (rows 53-62, cols 1-10): border cells changed from `0` to `5` — the border dissolved
 
-Frame 5 differs from frames 0-4 in two ways:
-1. Entity2 ring interior (rows 9-15, cols 33-39) changed from `0` values to `5` values — the ring is now "open"/dim
-2. Entity1 carrier border (rows 53-62, cols 1-10) changed from `0` to `5` — the border disappeared
+This is a significant state change happening in frame 5. The ring interior showing `5` (passable) at rows 9-15 cols 33-39 matches the entity2 interior becoming accessible.
 
-Wait — looking more carefully at frame 5 rows 9-15: `c33-39=5` and `c33-39=0` in frames 0-4. The ring interior went from 0-filled (closed) to 5-filled (open/passable). This is the WIN state — the ring opened.
+**Block position**: The block (value 12) is visible at rows 30-31, cols 19-23. Wait — that's the cluster/state-changer location. Let me re-read.
 
-Also frame 5 has no block visible (value=12) anywhere. The block was at rows 30-31, cols 19-23 in frames 0-4 (that's where `c19-23=12` appears at r30-31).
+`r30: c19-23=12, r31: c19-23=12` — block is at rows 30-31, cols 19-23. That's the cluster position (cols 20-22, rows 30-34 area with value 9 at rows 32-34).
 
-The block IS visible at r30-31 c19-23 = value 12. That's the block position. It's in the cluster zone.
+The block is sitting ON the cluster area. The trail (rows 32-34) should be overlapping the cluster at rows 32-34, cols 19-23 (value 9 visible there). State collection may have already fired given frame 5 changes.
 
-The cluster is at rows 32-34, cols 19-23 (value=9). Block at rows 30-31, trail would be at rows 32-34 — overlapping the cluster. State collection may have already fired (frame 5 shows ring open).
+**Timer**: r61/r62 show `c13-21=3` (9 consumed) = 33 remaining. Still healthy.
 
-Step 14, NOT_FINISHED, 0 levels completed. The entity2 ring opened in frame 5 = state changed. Block at rows 30-31, cols 19-23. Need to reach entity2 at rows 8-16, cols 32-40.
+The block is at rows 30-31, cols 19-23. Need to go UP to collect properly and then RIGHT and UP to entity2 (rows 10-11, cols 34-38).
 
-From rows 30-31 cols 19-23:
-- RIGHT to cols 24-28 (blocked? c24-28=3 corridor valid)
-- Then RIGHT to cols 29-33 (void c29-33? No — at rows 30-31 c24-28=3 and c34-53=3, gap at c29-33)
+Next move: **UP** (0) — move block from rows 30-31 toward rows 25-26, continuing route toward entity2.
 
-Actually at rows 30-31: c14-18=3, c19-23=12(block), c24-28=3, c34-53=3. The c29-33 is void (bg=4). 
-
-Need to go UP first to reach rows 25-29 (wide corridor c14-53=3), then RIGHT to cols 34-38, then UP to entity2.
-
-From rows 30-31: UP → rows 25-26 (wide corridor). Then RIGHT×1 → c24-28, RIGHT×1 → c29-33... wait at rows 25-29 c14-53=3 so all passable. UP×1 from rows 30-31 → rows 25-26, then RIGHT to c34-38, then UP×3 to entity2.
-
-**Action: 0 (UP)**
-
-0
+**0**
 
 ============================================================
 
-[ACTION step=15]
+[ACTION step=11]
 SENT:
 @LOCUS what should I do next?
 
-step: 15
+step: 11
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -2007,8 +1594,8 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -2017,24 +1604,32 @@ LOCUS:
 Looking at the frame carefully:
 
 **Block position**: rows 25-26, cols 19-23 (value 12)
-**Entity1 trail**: rows 27-29, cols 19-23 (value 9) — state 0
-**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern) — cols 20-22
-**Entity2**: rows 8-16, cols 32-40
-**Timer**: r61 c13-26=3 (consumed), c27-54=11 (remaining) = 28 cols remaining = 14 steps
 
-Block is at rows 25-26, cols 19-23. The cluster is at rows 31-33, cols 20-22. I need the trail to overlap the cluster. Trail is currently at rows 27-29 — need to go DOWN to move trail into rows 31-33 overlap zone.
+**Cluster**: rows 31-33, cols 20-22 (r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1)
 
-**DOWN** (action 1) → block moves to rows 30-31, trail at rows 32-34, overlapping cluster rows 31-33 → collection fires.
+**Entity1 state**: rows 55-56 c3-8=9 (full), rows 59-60 partial = state 0 ✓
+
+**Timer**: r61 c13-22=3 (10 consumed), c23-54=11 (32 remaining) = 16 steps remaining at 2/step... wait, this is level 1: 1 col/step. 32 cols remaining = 32 steps. ✓
+
+**Current position**: Block at rows 25-26, cols 19-23. I'm already in the wide corridor at the correct row for LEFT moves.
+
+**What I need**: Trail must overlap cluster at rows 31-33, cols 20-22. Block is at rows 25-26, cols 19-23. Trail is at rows 27-29, cols 19-23.
+
+I need to go DOWN so trail reaches rows 31-33. Block DOWN → rows 30-31, cols 19-23. Trail → rows 32-34. Trail at rows 32-34 overlaps cluster rows 32-33 (2/3 rows). **Collection fires!**
+
+Then UP → rows 25-26, RIGHT×3 → cols 34-38, UP×3 → rows 10-11, entity2 → WIN.
+
+Send DOWN now:
 
 1
 
 ============================================================
 
-[ACTION step=16]
+[ACTION step=12]
 SENT:
 @LOCUS what should I do next?
 
-step: 16
+step: 12
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -2107,42 +1702,48 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-27=3, c28-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-27=3, c28-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-23=3, c24-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-23=3, c24-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame carefully:
+Looking at this frame carefully:
 
-**Block position**: rows 30-31, cols 19-23 (value 12) — the block is already in the corridor at the cluster position.
+**Block location**: rows 30-31, cols 19-23 (value 12) — the block is in the wide corridor area.
 
-**Cluster**: rows 32-34, cols 19-23 (value 9) — directly below the block.
+**Cluster**: rows 32-34, cols 19-23 (value 9) — the cluster is directly below the block.
 
-**Entity1 state**: r55-56 show partial 9s (c3-4 and c7-8, gap at c5-6), r59-60 show full c3-8=9. This is **state 1** pattern.
+**Entity1 state**: r55-56 show partial 9s (c3-4 and c7-8), r59-60 show full c3-8=9 — this is **state 1** pattern (r59-60 full = state 1).
 
-Wait — let me re-read. r55: c3-4=9, c5-6=5, c7-8=9 (partial); r59-60: c3-8=9 (full). That matches state 1 (after collection).
+**Timer**: r61 shows c13-23=3 (11 cols consumed), c24-54=11 (31 cols remaining) — 15-16 steps left.
 
-**Entity2**: rows 8-16, cols 32-40. Interior at rows 9-15.
+**Entity2**: rows 8-16, cols 32-40 — I need to get the block there.
 
-**Timer**: r61 shows c13-27=3 (15 cols consumed), c28-54=11 (27 cols remaining) = 27 remaining ÷ 1... wait, level 1 = 1 col/step.
+**Current situation**: The block is at rows 30-31, cols 19-23. Entity1 is at state 1. Entity2 is at rows 8-16, cols 32-40. The block needs to navigate to entity2.
 
-The block is at rows 30-31, cols 19-23. The cluster (9s) is at rows 32-34, cols 19-23. State is already 1 (collection happened). Entity2 is at rows 8-16, cols 32-40. Interior entry from below: block needs to be at rows 15-16, cols 33-39.
+From rows 30-31, cols 19-23:
+- I need to go RIGHT to cols 34-38 (the shaft), then UP to rows 8-16 to enter entity2.
+- RIGHT from c19-23 → c24-28 → c29-33 → c34-38. The wide corridor at rows 25-29 connects cols 14-53, so RIGHT is valid here.
 
-From rows 30-31, cols 19-23: need to go RIGHT to cols 34-38, then UP to rows 10-11 (entity2 interior).
+But wait — at state 1, RIGHT (action 3) may be blocked per @BELIEF:LAT10LON10. However, I'm currently at rows 30-31 which is within the wide corridor band (rows 25-29... actually rows 30-31 are just below). Let me check: r30-31 show c14-18=3, c19-23=12, c24-28=3, c34-53=3. So I can go RIGHT from c19-23 to c24-28, then RIGHT again toward c34-53 area.
 
-Action: **3** (RIGHT)
+At state 1 with timer at 15-16 steps remaining, I need to reach entity2 efficiently. Route: RIGHT×2 (→ cols 29-33... wait, block is 5 wide, c19-23 + RIGHT moves to c24-28), then UP.
+
+Actually from c19-23, RIGHT → c24-28, RIGHT → c29-33 (but c29-33 at rows 30-31 = 3, valid), RIGHT → c34-38, then UP×3 → rows 9-10 → entity2 WIN.
+
+That's RIGHT×3, UP×3 = 6 more actions. State 1 already obtained. Let me send RIGHT.
 
 3
 
 ============================================================
 
-[ACTION step=17]
+[ACTION step=13]
 SENT:
 @LOCUS what should I do next?
 
-step: 17
+step: 13
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -2215,136 +1816,45 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-28=3, c29-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-28=3, c29-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully.
+Looking at the frame:
 
-**Block location**: rows 30-31, cols 24-28 (value 12). This is step 17, so the block has already moved from its starting position.
+**Block position**: rows 30-31, cols 24-28 (value 12)
+**Entity1 trail**: rows 32-34, cols 24-28 (value 9) — state 0 (r55-56 partial = state 1? Let me check: r55 c3-4=9, c7-8=9 (partial gaps at c5-6); r59 c3-8=9 (full). This is state 1 pattern — r59-60 full, r55-56 partial.)
 
-**Entity1 state**: r55-56 show `c3-4=9, c5-6=5, c7-8=9` (partial pattern) and r59-60 show `c3-8=9` (full). This is **state 1** pattern (r55-56 partial, r59-60 full).
+Wait — state 1 means cross was already collected? No, this is level 1. The cluster is the state changer here.
 
-Wait — that means the cross/cluster has already been collected. State 1 is active.
+**Cluster**: rows 31-32, cols 20-22 (r31 c21=0; r32 c20=1,c21-22=0) — visible at c20-22.
 
-**Timer**: r61 shows `c13-28=3` (consumed, 16 cols = 8 steps consumed this cycle) and `c29-54=11` (26 cols remaining = 13 steps).
+**Trail at rows 32-34, cols 24-28**: Does this overlap cluster at cols 20-22? Trail is at c24-28, cluster at c20-22 — NO overlap. Collection has not fired.
 
-**Block at rows 30-31, cols 24-28**: Looking at the maze structure, the cluster/state-changer is visible at rows 31-33, cols 20-22 (values 0/1). Block trail at rows 32-34 would overlap cluster rows 32-33.
+**Timer**: r61 c13-24=3 (12 cols consumed), c25-54=11 (30 cols remaining = 15 steps at 2/step... wait this is level 1 = 1/step = 30 steps remaining).
 
-Actually the block is AT rows 30-31 c24-28. The cluster object shows at r31 c21=0, r32 c20=1/c21-22=0, r33 c21=1. The block body is at c24-28 — trail rows 32-34 at c24-28 don't overlap cluster at c20-22.
+**Entity1 state**: r55-56 partial (c3-4=9, gap c5-6, c7-8=9), r59-60 full (c3-8=9) = **state 1** — cluster already collected!
 
-**State 1 is already active** — cluster was collected. Entity2 is at rows 8-16, cols 32-40. Block needs to go UP to reach entity2 interior.
+State 1 confirmed. The cluster WAS collected already. Block is at rows 30-31, cols 24-28. Entity2 is at rows 8-16, cols 32-40.
 
-From rows 30-31, cols 24-28: need to go RIGHT to cols 34-38, then UP to rows 10-11.
+I need to go RIGHT to cols 29-33... but void at c29-33 rows 30-41 blocks LEFT/RIGHT through there. From rows 30-31 c24-28, RIGHT → c29-33 = void blocked.
 
-RIGHT (action 3) from c24-28 → c29-33... but the shaft at c29-33 — at rows 30-31, looking at the frame: r30 shows c14-23=3, c24-28=12, c34-53=3. There's a gap at c29-33 (void=4). So RIGHT is blocked.
+Need to go UP to rows 25-26 (wide corridor) first, then RIGHT.
 
-Need to go UP first to reach the wide corridor, then RIGHT.
-
-UP (action 0).
+**Action**: UP (0)
 
 0
 
 ============================================================
 
-[ACTION step=18]
+[ACTION step=14]
 SENT:
 @LOCUS what should I do next?
 
-step: 18
-obs_state: GameState.NOT_FINISHED
-levels_completed: 0
-
-WARNING: last action 3 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33-39=5, c40=3
-  r16: c0-3=5, c32-40=3
-  r17: c0-3=5, c34-38=3
-  r18: c0-3=5, c34-38=3
-  r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-23=3, c24-28=12, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-23=3, c24-28=12, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23=3, c24-28=9, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-23=3, c24-28=9, c34-53=3
-  r34: c0-3=5, c14-23=3, c24-28=9, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=5
-  r54: c1-10=5
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-29=3, c30-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-29=3, c30-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-0
-
-============================================================
-
-[ACTION step=19]
-SENT:
-@LOCUS what should I do next?
-
-step: 19
+step: 14
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -2417,51 +1927,38 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-25=3, c26-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully.
+Looking at the frame:
 
-**Frame analysis:**
-- Step 19, level 1, NOT_FINISHED
-- Block is at **rows 25-26, cols 24-28** (value 12)
-- Entity1 trail at rows 27-29, cols 24-28 (value 9) — state 0 (r55-56 partial c3-4+c7-8=9, r59-60 full c3-8=9 → this is actually **state 1** pattern: r55-56 partial, r59-60 full)
+**Block position**: rows 25-26, cols 24-28 (value 12) — already in the wide corridor.
 
-Wait — checking entity1:
-- r55: c3-4=9, c5-6=5, c7-8=9 (partial — gaps at c5-6)
-- r56: c3-4=9, c5-6=5, c7-8=9 (partial)
-- r59: c3-8=9 (full)
-- r60: c3-8=9 (full)
+**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern visible at r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1).
 
-This is **state 1** (r55-56 partial, r59-60 full).
+**Entity1 state**: r55-56 show partial 9s (c3-4 and c7-8), r59-60 show full c3-8=9 — this is **state 1** pattern (r59-60 full, r55-56 partial). Wait — actually checking: state 0 = r55-56 FULL, r59-60 PARTIAL. State 1 = r55-56 PARTIAL, r59-60 FULL. Current frame shows r55-56 partial (c3-4, c7-8 with gap c5-6), r59-60 full (c3-8). That's **state 1** — cluster already collected!
 
-**Cluster location**: rows 31-33, cols 20-22 (values 0/1 pattern: r31 c21=0, r32 c20-22=1,0,0, r33 c21=1)
+**Timer**: c13-25=3 (13 cols consumed), c26-54=11 (29 cols remaining). About 14-15 steps left.
 
-**Timer**: r61 c13-30=3 (consumed), c31-54=11 (remaining) = 24 cols remaining = 12 steps.
+**Current position** (rows 25-26, cols 24-28): I'm in the wide corridor. With state 1 already achieved, I need to go RIGHT back to the shaft (cols 34-38) then UP to entity2 at rows 10-11.
 
-**Block at rows 25-26, cols 24-28.** Cluster at rows 31-33 cols 20-22.
+From cols 24-28, need RIGHT×2 to reach cols 34-38, then UP×3 to rows 10-11 → WIN.
 
-Block trail is at rows 27-29. If I go DOWN, trail sweeps rows 27-31 — overlapping cluster rows 31-33 partially. But state is already 1. 
+Next action: RIGHT (action 3)
 
-Wait — state 1 means cross already collected? No, this is level 1. State 1 in level 1 means cluster already collected. Need state 1 to enter entity2 (rows 8-16, cols 32-40).
-
-Block is at rows 25-26, cols 24-28. Entity2 interior at rows 9-15, cols 33-39. 
-
-Route to entity2: RIGHT (cols 29-33), UP×3 (rows 10-11) → WIN.
-
-`3`
+3
 
 ============================================================
 
-[ACTION step=20]
+[ACTION step=15]
 SENT:
 @LOCUS what should I do next?
 
-step: 20
+step: 15
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
 
@@ -2499,16 +1996,539 @@ grid 64x64 bg=4
   r22: c0-3=5, c34-38=3
   r23: c0-3=5, c34-38=3
   r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-23=3, c24-28=12, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-23=3, c24-28=12, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23=3, c24-28=9, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-23=3, c24-28=9, c34-53=3
-  r34: c0-3=5, c14-23=3, c24-28=9, c34-53=3
+  r25: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r26: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r27: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r28: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r29: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
+  r35: c0-3=5, c14-28=3, c34-53=3
+  r36: c0-3=5, c14-28=3, c34-53=3
+  r37: c0-3=5, c14-28=3, c34-53=3
+  r38: c0-3=5, c14-28=3, c34-53=3
+  r39: c0-3=5, c14-28=3, c34-53=3
+  r40: c0-3=5, c19-23=3, c34-53=3
+  r41: c0-3=5, c19-23=3, c34-53=3
+  r42: c0-3=5, c19-23=3, c34-53=3
+  r43: c0-3=5, c19-23=3, c34-53=3
+  r44: c0-3=5, c19-23=3, c34-53=3
+  r45: c0-3=5, c19-53=3
+  r46: c0-3=5, c19-53=3
+  r47: c0-3=5, c19-53=3
+  r48: c0-3=5, c19-53=3
+  r49: c0-3=5, c19-53=3
+  r50: c0-3=5
+  r51: c0-3=5
+  r53: c1-10=5
+  r54: c1-10=5
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Block position**: rows 25-26, cols 29-33 (value 12)
+**Entity1 trail**: rows 27-29, cols 29-33 (value 9) → state 0
+**Cluster**: rows 31-33, cols 20-22 (values 0/1)
+**Timer**: r61 c13-26=3 (consumed), c27-54=11 (remaining) = 28 cols remaining = 14 steps at 2/step... wait, level 1 = 1 col/step. 28 consumed, 28 remaining.
+
+**Current position**: block at rows 25-26, cols 29-33. I'm in the wide corridor at rows 25-29.
+
+**What I need**: Trail must overlap cluster at rows 31-33, cols 20-22. Trail is currently at rows 27-29 cols 29-33.
+
+I need to move LEFT to get cols near 20-22, then DOWN so trail reaches rows 31-33.
+
+Block at rows 25-26, cols 29-33 → LEFT → cols 24-28. Trail shifts left too.
+LEFT again → cols 19-23. Trail at rows 27-29 cols 19-23 (overlaps cluster cols 20-22 ✓ but need rows to overlap rows 31-33).
+
+I need to go DOWN to bring trail to rows 31-33. Block DOWN from rows 25-26 → rows 30-31. Trail at rows 32-34 overlaps cluster rows 31-33. ✓
+
+But first I need to be at cols 19-23 before going DOWN. I'm at cols 29-33 — need LEFT×2.
+
+**LEFT now** (action 2):
+
+2
+
+============================================================
+
+[ACTION step=16]
+SENT:
+@LOCUS what should I do next?
+
+step: 16
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5
+  r6: c0-3=5
+  r7: c0-3=5
+  r8: c0-3=5, c32-40=3
+  r9: c0-3=5, c32=3, c33-39=5, c40=3
+  r10: c0-3=5, c32=3, c33-39=5, c40=3
+  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
+  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
+  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
+  r14: c0-3=5, c32=3, c33-39=5, c40=3
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r26: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r27: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r28: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r29: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
+  r35: c0-3=5, c14-28=3, c34-53=3
+  r36: c0-3=5, c14-28=3, c34-53=3
+  r37: c0-3=5, c14-28=3, c34-53=3
+  r38: c0-3=5, c14-28=3, c34-53=3
+  r39: c0-3=5, c14-28=3, c34-53=3
+  r40: c0-3=5, c19-23=3, c34-53=3
+  r41: c0-3=5, c19-23=3, c34-53=3
+  r42: c0-3=5, c19-23=3, c34-53=3
+  r43: c0-3=5, c19-23=3, c34-53=3
+  r44: c0-3=5, c19-23=3, c34-53=3
+  r45: c0-3=5, c19-53=3
+  r46: c0-3=5, c19-53=3
+  r47: c0-3=5, c19-53=3
+  r48: c0-3=5, c19-53=3
+  r49: c0-3=5, c19-53=3
+  r50: c0-3=5
+  r51: c0-3=5
+  r53: c1-10=5
+  r54: c1-10=5
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-27=3, c28-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-27=3, c28-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+2
+
+============================================================
+
+[ACTION step=17]
+SENT:
+@LOCUS what should I do next?
+
+step: 17
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5
+  r6: c0-3=5
+  r7: c0-3=5
+  r8: c0-3=5, c32-40=3
+  r9: c0-3=5, c32=3, c33-39=5, c40=3
+  r10: c0-3=5, c32=3, c33-39=5, c40=3
+  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
+  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
+  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
+  r14: c0-3=5, c32=3, c33-39=5, c40=3
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r26: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r27: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r28: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r29: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
+  r35: c0-3=5, c14-28=3, c34-53=3
+  r36: c0-3=5, c14-28=3, c34-53=3
+  r37: c0-3=5, c14-28=3, c34-53=3
+  r38: c0-3=5, c14-28=3, c34-53=3
+  r39: c0-3=5, c14-28=3, c34-53=3
+  r40: c0-3=5, c19-23=3, c34-53=3
+  r41: c0-3=5, c19-23=3, c34-53=3
+  r42: c0-3=5, c19-23=3, c34-53=3
+  r43: c0-3=5, c19-23=3, c34-53=3
+  r44: c0-3=5, c19-23=3, c34-53=3
+  r45: c0-3=5, c19-53=3
+  r46: c0-3=5, c19-53=3
+  r47: c0-3=5, c19-53=3
+  r48: c0-3=5, c19-53=3
+  r49: c0-3=5, c19-53=3
+  r50: c0-3=5
+  r51: c0-3=5
+  r53: c1-10=5
+  r54: c1-10=5
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-28=3, c29-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-28=3, c29-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block location**: rows 25-26, cols 19-23 (value 12) — the block is at the wide corridor level.
+
+**Cluster location**: rows 31-33, cols 20-22 (values 0/1 pattern at r31:c21=0, r32:c20=1,c21-22=0, r33:c21=1)
+
+**Entity1 state**: r55-56 show c3-4=9, c5-6=5, c7-8=9 (partial pattern) and r59-60 show c3-8=9 (full). This is **state 1** — cross collected already? Wait, this is level 1. State 1 pattern means the level 1 cluster has already been collected (trail overlap fired).
+
+**Timer**: r61 c13-28=3 (16 consumed), c29-54=11 (26 remaining = 13 cols). Timer is tight but workable.
+
+**Position analysis**: Block at rows 25-26, cols 19-23. Entity2 ring is at rows 8-16, cols 32-40. The block needs to go RIGHT then UP to enter entity2.
+
+From rows 25-26, cols 19-23:
+- RIGHT to cols 24-28 → RIGHT to cols 29-33 → RIGHT to cols 34-38 → then UP×3 to rows 10-11 → WIN
+
+State 1 is already confirmed (cluster collected). Next action: go RIGHT toward the shaft.
+
+**3**
+
+============================================================
+
+[ACTION step=18]
+SENT:
+@LOCUS what should I do next?
+
+step: 18
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+WARNING: last action 0 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5
+  r6: c0-3=5
+  r7: c0-3=5
+  r8: c0-3=5, c32-40=3
+  r9: c0-3=5, c32=3, c33-39=5, c40=3
+  r10: c0-3=5, c32=3, c33-39=5, c40=3
+  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
+  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
+  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
+  r14: c0-3=5, c32=3, c33-39=5, c40=3
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r26: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r27: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r28: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r29: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
+  r35: c0-3=5, c14-28=3, c34-53=3
+  r36: c0-3=5, c14-28=3, c34-53=3
+  r37: c0-3=5, c14-28=3, c34-53=3
+  r38: c0-3=5, c14-28=3, c34-53=3
+  r39: c0-3=5, c14-28=3, c34-53=3
+  r40: c0-3=5, c19-23=3, c34-53=3
+  r41: c0-3=5, c19-23=3, c34-53=3
+  r42: c0-3=5, c19-23=3, c34-53=3
+  r43: c0-3=5, c19-23=3, c34-53=3
+  r44: c0-3=5, c19-23=3, c34-53=3
+  r45: c0-3=5, c19-53=3
+  r46: c0-3=5, c19-53=3
+  r47: c0-3=5, c19-53=3
+  r48: c0-3=5, c19-53=3
+  r49: c0-3=5, c19-53=3
+  r50: c0-3=5
+  r51: c0-3=5
+  r53: c1-10=5
+  r54: c1-10=5
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-29=3, c30-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-29=3, c30-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block position**: rows 25-26, cols 19-23 (value 12) — the block is already in the wide corridor.
+
+**Cluster**: rows 31-33, cols 20-22 (values 0/1) — the state changer is just below.
+
+**Entity1 state**: rows 55-56 show c3-4=9, c7-8=9 (partial = state 1 already). Wait — r59-60 c3-8=9 (full). This is state 1 pattern (r55-56 partial, r59-60 full).
+
+**Timer**: c13-29=3 (17 consumed), c30-54=11 (25 remaining) = 25 cols left = ~12 steps at 1/step.
+
+**Last action 0 (UP) produced NO movement** — block is at rows 25-26, UP is blocked above (c19-23 corridor ends — rows 17-24 show only c34-38=3, no c19-23).
+
+**Entity1 is already at state 1** (r59-60 full). The cluster at rows 31-33 would advance state further. **Entity2** is at rows 8-16, cols 32-40 — need block at rows 10-11 cols 34-38.
+
+Block is at cols 19-23. Need to go RIGHT to cols 34-38, then UP×3 to rows 10-11.
+
+RIGHT moves block from cols 19-23 → 24-28. Then continue RIGHT to 29-33... wait, need to check void. Rows 25-26: c14-53=3 (wide corridor open). RIGHT is clear.
+
+Send RIGHT to move toward the shaft at c34-38.
+
+3
+
+============================================================
+
+[ACTION step=19]
+SENT:
+@LOCUS what should I do next?
+
+step: 19
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+WARNING: last action 0 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5
+  r6: c0-3=5
+  r7: c0-3=5
+  r8: c0-3=5, c32-40=3
+  r9: c0-3=5, c32=3, c33-39=5, c40=3
+  r10: c0-3=5, c32=3, c33-39=5, c40=3
+  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
+  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
+  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
+  r14: c0-3=5, c32=3, c33-39=5, c40=3
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r26: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r27: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r28: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r29: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
+  r35: c0-3=5, c14-28=3, c34-53=3
+  r36: c0-3=5, c14-28=3, c34-53=3
+  r37: c0-3=5, c14-28=3, c34-53=3
+  r38: c0-3=5, c14-28=3, c34-53=3
+  r39: c0-3=5, c14-28=3, c34-53=3
+  r40: c0-3=5, c19-23=3, c34-53=3
+  r41: c0-3=5, c19-23=3, c34-53=3
+  r42: c0-3=5, c19-23=3, c34-53=3
+  r43: c0-3=5, c19-23=3, c34-53=3
+  r44: c0-3=5, c19-23=3, c34-53=3
+  r45: c0-3=5, c19-53=3
+  r46: c0-3=5, c19-53=3
+  r47: c0-3=5, c19-53=3
+  r48: c0-3=5, c19-53=3
+  r49: c0-3=5, c19-53=3
+  r50: c0-3=5
+  r51: c0-3=5
+  r53: c1-10=5
+  r54: c1-10=5
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+- Block (value 12) is at rows 25-26, cols 19-23
+- Last action 0 (UP) produced NO movement — UP is blocked from current position
+- Entity1 state: r55-56 show partial 9s (c3-4=9, gap c5-6, c7-8=9) + r59-60 full (c3-8=9) = **state 1**
+- Cluster (0/1 values) visible at rows 31-33, cols 20-22
+- Timer: c13-30=3 (18 consumed), c31-54=11 (24 remaining) = 12 cols remaining
+
+Block is at rows 25-26, cols 19-23. UP is blocked. I need to collect the cluster at rows 31-33, cols 20-22.
+
+Wait — entity1 is at state 1. But I'm in level 1. The win condition for level 1 is reaching entity2 at rows 8-16, cols 32-40. State 1 should be sufficient.
+
+Block is at rows 25-26, cols 19-23. Entity2 is at rows 8-16, cols 32-40. UP is blocked from here.
+
+I need to go RIGHT to get into the shaft (cols 34-38), then UP to entity2.
+
+RIGHT from cols 19-23 → cols 24-28. Then more RIGHT to reach cols 34-38.
+
+`3`
+
+============================================================
+
+[ACTION step=20]
+SENT:
+@LOCUS what should I do next?
+
+step: 20
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+WARNING: last action 0 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5
+  r6: c0-3=5
+  r7: c0-3=5
+  r8: c0-3=5, c32-40=3
+  r9: c0-3=5, c32=3, c33-39=5, c40=3
+  r10: c0-3=5, c32=3, c33-39=5, c40=3
+  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
+  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
+  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
+  r14: c0-3=5, c32=3, c33-39=5, c40=3
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r26: c0-3=5, c14-18=3, c19-23=12, c24-53=3
+  r27: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r28: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r29: c0-3=5, c14-18=3, c19-23=9, c24-53=3
+  r30: c0-3=5, c14-28=3, c34-53=3
+  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
+  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
+  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
+  r34: c0-3=5, c14-28=3, c34-53=3
   r35: c0-3=5, c14-28=3, c34-53=3
   r36: c0-3=5, c14-28=3, c34-53=3
   r37: c0-3=5, c14-28=3, c34-53=3
@@ -2541,42 +2561,27 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully.
+Looking at the frame:
 
-**Frame analysis:**
-- Step 20, level 1, NOT_FINISHED
-- Block (value 12): rows 30-31, cols 24-28
-- Entity1 state: r55-56 partial (c3-4=9, c5-6=5, c7-8=9) = **STATE 1** — wait, checking pattern:
-  - r55: c3-4=9, c5-6=5, c7-8=9 (partial)
-  - r56: c3-4=9, c5-6=5, c7-8=9 (partial)
-  - r59: c3-8=9 (full)
-  - r60: c3-8=9 (full)
-  - This is State 1 pattern (r55-56 partial, r59-60 full)
-- Timer: r61 c13-31=3 (consumed), c32-54=11 (remaining) = **23 cols remaining = ~23 steps**
-- Cluster: r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1 → cluster at rows 31-33, cols 20-22
-- Entity2: rows 8-16, cols 32-40
+**Block position**: rows 25-26, cols 19-23 (value 12)
 
-**Current position**: rows 30-31, cols 24-28. Trail would be at rows 32-34, cols 24-28.
+**Cluster**: rows 31-33, cols 20-22 (the 0/1 pattern at r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1)
 
-Wait — entity1 is at state 1. That means cluster was already collected (state 0→1). The block needs to reach entity2 interior.
+**Entity1 state**: r55-56 partial (c3-4=9, c5-6=5, c7-8=9) → state 1. r59-60 full (c3-8=9) → state 1 pattern confirmed.
 
-**Entity2**: rows 8-16, cols 32-40. Interior at rows 9-15, cols 33-39. Block needs to be at rows 10-11, cols 34-38 (or similar interior position).
+**Timer**: c13-31=3 (19 consumed), c32-54=11 (23 cols remaining = ~11 steps at 1/step for level 1)
 
-Block is at rows 30-31, cols 24-28. Need to go UP to reach entity2. Shaft at cols 34-38 goes from rows 17-29 up to entity2. Need to get RIGHT to cols 34-38 first (currently at cols 24-28), then UP.
+**Situation**: Block is at rows 25-26 cols 19-23. UP was blocked (void above cols 19-23 at rows 20-24). 
 
-From rows 30-31, cols 24-28 → RIGHT to cols 29-33... but wait, cols 29-33 is void at rows 29+. Check r30: c14-23=3, c24-28=12 (block), c34-53=3. Gap between c23 and c34 at r30 = c24-33... block IS at c24-28, and to the right is void at c29-33, then corridor resumes at c34.
+The cluster is at rows 31-33, cols 20-22. The block trail (rows 27-29) already shows 9s at cols 19-23 — the trail overlaps cluster cols 20-22 at rows 27-29, but cluster is at rows 31-33. Need to go DOWN to get trail overlap on the cluster.
 
-So RIGHT from c24-28 would land at c29-33 — but c29-33 is void at rows 29-41 per the **CRITICAL VOID CONSTRAINT** in @LAT-140LON10.
+Wait — entity1 shows **state 1** (r55-56 partial, r59-60 full). That means the cluster was ALREADY collected (state 0→1). 
 
-Actually looking at r30: c14-23=3, c24-28=12(block), c34-53=3. The c29-33 gap is void. Block cannot go RIGHT from c24-28 to c29-33.
+With state 1, I need to navigate to entity2 at rows 8-16, cols 32-40. Block is at rows 25-26, cols 19-23. Need to go RIGHT to cols 34-38, then UP.
 
-Must go UP first to rows 25-29 where c14-53=3 (wide corridor, c29-33 passable). Then RIGHT.
+RIGHT (action 3).
 
-From rows 30-31, UP → rows 25-26. Then RIGHT×2 → cols 34-38. Then UP×3 → rows 10-11, entity2 → WIN.
-
-`0` (UP)
-
-0
+3
 
 ============================================================
 
@@ -2664,29 +2669,26 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully.
+Looking at the frame:
 
-**Block position**: rows 25-26, cols 24-28 (value 12 at r25-26 c24-28)
+**Block position**: rows 25-26, cols 24-28 (value 12)
+**Entity1 trail**: rows 27-29, cols 24-28 (value 9) — state 0 (r55-56 partial pattern confirms state 0... wait: r55-56 show c3-4=9, c5-6=5, c7-8=9 = partial = state 1? No — let me re-read. r59-60 c3-8=9 FULL = state 1 pattern. r55-56 partial = state 0 has r55-56 FULL. Current: r55-56 partial, r59-60 full = **state 1**. But I need state 1 to win level 1...
 
-**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern at r31 c21, r32 c20-22, r33 c21)
+Wait — level 1 win requires block inside entity2 ring (rows 8-16, cols 32-40). Entity2 ring is at rows 8-16, c32-40 visible in frame. Block is at rows 25-26, cols 24-28.
 
-**Entity1 state**: r55-56 partial (c3-4=9, c5-6=5, c7-8=9), r59-60 full (c3-8=9) → **state 1** (already collected!)
+**Cluster**: rows 31-33, cols 20-22 (visible: r31 c21=0, r32 c20=1 c21-22=0, r33 c21=1). Trail at rows 27-29 — does it overlap cluster rows 31-33? No, trail is at rows 27-29, cluster at rows 31-33. No overlap yet.
 
-Wait — r59-60 c3-8=9 (full) and r55-56 partial = state 1 pattern. State is already 1.
+**Timer**: r61 c13-32=3 (20 cols consumed), c33-54=11 (22 cols remaining). 22 cols = 11 steps remaining at 2/step... wait, this is level 1 = 1/step. 22 steps remaining.
 
-**Trail**: rows 27-29, cols 24-28 (value 9) — trail is below the block.
+Entity1 state is already 1 (r55-56 partial, r59-60 full). State changer already collected! 
 
-**Entity2**: rows 8-16, cols 32-40 (the ring). 9-pattern at rows 11-13 inside.
+Block at rows 25-26, cols 24-28. Entity2 at rows 8-16, cols 32-40. Need to go RIGHT to get to cols 34-38, then UP to reach entity2.
 
-**Timer**: r61 c13-32=3 (20 cols consumed), c33-54=11 (22 cols remaining) = 11 steps left at level 1 (1 col/step).
+RIGHT → cols 29-33, then RIGHT again → cols 34-38, then UP×4 → rows 5-6... that overshoots. UP×3 from rows 25-26 → rows 10-11, cols 34-38 → entity2 interior → WIN.
 
-**Entity1 is at state 1.** Block is at rows 25-26, cols 24-28. Entity2 is at rows 8-16, cols 32-40. WIN condition = block enters interior (rows 9-15, cols 33-39).
+So: RIGHT×2 then UP×3 = 5 actions. Timer has 22 steps. This works.
 
-From rows 25-26 c24-28: need to go RIGHT to c34-38, then UP to rows 10-11.
-
-RIGHT moves block from c24-28 → c29-33. Then another RIGHT → c34-38. Then UP×3 → rows 10-11 c34-38 = entity2 interior. That's 5 actions. Timer has 11 steps. Feasible.
-
-Next action: RIGHT (3) to move toward the shaft at cols 34-38.
+Action: **3** (RIGHT)
 
 3
 
@@ -2776,29 +2778,28 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully.
+Looking at the frame:
 
-**Frame analysis:**
+**Block position**: rows 25-26, cols 29-33 (value 12)
+**Entity1 trail**: rows 27-29, cols 29-33 (value 9) → state 0
+**Cluster**: rows 31-33, cols 20-22 (confirmed this environment)
+**Timer**: r61 c13-33=3 (21 cols consumed), c34-54=11 (21 remaining) → 21 cols left = ~10 steps at 1/step
 
-**Block position**: rows 25-26, cols 29-33 (value 12). The block is in the corridor.
+Block is at rows 25-26 in the wide corridor. Cluster is at rows 31-33, cols 20-22.
 
-**Entity1 state**: r55-56 show c3-4=9, c5-6=5, c7-8=9 (partial pattern) and r59-60 show c3-8=9 (full). This is **state 1** pattern (r55-56 partial, r59-60 full).
+Current position: cols 29-33. Need to reach cols 19-23 to overlap cluster with trail.
 
-Wait — let me re-read. r55: c3-4=9, c5-6=5, c7-8=9 (partial); r59: c3-8=9 (full). That's state 1.
+Send LEFT (action 2) → cols 24-28. Trail at rows 27-29 cols 24-28.
+Then DOWN (action 1) → rows 30-31, trail at rows 32-34 cols 24-28. Need cols 20-22 overlap — cols 24-28 doesn't overlap cols 20-22.
 
-**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern at r31 c21, r32 c20-22, r33 c21). Cluster is at rows 31-33.
+Need one more LEFT first: LEFT→cols 24-28, LEFT→cols 19-23, then DOWN: trail at rows 27-29 cols 19-23 overlaps cluster rows 31-33 cols 20-22. Wait — DOWN moves block to rows 30-31, trail to rows 32-34. Cluster is rows 31-33. Trail rows 32-34 overlaps cluster rows 32-33 ✓.
 
-**Timer**: r61 shows c13-33=3 (21 consumed), c34-54=11 (21 remaining). Timer = 21 cols remaining = ~10 steps left at 2 cols/step.
+From current position (rows 25-26, cols 29-33):
+- Need LEFT×2 to reach cols 19-23, then DOWN for trail overlap.
 
-**Current position analysis**: Block at rows 25-26, cols 29-33. Entity1 is at state 1 — which means the cross has already been collected this cycle. But wait — state resets on timer restart. Timer has 10 steps remaining.
+Send LEFT now:
 
-The block needs to reach entity2 (rows 8-16, cols 32-40). From rows 25-26, cols 29-33, going UP will move toward entity2. The shaft at cols 34-38 runs from rows 17-40. Block at cols 29-33 — need to check if UP is clear.
-
-Looking at the frame: rows 17-24 show c34-38=3 (shaft). Rows 25-26 show corridor c14-53=3. The block at c29-33 is in the wide corridor. UP from rows 25-26 → rows 20-21. From rows 20-21, UP → rows 15-16. But entity2 is at rows 8-16, cols 32-40. The block at c29-33 going up... the shaft is c34-38. I need to get to c34-38.
-
-Actually — this is **level 1**. Entity2 is at rows 8-16, cols 32-40. Block is at rows 25-26, cols 29-33. RIGHT would move to cols 34-38 (shaft). Then UP×3 reaches rows 10-11 = entity2 interior.
-
-3
+2
 
 ============================================================
 
@@ -2844,11 +2845,11 @@ grid 64x64 bg=4
   r22: c0-3=5, c34-38=3
   r23: c0-3=5, c34-38=3
   r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-33=3, c34-38=12, c39-53=3
-  r26: c0-3=5, c14-33=3, c34-38=12, c39-53=3
-  r27: c0-3=5, c14-33=3, c34-38=9, c39-53=3
-  r28: c0-3=5, c14-33=3, c34-38=9, c39-53=3
-  r29: c0-3=5, c14-33=3, c34-38=9, c39-53=3
+  r25: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r26: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r27: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r28: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r29: c0-3=5, c14-23=3, c24-28=9, c29-53=3
   r30: c0-3=5, c14-28=3, c34-53=3
   r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
   r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
@@ -2886,29 +2887,35 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully.
+Looking at the frame:
 
-**Block location**: rows 25-26, cols 34-38 (value 12). ✓ Block is in the shaft at rows 25-26.
+**Block position**: rows 25-26, cols 24-28 (value 12)
 
-**Entity1 state**: r55-56 show c3-4=9, c5-6=5, c7-8=9 (partial pattern) and r59-60 show c3-8=9 (full). This is **state 1** pattern (r59-60 full, r55-56 partial).
+**Entity1 state**: r55-56 show `c3-4=9, c5-6=5, c7-8=9` (partial) and r59-60 show `c3-8=9` (full) → **state 1** (cross collected already)
 
-Wait — let me re-read. r55: c3-4=9, c5-6=5, c7-8=9. r59: c3-8=9. Per the mechanics record: State 0 = r55-56 full c3-8=9; r59-60 partial. State 1 = r55-56 partial; r59-60 full. This is **state 1**.
+**Timer**: r61 shows `c13-34=3` (22 consumed), `c35-54=11` (20 remaining) → 10 steps left
 
-**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern visible at r31 c21=0, r32 c20=1,c21-22=0, r33 c21=1). Cluster at rows 31-33, cols 20-22.
+**Entity2**: rows 8-16, cols 32-40 (ring visible)
 
-**Timer**: r61 c13-34=3 (22 consumed), c35-54=11 (20 remaining). 20 cols ÷ 1 per step = 20 steps remaining (level 1 timer = 1/step).
+**Block is at rows 25-26, cols 24-28.** I need to reach entity2 interior at rows 10-11, cols 33-39.
 
-**Block is at rows 25-26, cols 34-38.** Entity1 is already at state 1. The cluster at rows 31-33 would need trail overlap to collect — but state is already 1, which means collection already happened earlier.
+From rows 25-26, cols 24-28:
+- Need to go UP through the shaft to entity2
+- Block is at cols 24-28. Entity2 interior is cols 33-39. Need to shift RIGHT first... but wait.
+- Actually the shaft at cols 34-38 is the direct path UP. Block is currently at cols 24-28.
+- Need RIGHT to reach cols 29-33, then UP... but void at cols 29-33 rows 30+.
 
-**Win condition for level 1**: block enters entity2 interior (rows 9-15, cols 33-39, interior at rows 10-15). Block is at rows 25-26 cols 34-38. Need to go UP to rows 10-11.
+Block is in the wide corridor at rows 25-26. RIGHT×1 → cols 29-33... checking r25-26: `c24-28=12, c29-53=3` — cols 29-53 are open at rows 25-26. RIGHT → cols 29-33, then UP.
 
-UP×3 from rows 25-26 → rows 10-11, cols 34-38 → entity2 interior → **WIN**.
+From cols 29-33 at rows 25-26: UP → rows 20-21 (shaft c34-38? No — c34-38=3 at rows 20-24, but c29-33 may be void). 
 
-3 actions needed, 20 timer remaining. ✓
+Actually the shaft is cols 34-38. Block needs to be at cols 34-38. From cols 24-28: RIGHT×2 → cols 34-38, then UP×5 → rows 10-11 → entity2.
 
-**Action: 0 (UP)**
+10 steps remaining, need: RIGHT×2 + UP×5 = 7 steps. Entity2 is at rows 9-16 interior — entering rows 10-11 cols 34-38 (inside ring cols 33-39). State 1 is active. WIN.
 
-0
+Sending RIGHT:
+
+3
 
 ============================================================
 
@@ -2949,16 +2956,16 @@ grid 64x64 bg=4
   r17: c0-3=5, c34-38=3
   r18: c0-3=5, c34-38=3
   r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=12
-  r21: c0-3=5, c34-38=12
-  r22: c0-3=5, c34-38=9
-  r23: c0-3=5, c34-38=9
-  r24: c0-3=5, c34-38=9
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r26: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r27: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r28: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r29: c0-3=5, c14-28=3, c29-33=9, c34-53=3
   r30: c0-3=5, c14-28=3, c34-53=3
   r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
   r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
@@ -2996,28 +3003,20 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully:
+Looking at the frame:
 
-**Block position**: rows 20-21, cols 34-38 (value 12)
-**Trail**: rows 22-24, cols 34-38 (value 9)
-**Entity1 state**: rows 55-56 show partial 9s at c3-4 and c7-8 (gaps at c5-6); rows 59-60 show full c3-8=9 → **State 1** (cross already collected!)
-**Timer**: r61 c13-35=3 (23 consumed), c36-54=11 (19 cols remaining = ~9-10 steps)
-**Cluster**: rows 31-33, cols 20-22 (visible in frame)
-**Entity2**: rows 8-16, cols 32-40
+**Block position**: rows 25-26, cols 29-33 (value 12)
+**Entity1 trail**: rows 27-29, cols 29-33 (value 9) → state 0
+**Cluster**: rows 31-33, cols 20-22 (values 0/1)
+**Timer**: c13-35=3 (23 cols consumed), c36-54=11 (19 cols remaining = ~9-10 steps at 2/step)
 
-Wait — this is **level 1** (levels_completed=0, entity2 at rows 8-16 cols 32-40). The block is at rows 20-21 cols 34-38. Entity1 shows state 1 pattern.
+The block is at rows 25-26, cols 29-33. I need to go LEFT to reach cluster cols 20-22, then DOWN so the trail overlaps the cluster (rows 31-33), then navigate to entity2.
 
-Step 24 — block is in the shaft at rows 20-21. Timer has 19 cols remaining (~9 steps at level 1 rate of 1/step? Or 2/step?). Level 1 = 1/step → 19 steps remaining.
+From rows 25-26, cols 29-33: LEFT moves are available (wide corridor, rows 25-29). LEFT×3 would put block at cols 14-18... too far. LEFT×2 → cols 19-23 (overlaps cluster cols 20-22). Then DOWN → rows 30-31, trail at rows 32-34 overlaps cluster rows 31-33 → collection fires.
 
-I need to reach entity2 at rows 8-16 cols 32-40. Block is at rows 20-21 cols 34-38 — already in the shaft aligned with entity2. Need to go UP.
+**Action: LEFT (2)**
 
-UP from rows 20-21 → rows 15-16 → rows 10-11 → rows 5-6... entity2 interior is rows 9-15 cols 33-39. Block at rows 10-11 cols 34-38 is inside the ring → WIN.
-
-Two UPs needed (rows 20-21 → 15-16 → 10-11).
-
-**Action: 0 (UP)**
-
-0
+2
 
 ============================================================
 
@@ -3053,21 +3052,21 @@ grid 64x64 bg=4
   r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
   r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
   r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33=5, c34-38=12, c39=5, c40=3
-  r16: c0-3=5, c32-33=3, c34-38=12, c39-40=3
-  r17: c0-3=5, c34-38=9
-  r18: c0-3=5, c34-38=9
-  r19: c0-3=5, c34-38=9
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
   r20: c0-3=5, c34-38=3
   r21: c0-3=5, c34-38=3
   r22: c0-3=5, c34-38=3
   r23: c0-3=5, c34-38=3
   r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
+  r25: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r26: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r27: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r28: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r29: c0-3=5, c14-23=3, c24-28=9, c29-53=3
   r30: c0-3=5, c14-28=3, c34-53=3
   r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
   r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
@@ -3107,19 +3106,26 @@ Respond with only the action number.
 LOCUS:
 Looking at the frame:
 
-**Block position**: rows 15-16, cols 34-38 (value 12)
-**Entity1 state**: r55-56 partial (c3-4=9, c5-6=5, c7-8=9), r59-60 full (c3-8=9) = **state 1** (cross already collected!)
-**Timer**: r61 c13-36=3 (24 consumed), c37-54=11 (18 remaining) = 18 cols left = 9 steps
+**Block position**: rows 25-26, cols 24-28 (value 12)
 
-Wait — state 1 is already active. Block is at rows 15-16, cols 34-38. Entity2 is at rows 8-16, cols 32-40. The block IS inside the entity2 ring already (rows 15-16, cols 34-38 = inside the ring walls at c32-40).
+**Entity1 state**: rows 55-56 show partial 9s (c3-4 and c7-8), rows 59-60 show full c3-8=9. This is **state 1** pattern (r59-60 full, r55-56 partial).
 
-But `obs_state: NOT_FINISHED` — so state 1 + being in the entity2 interior should trigger win... unless the block needs to be deeper inside (rows 9-14, not rows 15-16 which is the bottom wall row).
+Wait — let me re-read. State 0: r55-56 full c3-8=9, r59-60 partial. State 1: r55-56 partial, r59-60 full. Current frame: r55-56 partial (c3-4=9, gap c5-6, c7-8=9), r59-60 full (c3-8=9). This is **state 1** — cross already collected!
 
-Looking at entity2: r8 c32-40=3 (top wall), r16 c32-33+39-40=3 (bottom wall corners). Row 15-16 with block at c34-38 is AT the bottom boundary. Need to go UP into the interior.
+**Timer**: r61 shows c13-36=3 (24 consumed), c37-54=11 (18 remaining = 9 steps at 2/step... but this is level 1, timer is 1/step). 18 cols remaining = 18 steps.
 
-With 9 steps remaining and state 1, go UP.
+**Block at rows 25-26, cols 24-28.** Entity2 ring is at rows 8-16, cols 32-40. The shaft is cols 34-38. Block needs to go RIGHT to c34-38, then UP.
 
-0
+From c24-28 at rows 25-26:
+- RIGHT → cols 29-33... but the shaft connects at c34-38. From rows 25-26, c29-53=3, so RIGHT moves to c29-33.
+
+I need to go RIGHT twice to reach c34-38, then UP 3 times to reach rows 10-11 (entity2 interior).
+
+Steps remaining: RIGHT, RIGHT, UP, UP, UP = 5 steps. Timer: 18 remaining. Feasible.
+
+**Next action: RIGHT (3)**
+
+3
 
 ============================================================
 
@@ -3130,8 +3136,6 @@ SENT:
 step: 26
 obs_state: GameState.NOT_FINISHED
 levels_completed: 0
-
-WARNING: last action 0 produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
 
 Available actions:
   0: GameAction.ACTION1
@@ -3157,346 +3161,21 @@ grid 64x64 bg=4
   r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
   r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
   r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33=5, c34-38=12, c39=5, c40=3
-  r16: c0-3=5, c32-33=3, c34-38=12, c39-40=3
-  r17: c0-3=5, c34-38=9
-  r18: c0-3=5, c34-38=9
-  r19: c0-3=5, c34-38=9
+  r15: c0-3=5, c32=3, c33-39=5, c40=3
+  r16: c0-3=5, c32-40=3
+  r17: c0-3=5, c34-38=3
+  r18: c0-3=5, c34-38=3
+  r19: c0-3=5, c34-38=3
   r20: c0-3=5, c34-38=3
   r21: c0-3=5, c34-38=3
   r22: c0-3=5, c34-38=3
   r23: c0-3=5, c34-38=3
   r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=0
-  r54: c1-10=0
-  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r57: c1-6=0, c7-8=9, c9-10=0
-  r58: c1-6=0, c7-8=9, c9-10=0
-  r59: c1-2=0, c3-8=9, c9-10=0
-  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
-  r61: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-frame[1]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33=5, c34-38=12, c39=5, c40=3
-  r16: c0-3=5, c32-33=3, c34-38=12, c39-40=3
-  r17: c0-3=5, c34-38=9
-  r18: c0-3=5, c34-38=9
-  r19: c0-3=5, c34-38=9
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=0
-  r54: c1-10=0
-  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r57: c1-6=0, c7-8=9, c9-10=0
-  r58: c1-6=0, c7-8=9, c9-10=0
-  r59: c1-2=0, c3-8=9, c9-10=0
-  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
-  r61: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-frame[2]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33=5, c34-38=12, c39=5, c40=3
-  r16: c0-3=5, c32-33=3, c34-38=12, c39-40=3
-  r17: c0-3=5, c34-38=9
-  r18: c0-3=5, c34-38=9
-  r19: c0-3=5, c34-38=9
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=0
-  r54: c1-10=0
-  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r57: c1-6=0, c7-8=9, c9-10=0
-  r58: c1-6=0, c7-8=9, c9-10=0
-  r59: c1-2=0, c3-8=9, c9-10=0
-  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
-  r61: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-frame[3]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33=5, c34-38=12, c39=5, c40=3
-  r16: c0-3=5, c32-33=3, c34-38=12, c39-40=3
-  r17: c0-3=5, c34-38=9
-  r18: c0-3=5, c34-38=9
-  r19: c0-3=5, c34-38=9
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=0
-  r54: c1-10=0
-  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r57: c1-6=0, c7-8=9, c9-10=0
-  r58: c1-6=0, c7-8=9, c9-10=0
-  r59: c1-2=0, c3-8=9, c9-10=0
-  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
-  r61: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-frame[4]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33=5, c34-38=12, c39=5, c40=3
-  r16: c0-3=5, c32-33=3, c34-38=12, c39-40=3
-  r17: c0-3=5, c34-38=9
-  r18: c0-3=5, c34-38=9
-  r19: c0-3=5, c34-38=9
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
-  r30: c0-3=5, c14-28=3, c34-53=3
-  r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
-  r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
-  r33: c0-3=5, c14-20=3, c21=1, c22-28=3, c34-53=3
-  r34: c0-3=5, c14-28=3, c34-53=3
-  r35: c0-3=5, c14-28=3, c34-53=3
-  r36: c0-3=5, c14-28=3, c34-53=3
-  r37: c0-3=5, c14-28=3, c34-53=3
-  r38: c0-3=5, c14-28=3, c34-53=3
-  r39: c0-3=5, c14-28=3, c34-53=3
-  r40: c0-3=5, c19-23=3, c34-53=3
-  r41: c0-3=5, c19-23=3, c34-53=3
-  r42: c0-3=5, c19-23=3, c34-53=3
-  r43: c0-3=5, c19-23=3, c34-53=3
-  r44: c0-3=5, c19-23=3, c34-53=3
-  r45: c0-3=5, c19-53=3
-  r46: c0-3=5, c19-53=3
-  r47: c0-3=5, c19-53=3
-  r48: c0-3=5, c19-53=3
-  r49: c0-3=5, c19-53=3
-  r50: c0-3=5
-  r51: c0-3=5
-  r53: c1-10=0
-  r54: c1-10=0
-  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
-  r57: c1-6=0, c7-8=9, c9-10=0
-  r58: c1-6=0, c7-8=9, c9-10=0
-  r59: c1-2=0, c3-8=9, c9-10=0
-  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
-  r61: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=0, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-frame[5]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5
-  r6: c0-3=5
-  r7: c0-3=5
-  r8: c0-3=5, c32-40=3
-  r9: c0-3=5, c32=3, c33-39=5, c40=3
-  r10: c0-3=5, c32=3, c33-39=5, c40=3
-  r11: c0-3=5, c32=3, c33-34=5, c35-37=9, c38-39=5, c40=3
-  r12: c0-3=5, c32=3, c33-36=5, c37=9, c38-39=5, c40=3
-  r13: c0-3=5, c32=3, c33-34=5, c35=9, c36=5, c37=9, c38-39=5, c40=3
-  r14: c0-3=5, c32=3, c33-39=5, c40=3
-  r15: c0-3=5, c32=3, c33=5, c34-38=12, c39=5, c40=3
-  r16: c0-3=5, c32-33=3, c34-38=12, c39-40=3
-  r17: c0-3=5, c34-38=9
-  r18: c0-3=5, c34-38=9
-  r19: c0-3=5, c34-38=9
-  r20: c0-3=5, c34-38=3
-  r21: c0-3=5, c34-38=3
-  r22: c0-3=5, c34-38=3
-  r23: c0-3=5, c34-38=3
-  r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
+  r25: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r26: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r27: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r28: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r29: c0-3=5, c14-28=3, c29-33=9, c34-53=3
   r30: c0-3=5, c14-28=3, c34-53=3
   r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
   r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
@@ -3527,45 +3206,34 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-37=3, c38-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-37=3, c38-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-**Frame analysis (Revision Cycle — Phase 1–3 before committing):**
+Looking at this frame carefully:
 
-**Block position**: rows 15–16, cols 34–38 (value 12 at r15 c34-38, r16 c34-38). Confirmed from all 6 frames (identical — block has not moved since the blocked UP).
+**Block position**: rows 25-26, cols 29-33 (value 12) — the block is already in the wide corridor at rows 25-26.
 
-**Why UP is blocked**: Block is at rows 15–16. UP would move to rows 10–11, cols 34–38. Looking at the frame: r10 cols 34–38 shows `c32=3, c33-39=5, c40=3` — the shaft walls are at c32 and c40, interior is value 5 (passable). So UP should be geometrically valid... but the warning says UP produced no movement. 
+**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern confirmed).
 
-Wait — re-reading the frame. r15 shows `c34-38=12` (block body). r16 shows `c34-38=12` (block body). The block is at rows 15-16. UP from rows 15-16 would go to rows 10-11. But entity2 ring is at rows 8-16, cols 32-40. The interior cells r10 c33-39=5 are passable. So UP should work...
+**Entity1 state**: r55-56 show c3-4=9, c5-6=5, c7-8=9 (partial pattern) and r59-60 show c3-8=9 (full). This is **state 1** — cross already collected? Wait, re-checking: r55-56 has gaps at c5-6, r59-60 is full. That's state 1 pattern per the mechanics record.
 
-**Unless**: the block is INSIDE the entity2 ring already (rows 15-16 is within the ring border rows 8-16). The ring wall at r16 c32-33=3 and c39-40=3 constrains movement. Actually r16 shows `c32-33=3, c34-38=12, c39-40=3` — the block is flanked by ring walls. Can it move UP into the interior (rows 10-14)?
+Actually — this is **level 1**, step 26, `levels_completed=0`. Entity1 state 1 means the cluster was NOT yet collected (state starts at 0 for level 1, need collection to advance). Wait — r55-56 partial, r59-60 full = **state 1** already? That would mean collection already happened.
 
-The entity2 interior is rows 9-15, cols 33-39 (value 5). Block at rows 15-16 cols 34-38: rows 10-11 destination is interior value 5. UP should be valid. But it's blocked.
+**Timer**: r61 c13-37=3 (25 cols consumed), c38-54=11 (17 remaining). 17 timer cells left at level 1 (1/step) = 17 steps remaining.
 
-**Critical reread**: r15 `c32=3, c33=5, c34-38=12` — the ring wall is at c32. r16 `c32-33=3` — double wall. The block at rows 15-16 is at the bottom of the entity2 ring. UP into the ring interior is blocked — this matches the "state 0 = NOT_FINISHED" mechanic. The ring won't accept the block at state 0.
+Block at rows 25-26, cols 29-33. The cluster is at rows 31-33, cols 20-22. I need the trail to overlap — go LEFT to cols 19-23, then DOWN so trail at rows 27-29 hits cluster at rows 31-33... actually trail is BELOW the block. Block at rows 25-26, trail at rows 27-29. Need trail to reach rows 31-33 → go DOWN.
 
-**Cluster location**: rows 31-33, cols 20-22 (r31: c21=0; r32: c20=1, c21-22=0; r33: c21=1). **State 0 confirmed** (entity1 at r55-56: c3-4=9, c7-8=9 partial = state 0 pattern).
+From rows 25-26, cols 29-33: go LEFT to reach cols 19-23 (LEFT×2 → cols 19-23), then DOWN → trail sweeps rows 27-29 (not reaching rows 31-33 cluster). Need block at rows 29-30 for trail at rows 31-33. So: LEFT×2 from current position, then DOWN×2 to rows 29-30 (trail rows 31-33 overlaps cluster) → collection fires.
 
-**Timer**: r61 c13-36=3, c37-54=11 → 24 cols consumed (c13 to c36 = 24 cols), 18 remaining = 9 steps at 2/step... wait, this is level 1. Level 1 = 1 cell/step. 24 consumed, 18 remaining = 18 more steps.
+Then UP×2, RIGHT×2, UP×3 → entity2 at rows 10-11. That's 2+2+2+2+3 = 11 more steps. With 17 remaining, that's feasible.
 
-**Current situation**: Block at rows 15-16, cols 34-38. Inside entity2 ring bottom. State 0. Cluster at rows 31-33, cols 20-22. Need to collect cluster (state 0→1) then return.
+Current position cols 29-33, need LEFT. Go LEFT:
 
-**Route from here**:
-1. DOWN → rows 20-21, cols 34-38 (exit ring bottom — r20 c34-38=3, valid)
-2. DOWN → rows 25-26, cols 34-38 (wide corridor)
-3. LEFT×2 → rows 25-26, cols 24-28
-4. DOWN → rows 30-31, cols 24-28 (trail at rows 32-34 overlaps cluster rows 31-33) → **collection fires**
-5. UP → rows 25-26, cols 24-28
-6. RIGHT×2 → rows 25-26, cols 34-38
-7. UP×3 → rows 10-11, cols 34-38 → **entity2 WIN**
-
-That's 9 more actions. Timer: 18 remaining — sufficient.
-
-First action: **DOWN** (exit
+2
 
 ============================================================
 
@@ -3606,16 +3274,16 @@ grid 64x64 bg=4
   r17: c0-3=5, c34-38=3
   r18: c0-3=5, c34-38=3
   r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=12
-  r21: c0-3=5, c34-38=12
-  r22: c0-3=5, c34-38=9
-  r23: c0-3=5, c34-38=9
-  r24: c0-3=5, c34-38=9
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r26: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r27: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r28: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r29: c0-3=5, c14-23=3, c24-28=9, c29-53=3
   r30: c0-3=5, c14-28=3, c34-53=3
   r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
   r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
@@ -3646,36 +3314,39 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-37=3, c38-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-37=3, c38-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame:
+Looking at the frame carefully:
 
-**Block position**: rows 20-21, cols 34-38 (value 12)
-**Trail**: rows 22-24, cols 34-38 (value 9) — entity1 state check: r55-56 c3-4=9, c7-8=9 (partial), r59-60 c3-8=9 (full) = **state 1** (cross already collected!)
-**Timer**: r61 c13-37=3 (25 consumed), c38-54=11 (17 cols remaining = ~8 steps at 2/step)
+**Block position**: rows 25-26, cols 24-28 (value 12)
 
-Wait — this is **level 1**, not level 2. `levels_completed=0`, step 27. Block at rows 20-21 cols 34-38 in what appears to be the level 1 shaft.
+**Entity1 state**: r55-56 show c3-4=9, c5-6=5, c7-8=9 (partial pattern) and r59-60 show c3-8=9 (full) → **State 1** (cross already collected!)
 
-**Cluster location**: rows 31-33, cols 20-22 (values 0/1 visible at r31 c21=0, r32 c20=1/c21-22=0, r33 c21=1)
+**Cluster**: rows 31-33, cols 20-22 (values 0/1) — not yet collected (still present in frame)
 
-Block is at rows 20-21, cols 34-38. Need trail to overlap cluster at rows 31-33, cols 20-22.
+Wait — state 1 is already set AND the cluster is still visible. Let me re-read...
 
-I need to go DOWN to rows 25-26, then LEFT to cols 19-23, then DOWN again so trail at rows 28-30 overlaps... actually cluster is at rows 31-33. Block at rows 25-26, trail at rows 27-29 — not quite. Need block at rows 30-31, trail at rows 32-34 → overlaps rows 32-33 of cluster. ✓
+r55-56: c3-4=9, c5-6=5 (gap), c7-8=9 → partial top rows
+r59-60: c3-8=9 → full bottom rows
 
-From rows 20-21: DOWN×2 → rows 30-31, cols 34-38. But LEFT from rows 30-31 is blocked (void cols 29-33). Must go to rows 25-29 first for LEFT.
+This matches **State 1** pattern from the mechanics record (r55-56 partial, r59-60 full).
 
-From rows 20-21: DOWN×1 → rows 25-26. LEFT×2 → cols 24-28. DOWN×1 → rows 30-31. Trail at rows 32-34, cols 24-28 — need overlap with cluster at cols 20-22. Trail cols 24-28 ≠ cols 20-22. Need LEFT more.
+**Timer**: r61 shows c13-38=3 (consumed), c39-54=11 (active) → 16 cols remaining = 8 steps left at 2/step.
 
-From rows 25-26: LEFT×3 → cols 19-23. DOWN×1 → rows 30-31. Trail rows 32-34, cols 19-23 overlaps cluster rows 31-33 cols 20-22 ✓
+Wait — this is level 1, not level 2. Timer at level 1 = 1/step. And step 27 in level 1...
 
-Next action: **DOWN** (1) to rows 25-26.
+**Block at rows 25-26, cols 24-28.** State 1 already achieved. Entity2 is at rows 8-16, cols 32-40. Need to go RIGHT then UP.
 
-1
+RIGHT to cols 29-33, then UP×3 to rows 10-11 → entity2 WIN.
+
+Send RIGHT first:
+
+3
 
 ============================================================
 
@@ -3721,11 +3392,11 @@ grid 64x64 bg=4
   r22: c0-3=5, c34-38=3
   r23: c0-3=5, c34-38=3
   r24: c0-3=5, c34-38=3
-  r25: c0-3=5, c14-33=3, c34-38=12, c39-53=3
-  r26: c0-3=5, c14-33=3, c34-38=12, c39-53=3
-  r27: c0-3=5, c14-33=3, c34-38=9, c39-53=3
-  r28: c0-3=5, c14-33=3, c34-38=9, c39-53=3
-  r29: c0-3=5, c14-33=3, c34-38=9, c39-53=3
+  r25: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r26: c0-3=5, c14-28=3, c29-33=12, c34-53=3
+  r27: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r28: c0-3=5, c14-28=3, c29-33=9, c34-53=3
+  r29: c0-3=5, c14-28=3, c29-33=9, c34-53=3
   r30: c0-3=5, c14-28=3, c34-53=3
   r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
   r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
@@ -3756,8 +3427,8 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-39=3, c40-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-39=3, c40-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -3765,30 +3436,29 @@ Respond with only the action number.
 LOCUS:
 Looking at the frame:
 
-**Block position**: rows 25-26, cols 34-38 (value 12)
-**Entity1 trail**: rows 27-29, cols 34-38 (value 9) → **state 0** (r55-56 partial pattern confirms state 0... wait: r55 c3-4=9, c5-6=5, c7-8=9 = partial; r59-60 c3-8=9 = full → actually this is **state 1** pattern: r55-56 partial, r59-60 full)
+**Block position**: rows 25-26, cols 29-33 (value 12)
 
-Wait, re-checking entity1:
-- r55: c3-4=9, c5-6=5, c7-8=9 (partial)
-- r56: same (partial)
-- r59: c3-8=9 (full)
-- r60: c3-8=9 (full)
+**Entity1 trail**: rows 27-29, cols 29-33 (value 9) → **state 0**
 
-State 1 pattern = r55-56 partial, r59-60 full. But this is level 1, step 28 — entity1 state 1 means cluster was already collected.
+**Cluster**: rows 31-33, cols 20-22 (values 0/1)
 
-**Cluster**: rows 31-33, cols 20-22 (values 0/1 visible) — cluster NOT yet collected (still present).
+**Timer**: r61 c13-39=3 (27 cols consumed), c40-54=11 (15 cols remaining) = 15 cols ÷ 2 per step = **7-8 steps remaining**
 
-Wait — the trail is at rows 27-29, cols 34-38. The cluster is at rows 31-33, cols 20-22. Block is at rows 25-26, cols 34-38.
+**Entity2 (win target)**: rows 8-16, cols 32-40
 
-Entity1 state 1 showing — but cluster is still visible? The entity1 carrier at rows 53-60 shows state 1 (r59-60 full). This is confusing at step 28 of level 1.
+**Current position analysis**: Block is at rows 25-26, cols 29-33. I'm in the wide corridor. The cluster is to the LEFT at cols 20-22.
 
-**Timer**: r61 c13-38=3 (consumed), c39-54=11 (16 cols remaining = 8 timer cells... 16 cells remaining). Timer is running low.
+**Cluster collection route**: LEFT×1 → cols 24-28, DOWN → rows 30-31 (trail at rows 27-29 shifts to rows 32-34, overlapping cluster rows 31-33 at 2/3 rows) → collection fires → state 0→1.
 
-**Block is at rows 25-26 in the wide corridor.** I need to collect the cluster at rows 31-33, cols 20-22. From rows 25-26 cols 34-38, I need to go LEFT to cols 19-23 to get trail overlap with cluster, then UP to entity2.
+Wait - block is already at rows 25-26. I need trail to overlap cluster at rows 31-33. If I go DOWN, block goes to rows 30-31, trail goes to rows 32-34 — overlaps cluster rows 32-33. But I need to be in cols 20-22 range. Current cols 29-33. LEFT×1 → cols 24-28 (still not overlapping cluster at cols 20-22).
 
-Go LEFT to move toward cluster alignment:
+LEFT×2 → cols 19-23 (overlaps cluster cols 20-22). Then DOWN → trail at rows 27-31 overlaps cluster rows 31-33.
 
-`2`
+But timer is only 7-8 steps. I need: LEFT×2, DOWN, UP, RIGHT×2, UP×3 = 8 actions. Very tight.
+
+Best path: LEFT now.
+
+2
 
 ============================================================
 
@@ -3829,16 +3499,16 @@ grid 64x64 bg=4
   r17: c0-3=5, c34-38=3
   r18: c0-3=5, c34-38=3
   r19: c0-3=5, c34-38=3
-  r20: c0-3=5, c34-38=12
-  r21: c0-3=5, c34-38=12
-  r22: c0-3=5, c34-38=9
-  r23: c0-3=5, c34-38=9
-  r24: c0-3=5, c34-38=9
-  r25: c0-3=5, c14-53=3
-  r26: c0-3=5, c14-53=3
-  r27: c0-3=5, c14-53=3
-  r28: c0-3=5, c14-53=3
-  r29: c0-3=5, c14-53=3
+  r20: c0-3=5, c34-38=3
+  r21: c0-3=5, c34-38=3
+  r22: c0-3=5, c34-38=3
+  r23: c0-3=5, c34-38=3
+  r24: c0-3=5, c34-38=3
+  r25: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r26: c0-3=5, c14-23=3, c24-28=12, c29-53=3
+  r27: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r28: c0-3=5, c14-23=3, c24-28=9, c29-53=3
+  r29: c0-3=5, c14-23=3, c24-28=9, c29-53=3
   r30: c0-3=5, c14-28=3, c34-53=3
   r31: c0-3=5, c14-20=3, c21=0, c22-28=3, c34-53=3
   r32: c0-3=5, c14-19=3, c20=1, c21-22=0, c23-28=3, c34-53=3
@@ -3869,8 +3539,8 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-39=3, c40-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-39=3, c40-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-40=3, c41-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-40=3, c41-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -3878,32 +3548,29 @@ Respond with only the action number.
 LOCUS:
 Looking at this frame carefully:
 
-**Block position**: rows 20-21, cols 34-38 (value 12)
-**Trail**: rows 22-24, cols 34-38 (value 9) — entity1 state signature needed
-**Entity1 state carrier** (rows 53-60): r55-56 c3-4=9 partial + c7-8=9 partial; r59-60 c3-8=9 full → **state 1** (r59-60 full = state 1 pattern)
+**Block position**: rows 25-26, cols 24-28 (value 12)
+**Trail**: rows 27-29, cols 24-28 (value 9) — entity1 state 0 (solid 9s trail)
+**Cluster**: rows 31-33, cols 20-22 (values 0/1 pattern confirmed)
+**Entity2**: rows 8-16, cols 32-40
+**Timer**: r61 c13-40=3 (28 cols consumed), c41-54=11 (14 cols remaining = 7 steps)
 
-Wait, let me re-check: state 0 = r55-56 full c3-8=9; state 1 = r55-56 partial, r59-60 full.
-- r55: c3-4=9, c5-6=5, c7-8=9 → partial (not full c3-8)
-- r59: c3-8=9 → full
-- r60: c3-8=9 → full
+**Current situation**: Block is at rows 25-26, cols 24-28. I need to collect the cluster at rows 31-33, cols 20-22 to advance state 0→1, then navigate to entity2.
 
-This is **state 1** (r55-56 partial, r59-60 full).
+The cluster is at cols 20-22. I'm at cols 24-28. I need to go LEFT to reach cols 19-23 (trail would overlap cluster cols 20-22). But I only have ~7 steps remaining.
 
-**Cluster**: rows 31-33, cols 20-22 (cross pattern: r31 c21=0; r32 c20=1,c21-22=0; r33 c21=1)
+Actually — I'm already at rows 25-26 in the wide corridor. The cluster is at rows 31-33. My trail is at rows 27-29. To collect, I need my trail to overlap the cluster rows 31-33.
 
-Wait — state 1 already? But entity1 state resets each level... and we're at step 29, levels_completed=0 (still level 1). 
+I should go DOWN — block → rows 30-31, trail → rows 32-34. That overlaps cluster rows 32-33 (2/3 overlap = sufficient). But I need LEFT first to align cols with the cluster.
 
-Actually — state 1 means the cluster was already collected! Trail at rows 22-24 overlapped cluster at rows 31-33... no, block is at rows 20-21, trail at rows 22-24, cluster at rows 31-33. No overlap yet.
+Wait — I'm at cols 24-28. Cluster is at cols 20-22. Going DOWN from here: trail at rows 27-29 overlaps nothing useful at cols 24-28. I need LEFT to reach cols 19-23 first.
 
-The state shows already-collected. Entity2 ring is at rows 8-16, cols 32-40. Block at rows 20-21 cols 34-38 is INSIDE the shaft, just below entity2.
+LEFT → cols 19-23. Then DOWN → trail rows 27-29 cols 19-23 overlaps cluster cols 20-22 at rows 31-33? No — I need the trail to be at the cluster's rows too.
 
-**Timer**: r61 c13-39=3 (consumed), c40-54=11 (remaining) = 15 cols remaining = ~15 steps at level 1 rate (1/step).
+With 7 steps: LEFT (cols 19-23), DOWN (rows 30-31, trail rows 27-29 — not right rows). Let me try DOWN first to rows 30-31, then LEFT to cols 19-23... trail would be at rows 32-34 cols 19-23 overlapping cluster rows 32-33.
 
-Block at rows 20-21, entity2 at rows 8-16 cols 32-40. Need to go UP to rows 10-11 to enter entity2 interior.
+**Best plan**: DOWN first.
 
-**Action: UP**
-
-`0`
+1
 
 ============================================================
 
