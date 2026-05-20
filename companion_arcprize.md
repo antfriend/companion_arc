@@ -301,19 +301,19 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1779408000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1779667200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:175
-rev:14
-sal:8
-touched:1779408000
+rev:15
+sal:9
+touched:1779667200
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (COMPETITION mode, API key set in .env)
 
-**Current level**: ls20 — **level 1 NOT WON in session 13; level 2 not yet reached**. Session 13 (2026-05-19): level 1 consumed all 50 actions, score 0.0 — no first-frame scan performed. See @LAT-170LON10. Prior sessions 10–12: level 1 WON at step 15 (baseline 22, above-baseline efficiency). All 7 baselines now known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186.
+**Current level**: ls20 — **level 1 NOT WON in sessions 13–18 (6 consecutive losses); level 2 not yet reached**. Root cause identified and code fix deployed (2026-05-20): step-0 UP probe now hardcoded in `kaggle_agent.py`; LEFT eligibility threshold (rows ≤29) added to @LAT-140LON10. Session 19 is the first test of the fix. Prior sessions 10–12: level 1 WON at step 15 (baseline 22, above-baseline efficiency). All 7 baselines known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Budget: 30 actions per run (sessions 15–18 confirmed).
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -327,6 +327,9 @@ touched:1779408000
 - **Session 10: WIN at step 15** (1 probe + 14 route). Block entered entity2 at rows 10-11 cols 34-38.
 - **Sessions 11–12: WIN at step 15** (manual level 1; same route as session 10). ✓
 - **Session 13: NOT WON** — 50 actions consumed without win. No first-frame scan; cluster position not verified for fresh game instance. Human baseline: 22 actions. See @LAT-170LON10.
+- **Sessions 14–15: NOT WON** — 50 actions each. LOCUS chose LEFT at step 0 (no frame); void gap c29-33 blocked silently. See @LAT-180LON10, @LAT-190LON10.
+- **Sessions 16–17: NOT WON** — 30 actions each (budget confirmed at 30). Blocked-move warning deployed; step-0 LEFT still chosen by LOCUS. See @LAT-200LON10, @LAT-210LON10.
+- **Session 18: NOT WON** — 30 actions. Code fix not yet applied at run time. Validated @BELIEF:LAT80LON20 (conf→245), @BELIEF:LAT70LON20 (conf→190). See @LAT-220LON10.
 
 **Level 2 outcomes**:
 - Session 5: 48 steps into level 2 (steps 15–62 globally), QUIT — trapped by regenerated 11-ring wall; timer expired
@@ -356,7 +359,7 @@ touched:1779408000
 
 **Session 13 OUTCOME (2026-05-19)**: Level 1 NOT WON. All 50 actions consumed in level 1. Root cause: no first-frame scan before committing route; cluster position varied from prior sessions. Level 2 not reached. Score 0.0. See @LAT-170LON10.
 
-**Session 14 plan**: `python launch_training.py ls20`. LOCUS receives the compact frame at each step. Step 0: send **`0`** (UP, probe). Step 1: read cluster row from frame, commit level 1 route. Target: ≤15 actions (baseline 22). After level 1 WIN: level 2 probe-first — steps 1-27 (A-reset + cross), then RIGHT probe at rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
+**Session 19 plan**: `python launch_training.py ls20`. Code fix deployed: step-0 UP is hardcoded in `kaggle_agent.py` (LOCUS not queried at step 0). LOCUS reads LEFT eligibility from frame at steps 1+: LEFT only when block at rows ≤29. Target: ≤14 actions on level 1 (baseline 22). After level 1 WIN: level 2 probe-first — steps 1-27 (A-reset + cross), then RIGHT probe at rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
 
 **Session 8 — level 1 key discoveries**:
 - **Cluster position varies per fresh game**: session 7 cluster at rows 47–49; session 8 cluster at rows 31–33. Cols 20–22 stable. Must scan first frame to locate cluster.
@@ -1790,10 +1793,10 @@ source_count:3
 
 ---
 
-@BELIEF:LAT80LON20 | created:1779494400 | updated:1779494400 | relates:extracted_from>@LAT-200LON10,extracted_from>@LAT-210LON10,extracted_from>@LAT-140LON10,extracted_from>@LAT-10LON10,contained_by>@LAT60LON20
+@BELIEF:LAT80LON20 | created:1779494400 | updated:1779667200 | relates:extracted_from>@LAT-200LON10,extracted_from>@LAT-210LON10,extracted_from>@LAT-140LON10,extracted_from>@LAT-10LON10,validated_by>@LAT-220LON10,contained_by>@LAT60LON20
 [lp]
 centroid:LAT80LON20
-confidence:185
+confidence:245
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
@@ -1805,10 +1808,10 @@ source_count:4
 
 ---
 
-@BELIEF:LAT70LON20 | created:1779494400 | updated:1779494400 | relates:projected_from>@BELIEF:LAT80LON20,projected_from>@BELIEF:LAT20LON0,projected_from>@LAT-140LON10,contained_by>@LAT60LON20
+@BELIEF:LAT70LON20 | created:1779494400 | updated:1779667200 | relates:projected_from>@BELIEF:LAT80LON20,projected_from>@BELIEF:LAT20LON0,projected_from>@LAT-140LON10,validated_by>@LAT-220LON10,contained_by>@LAT60LON20
 [lp]
 centroid:LAT70LON20
-confidence:130
+confidence:190
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:true
@@ -1962,8 +1965,6 @@ The agent loop queries LOCUS at every step with the current compact frame. LOCUS
 
 ---
 
-SECTION 1
-
 @LAT-180LON10 | created:1779494400 | updated:1779494400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,informs_strategy>@LAT-140LON10
 [ew]
 conf:255
@@ -2016,8 +2017,6 @@ Neither exchange produced a frame read before action commitment. Session ended w
 
 ---
 
-SECTION 1
-
 @LAT-190LON10 | created:1779494400 | updated:1779494400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON10
 [ew]
 conf:255
@@ -2066,8 +2065,6 @@ If the agent loop is batching actions or querying LOCUS without the frame contex
 - **Why exactly the agent loop fails**:
 
 ---
-
-SECTION 1
 
 @LAT-200LON10 | created:1779580800 | updated:1779580800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON10
 [ew]
@@ -2119,8 +2116,6 @@ Both exchanges (FOCUS and STATUS) confirm LOCUS correctly diagnosed the failure 
 
 ---
 
-SECTION 1
-
 @LAT-210LON10 | created:1779580800 | updated:1779580800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON10,informs_strategy>@LAT-140LON10
 [ew]
 conf:255
@@ -2167,8 +2162,6 @@ No new mechanic data. Level 1 not reached in any meaningful sense — all 30 act
 - **Phase 3 (Revise)**: The fix is a single code change — after action 0 (UP), capture the frame output and include it in the LOCUS step-1 query. The route is known (sessions 10–12 confirmed: UP×5, LEFT×2, DOWN, UP, RIGHT×3, UP×3 from rows 40-41
 
 ---
-
-SECTION 1
 
 @LAT-220LON10 | created:1779667200 | updated:1779667200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,validates>@BELIEF:LAT80LON20,informs_strategy>@LAT-140LON10
 [ew]
