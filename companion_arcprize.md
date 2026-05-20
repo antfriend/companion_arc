@@ -1816,3 +1816,57 @@ The agent loop queries LOCUS at every step with the current compact frame. LOCUS
 **Step 0** (no frame): respond **`0`** (UP, probe).
 **Step 1** (frame available): locate cluster row in cols 20-22. Verify block position. Route LEFT with trail to overlap observed cluster, then navigate to entity2. Target: ≤15 actions (baseline 22).
 **After level 1 WIN**: level 2 probe-first — execute steps 1-27 (A-reset + cross, state 0→1), then probe RIGHT from rows 45-46 c49-53 to validate direction restriction at state 1. See @LAT-140LON10.
+
+---
+
+SECTION 1
+
+@LAT-180LON10 | created:1779494400 | updated:1779494400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON0,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779494400
+[/ew]
+
+## ls20 — Session 14 Log (2026-05-20)
+
+```session-log
+timestamp: 1779494400
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "de0a491c-1540-40aa-b98d-2000f82cb374"
+card_id: "654c63ff-50f9-4c98-900b-8cb5e9b07cde"
+level: "level 1 NOT WON"
+actions: 50
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. All 50 actions consumed. `levels_completed=0`. Score 0.0. Same environment `ls20-9607627b` as session 13 — `arc.make()` reconnected to the existing run (same `run_guid`). This is the same 50-action budget applied to the same game instance; it was not a fresh start.
+
+### What Happened
+
+The session log shows two LOCUS exchanges before execution:
+
+1. `@LOCUS FOCUS lat-10lon10` — LOCUS moved cursor to Game State, confirmed session 14 plan: first-frame scan mandatory, probe RIGHT after cross collection.
+2. `@LOCUS STATUS` — LOCUS confirmed EPS scan, standing orders, and that the 51-step route should NOT be executed blindly.
+
+Neither exchange produced a frame read before action commitment. Session ended with the same 0.0 score as session 13.
+
+**Root cause (inferred)**: The session log contains no record of a step-0 UP probe response being read before routing. Most likely scenario: the agent loop committed actions without waiting for or receiving a usable first frame, repeating the session 13 failure mode. No mechanic observations were captured — no frame data appears in the key session exchanges.
+
+### What This Session Confirms
+
+1. **First-frame scan failure is a systemic issue, not a one-off.** Two consecutive sessions (13 and 14) failed with identical scorecard signatures (50 actions, 0 levels, score 0.0, 0 resets). The probe step (send UP at step 0, read frame at step 1) is not being executed correctly in the agent loop. @BELIEF:LAT90LON0 Phase 4 re-confirmed: skipping the scan = total session loss.
+
+2. **Direction restriction at state 1 still unprobed.** Level 2 not reached in either session 13 or 14. @BELIEF:LAT10LON10 (conf:140) remains the single most critical unresolved mechanic.
+
+3. **Same environment on reconnect.** `ls20-9607627b` persisted across both sessions. This means the 50-action limit is a per-run budget that does not reset on reconnect — the prior "arc.make() creates a fresh game" belief may need revision. Evidence is ambiguous: session 13 and 14 share the same `run_guid`, which strongly suggests the same run was resumed, not a new one created. See open question below.
+
+### Open Questions
+
+1. **Does `arc.make()` always create a fresh run, or does it reconnect to an existing run when the environment is in a NOT_FINISHED state?** Session 13 and 14 share `run_guid: de0a491c-...`. If they are the same run, the 50-action budget was split across two sessions (25 each?), or the run was fully consumed in session 13 and session 14 was a zero-budget replay. Either interpretation changes strategy: a failed session may consume the entire run budget, leaving no recovery opportunity.
+
+2. **Why is the agent loop not reading the step-1 frame?** LOCUS issued correct standing orders in both sessions. The failure is in execution
