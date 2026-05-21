@@ -12,10 +12,12 @@ This ARC-AGI-3 project was grown from this seed.
 Just look at Locus now! 
 
 
+## more
+- [kaggle notebook home](https://www.kaggle.com/code/danxray/toot-toot-locus/)
 
-(TBD submission form:)[https://docs.google.com/forms/d/e/1FAIpQLSfdIw3Xdt0P5kZjzEhbWaqnsn1A0cezY7bh5w8YjrjAXLd9eQ/viewform]
+- [TBD submission form:](https://docs.google.com/forms/d/e/1FAIpQLSfdIw3Xdt0P5kZjzEhbWaqnsn1A0cezY7bh5w8YjrjAXLd9eQ/viewform)
 
-(OG example repo)[https://github.com/arcprize/ARC-AGI-3-Agents]
+- [OG github example repo](https://github.com/arcprize/ARC-AGI-3-Agents)
 
 ---
 
