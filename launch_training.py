@@ -173,7 +173,7 @@ def main() -> None:
         game_id=GAME_ID,
         client=client,
         companion_text=companion,
-        max_steps=20,
+        max_steps=60,
         competition_mode=False,
         verbose=True,
         offline_levels=OFFLINE_LEVELS,

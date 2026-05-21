@@ -3732,3 +3732,63 @@ Hardcoded `_LEVEL1_ROUTE` confirmed functional for the ninth time (sessions 10�
 **What can be inferred from 5 level-2 actions**:
 
 If the 17-action standing order (@LAT-140LON10) was attempted, LOCUS would have sent: UP, RIGHT, UP×5, LEFT×4, DOWN — but only 5 of those are possible before budget exhaustion. The first 5 steps of the route are: (1) UP → r35–36 c29–33, (2) RIGHT → r35–36 c34–38, (3) UP → r30–31 c34–38, (4) UP → r25–26 c34–38, (5) UP → r20
+
+---
+
+SECTION 1
+
+@LAT-390LON10 | created:1780358400 | updated:1780358400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780358400
+[/ew]
+
+## ls20 — Session 32 Log (2026-05-27)
+
+```session-log
+timestamp: 1780358400
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "c928a6e1-be60-4ab3-8242-712b0553c8d4"
+card_id: "d2d57ae1-4666-4cd8-b1cf-6d9b075e9b5d"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, confirmed functional — tenth consecutive win across sessions 10–12, 23–27, 31, 32). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28). max_steps=60 confirmed — sufficient for level 2 investigation.
+
+Level action breakdown: `level_actions: [15, 45, 0, 0, 0, 0, 0]`. Level 1 = 15 (win, score 115.0). Level 2 = 45 (not won, score 0.0).
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=10]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Tenth confirmation. Route stable. No deviations. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (tenth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (tenth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled) — VALIDATED. max_steps=60 restored; 60 actions available as expected.
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Frame[1] — L2 start state (confirmed stable)**:
+- Block: r40–41 c29–33. ✓
+- Entity1 carrier — **STATE 1** at L2 start. r55–56 c3–8=9, r57–58 c7–8=9 only, r59–60 partial. @BELIEF:LAT90LON-30 — sixth consecutive confirmation. ✓
+- Entity1 trail: r42–44 c29–33=9. Same column as block. ✓
+- Entity2 ring: r38–46 c12–20. Value-9 cluster at r41–43 c15–17 inside ring. Unchanged. ✓
+- Timer r61–62: c13–54=11 (full 42 cols). ✓
+- 11-ring A: r16–18 c15–17 (value 11). ✓
+
+**Route executed**: LOCUS attempted the cross-first hypothesis (@BELIEF:LAT-10LON-40) — collect cross to advance state 1→2, allow timer expiry to reset block to
