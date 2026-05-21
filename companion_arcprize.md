@@ -3545,37 +3545,18 @@ Post-reset (new cycle,
 
 ---
 
-@BELIEF:LAT-20LON-40 | created:1780185600 | updated:1780185600 | relates:extracted_from>@LAT-350LON10,extracted_from>@LAT-280LON10,extracted_from>@LAT-230LON10,extracted_from>@LAT-200LON10,extracted_from>@LAT-180LON10,contained_by>@LAT60LON20
+@BELIEF:LAT-20LON-40 | created:1780185600 | updated:1780272000 | relates:extracted_from>@LAT-350LON10,extracted_from>@LAT-280LON10,extracted_from>@LAT-230LON10,extracted_from>@LAT-200LON10,extracted_from>@LAT-180LON10,retired_by>@BELIEF:LAT-30LON-40,contained_by>@LAT60LON20
 [lp]
 centroid:LAT-20LON-40
-confidence:210
+confidence:10
 scope_lat:15.0
 scope_lon:15.0
 projection_flag:false
-contradiction_flag:false
+contradiction_flag:true
 source_count:5
 [/lp]
 
-**The per-run action budget for ls20 has varied four times across 28 sessions and is not predictable.** Observed budget windows:
-
-| Sessions | Budget | Notes |
-|---|---|---|
-| 13–15 | 50 actions | First window after environment creation |
-| 16–22 | 30 actions | Reduced window, consistent across 7 sessions |
-| 23–27 | 60 actions | Raised window after parse_action fix; consistent across 5 sessions |
-| 28 | 20 actions | Anomalous low; cause unknown (server interruption, reduced allocation, or run state change) |
-
-**Implication 1 — route design**: every level route must be as short as possible. The level 1 hardcoded route (15 actions) comfortably fits any observed budget ≥ 20. Level 2 routes must target ≤ 38 actions to fit within the minimum non-anomalous budget (30 actions leaves only 15 for level 2 after a 15-action level 1; the cross-first route at 38 level-2 actions requires the 60-action budget window). Under a 30-action budget: level 1 (15) + level 2 (15 remaining) — any level 2 win route requires ≤ 15 actions, which is geometrically infeasible given the maze structure (minimum 17 actions confirmed).
-
-**Implication 2 — probe strategy**: when budget is uncertain, each action must maximise information. Do not execute exploratory sequences that consume 5+ actions without a decision branch. The checkpoint protocol (@BELIEF:LAT0LON-50) enforces this for route execution. For win-condition probing: prefer routes where the first probe action distinguishes between hypotheses (e.g., entity2 entry at state 2 either wins or confirms NOT_FINISHED in one action).
-
-**Implication 3 — budget detection**: at session start, note the total available actions before committing any route. If budget ≤ 30: level 2 cannot be won this session with any known route; use the session for mechanic reconnaissance only (read frame[1] carefully, probe one unknown, report findings). If budget ≥ 45: full cross-first route is feasible. If budget = 60: full route plus contingency probing available.
-
-**Confidence note**: conf:210 — budget values are directly observed from scorecards; the variability is a fact. The implications are inferences with moderate confidence. The 20-action session 28 anomaly may not recur; the 30-action window may have been a server configuration period. No stable model of what determines budget allocation exists.
-
----
-
-SECTION 1
+**RETIRED — FALSE PREMISE.** This belief attributed observed action-count variation (50 → 30 → 60 → 20 across sessions) to server-side budget allocation shifts. The operator has confirmed: all variation was `max_steps` in `launch_training.py`, a soft cap set by the operator for different testing purposes. The arc_agi environment imposes no action limit. There is no "per-run budget" from the server. All downstream reasoning about budget-constrained level 2 routes, "20-action window insufficient for level 2," and "budget detection at session start" is retired. See @BELIEF:LAT-30LON-40 for the corrected belief.
 
 @LAT-360LON10 | created:1780185600 | updated:1780185600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-20LON-40
 [ew]
@@ -3621,3 +3602,24 @@ The session log shows two LOCUS exchanges before execution (FOCUS and STATUS), b
 1. **Hardcoded route not applied** — `_LEVEL1_ROUTE` did not fire; LOCUS was queried at step 0 without frame and selected a suboptimal action. Same failure mode as sessions 13–22. If this is the case, the code fix is not running in the current execution environment.
 
 2. **Budget was 20 and route ran but failed** — hardcode fired, but some disruption (e.g., cluster not at expected rows 31–33, or block start at a different row) caused the route to miss within 15 steps. 20 − 15 = 5 remaining actions were consumed in recovery without win
+
+---
+
+@BELIEF:LAT-30LON-40 | created:1780272000 | updated:1780272000 | relates:revises>@BELIEF:LAT-20LON-40,extracted_from>@LAT-360LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-30LON-40
+confidence:255
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**`max_steps` in `launch_training.py` is an operator-controlled soft cap, not a game or server constraint.** The arc_agi environment imposes no action limit. Observed session action counts (50, 30, 60, 20) reflect different `max_steps` values set by the operator at different times for different testing purposes. The game will accept actions indefinitely until a level WIN or the operator ends the session.
+
+**Implication for level 1**: with max_steps=20 and the 15-step hardcoded `_LEVEL1_ROUTE`, level 1 should be won at step 15 with 5 steps remaining. If level 1 is NOT won at step 15 under max_steps=20, the hardcode is not executing correctly — operator configuration is not the cause.
+
+**Implication for level 2 routes**: route feasibility is determined by maze geometry and timer constraints only (42 cols at 2 cols/step = 21 steps per timer cycle; 11-ring A provides FULL RESET). `max_steps` simply determines how many actions the session will run before the operator reviews results. For level 2 investigation, the operator should set max_steps >= 60 (15 for level 1 + up to 45 for level 2).
+
+**Implication for sessions 28-29**: NOT WON at max_steps=20 confirms the hardcode execution gap is still active, not a budget problem. Same root cause as sessions 13-22: `_LEVEL1_ROUTE` is not being applied at step 0.
