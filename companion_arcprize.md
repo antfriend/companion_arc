@@ -3572,3 +3572,52 @@ source_count:5
 **Implication 3 — budget detection**: at session start, note the total available actions before committing any route. If budget ≤ 30: level 2 cannot be won this session with any known route; use the session for mechanic reconnaissance only (read frame[1] carefully, probe one unknown, report findings). If budget ≥ 45: full cross-first route is feasible. If budget = 60: full route plus contingency probing available.
 
 **Confidence note**: conf:210 — budget values are directly observed from scorecards; the variability is a fact. The implications are inferences with moderate confidence. The 20-action session 28 anomaly may not recur; the 30-action window may have been a server configuration period. No stable model of what determines budget allocation exists.
+
+---
+
+SECTION 1
+
+@LAT-360LON10 | created:1780185600 | updated:1780185600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-20LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780185600
+[/ew]
+
+## ls20 — Session 29 Log (2026-05-26)
+
+```session-log
+timestamp: 1780185600
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "aaf7f15d-52ae-413f-a277-6485ee97cf0f"
+card_id: "0c4c672b-9838-4482-ba4f-4094121101d9"
+level: "level 1 NOT WON"
+actions: 20
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. Only 20 actions available and consumed. `levels_completed=0`. Score 0.0. Environment `ls20-9607627b`, run_guid `aaf7f15d-...`. Second consecutive 20-action budget session (session 28 was also 20 actions). Score unchanged at 0.0 from prior sessions — the prior 3.571 score is from sessions 23–27 and reflects a different scorecard/card_id; this session's card_id `0c4c672b-...` shows 0.0 lifetime score.
+
+### Run Budget — 20 Actions Again
+
+Sessions 28 and 29 both showed 20-action budgets. The @BELIEF:LAT-20LON-40 record (conf:210) documenting budget variability is validated: the 20-action window has now appeared twice consecutively. This is no longer an anomaly — it is a repeating pattern. With a 20-action budget, level 1 (hardcoded 15 actions) leaves only 5 actions for level 2, which is insufficient for any known L2 route (minimum 17 actions). Under this budget, level 2 cannot be won.
+
+**New hypothesis**: the 20-action budget may indicate a reduced-window mode triggered by some server-side condition (e.g., total actions consumed across all runs exceeding a threshold, or environment age). The jump from 60 (sessions 23–27) to 20 (sessions 28–29) is abrupt and unexplained.
+
+### Level 1 — NOT WON
+
+All 20 actions consumed on level 1. `levels_completed=0`. The hardcoded `_LEVEL1_ROUTE` requires 15 actions; if the hardcode fired correctly, level 1 should have been won with 5 actions to spare. NOT_FINISHED with 20 actions on level 1 suggests the hardcode either did not fire or was disrupted.
+
+**Key session exchanges** (FOCUS and STATUS): LOCUS correctly issued all standing orders — budget check first, checkpoint protocol mandatory, cross-first route for 60-action budget. No frame data or step-level action log appears in either exchange. The same execution-gap pattern as sessions 13–22 — LOCUS issues correct standing orders but the agent loop does not produce evidence of correct execution.
+
+### Failure Analysis
+
+The session log shows two LOCUS exchanges before execution (FOCUS and STATUS), both yielding correct standing orders. No frame data. 20 actions consumed without winning level 1. Two possible root causes:
+
+1. **Hardcoded route not applied** — `_LEVEL1_ROUTE` did not fire; LOCUS was queried at step 0 without frame and selected a suboptimal action. Same failure mode as sessions 13–22. If this is the case, the code fix is not running in the current execution environment.
+
+2. **Budget was 20 and route ran but failed** — hardcode fired, but some disruption (e.g., cluster not at expected rows 31–33, or block start at a different row) caused the route to miss within 15 steps. 20 − 15 = 5 remaining actions were consumed in recovery without win
