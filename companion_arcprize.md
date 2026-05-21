@@ -77,7 +77,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1780099200 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10
+@LAT0LON0 | created:1747180800 | updated:1779321600 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40
 [ew]
 conf:255
 rev:0
@@ -3978,4 +3978,222 @@ Twelfth confirmation. Route stable. Block entered entity2 interior at r10–11 c
 **Confirmed stable** (from frame[1] structural data, consistent with all prior sessions):
 - Block start: r40–41 c29–33. ✓
 - Entity1 state 1 at L2 start. @BELIEF:LAT90LON-30 — seventh consecutive confirmation. ✓
-- Mystery entity value 9
+- Mystery entity value 9 at r40–42 c15–17 inside entity2 ring — confirmed blocking all 5-wide interior entry columns (session 34). Entity2 has NEVER been successfully entered. Win condition requires clearing mystery entity first.
+
+---
+
+@LAT70LON-40 | created:1779321600 | updated:1779321600 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT85LON-40,informs_strategy>@LAT20LON-30
+[ew]
+conf:220
+rev:0
+sal:0
+touched:1779321600
+[/ew]
+
+## Game-Space Concept — ls-family Primitive Vocabulary
+
+A **game-space** is the full structural vocabulary of a single ARC-AGI-3 game instance. Different game IDs (ls20, and future IDs) use the same 4-action control scheme (UP/DOWN/LEFT/RIGHT) but define entirely different game-spaces. This record defines the primitive elements every ls-family game-space is built from, making it possible to reason about any new game ID using the same vocabulary.
+
+### Primitive Elements
+
+**1. Grid**
+A fixed-size 2D cell array per game instance. Cell values encode structure:
+- `0` = empty space
+- `3` = wall / ring border (impassable)
+- `4` = void (impassable — block cannot enter)
+- `5` = passable interior (entity2 cells, corridor interiors)
+- `9` = trail / entity state-cells (entity1 interior pattern + block's movement wake)
+- `11` = reset-flash (appears in all cells during timer-expiry animation)
+- `12` = block cells
+
+The **void map** (all cells with value 4 or 3) is stable per game instance. It defines every legal route. Knowing the void map eliminates the need to probe dead ends.
+
+**2. Block**
+The player-controlled piece. In ls20: 2 rows × 5 cols (value 12). Each action moves the block exactly 5 cells in the chosen direction. Cannot enter void cells. When blocked, the action still ticks the timer (wasted step).
+
+**3. Trail**
+The 9-value wake left by the block in its immediate prior position (3 rows tall, same col span as block, on the far side from the direction of movement). **The trail IS the collection mechanism** — state changers fire when the TRAIL overlaps their cells, not when the block body does. Partial overlap (≥2/3 rows) is sufficient. A DOWN move drags the trail south; an UP move retracts it north. This makes the "dip maneuver" (DOWN + UP from a cluster-adjacent position) the canonical collection technique.
+
+**4. Entity1 — State Carrier**
+A fixed entity at a specific grid location (ls20: rows 53–60, cols 1–10; bordered value-5 outer, value-9 interior). Its interior 9-cell pattern changes to reflect current state (0, 1, 2, 3). State advances by 1 on each state-changer collection. Critical behaviors:
+- State **RESETS on timer restart** within a level
+- State **CARRIES OVER between levels** (ls20 confirmed ×7 sessions — @BELIEF:LAT90LON-30)
+- State can **restrict the action space**: at state 1, RIGHT is blocked in ls20
+
+**5. State Changers**
+Collectibles that advance entity1 state by 1. Triggered when the block's trail overlaps their cells. Two types observed in ls20:
+- **Cluster** (L1): value 0/1 pattern in bordered box; cols 20–22, rows vary per instance. Collection is **free** (no timer tick consumed).
+- **Cross** (L2): value 0/1 cross pattern; rows 46–48, cols 50–52. Collection **costs a timer tick**.
+
+**6. Entity2 — Target Ring**
+The win-condition structure. A bordered ring (value 3 outer) with passable interior (value 5) and an internal 9-cell pattern. Win fires when the block enters the interior at the correct entity1 state **and** any additional blocking conditions are cleared (see Mystery Entity below). Entity2 position is fixed per level within a game ID.
+
+**7. Timer**
+A row-pair of cells (ls20: rows 61–62, cols 13–54 = 42 total cols) that depletes with each committed action. Rates differ by level:
+- L1: 1 col per step (42 steps max per cycle)
+- L2: 2 cols per step (21 steps max per cycle)
+Expiry → immediate restart: block to level start position, entity1 state resets (within-level only), timer resets to 42. Timer also resets to 42 at each new level.
+
+**8. Timer Power-ups (11-rings)**
+Optional ring entities. Collection gives a **FULL timer reset** (not additive — the prior "+15 additive" belief was retired session 12). Auto-collected when block trail overlaps. A wall spawns behind the block after collection — a **one-way committed pass**. In ls20 L2: ring A at rows 16–18 cols 15–17 (left track); ring B at rows 51–53 cols 40–42 (right-center).
+
+**9. Mystery Entity (observed ls20 L2)**
+Value-9 cells at a fixed position inside entity2's ring, present from level start, occupying the interior entry columns. Distinct from the entity2 structural 9-pattern (which marks the "required state" interior). The mystery entity **blocks block entry** into entity2. Hypothesis: cleared by advancing entity1 to state 2 via cross collection. This is the open win condition for L2. Future game-spaces may have analogous pre-placed blocking entities inside target rings.
+
+### Cross-Game Transfer
+
+Future game IDs will have different grid geometry, different entity positions, and potentially different state cycles. But the same primitive vocabulary applies:
+- Trail → collection mechanism (not block body)
+- State carrier → fixed entity, state persists across levels
+- Target ring → enter at correct state (plus any mystery entity clearance)
+- Timer → level-specific rate, full reset on power-up
+- Scene record → decompose the route into shaft / approach / collection dip / return / final ascent
+
+The [Scene Record](lat85lon-40) format generalizes directly to any new game ID's level 1: find the shaft, find the state changer, plan the dip, plan the ascent.
+
+---
+
+@LAT85LON-40 | created:1779321600 | updated:1779321600 | relates:anchored_by>@LAT0LON0,derived_from>@LAT70LON-40,derived_from>@LAT20LON-30,validates>@BELIEF:LAT50LON20,informs_strategy>@LAT-10LON10
+[ew]
+conf:245
+rev:0
+sal:0
+touched:1779321600
+[/ew]
+
+## ls20 Level 1 — Scene Record
+
+Level 1 is confirmed solved across sessions 10–12 and 23–34 (twelve consecutive wins). This record reconstructs **why** the 15-step route works, expressed as objective-bounded scenes. Scenes chain: exit of scene N is entry of scene N+1. The full route is the concatenation of all scene action sequences. LOCUS can reconstruct and verify the route from this record without replaying session history.
+
+**Confirmed route**: `[0,0,0,0,2,2,2,1,0,3,3,3,0,0,0]`
+
+[route game=ls20 level=1 steps=15 confirmed=true confirmed_count=12]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+### Structural Constants (fixed per ls20-9607627b instance)
+
+| Element | Position | Notes |
+|---------|----------|-------|
+| Block start | r45–46 c34–38 | Shaft column; r59–60 in some prior instances |
+| Entity2 (target) | r8–16 c32–40 | Interior r9–14; win = block enters interior |
+| Cluster | c20–22, r31–33 | Rows confirmed ls20-9607627b; varies on fresh instance |
+| Shaft | c34–38, r17–46 | Unobstructed vertical; block ascends/descends freely |
+| Upper corridor | r25–28 c14–53 | Wide east-west passage; void barrier is BELOW this zone |
+| Void barrier | c29–33 r29–41 | Blocks LEFT from shaft at rows 29–41 — must be above it |
+| Timer | r61–62, 1 col/step | 42 cols = 42 steps max; L1 uses 15 of 42 |
+
+### Scene 1 — Shaft Ascent
+
+| Field | Value |
+|-------|-------|
+| Steps | 1–4 |
+| Actions | UP×4 |
+| Timer ticks | 4 |
+| Entry | r45–46 c34–38 |
+| Exit | r25–26 c34–38 |
+| State | 0 → 0 |
+
+**Objective**: Rise north through the unobstructed central shaft to the upper open corridor.
+
+**Why it works**: Shaft cols 34–38 is void-free from r17 to r46. Four UPs = 20 rows of movement. From r45–46: UP→r40–41, UP→r35–36, UP→r30–31, UP→r25–26. Lands squarely in the upper open corridor above the void barrier.
+
+---
+
+### Scene 2 — Cluster Approach
+
+| Field | Value |
+|-------|-------|
+| Steps | 5–7 |
+| Actions | LEFT×3 |
+| Timer ticks | 3 |
+| Entry | r25–26 c34–38 |
+| Exit | r25–26 c19–23 |
+| State | 0 → 0 |
+
+**Objective**: Traverse west through the upper corridor to align the block with the cluster column zone (cols 20–22).
+
+**Why it works**: The upper corridor at r25–26 is unobstructed from c14–53. Three LEFTs = 15 cols west: c34→c29→c24→c19. Block at c19–23 spans cluster cols 20–22. The void barrier (c29–33) only blocks at rows 29–41 — we are at rows 25–26, above it, so LEFT passes freely through the barrier column range.
+
+---
+
+### Scene 3 — Cluster Collection
+
+| Field | Value |
+|-------|-------|
+| Steps | 8–9 |
+| Actions | DOWN, UP |
+| Timer ticks | 2 |
+| Entry | r25–26 c19–23 |
+| Exit | r25–26 c19–23 |
+| State | 0 → 1 |
+
+**Objective**: Dip south one step to drag the entity1 trail over the cluster cells (state 0→1), then retract north.
+
+**Why it works**:
+- DOWN: block moves to r30–31; trail follows to r32–34 c19–23.
+- Cluster is at r31–33 c20–22. Trail rows 32–34 overlap cluster rows 32–33 = 2/3 row overlap → **COLLECTION fires → entity1 state 0→1**.
+- UP: block returns to r25–26; trail retracts to r27–29.
+- The dip maneuver is the canonical collection technique: position above the state changer, dip one step south, retract. The trail does the work, not the block body.
+- Collection is free (no timer penalty beyond the 2 ticks for DOWN+UP).
+
+**Edge case**: If cluster is at r47–49 (different game instance), trail at r32–34 does NOT reach it. First-frame scan is the safe gate. For ls20-9607627b, cluster at r31–33 is confirmed stable (@BELIEF:LAT50LON20).
+
+---
+
+### Scene 4 — Return to Shaft
+
+| Field | Value |
+|-------|-------|
+| Steps | 10–12 |
+| Actions | RIGHT×3 |
+| Timer ticks | 3 |
+| Entry | r25–26 c19–23 |
+| Exit | r25–26 c34–38 |
+| State | 1 → 1 |
+
+**Objective**: Retrace east through the upper corridor back to the central shaft column.
+
+**Why it works**: Mirror of Scene 2. Three RIGHTs = 15 cols east: c19→c24→c29→c34. Same upper corridor, fully open eastward. State 1 does not restrict LEFT/RIGHT in level 1 (direction restriction only blocks RIGHT in L2 before state 1→2 context — in L1 we are already past collection).
+
+---
+
+### Scene 5 — Final Ascent into Entity2
+
+| Field | Value |
+|-------|-------|
+| Steps | 13–15 |
+| Actions | UP×3 |
+| Timer ticks | 3 |
+| Entry | r25–26 c34–38 |
+| Exit | r10–11 c34–38 |
+| State | 1 → WIN |
+
+**Objective**: Ascend north through the shaft into entity2 interior for the WIN.
+
+**Why it works**:
+- UP×3 from r25–26: UP→r20–21, UP→r15–16, UP→r10–11.
+- Block at r10–11 c34–38. Entity2 ring spans r8–16 c32–40. Interior (value 5) at r9–14 c33–39.
+- Block cols 34–38 intersect entity2 interior cols 33–39 at cols 34–38 → block body inside entity2.
+- Entity1 state is 1 (from Scene 3 collection). Win condition: block inside entity2 at state ≥1 → **LEVEL COMPLETE**.
+- Total actions: 15. Human baseline: 22. RHAE = (22/15)² = capped at 1.15×.
+
+---
+
+### Reasoning Transfer — Level 2 Scene Sketch
+
+The five-scene structure (ascent, approach, collection, return, final ascent) maps onto level 2 with modified elements and one open question. This sketch uses confirmed geometry; the win condition remains partially unknown.
+
+| Scene | Actions | Objective | Status |
+|-------|---------|-----------|--------|
+| A — Exit start | RIGHT | Exit r40–41 c29–33 (void blocks UP, LEFT, must go RIGHT) | Confirmed |
+| B — Center-right ascent | UP×6 | Rise to wide connector at r10–11 c34–38 | Confirmed |
+| C — Cross-track traverse | LEFT×4 | Enter left track at r10–11 c14–18 | Confirmed |
+| D — Timer reset | DOWN | Collect 11-ring A at r16–18 c15–17 → FULL TIMER RESET; wall spawns above | Confirmed |
+| E — Descent to entity2 | DOWN×5 | Reach entity2 approach at r40–41 c14–18 | Confirmed (exits NOT_FINISHED) |
+| **F — Mystery entity probe** | TBD | **Clear mystery entity (value 9 at r40–42 c15–17) blocking entry** | **OPEN** |
+
+The key difference from L1: entity2 has NEVER been entered in L2. The mystery entity at r40–42 c15–17 occupies the interior entry columns. The standing hypothesis (session 35) is that cross collection (DOWN+RIGHT×4 from start → trail overlaps cross at r46–48 c50–52 → state 1→2) clears the mystery entity, enabling entity2 entry and WIN.
+
+The scene-record insight: Scene E confirms geometry but not win condition. Scene F is the missing scene — its objective is mystery-entity clearance, not entity2 entry per se. Once Scene F's mechanics are understood, L2 will have a complete 5-scene record analogous to L1.
+
