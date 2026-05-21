@@ -318,7 +318,7 @@ def run_training_attempt(
                 print("[agent] No actions available — episode complete.")
             break
 
-        in_offline = obs is None or obs.levels_completed < offline_levels
+        in_offline = offline_levels > 0 and (obs is None or obs.levels_completed < offline_levels)
 
         if in_offline and step < len(_LEVEL1_ROUTE):
             # Offline phase: hardcoded L1 route, no LOCUS

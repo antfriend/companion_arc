@@ -3117,3 +3117,66 @@ This is the first time a multi-frame expiry sequence has been observed. It is th
 1. **Clean route execution required**: session 27 failed to reach entity2. Session 28 must enforce verify-start (block at r35–36 c29–33 after step 1) and verify each checkpoint. Do NOT proceed to the next step if position is wrong — report and reassess.
 2. **Win condition still unknown**: @BELIEF:LAT80LON-30 contradicted (session 26). Candidates remain: deeper row in entity2 (r42–45), value-9 cluster overlap, entry direction, simultaneous entity1 ring entry. See @BELIEF:LAT50LON-30.
 3. **Value-9 cluster at r41–43 c15–17**: stable and unchanged in sessions 26 and 27. Structural feature, not dynamic target.
+
+---
+
+SECTION 1
+
+@LAT-320LON10 | created:1780099200 | updated:1780099200 | kind:standing_behavior | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780099200
+[/ew]
+
+## Standing Behavior — Confirmed Route Recording
+
+Whenever a level N route is confirmed winning in a session log, write a `[route]` block immediately after the session outcome line in that log record. Use this format exactly:
+
+```
+[route game=<game_id> level=<N> steps=<count> confirmed=true]
+<route in action notation: UP×N, DOWN×N, LEFT×N, RIGHT×N, comma-separated>
+[/route]
+```
+
+**Trigger condition**: `levels_completed` advances past N in a session scorecard, AND the step-by-step action sequence is known or reconstructable from the log.
+
+**Requirements**:
+- `steps` = total committed actions to complete the level (not including actions wasted before the winning route, unless those are intrinsic to the route).
+- Route body uses plain English direction names with repeat counts. Each distinct direction run is one comma-separated segment: `UP×3, LEFT×2, DOWN×1, UP×3`.
+- If the route was hardcoded (agent loop bypass), note `hardcoded=true` alongside `confirmed=true`.
+- If two or more sessions confirm the identical route, increment the `confirmed_count` field on the existing `[route]` block rather than writing a new one.
+- Route blocks are written inside the session log record where the win was first confirmed. Cross-reference subsequent confirmations with `also_confirmed_in>@LAT-NNNLONx`.
+
+**Scope**: applies to all games, all levels, indefinitely. A route is not confirmed until `levels_completed` evidence appears in the scorecard.
+
+---
+
+@LAT-330LON10 | created:1780099200 | updated:1780099200 | kind:route_record | relates:anchored_by>@LAT0LON0,confirmed_in>@LAT-130LON10,also_confirmed_in>@LAT-150LON10,also_confirmed_in>@LAT-160LON10,also_confirmed_in>@LAT-270LON10,also_confirmed_in>@LAT-280LON10,also_confirmed_in>@LAT-290LON10,also_confirmed_in>@LAT-300LON10,also_confirmed_in>@LAT-310LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT-10LON10
+[ew]
+conf:255
+rev:1
+sal:0
+touched:1780099200
+[/ew]
+
+## ls20 — Level 1 Confirmed Route
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=8]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+**Confirmation history**: sessions 10, 11, 12 (manual), 23, 24, 25, 26, 27 (hardcoded `_LEVEL1_ROUTE`). Eight consecutive wins on the same route. No deviation required across any confirmed session.
+
+**Starting conditions** (all confirmed sessions):
+- Block start: r40–41 c34–38 (cols stable; row may vary on fresh game instance — scan first frame)
+- Cluster: cols 20–22 (stable); rows 31–33 for environment `ls20-9607627b`
+- Entity1 state: 0 at level 1 start
+
+**Route walkthrough**:
+
+| Step | Action | From → To | Event |
+|------|--------|-----------|-------|
+| 0 | UP (hardcoded) | r45–46 or r40–41 → one row up | Probe; first frame received |
+| 1–4 | UP×4 | →

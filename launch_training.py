@@ -11,6 +11,7 @@ record to companion_arcprize.md and updates [ew] metadata on any records
 whose conf/sal/rev changed during the session.
 """
 
+import argparse
 import os
 import re
 import sys
@@ -23,7 +24,18 @@ from kaggle_agent import locus_query, run_training_attempt, setup
 load_dotenv()
 
 COMPANION_PATH = Path(__file__).parent / "companion_arcprize.md"
-GAME_ID = sys.argv[1] if len(sys.argv) > 1 else "ls20"
+
+_parser = argparse.ArgumentParser(description="LOCUS-guided ARC-AGI training run")
+_parser.add_argument("game_id", nargs="?", default="ls20")
+_parser.add_argument(
+    "--offline-levels", type=int, default=1, metavar="N",
+    help="levels to play with the hardcoded route before handing off to LOCUS "
+         "(default 1 = L1 hardcoded; use 0 for LOCUS online from step 0)",
+)
+_args = _parser.parse_args()
+
+GAME_ID = _args.game_id
+OFFLINE_LEVELS = _args.offline_levels
 
 
 # ---------------------------------------------------------------------------
@@ -162,6 +174,7 @@ def main() -> None:
         max_steps=60,
         competition_mode=False,
         verbose=True,
+        offline_levels=OFFLINE_LEVELS,
     )
 
     print(f"\n[launch] Training complete")
