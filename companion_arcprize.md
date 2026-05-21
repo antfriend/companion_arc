@@ -1254,12 +1254,12 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1779494400 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20,contains>@BELIEF:LAT40LON20,contains>@BELIEF:LAT20LON20
+@LAT60LON20 | created:1778889600 | updated:1780099200 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20,contains>@BELIEF:LAT40LON20,contains>@BELIEF:LAT20LON20,contains>@BELIEF:LAT40LON-30,contains>@BELIEF:LAT30LON-40
 [ew]
 conf:255
-rev:13
+rev:14
 sal:1
-touched:1779494400
+touched:1780099200
 [/ew]
 
 ## Locus Points
@@ -2890,6 +2890,53 @@ source_count:1
 **Session 27 investigation priority**: read frame at the exact step when the block is at r40–41 c14–18 and note (a) exact entity1 trail position, (b) value at r41–43 c15–17, (c) whether NOT_FINISHED fires immediately or takes another action.
 
 **Why LOCUS is failing across 3 sessions**: the 17-action @BELIEF:LAT80LON-30 route has not been explicitly stated as a hardcoded standing order. LOCUS is likely exploring/probing and consuming the 21-step timer without ring collection, causing entity1 state to reset mid-route. After reset, entity2 entry fires NOT_FINISHED. LOCUS then re-explores, consuming more of the 45-action budget without winning. **Recommendation**: state @BELIEF:LAT80LON-30 route as a priority standing order in @LAT-140LON10, with 11-ring A collection at step 12 explicitly required.
+
+---
+
+@BELIEF:LAT40LON-30 | created:1780099200 | updated:1780099200 | relates:projected_from>@LAT-310LON10,refines>@BELIEF:LAT60LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT40LON-30
+confidence:160
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**Projection (Dream Cycle, session 27)**: Entity1 state 1 persists through timer expiry within level 2.
+
+**Evidence**: Session 27 step 59 — after timer exhausted and 5-frame all-bg=11 animation played, the game reset to start position (r40–41 c29–33) with entity1 still at state 1 (trail pattern identical to L2 start with state 1). This means the timer-expiry reset does NOT zero entity1 state — state 1 is preserved across timer resets within a level.
+
+**Tension with @BELIEF:LAT60LON-30**: @BELIEF:LAT60LON-30 included a claim that timer expiry could reset entity1 state. This observation refines that claim: timer expiry resets the block position but preserves entity1 state. The 11-ring A mandatory collection (to avoid timer expiry) is therefore still strategically important (to preserve a full 21-step budget) but NOT because state resets on expiry.
+
+**Confidence note**: conf:160 — observation is from a single session, single event. The all-11 frame sequence is unambiguous. But it is possible that what was read as "state 1 at post-reset start" reflects a different mechanic (e.g. state always starts at 1 regardless). Requires one confirming session to raise confidence.
+
+---
+
+@BELIEF:LAT30LON-40 | created:1780099200 | updated:1780099200 | relates:projected_from>@BELIEF:LAT80LON-30,projected_from>@LAT-140LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT30LON-40
+confidence:130
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**Projection (Dream Cycle, session 27)**: Entry direction into entity2 ring may be the missing win condition. L1 used an UP-approach (block descended from north, final 3 steps UP×3); L2 standing order uses a DOWN-approach (block descends from north, step 14–17 DOWN×4 to r40–41).
+
+**Structural analogy**:
+- L1 WIN: block approaches entity1 ring from above (r13→r10), final 3 actions = UP×3. Block enters ring moving upward.
+- L2 standing order: block approaches entity2 ring from above (r35→r40), final actions = DOWN×4. Block enters ring moving downward.
+- L1 won. L2 consistently fires NOT_FINISHED.
+
+**Hypothesis**: Entity2 ring may require entry from BELOW (block at r46–48, approach UP into r40–41 from south) or from a specific lateral direction (LEFT or RIGHT entry at r40–41 rather than vertical descent). Alternatively, the block must reach the VALUE-9 cluster at r41–43 c15–17 by moving DOWN from r36–37 (already within the ring boundary at r38), not from north of the ring.
+
+**Test plan for session 28**: after reaching r40–41 c14–18 (step 17), expend remaining timer budget to try (a) DOWN past r41 deeper into entity2 interior, (b) RIGHT toward c15–17 value-9 cluster, (c) if budget allows, probe UP from r40–41 (re-enter and re-exit from top).
+
+**Confidence note**: conf:130 — structural analogy is weak evidence; could be coincidence. Route geometry differences between L1 and L2 are large (different puzzle, different entity, different layout). Flagged as speculative projection requiring direct falsification.
 
 ---
 
