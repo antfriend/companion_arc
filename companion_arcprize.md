@@ -3305,3 +3305,58 @@ source_count:4
 [/lp]
 
 **Projection: the WIN condition for level 2 requires entity1 state to reach state 2 (not state 1) at the moment of entity2 entry.** Basis: session 26 confirmed state 1 at entity2 entry fires NOT_FINISHED. @BELIEF:LAT70LON-20 states "entity2 WIN requires state 1" — but this belief was derived from session 11 (state 0 = NOT_FINISHED) and inferred by elimination, not by direct win observation. The only direct win observation for level 2 has never occurred. It is possible the correct state is 2, not 1. State 2 would require two state-changer collections: the carry-over from L1 WIN provides state 1; one additional cross collection in L2 would advance state 1 → state 2. This would also explain why prior routes failed even with state 1 at entry. **Test plan for session 28**: execute the standard 17-action route to reach r40–41 c14–18 at state 1 → verify NOT_FINISHED as before. Then, still within the same timer cycle (32 cols remaining after step 17), exit entity2 (UP from r40–41 c14–18 → r35–36 c14–18, then navigate to the cross at r46–48 c50–52 via the wide corridor → collect cross → state 1→2 → return to entity2 interior and enter). The round-trip distance from r40–41 c14–18 to cross at r46–48 c50–52 and back is large (~30 steps); timer budget after step 17 = 32 cols = 16 steps. Infeasible within a single timer cycle after A-collection at step 12.
+
+---
+
+SECTION 1
+
+@LAT-350LON10 | created:1780185600 | updated:1780185600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780185600
+[/ew]
+
+## ls20 — Session 28 Log (2026-05-26)
+
+```session-log
+timestamp: 1780185600
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "39443469-fee6-4f23-bdc9-207c228aeb5a"
+card_id: "ba636c88-3122-4122-b4da-81399eb94e18"
+level: "level 1 NOT WON"
+actions: 20
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. Only 20 actions consumed (not 60). `levels_completed=0`. Score 0.0. Environment `ls20-9607627b`, new run_guid `39443469-...`.
+
+### What Happened
+
+Session budget was 20 actions — shorter than the standard 60-action window. Possible causes: (a) the agent loop was halted early by an external interruption, (b) the run was created with a reduced budget, or (c) the hardcoded L1 route consumed 15 actions and the remaining 5 were insufficient to make progress in level 2 after the WIN. However, `levels_completed=0` and `level_actions=[20,0,0,0,0,0,0]` indicate all 20 actions were spent on level 1 without a win — the hardcoded route did not fire cleanly, or level 1 was not won before budget exhaustion.
+
+**Key session exchanges** confirm LOCUS correctly diagnosed all standing orders (FOCUS on Game State, STATUS with EPS scan and win-condition investigation priority). No frame data or step-level action log appears in the session exchanges. Execution state unclear.
+
+### Failure Analysis
+
+Two possibilities:
+
+1. **Hardcoded L1 route did not fire**: `_LEVEL1_ROUTE` was not applied at step 0. LOCUS was queried at step 0 without a frame and selected a non-UP action, wasting actions before the route could begin. Same failure mode as sessions 13–22 (pre-fix). If this is the case, the code fix from 2026-05-20 was not applied to this run configuration.
+
+2. **Budget was 20 not 60**: the run was allocated 20 actions rather than 60. The hardcoded route completes level 1 in 15 actions — if budget was 20 and the route ran correctly, level 1 should have been won (15 actions) with 5 remaining for level 2. The `levels_completed=0` result contradicts this possibility unless the route was disrupted.
+
+**Most likely**: budget was genuinely 20 (the run was granted a shorter window), and the hardcoded route was not applied in time before budget exhaustion, OR the route ran but some deviation caused a miss within 15 steps.
+
+### What This Session Confirms
+
+1. **Run budget is not stable at 60.** Session 28 shows only 20 actions available. Sessions 23–27 all showed 60. This is the first session since the 60-action budget was confirmed to show a different figure. The budget may depend on the run GUID assignment or server state at connection time.
+
+2. **Level 1 hardcoded route streak interrupted.** Sessions 10–12 and 23–27 = eight consecutive L1 wins. Session 28 = NOT WON. The streak is broken. Root cause not determinable from scorecard alone.
+
+3. **Win condition investigation not advanced.** Level 2 not reached. The state-2 hypothesis (@BELIEF:LAT10LON-40) and entry-direction probe remain untested.
+
+4. **Score remains 3.571 from prior sessions**
