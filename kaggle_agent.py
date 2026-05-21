@@ -61,7 +61,9 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 10 confirmed wins
-_LEVEL2_ROUTE = [0, 3, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1]  # UP,RIGHT,UP×5,LEFT×4,DOWN×6 — 17-action standing order
+_LEVEL2_ROUTE = [0, 3, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 0, 3, 3, 3, 3, 3, 3, 3]
+# UP,RIGHT,UP×5 → r10-11 c34-38 (wide corridor); LEFT×4 → r10-11 c14-18; DOWN → r15-16 c14-18 (11-ring A, timer reset);
+# UP → r10-11 c14-18; RIGHT×7 → r10-11 c49-53; then LOCUS explores right-side from wide corridor
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
