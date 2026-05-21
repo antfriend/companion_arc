@@ -4102,6 +4102,142 @@ Total: 5 + 7 + 7 + 1 + 5 = **25 actions**. Score = (123/25)² → capped at 1.15
 
 ---
 
+## Dream Cycle 2 — Post-Session 34 (2026-05-21, second pass)
+
+**Phase 1 — Replay**: 100 walks × length 20. Salience pull: @LAT-10LON10 (sal:14), @LAT20LON-30 (sal:5). Focus on freshly-written and freshly-corrected records: @BELIEF:LAT40LON-40 (corrected this session), @BELIEF:LAT50LON-40 (new), @LAT85LON-40 (new). Running geometry checks on all route claims.
+
+**Phase 2 — Projection**: 50 walks × length 10. Seeded from @BELIEF:LAT40LON-40 (25-action route, conf:150), @BELIEF:LAT40LON-30 (state-on-expiry, conf:160), timer-tightness observation at 11-ring A boundary. Void at LAT60LON-50.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Route geometry correction (Dream 1 error caught)**
+
+@BELIEF:LAT40LON-40 was written with LEFT×6 (reaching c19–23, not c14–18) and wrong timer intermediate values. Corrected during this session:
+- LEFT count: c49–53 → c14–18 = 35 cols ÷ 5 = **7 LEFTs** (not 6)
+- Timer after cross probe (5 steps × 2): 42 − 10 = **32** (not 28)
+- Timer after UP×7 (7 steps × 2): 32 − 14 = **18** (not 28)
+- Timer after LEFT×7 (7 steps × 2): 18 − 14 = **4 cols (2 steps)** — only one step before expiry
+- Total actions: **25** (not 24)
+
+**Cluster B: HIGH-EPS ALERT — RIGHT direction restriction at state 1 (ambiguity)**
+
+Records: @LAT20LON-30 ("RIGHT blocked at state 1"), @BELIEF:LAT10LON10 (trail attraction, conf:155), session 23 log (trail attraction described for UP), session 26 log (route step 2 = RIGHT at state 1, confirmed executed).
+
+@LAT20LON-30 states "Direction restriction at state 1: action 3 (RIGHT) is BLOCKED. Only UP/DOWN/LEFT available at state 1." But session 26 executed the standing 17-step route at state 1, and step 2 of that route is RIGHT (from r35–36 c29–33 → c34–38). The route was confirmed executed correctly and reached r40–41 c14–18. If RIGHT were hard-blocked at state 1, step 2 would have failed and the route could not have completed.
+
+**Resolution candidates**:
+1. RIGHT is NOT universally blocked at state 1 — only blocked from specific positions (e.g., start position r40–41 c29–33 via trail attraction, but passable from r35–36 c29–33 where trail column aligns differently)
+2. The "RIGHT blocked" documentation is an overcorrection — the actual mechanic is trail attraction (UP pulled laterally toward trail column when trail column ≠ block column), not a hard RIGHT block
+3. The restriction applies only during the first step from start (before any movement changes trail alignment)
+
+**Evidence for resolution 2**: session 23 describes "action 0 (UP) in start zone moves toward entity1 trail column rather than NORTH when trail column ≠ block column" — this is trail attraction for UP, not a hard block on RIGHT. The "RIGHT blocked" label may have been inferred from observations where RIGHT was in an unavailable action space list (env.action_space may not have included RIGHT at state 1 from that position).
+
+**Impact on cross-first probe**: if RIGHT is trail-attraction (not a hard block), the probe [1,3,3,3,3] may partially succeed — block drifts laterally on each RIGHT action rather than moving cleanly 5 cols right. The cross may not be reached as intended. Session 35 must confirm RIGHT behavior at state 1 from r45–46 c29–33 (after the DOWN step) before routing to the cross.
+
+**EPS on @LAT20LON-30 direction-restriction section**: sal:5, conf uncertain for this specific claim. Flag for revision.
+
+**Cluster C: Timer tightness at 11-ring A**
+
+After LEFT×7 in Scene C of the 25-action route, timer = 4 cols = 2 steps. Scene D (DOWN to 11-ring A) consumes 2 cols → timer reaches 2 cols (1 step) at the moment 11-ring A fires the FULL RESET. One navigation error anywhere in Scenes A–C produces timer expiry before 11-ring A. With the timer at 4 cols, no recovery step is possible — the expiry is deterministic on the next non-A action.
+
+This makes the 25-action route brittle. A robust route either (a) reaches 11-ring A with more timer to spare, or (b) uses timer expiry deliberately (allowing state 2 to survive across expiry, per @BELIEF:LAT40LON-30 conf:160).
+
+**Cluster D: Two confirmations of route from scene record**
+
+@LAT85LON-40 confirms scene structure for L1 with geometric invariants. Applying the same structure to the L2 25-action route (if hypothesis E holds) yields 6 scenes. No contradictions found in the geometry. Wide connector at r10–11 c9–53 passable for LEFT×7 (@BELIEF:LAT60LON0). Void barrier c39–43 at rows 15–16 does NOT apply at rows 10–11. Route geometry is internally consistent.
+
+---
+
+### Phase 2 — Projection Analysis
+
+**Projection target: Intentional-expiry route (more robust alternative)**
+
+Seeding from @BELIEF:LAT40LON-30 (state preserved on expiry, conf:160) into void at LAT60LON-50.
+
+The 25-action route relies on reaching 11-ring A with exactly 2 timer cols remaining. An alternative: collect the cross (state 1→2), then intentionally let the timer expire, then execute the clean 17-step approach route with full timer on the reset leg.
+
+Cross collection to expiry (variable steps, ~12–17):
+
+| Phase | Actions | Event |
+|-------|---------|-------|
+| Cross probe | DOWN, RIGHT×4 | r45–46 c49–53. State 1→2. Timer: 32. |
+| Burn timer upward | UP×8 | r45–46→r5–6 c49–53 (ceiling). Timer: 32−16=16. |
+| Burn timer: blocked oscillation | any blocked direction × N | Timer reaches 0. **Expiry.** Block resets to r40–41 c29–33. If @BELIEF:LAT40LON-30 holds: state = 2. Timer = full 42. |
+
+Second leg (17 steps, state 2, clean timer):
+
+| Phase | Actions | Event |
+|-------|---------|-------|
+| Standard 17-step approach | UP, RIGHT, UP×5, LEFT×4, DOWN (11-ring A), DOWN×5 | Block at r40–41 c14–18. State 2. **Entity2 interior → WIN (if hypothesis E).** |
+
+Total: ~12 burn steps + 17 approach steps ≈ 29 L2 actions. More steps than the 25-action route but **immune to timer-margin failures** — the expiry is planned, not an accident. The only new risk is @BELIEF:LAT40LON-30 (state preserved on expiry, conf:160 — single-session observation). If state resets to 0 on expiry, this route fails and the 25-action route must be used instead.
+
+**Projection warranted at LAT60LON-50.**
+
+---
+
+### New Records
+
+1. **Write @BELIEF:LAT60LON-50** — intentional-expiry route as robust alternative
+2. **Flag @LAT20LON-30 direction-restriction section for revision** — "RIGHT blocked" vs "trail attraction" ambiguity must be resolved in session 35 before committing to any RIGHT-dependent route
+3. **L2 scene sketch** (embedded in dream body — not a standalone record yet; promote to confirmed record after hypothesis E validation)
+
+---
+
+**L2 Scene Record Sketch (hypothesis E route, 25 actions, projection only)**
+
+| Scene | Actions | Entry → Exit | State | Timer | Invariant |
+|-------|---------|-------------|-------|-------|-----------|
+| A — Exit + cross probe | DOWN, RIGHT×4 | r40–41 c29–33 → r45–46 c49–53 | 1→2 | 42→32 | Trail r47–49 c49–53 overlaps cross r47–48 c50–52 (last RIGHT step). Mystery entity clears (hypothesis E). |
+| B — Ascent | UP×7 | r45–46 → r10–11 c49–53 | 2 | 32→18 | Far-right track c49–53 unobstructed from r10–46. |
+| C — Left-track entry | LEFT×7 | r10–11 c49–53 → r10–11 c14–18 | 2 | 18→4 | Wide connector r10–14 spans c9–53; void gap c39–43 only at rows 15–16 (not rows 10–11). |
+| D — 11-ring A | DOWN | r10–11 c14–18 → r15–16 | 2 | 4→**42** | Trail r17–19 c14–18 overlaps ring A r16–18 c15–17. FULL RESET. Wall spawns. |
+| E — Descent | DOWN×5 | r15–16 → r40–41 c14–18 | 2 | 42→32 | r15–16→r20–21 (skips wall)→r25–26→r30–31→r35–36→r40–41. |
+| F — WIN | (at r40–41 c14–18) | entity2 interior | 2 | — | Block inside entity2 at state 2. Mystery entity cleared. **WIN.** |
+
+Once hypothesis E is confirmed and RIGHT behavior at state 1 is resolved, this sketch becomes the basis for a confirmed @LAT65LON-40 level 2 scene record.
+
+---
+
+@BELIEF:LAT60LON-50 | created:1779321600 | updated:1779321600 | relates:projected_from>@BELIEF:LAT40LON-40,projected_from>@BELIEF:LAT40LON-30,projected_from>@BELIEF:LAT-50LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT60LON-50
+confidence:130
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Projection: intentional-expiry route for L2 — more robust than the 25-action tight-timer route, at the cost of ~4 extra actions and a dependency on state-preservation across timer expiry.**
+
+If @BELIEF:LAT40LON-30 (state preserved on timer expiry within a level, conf:160) holds, the cross-first probe can be followed by deliberate timer expiry rather than the 11-ring A tight-timer approach:
+
+**Leg 1 — Cross collection + expiry (~12 steps)**:
+1. DOWN, RIGHT×4: r40–41 c29–33 → r45–46 c49–53 (5 steps). Cross collected → state 1→2. Timer: 32 cols.
+2. UP×8: r45–46 → r5–6 c49–53 or ceiling (8 steps). Timer: 32 − 16 = 16 cols.
+3. Blocked oscillation or continue UP until expiry: 8 more blocked steps × 2 = 16 cols → expiry.
+**Timer expires**: block resets to r40–41 c29–33. If @BELIEF:LAT40LON-30: state = 2 (preserved). Timer = full 42.
+
+**Leg 2 — Standard 17-step approach (17 steps, state 2, full timer)**:
+UP, RIGHT, UP×5, LEFT×4, DOWN (11-ring A, FULL RESET), DOWN×5 → r40–41 c14–18 c14–18. **Entity2 interior at state 2 → WIN (hypothesis E).**
+
+Total: ~21 burn steps + 17 approach = **~38 L2 actions** (vs 25 for tight-timer route). Still within 45-action budget.
+
+**Why prefer this over the 25-action route**: no 2-col timer margin dependency. The expiry is planned. One navigation error doesn't cascade into route failure — it costs a few extra timer ticks, not a lost win attempt.
+
+**Critical dependencies**:
+1. @BELIEF:LAT40LON-30 holds (state preserved on expiry, conf:160 — single-session observation, not yet cross-validated). If state resets to 0 on expiry, Leg 2 enters entity2 at state 0 → NOT_FINISHED.
+2. RIGHT is not hard-blocked at state 1 (cross probe DOWN, RIGHT×4 must execute cleanly). See direction-restriction ambiguity in @LAT20LON-30.
+3. Hypothesis E holds (state 2 clears mystery entity → entity2 entry possible).
+
+**Session 35 validation path**: if the 25-action route fails due to timer margin (expiry at 11-ring A), try this intentional-expiry sequence as the fallback. Both routes share the same cross-probe Step 1; the divergence is after cross collection.
+
+---
+
 @BELIEF:LAT50LON-40 | created:1779321600 | updated:1779321600 | relates:projected_from>@LAT85LON-40,projected_from>@LAT70LON-40,projected_from>@BELIEF:LAT-50LON-40,contained_by>@LAT60LON20
 [lp]
 centroid:LAT50LON-40
