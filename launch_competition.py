@@ -18,6 +18,8 @@ import re
 import sys
 from pathlib import Path
 
+import pandas as pd
+
 from kaggle_agent import COMPANION_URL, locus_query, run_training_attempt, setup
 
 GAME_ID = sys.argv[1] if len(sys.argv) > 1 else "ls20"
@@ -96,6 +98,25 @@ Separate the two sections with exactly this line:
 
 
 # ---------------------------------------------------------------------------
+# Submission writer
+# ---------------------------------------------------------------------------
+
+def write_submission(result: dict, output_dir: Path) -> Path:
+    """Write submission.parquet required by Kaggle's submission system."""
+    final_state = result.get("final_state", "")
+    df = pd.DataFrame([{
+        "row_id": "1_0",
+        "game_id": result["game_id"],
+        "end_of_game": final_state in ("win", "game_over"),
+        "score": int(result.get("levels_completed", 0)),
+    }])
+    path = output_dir / "submission.parquet"
+    df.to_parquet(path, index=False)
+    print(f"[submission] Written to {path}")
+    return path
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -130,6 +151,8 @@ def main() -> None:
         game_id=GAME_ID,
         result=result,
     )
+
+    write_submission(result, _WORKING)
 
 
 if __name__ == "__main__":
