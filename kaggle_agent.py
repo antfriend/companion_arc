@@ -252,21 +252,25 @@ def _write_locus_log(entries: list[dict], path: str) -> None:
 
 def run_training_attempt(
     game_id: str,
-    client: anthropic.Anthropic,
-    companion_text: str,
+    client: "anthropic.Anthropic | None",
+    companion_text: "str | None",
     max_steps: int = 200,
     competition_mode: bool = False,
     verbose: bool = True,
+    offline_levels: int = 1,
+    stop_after_offline: bool = False,
 ) -> dict:
     """
-    Run one training attempt on game_id using LOCUS to pick each action.
+    Run one training attempt on game_id using LOCUS to pick actions in the
+    online phase.
 
-    LOCUS is consulted at every step and at every key event (level win,
-    game end). A session log is written to locus_<game_id>_session.txt —
-    use it to update companion_arcprize.md via Claude Code after the run.
+    offline_levels: play this many initial levels with the hardcoded route,
+        no LOCUS calls. LOCUS initialises at the first online-phase step.
+    stop_after_offline: stop the episode once the offline levels complete
+        (competition offline mode). client / companion_text may be None.
 
     Returns dict: game_id, steps, levels_completed, final_state, scorecard,
-                  locus_session_log (path), locus_entries (list).
+                  locus_session_log (path or None), locus_entries (list).
     """
     from arc_agi import OperationMode
 
@@ -290,9 +294,12 @@ def run_training_attempt(
     cur_block_pos: tuple[int, int] | None = None
     last_action_blocked = False
     last_action_idx: int | None = None
+    locus_initialized = stop_after_offline  # True = never initialize LOCUS
 
     def _locus(msg: str, label: str) -> str:
         """Send a LOCUS message, accumulate to session log, optionally print."""
+        if client is None:
+            return ""
         reply = locus_query(client, companion_text, msg)
         locus_entries.append({"label": label, "sent": msg, "received": reply})
         if verbose:
@@ -301,13 +308,7 @@ def run_training_attempt(
 
     mode_label = "COMPETITION" if competition_mode else "practice"
     if verbose:
-        print(f"[agent] '{game_id}' started ({mode_label} mode)")
-
-    # -- Session start -------------------------------------------------------
-    # FOCUS pulls the game state record into cursor and increments its sal,
-    # signalling that it's being actively consulted this session.
-    _locus("@LOCUS FOCUS lat-10lon10", "FOCUS game_state")
-    _locus("@LOCUS STATUS", "STATUS")
+        print(f"[agent] '{game_id}' started ({mode_label} mode, offline_levels={offline_levels})")
 
     # -- Main loop -----------------------------------------------------------
     while step < max_steps:
@@ -317,34 +318,25 @@ def run_training_attempt(
                 print("[agent] No actions available — episode complete.")
             break
 
-        # Level 1: fixed route. Level 2+: LOCUS at every step.
-        if obs is None or obs.levels_completed == 0:
-            if step < len(_LEVEL1_ROUTE):
-                action_idx = _LEVEL1_ROUTE[step]
-                if verbose:
-                    _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
-                    print(f"[agent] step={step} — L1 hardcode {action_idx} ({_name})")
-            else:
-                # Route exhausted without winning L1 — fall back to LOCUS
-                state_msg = _format_state(
-                    step, actions, obs, prev_frames,
-                    last_action_blocked=last_action_blocked,
-                    last_action_idx=last_action_idx,
-                )
-                reply = _locus(state_msg, f"ACTION step={step}")
-                action_idx = parse_action(reply, len(actions))
-                if action_idx is None:
-                    retry = _locus(
-                        "@LOCUS please respond with only the action number (e.g. 0).",
-                        f"ACTION RETRY step={step}",
-                    )
-                    action_idx = parse_action(retry, len(actions))
-                if action_idx is None:
-                    action_idx = 0
-                    if verbose:
-                        print("[agent] Could not parse action — defaulting to 0")
+        in_offline = obs is None or obs.levels_completed < offline_levels
+
+        if in_offline and step < len(_LEVEL1_ROUTE):
+            # Offline phase: hardcoded L1 route, no LOCUS
+            action_idx = _LEVEL1_ROUTE[step]
+            if verbose:
+                _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
+                print(f"[agent] step={step} — L1 hardcode {action_idx} ({_name})")
+        elif in_offline and stop_after_offline:
+            # L1 route exhausted without winning — stop (offline-only mode)
+            if verbose:
+                print("[agent] L1 route exhausted — stopping (offline-only mode)")
+            break
         else:
-            # Level 2+: LOCUS decides
+            # Online phase: LOCUS decides (also handles L1 fallback in training mode)
+            if not locus_initialized:
+                _locus("@LOCUS FOCUS lat-10lon10", "FOCUS game_state")
+                _locus("@LOCUS STATUS", "STATUS")
+                locus_initialized = True
             state_msg = _format_state(
                 step, actions, obs, prev_frames,
                 last_action_blocked=last_action_blocked,
@@ -390,23 +382,33 @@ def run_training_attempt(
         if obs.levels_completed > prev_levels:
             level_steps = step - level_start_step
             frame_note = _frame_summary(prev_frames)
+            completing_offline = obs.levels_completed <= offline_levels
 
-            _locus(
-                f"@LOCUS LOG level {obs.levels_completed} complete — "
-                f"{level_steps} actions{frame_note}",
-                f"LOG level {obs.levels_completed}",
-            )
-
-            # Revision cycle phases 1-3 (phase 4 validates on the next level).
-            # Skip if the game is already over — no next level to validate against.
-            if obs.state not in ("win", "game_over"):
+            if completing_offline:
+                if verbose:
+                    print(
+                        f"[agent] Level {obs.levels_completed} complete "
+                        f"(offline, {level_steps} actions)"
+                    )
+            else:
                 _locus(
-                    "@LOCUS what mechanics should I revise before the next level?",
-                    f"REVISION after level {obs.levels_completed}",
+                    f"@LOCUS LOG level {obs.levels_completed} complete — "
+                    f"{level_steps} actions{frame_note}",
+                    f"LOG level {obs.levels_completed}",
                 )
+                if obs.state not in ("win", "game_over"):
+                    _locus(
+                        "@LOCUS what mechanics should I revise before the next level?",
+                        f"REVISION after level {obs.levels_completed}",
+                    )
 
             prev_levels = obs.levels_completed
             level_start_step = step
+
+            if stop_after_offline and obs.levels_completed >= offline_levels:
+                if verbose:
+                    print(f"[agent] Offline phase done after L{offline_levels} — stopping")
+                break
 
         # -- Game end --------------------------------------------------------
         if obs.state in ("win", "game_over"):
@@ -431,9 +433,11 @@ def run_training_attempt(
     except Exception:
         pass
 
-    # -- Persist session log -------------------------------------------------
-    log_path = f"locus_{game_id}_session.txt"
-    _write_locus_log(locus_entries, log_path)
+    # -- Persist session log (only if LOCUS was used) ------------------------
+    log_path = None
+    if locus_entries:
+        log_path = f"locus_{game_id}_session.txt"
+        _write_locus_log(locus_entries, log_path)
 
     return {
         "game_id": game_id,
