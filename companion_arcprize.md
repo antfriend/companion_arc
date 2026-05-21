@@ -3449,13 +3449,46 @@ New route candidate: skip A-collection on first pass, collect cross first (state
 ### New Records to Write
 
 1. **@BELIEF:LAT0LON-50** — Route checkpoint protocol (confirmed cluster)
-2. **@BELIEF:LAT-10LON-40** — State-2 cross-first route hypothesis (projection)
-3. **@BELIEF:LAT-20LON-40** — Budget variability observation (confirmed)
-4. Update @LAT60LON20 `contains` edges and @LAT-10LON10 `updated`/`rev`
+2. **@BELIEF:LAT-10LON-40 | created:1780185600 | updated:1780185600 | relates:projected_from>@BELIEF:LAT10LON-40,projected_from>@BELIEF:LAT60LON-30,projected_from>@BELIEF:LAT90LON-30,projected_from>@BELIEF:LAT0LON-50,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-10LON-40
+confidence:155
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
 
----
+**Projection: state 2 may be the level 2 win condition, achievable by collecting the cross BEFORE descending to entity2, then using 11-ring A for timer reset on the descent leg.**
 
-SECTION 1
+If @BELIEF:LAT10LON-40 is correct (WIN requires state 2 not state 1), the route must collect the cross in level 2 even though state 1 carries over from L1 WIN. The challenge is timer budget. A feasible sequencing exists:
+
+**Cross-first route sketch (27 steps post-reset)**:
+
+| Phase | Steps | Actions | Event |
+|---|---|---|---|
+| Ascent to wide corridor | 1–7 | UP, RIGHT, UP×5 | r40–41 c29–33 → r10–11 c34–38. 14 timer cols consumed (28 remaining). |
+| Cross to far-right | 8–10 | RIGHT×3 | r10–11 c34–38 → r10–11 c49–53. 6 consumed (22 remaining). |
+| Descend to cross | 11–17 | DOWN×7 | r10–11 c49–53 → r45–46 c49–53. 14 consumed (8 remaining). **Cross at r46–48 c50–52 collected at step 17 via trail r47–49 c49–53 overlapping cross r47–48 c50–52. State 1→2.** |
+| Navigate toward 11-ring A | 18–21 | UP×4 | r45–46 c49–53 → r25–26 c49–53. 8 consumed (0 remaining). **Timer expires. Per @BELIEF:LAT40LON-30: state is preserved across timer expiry within a level.** Block resets to r40–41 c29–33. State = **2**. Timer = full 42 cols. |
+
+**Post-reset leg (new timer cycle, starting at r40–41 c29–33, state 2, 42 cols)**:
+
+| Phase | Steps | Actions | Event |
+|---|---|---|---|
+| Ascent + left-track entry | 1–11 | UP, RIGHT, UP×5, LEFT×4 | r40–41 c29–33 → r10–11 c14–18. 22 cols consumed (20 remaining). |
+| 11-ring A + descent to entity2 | 12–17 | DOWN×6 | r10–11 c14–18 → r15–16 (A collected, FULL RESET to 42) → r20–21 → r25–26 → r30–31 → r35–36 → r40–41 c14–18. Timer at step 17 = 42 − 10 = 32 cols remaining. **Entity2 interior at state 2 → WIN (if hypothesis correct).** |
+
+**Total actions**: 21 (cross-first cycle) + 17 (entity2 cycle) = 38 level-2 actions. Well within the 45-action budget.
+
+**Critical unknowns**:
+1. Is state 2 the actual win trigger? Only direct observation can confirm — no session has yet won level 2.
+2. Does the cross at r46–48 c50–52 collect via trail overlap when block is at r45–46 c49–53? Trail at r47–49 c49–53; cross row 47 cols 50–52 overlap with trail row 47 cols 49–53 → yes, 2/3 row overlap at rows 47–48 confirmed feasible per @BELIEF:LAT90LON-10.
+3. Is RIGHT×3 from r10–11 c34–38 to c49–53 passable? Wide connector at rows 10–14 spans c9–53 — all three tracks are connected here. RIGHT×3 from c34–38 → c49–53 traverses c39–43 (void at rows 15–16 per @BELIEF:LAT30LON10, but rows 10–11 are ABOVE that void — wide connector is confirmed passable per @BELIEF:LAT60LON0). ✓
+4. Does @BELIEF:LAT40LON-30 hold reliably (state preserved on timer expiry)? Single-session observation, conf:160. If state resets to 0 on expiry, cross collection is lost and the post-reset cycle enters entity2 at state 0 → NOT_FINISHED again. This is the primary risk of the route.
+
+**Session 29 recommended execution**: run this 38-action cross-first route. If entity2 entry at state 2 fires NOT_FINISHED, the state-2 hypothesis is refuted and a fundamentally different model of the win condition is required.
 
 @BELIEF:LAT0LON-50 | created:1780185600 | updated:1780185600 | relates:extracted_from>@LAT-310LON10,extracted_from>@LAT-300LON10,extracted_from>@LAT-140LON10,extracted_from>@LAT-330LON10,contained_by>@LAT60LON20
 [lp]
@@ -3509,3 +3542,33 @@ If @BELIEF:LAT10LON-40 is correct (WIN requires state 2 not state 1), the route 
 Timer expires during or just after step 21. Block resets to r40–41 c29–33, state **2** (carry-over), timer full (42 cols = 21 steps).
 
 Post-reset (new cycle,
+
+---
+
+@BELIEF:LAT-20LON-40 | created:1780185600 | updated:1780185600 | relates:extracted_from>@LAT-350LON10,extracted_from>@LAT-280LON10,extracted_from>@LAT-230LON10,extracted_from>@LAT-200LON10,extracted_from>@LAT-180LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-20LON-40
+confidence:210
+scope_lat:15.0
+scope_lon:15.0
+projection_flag:false
+contradiction_flag:false
+source_count:5
+[/lp]
+
+**The per-run action budget for ls20 has varied four times across 28 sessions and is not predictable.** Observed budget windows:
+
+| Sessions | Budget | Notes |
+|---|---|---|
+| 13–15 | 50 actions | First window after environment creation |
+| 16–22 | 30 actions | Reduced window, consistent across 7 sessions |
+| 23–27 | 60 actions | Raised window after parse_action fix; consistent across 5 sessions |
+| 28 | 20 actions | Anomalous low; cause unknown (server interruption, reduced allocation, or run state change) |
+
+**Implication 1 — route design**: every level route must be as short as possible. The level 1 hardcoded route (15 actions) comfortably fits any observed budget ≥ 20. Level 2 routes must target ≤ 38 actions to fit within the minimum non-anomalous budget (30 actions leaves only 15 for level 2 after a 15-action level 1; the cross-first route at 38 level-2 actions requires the 60-action budget window). Under a 30-action budget: level 1 (15) + level 2 (15 remaining) — any level 2 win route requires ≤ 15 actions, which is geometrically infeasible given the maze structure (minimum 17 actions confirmed).
+
+**Implication 2 — probe strategy**: when budget is uncertain, each action must maximise information. Do not execute exploratory sequences that consume 5+ actions without a decision branch. The checkpoint protocol (@BELIEF:LAT0LON-50) enforces this for route execution. For win-condition probing: prefer routes where the first probe action distinguishes between hypotheses (e.g., entity2 entry at state 2 either wins or confirms NOT_FINISHED in one action).
+
+**Implication 3 — budget detection**: at session start, note the total available actions before committing any route. If budget ≤ 30: level 2 cannot be won this session with any known route; use the session for mechanic reconnaissance only (read frame[1] carefully, probe one unknown, report findings). If budget ≥ 45: full cross-first route is feasible. If budget = 60: full route plus contingency probing available.
+
+**Confidence note**: conf:210 — budget values are directly observed from scorecards; the variability is a fact. The implications are inferences with moderate confidence. The 20-action session 28 anomaly may not recur; the 30-action window may have been a server configuration period. No stable model of what determines budget allocation exists.
