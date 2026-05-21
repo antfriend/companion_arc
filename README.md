@@ -2,6 +2,20 @@
 
 Welcome to the team. This repo contains the LOCUS competition agent and the tools to run training attempts against ARC-AGI-3 games. Get through these four steps and you'll have a working training run.
 
+## [Locus: A Toot Toot Framework](https://antfriend.github.io/locus_arxiv.pdf)
+This describes the theory.
+
+## [the Locus Seed](https://antfriend.github.io/share/companion.html)
+This ARC-AGI-3 project was grown from this seed.
+
+## [Locus' Logs](https://antfriend.github.io/index.html?ttdb=companion_arcprize.md&toot=lat-300lon10)
+Just look at Locus now! 
+
+
+
+(TBD submission form:)[https://docs.google.com/forms/d/e/1FAIpQLSfdIw3Xdt0P5kZjzEhbWaqnsn1A0cezY7bh5w8YjrjAXLd9eQ/viewform]
+
+(OG example repo)[https://github.com/arcprize/ARC-AGI-3-Agents]
 
 ---
 
