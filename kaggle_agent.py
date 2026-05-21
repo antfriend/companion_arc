@@ -58,10 +58,11 @@ def load_companion(source: str = COMPANION_URL, timeout: int = 30) -> str:
 
 BLOCK_VAL = 12
 
-# Level 1 winning route — UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3 = 15 steps.
-# 10 consecutive LOCUS reasoning failures; hardcode bypasses all LOCUS errors.
+# Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
-_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]
+_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 10 confirmed wins
+_LEVEL2_ROUTE = [0, 3, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1]  # UP,RIGHT,UP×5,LEFT×4,DOWN×6 — 17-action standing order
+_HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
 def _infer_bg(grid) -> int:
@@ -319,18 +320,21 @@ def run_training_attempt(
                 print("[agent] No actions available — episode complete.")
             break
 
+        current_level = (obs.levels_completed if obs is not None else 0) + 1
+        level_step = step - level_start_step
+        route = _HARDCODED_ROUTES.get(current_level)
         in_offline = offline_levels > 0 and (obs is None or obs.levels_completed < offline_levels)
 
-        if in_offline and step < len(_LEVEL1_ROUTE):
-            # Offline phase: hardcoded L1 route, no LOCUS
-            action_idx = _LEVEL1_ROUTE[step]
+        if in_offline and route is not None and level_step < len(route):
+            # Offline phase: hardcoded route for this level, no LOCUS
+            action_idx = route[level_step]
             if verbose:
                 _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
-                print(f"[agent] step={step} — L1 hardcode {action_idx} ({_name})")
+                print(f"[agent] step={step} — L{current_level} hardcode {action_idx} ({_name})")
         elif in_offline and stop_after_offline:
-            # L1 route exhausted without winning — stop (offline-only mode)
+            # Route exhausted within offline level — stop (offline-only mode)
             if verbose:
-                print("[agent] L1 route exhausted — stopping (offline-only mode)")
+                print(f"[agent] L{current_level} route exhausted — stopping (offline-only mode)")
             break
         else:
             # Online phase: LOCUS decides (also handles L1 fallback in training mode)

@@ -30,9 +30,9 @@ COMPANION_PATH = Path(__file__).parent / "companion_arcprize.md"
 _parser = argparse.ArgumentParser(description="LOCUS-guided ARC-AGI training run")
 _parser.add_argument("game_id", nargs="?", default="ls20")
 _parser.add_argument(
-    "--offline-levels", type=int, default=1, metavar="N",
-    help="levels to play with the hardcoded route before handing off to LOCUS "
-         "(default 1 = L1 hardcoded; use 0 for LOCUS online from step 0)",
+    "--offline-levels", type=int, default=2, metavar="N",
+    help="levels whose known route is hardcoded before handing off to LOCUS "
+         "(default 2 = L1+L2 route hardcoded; 1 = L1 only; 0 = LOCUS from step 0)",
 )
 _args = _parser.parse_args()
 
