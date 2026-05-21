@@ -4080,21 +4080,23 @@ contradiction_flag:false
 source_count:4
 [/lp]
 
-**Projection: if hypothesis E is confirmed (cross collection state 1→2 clears mystery entity), the optimal L2 route is approximately 24 actions — well below the 123-action baseline, capped at 1.15×.**
+**Projection: if hypothesis E is confirmed (cross collection state 1→2 clears mystery entity), the optimal L2 route is 25 actions — well below the 123-action baseline, capped at 1.15×.**
 
-Route sketch (from L2 start, state 1):
+Route sketch (from L2 start r40–41 c29–33, state 1, timer 42):
 
-| Phase | Actions | End | Notes |
-|-------|---------|-----|-------|
-| Cross probe | DOWN, RIGHT×4 | r45–46 c49–53 | Trail at r47–49 c49–53 overlaps cross r47–48 c50–52 → state 1→2. Mystery entity cleared (hypothesis E). 5 steps. |
-| Ascent | UP×7 | r10–11 c49–53 | 7 steps. Timer: 28 cols remaining (14 steps). |
-| Left-track entry | LEFT×6 | r10–11 c14–18 | 6 steps. Timer: 16 cols (8 steps). |
-| 11-ring A | DOWN | r15–16 c14–18 | FULL TIMER RESET to 42 (21 steps). Wall spawns. 1 step. |
-| Descent to entity2 | DOWN×5 | r40–41 c14–18 | 5 steps. Timer: 32 cols (16 steps) remaining. **Entity2 interior at state 2 → WIN (if hypothesis E).** |
+| Scene | Actions | End position | Timer after | Notes |
+|-------|---------|--------------|-------------|-------|
+| A — Cross probe | DOWN, RIGHT×4 | r45–46 c49–53 | 32 cols (16 steps) | Trail r47–49 c49–53 overlaps cross r47–48 c50–52 → state 1→2. Mystery entity cleared (hypothesis E). 5 steps × 2 = 10 consumed. |
+| B — Ascent | UP×7 | r10–11 c49–53 | 18 cols (9 steps) | Rise through far-right track to wide connector. 7 × 2 = 14 consumed. |
+| C — Left-track entry | LEFT×7 | r10–11 c14–18 | 4 cols (2 steps) | Traverse wide connector: c49-53→c44-48→c39-43→c34-38→c29-33→c24-28→c19-23→c14-18 = 7 moves × 5 cols = 35 cols. 7 × 2 = 14 consumed. |
+| D — 11-ring A | DOWN | r15–16 c14–18 | **FULL RESET → 42** | Trail r17–19 c14–18 overlaps 11-ring A r16–18 c15–17 → FULL TIMER RESET. Wall spawns at r16–18. 1 step. |
+| E — Descent to entity2 | DOWN×5 | r40–41 c14–18 | 32 cols (16 steps) | r15-16→r20-21 (skips wall)→r25-26→r30-31→r35-36→r40-41. 5 × 2 = 10 consumed. **Entity2 interior at state 2 → WIN (if hypothesis E).** |
 
-Total: 5 + 7 + 6 + 1 + 5 = **24 actions**. Score = (123/24)² → capped at 1.15×. Full game score contribution: L2 weight 2 × 1.15 = 2.3 of 28 possible → adds 2.3/28 ≈ 8.2% to game score.
+Total: 5 + 7 + 7 + 1 + 5 = **25 actions**. Score = (123/25)² → capped at 1.15×.
 
-**Critical unknowns**: (1) Does cross collection at r45–46 c49–53 fire? (@BELIEF:LAT90LON-10 suggests trail at r47–49 overlaps cross at r47–48 — feasible). (2) Does state 1→2 clear mystery entity? (hypothesis E, session 34 partial test, Phase 4 pending). (3) From r10–11 c49–53, is LEFT×6 passable to c14–18? Wide connector at r10–14 spans c9–53 — yes, confirmed @BELIEF:LAT60LON0.
+**Timer tightness warning**: at Scene C exit (r10–11 c14–18), only 4 cols = 2 steps remain before expiry. Scene D (11-ring A DOWN) is the only available step — and it must fire before the timer expires on the following step. One navigation error in Scenes A–C causes timer expiry before 11-ring A is reached, resetting the block. State 2 may or may not be preserved on expiry (see @BELIEF:LAT40LON-30, conf:160). See @BELIEF:LAT60LON-50 for a more robust alternative.
+
+**Critical unknowns**: (1) Does cross collection fire at r45–46 c49–53? Trail at r47–49 overlaps cross at r47–48 c50–52 — feasible. (2) Does state 1→2 clear mystery entity? (hypothesis E, Phase 4 pending). (3) RIGHT is blocked at state 1 in ls20 — but the route executes RIGHT×4 BEFORE state changes. After DOWN (step 1), state is still 1. After RIGHT×4 (steps 2–5), state is still 1. State only advances to 2 when the trail overlaps the cross — at step 5, during the final RIGHT. Is RIGHT blocked at state 1? From @LAT20LON-30: "Direction restriction at state 1: action 3 (RIGHT) is BLOCKED." If this holds in L2, the cross-first route [1,3,3,3,3] FAILS at step 2 (first RIGHT while at state 1). **This is a critical dependency that must be checked. If RIGHT is blocked at state 1, a different approach path to the cross is required.**
 
 **Phase 4 action**: session 35 cross-first probe. Read post-collection frame. If mystery entity at r40–42 c15–17 = 0 (cleared), attempt entity2 entry. Raise conf to 240 on confirmation.
 
