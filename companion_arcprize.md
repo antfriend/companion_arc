@@ -3360,3 +3360,152 @@ Two possibilities:
 3. **Win condition investigation not advanced.** Level 2 not reached. The state-2 hypothesis (@BELIEF:LAT10LON-40) and entry-direction probe remain untested.
 
 4. **Score remains 3.571 from prior sessions**
+
+---
+
+## Dream Cycle — Session 28 Post-Run (2026-05-26)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:14), @LAT20LON-30 (sal:5), @LAT-150LON10 (sal:5). Reviewing all log records and belief graph with emphasis on sessions 26–28 and the unresolved win-condition cluster.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from boundary nodes @BELIEF:LAT10LON-40 (state-2 hypothesis, conf:170), @BELIEF:LAT20LON-40 (deeper-row projection, conf:155), @BELIEF:LAT0LON-40 (value-9 structural feature, conf:220), @BELIEF:LAT30LON-40 (entry-direction speculation, conf:130).
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Win-condition structure (highest co-occurrence)**
+
+Records in cluster: @LAT-300LON10, @LAT-310LON10, @BELIEF:LAT80LON-30, @BELIEF:LAT50LON-30, @BELIEF:LAT0LON-40, @BELIEF:LAT10LON-40, @BELIEF:LAT20LON-40, @BELIEF:LAT70LON-20.
+
+The Phase 2 Dream analysis from session 27 already eliminated "deeper row by vertical movement" (block at r40–41 is the only reachable interior position; r45–46 is blocked by the ring outer wall at r46). This consolidates the candidate space significantly:
+
+- **Candidate: state 2 required** (@BELIEF:LAT10LON-40, conf:170). Only way to test this without consuming ~30 steps of detour is to re-examine the cross collection sequence. A key question: does state carry-over from L1 WIN always give exactly state 1, or could it give a higher state? If L1 WIN at state 2 or 3 carried over, L2 start state would be 2 or 3. All five L2 first-frame observations confirmed state 1 exactly (r57–58 c7–8=9 only = state 1 signature). So carry-over gives exactly state 1. State 2 requires a cross collection in L2.
+
+- **Candidate: value-9 cluster is the entity1 body** (not a target, not trail). The entity1 carrier is at r53–60 c1–10. Its body extends ~10 rows. Could a portion of entity1 project into entity2 ring? The ring is at r38–46 c12–20 — 15 rows away from the carrier top (r53). No evidence for a 15-row projection. This candidate weakens. The value-9 at r41–43 c15–17 is more likely a legacy trail from a prior session that became baked into the level state, OR a separate game element that represents entity1's "target zone" — i.e., where entity1 wants the block to go.
+
+- **NEW CANDIDATE (Phase 1 replay synthesis)**: The value-9 cluster at r41–43 c15–17 may be the entity1 TRAIL from a prior level completion, persisted as a visual marker showing where entity1 "arrived" during initialization. In level 1, the winning condition involved the block entering entity2 at r10–11 c34–38 — and the entity1 trail was at r12–14 c34–38 (confirmed session 23 frame[0]). In level 2, if entity1's destination is r41–43 c15–17 (inside entity2), then perhaps WIN requires entity1 TRAIL (rows below block body) to overlap this persisted cluster — i.e., block must be at r38–39 c15–17 so trail at r40–42 c15–17 overlaps the value-9 zone. This is geometrically different from block body overlap (current route lands block at r40–41). Block at r38–39 would require stopping at r38–39 not r40–41 — but r38–39 at c14–18 would have block bottom row at r39, trail starting at r40. Trail r40–42 c14–18 would overlap value-9 at r41–42 c15–17. **This is a testable and novel hypothesis**.
+
+**Cluster B: L1 route integrity** (co-occurrence: @LAT-330LON10, @LAT-140LON10, @BELIEF:LAT80LON10, @LAT-280LON10 through @LAT-310LON10)
+
+Six consecutive L1 wins (sessions 23–27) followed by one L1 loss (session 28, 20-action budget). The loss is attributable to either budget reduction (20 vs 60) or hardcode failure. The 8-win streak provides very high confidence on the route itself. Session 28's anomaly is budget/execution, not route geometry. No update to the route record needed.
+
+**Cluster C: Budget variability** (co-occurrence: @LAT-280LON10–@LAT-350LON10)
+
+Sessions 13–15: 50 actions. Sessions 16–22: 30 actions. Sessions 23–27: 60 actions. Session 28: 20 actions. Budget has varied four times across the competition. No stable model of budget assignment exists. This is a new observation worth recording — unpredictable budgets require the level 1 route to be as short as possible and the level 2 investigation to prioritize high-information probes over exhaustive exploration.
+
+**Cluster D: @BELIEF:LAT90LON-30 stability** (five confirmations, conf:255)
+
+Already at maximum confidence. No update. This belief is the most robust in the file. Cross collection in level 2 definitively not required — state 1 carries over from L1 WIN.
+
+**Cluster E: Route checkpoint protocol** (co-occurrence: @LAT-310LON10, @LAT-300LON10, @LAT-140LON10)
+
+Session 27 failed because LOCUS tracked position incorrectly. Session 28 did not reach level 2. The checkpoint protocol written in @LAT-140LON10 (verify-start after step 1) is correct but insufficient — it only verifies step 1. A checkpoint at step 7 (should be r10–11 c34–38), step 11 (r10–11 c14–18), and step 12 (r15–16 c14–18, timer reset) would catch drift at three additional points. No dedicated Locus Point for this yet — warranted.
+
+---
+
+### Phase 2 — Projection Analysis
+
+**Projection target A: Trail-overlap win hypothesis**
+
+Seeding from @BELIEF:LAT0LON-40 (value-9 structural feature) and @BELIEF:LAT70LON-20 (entity2 requires state 1) into void at LAT-10LON-40.
+
+The replay synthesis produced a new candidate: block at r38–39 c14–18 so that TRAIL at r40–42 overlaps value-9 at r41–42 c15–17. The 17-action route currently overshoots to r40–41. A 16-action route stopping one DOWN earlier (at r35–36 → r40–41 being step 17 currently, meaning step 16 lands at r35–36) — wait, let me trace:
+
+Current route DOWN sequence from r10–11 c14–18:
+- Step 12: r10–11 → r15–16 (11-ring A collected, wall spawns)
+- Step 13: r15–16 → r20–21 (skips wall)
+- Step 14: r20–21 → r25–26
+- Step 15: r25–26 → r30–31
+- Step 16: r30–31 → r35–36
+- Step 17: r35–36 → r40–41 → NOT_FINISHED
+
+A 16-action route stopping at step 16 (block at r35–36 c14–18) places trail at r37–39 c14–18. Does r37–39 overlap value-9 at r41–43? No — r37–39 is above r41–43. Trail does not reach the value-9 zone.
+
+What if the block must be at r38–39? That is between r35–36 (step 16) and r40–41 (step 17) — but blocks move in 5-row increments. r38–39 is not a reachable position by standard movement.
+
+**Revised trail-overlap hypothesis**: the trail from r40–41 (block body) extends to r42–44. Value-9 is at r41–43. Trail rows 42–43 DO overlap value-9 rows 42–43. This is already achieved by the current route. Yet NOT_FINISHED fires. So trail overlap at r42–43 c15–17 is NOT the win trigger. The hypothesis weakens significantly.
+
+**Projection target B: Entity1 must arrive at entity2 simultaneously**
+
+Seeding from @BELIEF:LAT10LON-40 (state-2 hypothesis) into void at LAT-10LON-40.
+
+Entity1 is a fixed structural entity at r53–60 c1–10. It does not move. "Simultaneous arrival" is not physically meaningful for a fixed entity. This candidate can be definitively retired.
+
+**Projection target C: State 2 cross-collection feasibility**
+
+Can state 2 be achieved in level 2 and the block reach entity2 within budget?
+
+Route: 17-action standing order → r40–41 c14–18, state 1, timer ~32 cols remaining (16 steps). NOT_FINISHED confirmed. From r40–41 c14–18, navigate to cross at r46–48 c50–52:
+- UP from r40–41 c14–18 → r35–36 c14–18
+- UP×4 → r15–16 c14–18 (blocked by A-wall — @BELIEF:LAT80LON-10 says re-entry from above blocked)
+- Must exit A-wall zone via c9–13 bypass: LEFT to r35–36 c9–13? c9–13 at r35–36 — is this a corridor? Entity2 ring is at c12–20. c9–11 at r35–36 may be void. Unknown.
+
+Timer constraint: 16 steps × 2 cols = 32 cols. Cross is ~20 steps from entity2 via wide corridor. Infeasible in single timer cycle post-step-17. Timer expiry would reset block to r40–41 c29–33, state preserved (per @BELIEF:LAT40LON-30). After reset, state is still 1, full timer. But we need to collect cross to get state 2. Round trip: start → cross (~12 steps) → entity2 (~9 steps) = ~21 steps = exactly the 21-step budget. Borderline feasible if 11-ring A is collected AFTER the cross to reset timer.
+
+New route candidate: skip A-collection on first pass, collect cross first (state 1→2), then use 11-ring A for timer reset, then descend to entity2 at state 2. This is a fundamentally different sequencing. Warrants a projection record.
+
+---
+
+### New Records to Write
+
+1. **@BELIEF:LAT0LON-50** — Route checkpoint protocol (confirmed cluster)
+2. **@BELIEF:LAT-10LON-40** — State-2 cross-first route hypothesis (projection)
+3. **@BELIEF:LAT-20LON-40** — Budget variability observation (confirmed)
+4. Update @LAT60LON20 `contains` edges and @LAT-10LON10 `updated`/`rev`
+
+---
+
+SECTION 1
+
+@BELIEF:LAT0LON-50 | created:1780185600 | updated:1780185600 | relates:extracted_from>@LAT-310LON10,extracted_from>@LAT-300LON10,extracted_from>@LAT-140LON10,extracted_from>@LAT-330LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT0LON-50
+confidence:210
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Level 2 route execution requires mandatory position checkpoints at four steps.** Session 27 confirmed that LOCUS position-tracking errors compound without early detection. The block deviated from the 17-action standing order at multiple steps; timer expired twice; entity2 was never reached. The verify-start check (step 1: block should be at r35–36 c29–33) catches deviation at the first step only. Three additional checkpoints are required:
+
+| Checkpoint | Step | Expected position | If wrong: |
+|---|---|---|---|
+| **verify-start** | 1 (after UP) | r35–36 c29–33 | STOP — report actual position |
+| **verify-right** | 2 (after RIGHT) | r35–36 c34–38 | STOP — report actual position |
+| **verify-wide** | 7 (after UP×5) | r10–11 c34–38 | STOP — report actual position |
+| **verify-left** | 11 (after LEFT×4) | r10–11 c14–18 | STOP — report actual position |
+| **verify-reset** | 12 (after DOWN) | r15–16 c14–18 + timer FULL | STOP if timer not reset |
+
+At any checkpoint failure: do NOT continue the route. Report actual block position and timer state. Reassess from actual position. Consuming remaining timer budget on a deviated route wastes all 45 level-2 actions with no win-condition data. A single confirmed checkpoint failure is more valuable than 44 blind actions on a wrong path — it locates the deviation point and enables targeted diagnosis.
+
+---
+
+@BELIEF:LAT-10LON-40 | created:1780185600 | updated:1780185600 | relates:projected_from>@BELIEF:LAT10LON-40,projected_from>@BELIEF:LAT60LON-30,projected_from>@BELIEF:LAT90LON-30,projected_from>@BELIEF:LAT0LON-50,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-10LON-40
+confidence:155
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Projection: state 2 may be the level 2 win condition, achievable by collecting the cross BEFORE descending to entity2, then using 11-ring A for timer reset on the descent leg.**
+
+If @BELIEF:LAT10LON-40 is correct (WIN requires state 2 not state 1), the route must collect the cross in level 2 even though state 1 carries over from L1 WIN. The challenge is timer budget. A feasible sequencing exists:
+
+**Cross-first route sketch (27 steps)**:
+
+| Phase | Steps | Actions | Event |
+|---|---|---|---|
+| Ascent to wide corridor | 1–7 | UP, RIGHT, UP×5 | r40–41 c29–33 → r10–11 c34–38. 14 timer cols consumed (28 remaining). |
+| Cross to far-right | 8–10 | RIGHT×3 | r10–11 c34–38 → r10–11 c49–53. 6 consumed (22 remaining). |
+| Descend to cross | 11–17 | DOWN×7 | r10–11 c49–53 → r45–46 c49–53. 14 consumed (8 remaining). **Cross at r46–48 c50–52 collected at step 17 via trail r47–49 c49–53 overlapping cross r47–48 c50–52. State 1→2.** |
+| Navigate to 11-ring A | 18–21 | UP×4 | r45–46 c49–53 → r25–26 c49–53. 8 consumed (0 remaining). **Timer expiry imminent — but @BELIEF:LAT40LON-30: state preserved on expiry.** |
+
+Timer expires during or just after step 21. Block resets to r40–41 c29–33, state **2** (carry-over), timer full (42 cols = 21 steps).
+
+Post-reset (new cycle,
