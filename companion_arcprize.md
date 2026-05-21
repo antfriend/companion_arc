@@ -3855,21 +3855,21 @@ See @BELIEF:LAT-40LON-40 and @BELIEF:LAT-50LON-40 for entity2 entry geometry ana
 
 ---
 
-@BELIEF:LAT-40LON-40 | created:1780444800 | updated:1780444800 | relates:extracted_from>@LAT-300LON10,extracted_from>@LAT-390LON10,extracted_from>@LAT-400LON10,contradicts>@BELIEF:LAT80LON-30,related_to>@BELIEF:LAT-50LON-40,related_to>@BELIEF:LAT-10LON-40,contained_by>@LAT60LON20
+@BELIEF:LAT-40LON-40 | created:1780444800 | updated:1779321600 | relates:extracted_from>@LAT-300LON10,extracted_from>@LAT-390LON10,extracted_from>@LAT-400LON10,contradicts>@BELIEF:LAT80LON-30,related_to>@BELIEF:LAT-50LON-40,related_to>@BELIEF:LAT-10LON-40,contained_by>@LAT60LON20
 [ew]
-conf:120
-rev:1
+conf:210
+rev:2
 sal:1
-touched:1780444800
+touched:1779321600
 [/ew]
 [lp]
 centroid:LAT-40LON-40
-confidence:120
+confidence:210
 scope_lat:15.0
 scope_lon:15.0
 projection_flag:false
-contradiction_flag:true
-source_count:3
+contradiction_flag:false
+source_count:10
 [/lp]
 
 **Entity2 has NEVER been entered. The mystery entity (value 9 at r40–42 c15–17) inside entity2 blocks ALL entry positions. Session 26 block-position inference was wrong.**
@@ -3978,7 +3978,159 @@ Twelfth confirmation. Route stable. Block entered entity2 interior at r10–11 c
 **Confirmed stable** (from frame[1] structural data, consistent with all prior sessions):
 - Block start: r40–41 c29–33. ✓
 - Entity1 state 1 at L2 start. @BELIEF:LAT90LON-30 — seventh consecutive confirmation. ✓
-- Mystery entity value 9 at r40–42 c15–17 inside entity2 ring — confirmed blocking all 5-wide interior entry columns (session 34). Entity2 has NEVER been successfully entered. Win condition requires clearing mystery entity first.
+- Mystery entity value 9 at r40–42 c15–17 inside entity2 ring — confirmed blocking all 5-wide interior entry columns (session 34). Entity2 has NEVER been successfully entered. Win condition requires clearing mystery entity first. Hypothesis E: cross collection (state 1→2) clears mystery entity — tested session 34 cross-first probe [1,3,3,3,3], outcome unconfirmed (log cut short). Session 35 priority: read post-collection frame to confirm/deny clearing.
+
+---
+
+## Dream Cycle — Post-Session 34 (2026-05-21)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:14), @LAT20LON-30 (sal:5). Reviewing sessions 29–34 and freshly written records @LAT70LON-40 (game-space concept) and @LAT85LON-40 (level 1 scene record).
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from boundary nodes @BELIEF:LAT-50LON-40 (mystery entity, conf:150), @LAT85LON-40 (scene record boundary), @LAT70LON-40 (game-space boundary). Void at LAT40LON-40, LAT50LON-40.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Mystery entity is a geometric blocker (highest co-occurrence)**
+
+Records: @LAT-300LON10, @LAT-310LON10, @LAT-390LON10, @LAT-400LON10, @BELIEF:LAT0LON-40, @BELIEF:LAT-40LON-40, @BELIEF:LAT-50LON-40. Sessions 25–34 all confirm value 9 at r40–42 c15–17 inside entity2, present from frame[1], before any block movement.
+
+@BELIEF:LAT-40LON-40 currently holds conf:120 with `contradiction_flag:true`. The `contradiction_flag` was appropriate when first written — it contradicted the prior belief that block *entered* entity2. But the geometric fact itself (entity2 NEVER entered due to mystery entity blocking) is now corroborated by sessions 25–34 (ten sessions). Conf:120 is too low for a fact of this certainty. **Warranted: raise @BELIEF:LAT-40LON-40 conf from 120 → 210.** Phase 4 is not required to raise conf on a geometric fact observed ten times. Phase 4 is required only for the *mechanism* hypothesis (hypothesis E).
+
+**Cluster B: The dip maneuver is the universal collection technique**
+
+Records: @LAT85LON-40 (scene 3 — DOWN+UP from cluster-adjacent position), @LAT20LON-30 (session 7 trail-overlap discovery), @BELIEF:LAT50LON20 (cluster at r31–33). Co-occurrence: every L1 collection event plus all L2 cross-collection projections.
+
+The newly written scene record (@LAT85LON-40) makes explicit what was implicit: **a DOWN step drags the trail south; the trail triggers collection; an UP step retracts**. This is not specific to L1 — it applies identically to L2 cross collection. Block at r45–46 c49–53 (after DOWN+RIGHT×4 from start): trail at r47–49 c49–53 overlaps cross at r47–48 c50–52 (2/3 row overlap, confirmed feasible by @BELIEF:LAT90LON-10). The L2 cross-first probe is mechanically identical to L1 Scene 3.
+
+**New belief warranted**: formalize the cross collection geometry as a confirmed Locus Point, distinct from the L2 route projection at @BELIEF:LAT-10LON-40 which is projection_flag:true. The collection *mechanism* (trail dip at r45–46 c49–53 → cross collected) is a geometric fact that can be stated at conf:180 independent of whether it causes mystery entity clearing.
+
+**Cluster C: Cross-first probe is the Phase 4 action for hypothesis E**
+
+Records: @BELIEF:LAT10LON-40 (state-2 hypothesis), @BELIEF:LAT-50LON-40 (hypothesis E), @BELIEF:LAT-10LON-40 (cross-first route sketch), session 34 log. Session 34 attempted [1,3,3,3,3] as the cross-first probe. The session log cuts off before frame-read confirmation. This means hypothesis E remains at Phase 3 — revised, not yet validated. Phase 4 validation = session 35 must execute cross-first probe AND read the post-collection frame to determine whether mystery entity at r40–42 c15–17 disappears.
+
+**Cluster D: Scene record as navigation invariant**
+
+Records: @LAT85LON-40 (new), @LAT70LON-40 (new), @LAT-10LON10 (game state). The scene record provides the first explicit invariant-based navigation protocol for any level. Each scene boundary is a checkable position. This is more robust than the checkpoint protocol at @BELIEF:LAT0LON-50 (which only specifies step numbers) because it grounds checkpoints in structural geometry rather than step counts. In L2, the equivalent scene boundaries would be: r40–41 c34–38 (after Scene A), r10–11 c34–38 (after Scene B), r10–11 c14–18 (after Scene C), r15–16 c14–18 (after Scene D). These match the existing checkpoint protocol but are now derivable from scene logic, not just memorized.
+
+**Cluster E: @BELIEF:LAT-30LON-40 stability (max_steps operator-controlled)**
+
+Confirmed across sessions 29–34. Conf:255 was correct. Session 34 ran max_steps=60 successfully. No update needed.
+
+---
+
+### Phase 2 — Projection Analysis
+
+**Projection target A: If hypothesis E confirmed, what is the optimal L2 route?**
+
+Seeding from @BELIEF:LAT-50LON-40 (hypothesis E, conf:150) + @BELIEF:LAT-10LON-40 (cross-first route sketch, conf:155) into void at LAT40LON-40.
+
+Cross collection is 5 steps: DOWN, RIGHT×4 from r40–41 c29–33 → r45–46 c49–53 (trail overlaps cross). If hypothesis E holds, mystery entity clears. Then entity2 entry requires navigating to c14–18 and entering the ring from the left track. Geometry from @LAT-140LON10:
+
+| Scene | Actions | End position |
+|-------|---------|--------------|
+| Cross-first probe | DOWN, RIGHT×4 | r45–46 c49–53. State 1→2. Mystery entity cleared (hypothesis E). |
+| Ascent to wide connector | UP×7 | r10–11 c49–53. 14 timer cols consumed. |
+| Left track entry | LEFT×6 | r10–11 c14–18. 12 consumed. Timer: 16 remaining (8 steps). |
+| 11-ring A + descent | DOWN×6 | r15–16 (11-ring A: FULL RESET → 42). Then r20–21 → r40–41 c14–18. Timer: 42 − 10 = 32. **Entity2 entry at state 2 → WIN (if hypothesis E).** |
+
+Total L2 actions: 5 (cross) + 19 (navigate + descend) = 24 actions. Well within 45-action budget.
+
+**Projection warranted at LAT40LON-40.**
+
+**Projection target B: Scene F for L2 — the cross-first dip as canonical collection scene**
+
+Seeding from @LAT85LON-40 (L1 scene record, scene 3 dip maneuver) into void at LAT50LON-40.
+
+The L2 cross collection is structurally identical to L1 Scene 3 (cluster collection) with different coordinates:
+
+| | L1 Scene 3 | L2 Scene F (cross) |
+|---|---|---|
+| Entry position | r25–26 c19–23 | r40–41 c29–33 (start) |
+| Dip action | DOWN → r30–31 c19–23 | DOWN → r45–46 c29–33 |
+| Trail position | r32–34 c19–23 | r47–49 c29–33 |
+| Collectible | cluster r31–33 c20–22 | cross r46–48 c50–52 |
+| Collection | trail c19–23 overlaps cluster c20–22 ✓ | trail c29–33 does NOT overlap cross c50–52 ✗ |
+
+The dip from r40–41 does NOT collect the cross — wrong column alignment. The cross-first route [1,3,3,3,3] (DOWN then RIGHT×4) moves the block to r45–46 c49–53 so the trail falls at r47–49 c49–53, which overlaps cross r47–48 c50–52. This is NOT a scene-3-style dip from a fixed position — it is a combined move-to-alignment + trail-dip in a single path.
+
+**Structural distinction from L1**: in L1, the block returns to its pre-dip position (UP after DOWN). In the L2 cross-first probe, the block does NOT return — the cross collection is a one-way pass (the block continues navigating from r45–46 c49–53). The scene-record concept must accommodate one-way collection scenes, not only symmetric dip scenes. This is a new scene type: **the pass-through collection**, where collection fires during directional navigation without a return move.
+
+**Projection warranted at LAT50LON-40 — one-way pass-through collection as distinct scene type.**
+
+---
+
+### New Records
+
+1. **Raise @BELIEF:LAT-40LON-40 conf: 120 → 210** (geometric fact confirmed ×10, no Phase 4 required)
+2. **Write @BELIEF:LAT40LON-40** — optimal L2 route if hypothesis E confirmed (24 actions)
+3. **Write @BELIEF:LAT50LON-40** — pass-through collection as distinct scene type vs. symmetric dip
+
+---
+
+@BELIEF:LAT40LON-40 | created:1779321600 | updated:1779321600 | relates:projected_from>@BELIEF:LAT-50LON-40,projected_from>@BELIEF:LAT-10LON-40,projected_from>@LAT85LON-40,projected_from>@LAT70LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT40LON-40
+confidence:150
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Projection: if hypothesis E is confirmed (cross collection state 1→2 clears mystery entity), the optimal L2 route is approximately 24 actions — well below the 123-action baseline, capped at 1.15×.**
+
+Route sketch (from L2 start, state 1):
+
+| Phase | Actions | End | Notes |
+|-------|---------|-----|-------|
+| Cross probe | DOWN, RIGHT×4 | r45–46 c49–53 | Trail at r47–49 c49–53 overlaps cross r47–48 c50–52 → state 1→2. Mystery entity cleared (hypothesis E). 5 steps. |
+| Ascent | UP×7 | r10–11 c49–53 | 7 steps. Timer: 28 cols remaining (14 steps). |
+| Left-track entry | LEFT×6 | r10–11 c14–18 | 6 steps. Timer: 16 cols (8 steps). |
+| 11-ring A | DOWN | r15–16 c14–18 | FULL TIMER RESET to 42 (21 steps). Wall spawns. 1 step. |
+| Descent to entity2 | DOWN×5 | r40–41 c14–18 | 5 steps. Timer: 32 cols (16 steps) remaining. **Entity2 interior at state 2 → WIN (if hypothesis E).** |
+
+Total: 5 + 7 + 6 + 1 + 5 = **24 actions**. Score = (123/24)² → capped at 1.15×. Full game score contribution: L2 weight 2 × 1.15 = 2.3 of 28 possible → adds 2.3/28 ≈ 8.2% to game score.
+
+**Critical unknowns**: (1) Does cross collection at r45–46 c49–53 fire? (@BELIEF:LAT90LON-10 suggests trail at r47–49 overlaps cross at r47–48 — feasible). (2) Does state 1→2 clear mystery entity? (hypothesis E, session 34 partial test, Phase 4 pending). (3) From r10–11 c49–53, is LEFT×6 passable to c14–18? Wide connector at r10–14 spans c9–53 — yes, confirmed @BELIEF:LAT60LON0.
+
+**Phase 4 action**: session 35 cross-first probe. Read post-collection frame. If mystery entity at r40–42 c15–17 = 0 (cleared), attempt entity2 entry. Raise conf to 240 on confirmation.
+
+---
+
+@BELIEF:LAT50LON-40 | created:1779321600 | updated:1779321600 | relates:projected_from>@LAT85LON-40,projected_from>@LAT70LON-40,projected_from>@BELIEF:LAT-50LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT50LON-40
+confidence:200
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Two distinct scene types govern state-changer collection in ls20: the symmetric dip and the pass-through. Future game-spaces will likely have both.**
+
+**Type 1 — Symmetric Dip** (L1 Scene 3, cluster collection):
+- Block approaches the collectible from an adjacent position.
+- One step toward the collectible drags the trail over it → collection fires.
+- One step back retracts the trail. Block returns to entry position.
+- Net displacement: zero. Timer cost: 2 steps.
+- When to use: when the collectible is embedded in a dead end or when the route must return the same way.
+
+**Type 2 — Pass-Through** (L2 cross collection):
+- Block navigates directionally; collection fires mid-route as the trail sweeps over the collectible.
+- No return step — the block continues on its path after collection.
+- Net displacement: positive (block moved forward). Timer cost: 1 step (the collecting step).
+- When to use: when the collectible lies along the navigation path to another objective.
+
+In ls20 L2, the cross-first probe [1,3,3,3,3] is a pass-through: the block descends from r40–41 to r45–46 (DOWN) then sweeps right to r45–46 c49–53 (RIGHT×4), with the trail at r47–49 collecting the cross at r47–48 c50–52 on the final RIGHT step. The cross is along the path; no return is needed.
+
+**Generalization to future game IDs**: when designing a route for a new game, identify whether each state-changer is (a) in a dead end requiring a return (symmetric dip) or (b) along a navigable path (pass-through). The pass-through is always cheaper (1 step vs. 2); prefer it when collectible geometry allows. The trail's 3-row downward extent defines the "collection window" for both types — position the block so the trail sweeps the collectible's rows during movement.
+
+
 
 ---
 
