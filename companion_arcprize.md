@@ -3623,3 +3623,56 @@ source_count:1
 **Implication for level 2 routes**: route feasibility is determined by maze geometry and timer constraints only (42 cols at 2 cols/step = 21 steps per timer cycle; 11-ring A provides FULL RESET). `max_steps` simply determines how many actions the session will run before the operator reviews results. For level 2 investigation, the operator should set max_steps >= 60 (15 for level 1 + up to 45 for level 2).
 
 **Implication for sessions 28-29**: NOT WON at max_steps=20 confirms the hardcode execution gap is still active, not a budget problem. Same root cause as sessions 13-22: `_LEVEL1_ROUTE` is not being applied at step 0.
+
+---
+
+SECTION 1
+
+@LAT-370LON10 | created:1780272000 | updated:1780272000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT-30LON-40,validates>@BELIEF:LAT80LON20
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780272000
+[/ew]
+
+## ls20 — Session 30 Log (2026-05-27)
+
+```session-log
+timestamp: 1780272000
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "0ac1a310-7529-42fc-a141-6e317a2aef1a"
+card_id: "38742023-3aef-43c1-bbc1-36345e254ccd"
+level: "level 1 NOT WON"
+actions: 20
+levels_completed: 0
+score: 0.0
+resets: 0
+```
+
+**Session outcome**: Level 1 NOT WON. 20 actions consumed. `levels_completed=0`. Score 0.0. Environment `ls20-9607627b`, run_guid `0ac1a310-...`. Third consecutive 20-action session (sessions 28, 29, 30 all max_steps=20). Level 1 not won despite hardcoded `_LEVEL1_ROUTE` requiring only 15 steps.
+
+---
+
+### Failure Analysis
+
+**Pattern**: Sessions 28, 29, and 30 all show identical scorecards: 20 actions on level 1, 0 levels completed, score 0.0. Sessions 23–27 (max_steps=60) produced six consecutive level 1 wins at step 15. The transition from wins to losses coincides exactly with `max_steps` dropping from 60 to 20.
+
+**Two non-exclusive root causes remain live**:
+
+1. **Hardcode execution gap** — `_LEVEL1_ROUTE` is not firing. LOCUS is queried at step 0 without frame context, selects LEFT (or some non-UP action), wasting actions. Same failure mode as sessions 13–22. If this is the cause, level 1 should fail regardless of max_steps=20 vs 60, but with max_steps=20 there is less slack to recover.
+
+2. **Agent version mismatch** — the `kaggle_agent.py` with the hardcode may not be the version being executed in the current environment. The six wins in sessions 23–27 may have used a different launch configuration that has since been reverted or overwritten.
+
+**@BELIEF:LAT-30LON-40 (conf:255)** confirms: max_steps=20 is not a server constraint. With `_LEVEL1_ROUTE` firing correctly at step 0 (UP hardcoded), level 1 completes at step 15 — five steps remain. NOT_FINISHED at 20 actions means the hardcode is not executing.
+
+**Key session exchanges**: FOCUS on @LAT-10LON10 and STATUS both confirm LOCUS correctly diagnosed the situation — execution gap active, max_steps=20, hardcode not running. No frame data appears in either exchange. The agent loop is not passing frame context to LOCUS at step 1+, and the hardcode bypass at step 0 is not active.
+
+---
+
+### Revision Cycle Status
+
+- **Phase 1 (Notice)**: @LAT-10LON10 EPS now ~2.94 (sal:15, conf:200). Three consecutive sessions at max_steps=20 with identical failures. Execution gap is the single highest-priority item.
+- **Phase 2 (Encounter)**: The gap is not new — it was fully characterized in sessions 13–22 and resolved for sessions 23–27. Something in the deployment environment reverted between session 27 and session 28. The code fix exists and was confirmed working (six wins). It is not running now.
+- **Phase 3 (Revise)**: Required action before session 31 — verify which version of `kaggle_agent.py` is being executed. Confirm `_LEVEL1_ROUTE` hard
