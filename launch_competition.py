@@ -85,6 +85,11 @@ def _load_route(game_id: str) -> list[int]:
     return _FALLBACK_ROUTE
 
 
+def is_done(frames: list, latest_frame) -> bool:
+    """Stop after level 1 is cleared. Update threshold to 2 once L2 is conquered."""
+    return latest_frame.levels_completed >= 1 or latest_frame.state in ("win", "game_over")
+
+
 def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
     arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
     env = arc.make(game_id)
@@ -99,7 +104,7 @@ def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
         if verbose:
             _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
             print(f"  step={step} {action_idx}({_name}) → state={obs.state} levels={obs.levels_completed}")
-        if obs.state in ("win", "game_over") or obs.levels_completed >= 1:
+        if is_done([], obs):
             break
     scorecard = None
     try:

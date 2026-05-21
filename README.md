@@ -2,6 +2,7 @@
 
 Welcome to the team. This repo contains the LOCUS competition agent and the tools to run training attempts against ARC-AGI-3 games. Get through these four steps and you'll have a working training run.
 
+
 ---
 
 ## What you need
