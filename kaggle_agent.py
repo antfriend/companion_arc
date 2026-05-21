@@ -125,6 +125,7 @@ def locus_query(
     client: anthropic.Anthropic,
     companion_text: str,
     message: str,
+    max_tokens: int = 1024,
 ) -> str:
     """
     Send one message to LOCUS. Stateless per call — context lives in the
@@ -135,7 +136,7 @@ def locus_query(
     """
     response = client.messages.create(
         model=_MODEL,
-        max_tokens=1024,
+        max_tokens=max_tokens,
         system=[
             {
                 "type": "text",

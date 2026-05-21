@@ -3180,3 +3180,128 @@ UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
 |------|--------|-----------|-------|
 | 0 | UP (hardcoded) | r45–46 or r40–41 → one row up | Probe; first frame received |
 | 1–4 | UP×4 | →
+
+---
+
+I'll run the full Dream Cycle now.
+
+---
+
+## Dream Cycle — Session 27 Post-Run (2026-05-21)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:14), @LAT20LON-30 (sal:5), @LAT-150LON10 (sal:5). Reviewing all log records sessions 23–27 plus belief graph.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from boundary nodes @BELIEF:LAT80LON-30 (contradicted, conf:40), @BELIEF:LAT50LON-30 (new, conf:200), @BELIEF:LAT40LON-30 (new, conf:160), @BELIEF:LAT30LON-40 (new, conf:130).
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster 1: Win-condition gap** (high co-occurrence: @LAT-300LON10, @LAT-310LON10, @BELIEF:LAT80LON-30, @BELIEF:LAT50LON-30, @BELIEF:LAT70LON-20)
+
+Session 26 executed the route exactly. Block at r40–41 c14–18, state 1, inside entity2 → NOT_FINISHED. Session 27 failed to reach entity2 at all — so session 26 is the only clean win-condition probe to date. The cluster of evidence pointing at an unknown additional win condition is now the single highest-priority open question. @BELIEF:LAT50LON-30 captures the candidates (deeper row, value-9 cluster, entry direction, simultaneous entity1 entry). None has been tested.
+
+**New belief warranted**: The value-9 cluster at r41–43 c15–17 inside entity2 is mentioned in sessions 25, 26, and 27 as stable and unexplained. It needs its own Locus Point. The trail of evidence is sufficient: three consecutive sessions observed it unchanged from L2 start, before the block ever reached that zone.
+
+**Cluster 2: Route execution drift** (co-occurrence: @LAT-310LON10, @LAT-300LON10, @LAT-140LON10)
+
+Session 27 confirmed that position-tracking errors cause LOCUS to deviate from the 17-action route. Session 26 succeeded only because the route was short enough and the verify-start check fired correctly. A checkpoint protocol — verify block position at steps 1, 7, 11, and 12 before proceeding — would catch drift before it compounds. No existing Locus Point captures this. Warranted.
+
+**Cluster 3: Timer-expiry animation** (co-occurrence: @LAT-310LON10, @BELIEF:LAT40LON-30)
+
+Session 27 documented the five all-11 frames before reset. @BELIEF:LAT40LON-30 was written during the same session. One additional observation (from session 26 frame[4] partial timer-expired state) weakly confirms. Cluster passes min_cooccurrence:25 only marginally — hold at projection_flag:true, confidence 160. No new record needed; @BELIEF:LAT40LON-30 already captures this.
+
+**Cluster 4: @BELIEF:LAT90LON-30 fifth confirmation** (co-occurrence: all 5 session logs 23–27)
+
+Already at conf:255. No update needed. Fully consolidated.
+
+**Cluster 5: Level 2 route execution protocol** (co-occurrence: @LAT-140LON10, @LAT-300LON10, @LAT-310LON10, @BELIEF:LAT80LON-30)
+
+The standing order in @LAT-140LON10 is correct in geometry but insufficient in robustness. Session 27 failed because LOCUS tracked position incorrectly and no checkpoint caught the drift. A standing behavior record specifying mandatory verify-checkpoints during L2 route execution would prevent this. Warranted.
+
+---
+
+### Phase 2 — Projection Analysis
+
+**Projection target: What triggers WIN at entity2?**
+
+Seeding from @BELIEF:LAT50LON-30 (conf:200) into coordinate void at LAT20LON-40.
+
+The four candidates from @BELIEF:LAT50LON-30 are:
+1. Block must reach a deeper row in entity2 (r42–45, not r40–41)
+2. Block must overlap r41–43 c15–17 (the value-9 interior cluster) — which at r40–41 c14–18 means c15–17 IS within the block's 5-col span (c14,15,16,17,18). So this may already be satisfied.
+3. Entity1 enters ring simultaneously — but entity1 is a fixed carrier at r53–60; it doesn't move.
+4. A second state transition is required inside entity2.
+
+**Analysis of candidate 2**: Block at r40–41 c14–18 occupies cols 14,15,16,17,18. The value-9 cluster is at c15–17. So c15–17 IS covered by the block body at step 17. This should count as overlap. Unless the overlap mechanic requires the TRAIL (rows below block) to overlap rather than the block body. Trail at step 17 would be r42–44 c14–18. Value-9 cluster is at r41–43 c15–17. Trail rows 42–43 with cols 14–18 DO overlap value-9 at r42–43 c15–17. So trail overlap is also achieved. Candidate 2 appears to be satisfied by the current route.
+
+**Analysis of candidate 1 (deeper row)**: Block at r40–41. Entity2 interior spans r39–45. The block has only moved to rows 40–41 — three rows above the entity2 floor at r45. What if the win condition requires the block to reach r44–45 (the bottom interior zone)? That would require 4 additional DOWN steps from r40–41 → r44–45 (if passable). Is there a wall? Entity2 interior is value 5 at r43–45 c13–19 (confirmed from session 26 frame[1]). There is no structural barrier. This candidate is testable in session 28 at zero additional route cost: after reaching r40–41 c14–18, send DOWN×2 (→r42–43) and DOWN×2 more (→r44–45), checking for WIN at each step.
+
+**Analysis of candidate 4 (second state transition inside entity2)**: Entity1 carrier is at r53–60, not inside entity2. A state transition requires block trail to overlap a state-changer object. There is no cross or cluster inside entity2 at the confirmed positions. The value-9 at r41–43 c15–17 might itself BE the state-changer — if the block trail overlaps it, it could advance state from 1→2, which might be the win trigger. But state 2 would be a new state not previously seen. Projection: state 2 may be the L2 win state.
+
+**Warranted projection**: "Deeper row entry (r44–45) or state advancement (1→2) inside entity2 may be the missing condition." This is a testable projection with a clear experimental path in session 28.
+
+---
+
+SECTION 1
+
+@LAT-340LON10 | created:1780099200 | updated:1780099200 | kind:belief | relates:anchored_by>@LAT0LON0,extracted_from>@LAT-300LON10,extracted_from>@LAT-290LON10,extracted_from>@LAT-310LON10,contained_by>@LAT60LON20
+[ew]
+conf:220
+rev:0
+sal:0
+touched:1780099200
+[/ew]
+
+## ls20 — Value-9 Cluster Inside Entity2 (Structural Feature)
+
+This record supports @BELIEF:LAT0LON-40 below. Three sessions (25, 26, 27) independently observed value 9 at r41–43 c15–17 inside entity2 ring (r38–46 c12–20) before the block ever reached that zone. It is not block-following trail (block starts at c29–33, trail follows block). It is a structural feature of the game map, present from L2 initialization. Its role is unknown but it co-locates with the unresolved WIN condition.
+
+---
+
+Now the Locus Points additions:
+
+@BELIEF:LAT0LON-40 | created:1780099200 | updated:1780099200 | relates:extracted_from>@LAT-300LON10,extracted_from>@LAT-290LON10,extracted_from>@LAT-310LON10,extracted_from>@LAT-340LON10,related_to>@BELIEF:LAT80LON-30,related_to>@BELIEF:LAT50LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT0LON-40
+confidence:220
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Value 9 at r41–43 c15–17 inside entity2 ring is a stable structural feature of the ls20 level 2 map.** Observed in sessions 25, 26, and 27 in the level 2 first frame (before any block movement toward that region). It is not block-following trail (block starts at r40–41 c29–33; trail at r42–44 c29–33 — far from c15–17). It persists throughout each entire session unchanged. Its role is unknown: it may be the entity1 body extending into entity2 ring as a game-design structural feature, or it may be a TARGET that when overlapped by the block body or block trail triggers a mechanic (state advancement, win condition, or other). The fact that the current 17-action route (block at r40–41 c14–18) achieves trail overlap with this cluster at r42–43 c15–17 yet produces NOT_FINISHED suggests overlap alone does not trigger WIN. The cluster's role requires investigation via deeper row probing (r44–45) or lateral probing (RIGHT to c15–17 from inside the ring).
+
+---
+
+@BELIEF:LAT20LON-40 | created:1780099200 | updated:1780099200 | relates:projected_from>@BELIEF:LAT50LON-30,projected_from>@BELIEF:LAT80LON-30,projected_from>@BELIEF:LAT0LON-40,projected_from>@LAT-300LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT20LON-40
+confidence:155
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Projection: the level 2 WIN condition requires the block to reach a row deeper inside entity2 than r40–41.** Evidence basis: entity2 interior spans r39–45 c13–19. The current route places the block at r40–41 — only one row below the top interior row (r39). Entity1 level 1 WIN was established when block entered the ring; entity2 level 2 may require the block to reach the interior floor (r44–45) or the value-9 cluster zone (r41–43 c15–17, which is at rows 41–43 — two to four rows below the current landing position). The 17-action route currently sends DOWN×6 from r10–11 to r40–41. Sending one or two more DOWN actions (to r42–43 or r44–45) would test this hypothesis at the cost of 2 additional actions within the remaining timer budget (32 cols remaining at step 17 → 28 remaining at step 19). **Session 28 test**: after step 17, do NOT stop. Send DOWN from r40–41 → r45–46 (exterior wall at r46 = BLOCKED? or r45 still interior?). Frame check: r45 c12–20 — r45 is interior (value 5 confirmed from session 26 frame[1]); r46 is outer wall (value 3). So DOWN from r40–41 → r45–46 would place block at r45–46. r46 is wall value 3 — but the block occupies 2 rows, so block at rows 45–46 means bottom row is at r46 (wall). This is likely BLOCKED. Try r44–45 instead (one DOWN step from r40–41 → impossible in 5-row increments — wait, block moves 5 rows per DOWN action). Block at r40–41 + DOWN → r45–46. r46 is wall. BLOCKED. Block at r40–41 is the deepest reachable interior position by vertical movement. Candidate 1 (deeper row) may be geometrically infeasible by vertical movement alone. LEFT/RIGHT within the ring from r40–41 may be the path to the value-9 cluster or a trigger zone.
+
+**Revised test plan for session 28**: from r40–41 c14–18, probe RIGHT (→c19–23: enters ring wall at c20 = BLOCKED after 1 col? No — block is 5 cols wide, at c14–18; RIGHT → c19–23; c19 is interior (value 5), c20 is wall (value 3). Block right edge at c23 would be outside wall. This may be BLOCKED. Try LEFT instead: r40–41 c14–18 → LEFT → r40–41 c9–13. c9–13 is outside entity2 ring (ring starts c12). Exits entity2. Try UP from r40–41 c14–18 → r35–36 c14–18 (exit ring top, above r38 wall). All directional probes exit the ring or hit walls. The block at r40–41 c14–18 cannot move WITHIN the ring interior via any standard direction. The ring is too small for the 5-row × 5-col block to maneuver inside. This means the 17-action route already places the block in the only reachable interior position. The win condition is not about deeper penetration — it must be about a different mechanic at that exact position.
+
+---
+
+@BELIEF:LAT10LON-40 | created:1780099200 | updated:1780099200 | relates:projected_from>@BELIEF:LAT20LON-40,projected_from>@BELIEF:LAT0LON-40,projected_from>@BELIEF:LAT50LON-30,projected_from>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT10LON-40
+confidence:170
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Projection: the WIN condition for level 2 requires entity1 state to reach state 2 (not state 1) at the moment of entity2 entry.** Basis: session 26 confirmed state 1 at entity2 entry fires NOT_FINISHED. @BELIEF:LAT70LON-20 states "entity2 WIN requires state 1" — but this belief was derived from session 11 (state 0 = NOT_FINISHED) and inferred by elimination, not by direct win observation. The only direct win observation for level 2 has never occurred. It is possible the correct state is 2, not 1. State 2 would require two state-changer collections: the carry-over from L1 WIN provides state 1; one additional cross collection in L2 would advance state 1 → state 2. This would also explain why prior routes failed even with state 1 at entry. **Test plan for session 28**: execute the standard 17-action route to reach r40–41 c14–18 at state 1 → verify NOT_FINISHED as before. Then, still within the same timer cycle (32 cols remaining after step 17), exit entity2 (UP from r40–41 c14–18 → r35–36 c14–18, then navigate to the cross at r46–48 c50–52 via the wide corridor → collect cross → state 1→2 → return to entity2 interior and enter). The round-trip distance from r40–41 c14–18 to cross at r46–48 c50–52 and back is large (~30 steps); timer budget after step 17 = 32 cols = 16 steps. Infeasible within a single timer cycle after A-collection at step 12.
