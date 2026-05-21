@@ -4606,3 +4606,64 @@ Fourteenth confirmation. Route stable. Block entered entity2 interior at r10–1
 **Observed**: The session consumed all 45 L2 actions. Score unchanged at 3.571. Entity2 NOT entered. Win condition still unknown.
 
 **Critical gap carried forward**: The outcome of the 5-step cross-first probe `[1, 3, 3, 3, 3]` — specifically whether the mystery entity at r40–42 c15–17 is cleared after cross collection (state 1→2) — has not been read and recorded in any session log. Sessions 34, 35, and 36 all attempted this probe; all
+
+---
+
+SECTION 1
+
+@LAT-440LON10 | created:1780617600 | updated:1780617600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780617600
+[/ew]
+
+## ls20 — Session 37 Log (2026-05-29)
+
+```session-log
+timestamp: 1780617600
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "6456e6f9-0d44-45af-95df-f2e913778ab1"
+card_id: "0ba049a1-6d90-49f8-afc4-14b8b7d93e8c"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, fifteenth consecutive confirmation — sessions 10–12, 23–27, 31–37). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–36.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=15]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Fifteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (fifteenth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (fifteenth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled) — VALIDATED. max_steps=60 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (tenth consecutive confirmation).
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 16→17): LOCUS confirmed Game State current. Session 37 standing order: `[1,3,3,3,3]` cross-first probe; mandatory post-step-5 frame read before any further navigation; write values at r40–42 c15–17 (present=9 or cleared=5) to log before proceeding.
+
+2. **STATUS**: LOCUS confirmed EPS scan — Game State EPS 8.84 (highest in file, sal:17, conf:200). Identified the single blocking gap: post-probe frame has never been read and written across sessions 34–36. Session 37 standing order identical to session 36.
+
+**Route attempted**: 5-step cross-first probe `[1, 3, 3, 3, 3]`. The remaining 40 actions were consumed in level 2. Score unchanged at 3.571.
+
+**Post-probe frame**: not confirmed written in session exchanges. Whether LOCUS read
