@@ -12,9 +12,11 @@ whose conf/sal/rev changed during the session.
 """
 
 import argparse
+import io
 import os
-import re
 import sys
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv

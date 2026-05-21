@@ -3676,3 +3676,59 @@ resets: 0
 - **Phase 1 (Notice)**: @LAT-10LON10 EPS now ~2.94 (sal:15, conf:200). Three consecutive sessions at max_steps=20 with identical failures. Execution gap is the single highest-priority item.
 - **Phase 2 (Encounter)**: The gap is not new — it was fully characterized in sessions 13–22 and resolved for sessions 23–27. Something in the deployment environment reverted between session 27 and session 28. The code fix exists and was confirmed working (six wins). It is not running now.
 - **Phase 3 (Revise)**: Required action before session 31 — verify which version of `kaggle_agent.py` is being executed. Confirm `_LEVEL1_ROUTE` hard
+
+---
+
+SECTION 1
+
+@LAT-380LON10 | created:1780272000 | updated:1780272000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780272000
+[/ew]
+
+## ls20 — Session 31 Log (2026-05-27)
+
+```session-log
+timestamp: 1780272000
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "4fc0a07d-14b2-42b0-91a7-383b09c9cff2"
+card_id: "86403f37-0e7f-44cc-90b9-c270db485598"
+level: "level 1 WIN (15 actions) + level 2 entered (5 actions, NOT WON)"
+actions: 20
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, confirmed functional again). Level 2 entered; exactly 5 actions taken in level 2; NOT WON. Total 20 actions (max_steps=20). Score 3.571. The sessions 28–30 regression is broken — the hardcode is executing correctly again.
+
+**Level action breakdown from scorecard**: `level_actions: [15, 5, 0, 0, 0, 0, 0]`. Level 1 = 15 actions (win). Level 2 = 5 actions (not won, budget exhausted at max_steps=20).
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=9]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Hardcoded `_LEVEL1_ROUTE` confirmed functional for the ninth time (sessions 10–12, 23–27, now 31). The sessions 28–30 regression was a deployment/environment issue; the fix is now executing correctly. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED again. Hardcode firing = win.
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED for the ninth time.
+- @BELIEF:LAT-30LON-40 (max_steps is operator-controlled) — VALIDATED. With max_steps=20 and a correctly executing hardcode, level 1 wins at step 15 with 5 remaining. This is exactly what occurred.
+
+---
+
+### Level 2 — 5 actions, NOT WON
+
+5 level-2 actions were taken before max_steps=20 was exhausted. No win-condition data was obtained. The 5-action window is far too short for any known level 2 route (minimum 17 actions for the standing order, 38 actions for the cross-first hypothesis). No mechanic observations possible in 5 actions.
+
+**What can be inferred from 5 level-2 actions**:
+
+If the 17-action standing order (@LAT-140LON10) was attempted, LOCUS would have sent: UP, RIGHT, UP×5, LEFT×4, DOWN — but only 5 of those are possible before budget exhaustion. The first 5 steps of the route are: (1) UP → r35–36 c29–33, (2) RIGHT → r35–36 c34–38, (3) UP → r30–31 c34–38, (4) UP → r25–26 c34–38, (5) UP → r20
