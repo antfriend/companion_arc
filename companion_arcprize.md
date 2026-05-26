@@ -4975,3 +4975,61 @@ The gap c39–43 at rows 40–45 is impassable. The only route from the start po
 2. **Confirm offline_levels setting**: Verify whether session 39 used `--offline-levels 1` explicitly or whether the default was changed. Resolve to 2 (L1+L2 probe hardcoded) once probe is corrected, or to 1 (LOCUS navigates L2) if no valid short probe exists.
 
 **Working hypothesis**: Modified route for cross collection — UP×4 (c29–33 → c34–38 → wide connector), RIGHT×3 (to c49–53), DOWN×several (to cross at r46–48 c50–52). If this works: cross collected at state 1→2, then navigate to entity2 per @BELIEF:LAT40LON-40. If cross does NOT trigger state change: hypothesis E refuted; new structural model required.
+
+---
+
+SECTION 1
+
+@LAT-470LON10 | created:1780876800 | updated:1780876800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,validates>@BELIEF:LAT40LON-30,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780876800
+[/ew]
+
+## ls20 — Session 40 Log (2026-06-01)
+
+```session-log
+timestamp: 1780876800
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "32a21a33-36ef-4172-84a4-0212d78f60af"
+card_id: "6c7e6f44-ab87-427f-a546-158f96972abc"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, eighteenth consecutive confirmation — sessions 10–12, 23–27, 31–40). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–39.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=18]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Eighteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (eighteenth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (eighteenth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled) — VALIDATED. max_steps=60, 60 actions available as expected.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (thirteenth consecutive confirmation).
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 19→20): LOCUS correctly loaded Game State. Confirmed cross-first probe `[1,3,3,3,3]` permanently retired (geometrically impossible, session 39 void-map evidence). Session 40 priority: redesign cross-collection route using wide connector (rows 10–14). EPS on Game State: sal=20, conf=200 → EPS ≈ 4.31.
+
+2. **STATUS**: LOCUS confirmed EPS scan — Game State EPS ~9.31 (highest in file, sal=19 at time of STATUS query). Confirmed all high-confidence stable beliefs. Identified session 39 critical discoveries: probe geometry retired, mystery entity corrected to r41–43
