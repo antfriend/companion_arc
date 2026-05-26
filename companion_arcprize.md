@@ -301,19 +301,19 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1780099200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1780704000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:200
-rev:18
-sal:14
-touched:1780099200
+rev:19
+sal:18
+touched:1780704000
 [/ew]
 
 ## Game State
 
-**Active games**: ls20 (COMPETITION mode, API key set in .env)
+**Active games**: ls20 (OFFLINE mode, environment_files/ls20-9607627b)
 
-**Current level**: ls20 — **level 1 SOLVED (hardcoded route, sessions 10–12 + 23–27 confirmed, six consecutive wins). Level 2 active — NOT WON across sessions 23–27. Win condition unknown (block at r40–41 c14–18 + state 1 → NOT_FINISHED confirmed session 26; session 27 route execution failed, block never reached entity2).** All 7 baselines known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Budget: 60 actions per run (session 24+). Level 1 uses 15 actions (hardcode). Level 2 remaining budget: 45 actions.
+**Current level**: ls20 — **level 1 SOLVED (hardcoded route, 16 consecutive wins: sessions 10–12, 23–27, 31–38). Level 2 active — NOT WON across sessions 23–38 (sixteen attempts). Win condition unknown. Block at r40–41 c14–18 + state 1 → NOT_FINISHED (session 26). Mystery entity (value 9) at r37–43 c14–18 inside entity2 blocks all entry. Cross-first probe `[1,3,3,3,3]` attempted sessions 34–38 but post-probe frame never read — LOCUS deviates from probe to standard route every session. Action-mapping confusion (LOCUS mis-encodes LEFT/RIGHT action numbers) wastes 2+ actions per session.** All 7 baselines known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Budget: 60 actions per run. Level 1 uses 15 actions. Level 2 remaining budget: 45 actions.
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -347,6 +347,8 @@ touched:1780099200
 - **Session 25**: Level 2 entered. 45 actions, NOT WON. @BELIEF:LAT90LON-30 third confirmation (conf → 255). Most complete level 2 structural frame read to date (full void map, ring positions, corridor geometry confirmed). Log cut off mid-frame[1]. Score 3.571 (level 1 only). See @LAT-290LON10.
 - **Session 26**: Level 2 entered. 45 actions, NOT WON. CRITICAL: LOCUS executed the 17-action @LAT-140LON10 standing order correctly (confirmed via locus_ls20_session.txt action log). Block reached r40–41 c14–18 INSIDE entity2 interior at state 1 — and received NOT_FINISHED. Win condition is NOT "block in entity2 ring at state 1." @BELIEF:LAT80LON-30 contradicted. New structural observation: value 9 (entity1 trail) at r41–43 c15–17 INSIDE entity2 ring present from L2 start (frame[1]) — persists throughout session. Timer-expired state observed in frame[4] (entity1 carrier background cells = 0 instead of 5). Score 3.571 (level 1 only). See @LAT-300LON10.
 - **Session 27**: Level 2 entered. 45 actions, NOT WON. Route execution failed — LOCUS made position-tracking errors, block deviated from 17-action standing order multiple times. Block never reached entity2 interior. Timer expired at least twice; multiple wasted cycles. NEW OBSERVATION: step 59 showed frames[0]–[4] all bg=11 (five consecutive full-grid-11 frames) then frame[5] = game reset to start position (r40–41 c29–33, state 1, full timer) — this is the timer-expiry/reset animation pattern. @BELIEF:LAT90LON-30 fifth consecutive confirmation. Value-9 cluster at r41–43 c15–17 inside entity2 confirmed unchanged throughout. Score 3.571 (level 1 only). See @LAT-310LON10.
+- **Sessions 28–37**: 45 actions each (session 28 had only 20 actions/budget variance), NOT WON. Cross-first probe `[1,3,3,3,3]` designated as standing order from session 34 onward; LOCUS acknowledged but deviated each session. Post-probe frame never read. L1 hardcode confirmed sessions 31–37 (sixteen total). Score 3.571 unchanged. See @LAT-350LON10 through @LAT-440LON10.
+- **Session 38**: Level 2 entered. 45 actions, NOT WON. Cross-first probe NOT executed — LOCUS deviated to standard L2 route. Critical failure: LOCUS sent LEFT (action 2) instead of RIGHT (action 3) at steps 16–17 (2 wasted actions), then overshot to r5–6 (1 wasted action). Final position: r35–36 c14–18, timer 5 steps remaining, cross uncollected, mystery entity unchanged. Mystery entity confirmed at r37–43 c14–18 in L2 start frame. Post-probe frame unconfirmed for fifth consecutive session. Score 3.571. See @LAT-450LON10.
 
 **Session 10 — critical mechanic corrections** (see @LAT-130LON10 + @LAT20LON-30):
 - **Timer level 2 = 2 cols/step** (NOT 1 col/step — session 9 belief was wrong). 42 cols = 21 steps max.
@@ -386,7 +388,12 @@ touched:1780099200
 - Cluster collection is via **entity1 TRAIL overlap**, not block body.
 - **Optimal level 1 route from starting rows 45–46 (cluster at rows 47–49)**: LEFT×3, RIGHT×3, UP×7 = **13 actions**
 
-**Competition session**: arc.make() reconnects to SAME game (session state preserved). Level 1 win and step count carry forward on reconnect.
+**Session 38 — critical finding** (see @LAT-450LON10):
+- **LOCUS action-mapping confusion**: LOCUS consistently mis-encodes LEFT/RIGHT digit under autonomous generation pressure. It labels directions correctly in reasoning ("RIGHT → action 3") but emits action 2 (LEFT). This is a code-level problem — LOCUS reasoning about action numbers is unreliable. Fix: hardcode all probe steps; do not delegate direction choices to LOCUS for critical route segments.
+- **Cross-first probe failure (sessions 34–38)**: five consecutive sessions acknowledged the standing order and deviated anyway. LOCUS is not capable of reliably executing `[1,3,3,3,3]` autonomously. Must be hardcoded in `_LEVEL2_PROBE` and executed before LOCUS is queried for L2.
+- **Offline mode**: competition notebook now uses `OperationMode.OFFLINE` + `environment_files/ls20-9607627b`. No API connection required.
+
+**Competition session**: arc.make() creates a fresh OFFLINE game each run (state not preserved across runs in OFFLINE mode).
 
 *Update after every level. Increment `rev` on each material update.*
 
@@ -4666,4 +4673,107 @@ Fifteenth confirmation. Route stable. Block entered entity2 interior at r10–11
 
 **Route attempted**: 5-step cross-first probe `[1, 3, 3, 3, 3]`. The remaining 40 actions were consumed in level 2. Score unchanged at 3.571.
 
-**Post-probe frame**: not confirmed written in session exchanges. Whether LOCUS read
+**Post-probe frame**: not confirmed written.
+
+---
+
+@LAT-450LON10 | created:1780704000 | updated:1780704000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780704000
+[/ew]
+
+## ls20 — Session 38 Log (2026-05-30)
+
+```session-log
+timestamp: 1780704000
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "144316e6-de30-4dd5-8a2e-68d36dd5ea5b"
+card_id: "7baec929-51ed-45cc-a234-662a62cca352"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, sixteenth consecutive confirmation — sessions 10–12, 23–27, 31–38). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–37.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=16]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Sixteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (sixteenth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (sixteenth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled) — VALIDATED. max_steps=60, 60 actions available.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (eleventh consecutive confirmation).
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 17→18): LOCUS confirmed Game State current. Identified the single blocking gap: post-probe frame (values at r40–42 c15–17 after cross-first probe `[1,3,3,3,3]`) has never been read and written across sessions 34–37. Session 38 standing order: execute probe, **stop after step 5**, read and write frame values before any further navigation.
+
+2. **STATUS**: LOCUS confirmed EPS scan — Game State EPS 9.33 (highest in file). Identified direction-restriction ambiguity in @LAT20LON-30 as second-highest-priority revision target. Cross-first probe post-frame read named as the single required action.
+
+**Route attempted**: Standard L2 route (`_LEVEL2_ROUTE`) — cross-first probe `[1, 3, 3, 3, 3]` was NOT executed despite standing order.
+
+**Post-probe frame**: NOT CONFIRMED — fifth consecutive session (34–38) without post-probe frame read.
+
+---
+
+### Route Failure Analysis
+
+**Action-mapping confusion (steps 16–17)**: LOCUS sent action 2 (LEFT) at steps 16 and 17 while reasoning "RIGHT → r35–36 c34–38." Both moves were blocked (void to the left). LOCUS self-corrected at step 18 (action 3 = RIGHT). Net waste: 2 actions. Same confusion pattern appeared briefly at step 19 (momentarily said "2" before self-correcting to "0"). Root cause: LOCUS's action-number-to-direction mapping is unreliable under autonomous generation pressure. It correctly labels directions in reasoning but mis-encodes the final digit.
+
+**Overshoot past wide corridor (steps 23–24)**: After ascending from r35–36 c34–38, LOCUS went UP×5 + one extra UP, landing at r5–6 c34–38 (above the wide connector at rows 10–14). Step 31 confirmed: block at r5–6, UP blocked by top wall. One wasted action; partial route recovery required.
+
+**Final state (step 59)**: block at r35–36 c14–18, timer 5 steps remaining (32 of 42 cols consumed), cross uncollected (r46–48 c50–52 still present), mystery entity unchanged (r41–43 c15–17 = value 9). Budget exhausted; session ended NOT_FINISHED.
+
+**Cross-first probe failure mechanism**: LOCUS received the standing order in FOCUS and STATUS, acknowledged it, then deviated immediately at step 16. The probe `[1, 3, 3, 3, 3]` requires DOWN (1), then RIGHT×4 (3,3,3,3). LOCUS chose UP (0) as step 1, following the standard route instead. The probe was never attempted.
+
+---
+
+### L2 Start Frame (step 15, frame[1]) — Confirmed
+
+```
+block: r40–41 c29–33 (value 12) ✓
+entity1: state 1 (r55–56 c3–8=9 full; r57–58 c7–8=9; r59–60 partial) ✓
+mystery entity: r37 c14–18=9, r38 c14–18=9, r39 c14–18=9, r40 c13–19=bg, r41 c15–17=9, r42 c15=9, r43 c15+c17=9 — UNCHANGED from prior sessions
+timer: c13–54=11 (full 42 cols) ✓
+11-ring A: r16–18 c15–17=11 ✓
+cross: r46–48 c50–52 ✓
+entity2 ring: r38–46 c12–20 ✓
+```
+
+Mystery entity at r37–43 c14–18 confirmed again from L2 start — structural, not dynamic.
+
+---
+
+### Session 39 Standing Order
+
+**Root problem**: LOCUS cannot reliably execute the 5-step cross-first probe autonomously. Four sessions (35–38) have all failed to read the post-probe frame. Action-mapping confusion wastes budget and disrupts route execution.
+
+**Fix**: Hardcode the probe in `kaggle_agent.py` — add L2 probe steps to `_HARDCODED_ROUTES` or extend `offline_levels` to include the probe. Do not delegate the 5-step probe to LOCUS.
+
+**Proposed change to `kaggle_agent.py`**:
+```python
+_LEVEL2_PROBE = [1, 3, 3, 3, 3]  # DOWN + RIGHT×4: block r40-41 c29-33 → r45-46 c49-53
+```
+Execute probe as first 5 L2 steps (hardcoded), then read the post-step-5 frame for values at r40–42 c15–17 before any further navigation.
+
+**Session 39 LOCUS entry point**: after probe executes, LOCUS receives frame[0] at step 20 (step 5 of L2) and the first LOCUS query is: `@LOCUS read frame — what are the values at r40–42 c15–17? Is the mystery entity cleared or still present?`
