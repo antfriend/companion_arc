@@ -4939,38 +4939,42 @@ The region around entity2 has a specific passability structure that eliminates t
 @BELIEF:LAT-90LON-40 | created:1748908800 | updated:1748908800 | relates:extracted_from>@LAT-460LON10,extends>@BELIEF:LAT-80LON-40,contained_by>@LAT60LON20
 [lp]
 centroid:LAT-90LON-40
-confidence:185
+confidence:215
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:1
+source_count:3
 [/lp]
 [ew]
-conf:185
-rev:0
+conf:215
+rev:1
 sal:1
 touched:1748908800
 [/ew]
 
-**Cross-collection route via wide connector — 17 actions (analytically derived, pending empirical confirmation).**
+**Cross-collection route via wide connector — 17 actions. Three of four segments confirmed; final segment (DOWN×7) untested.**
 
 From L2 start (r40–41 c29–33) to cross (r46–48 c50–52):
 
 ```
-RIGHT×1:  r40-41 c29-33 → c34-38              (avoids void below c29-33)
-UP×6:     r40-41 c34-38 → r10-11 c34-38       (wide connector at rows 10-14)
-RIGHT×3:  r10-11 c34-38 → c39-43 → c44-48 → c49-53
-DOWN×7:   r10-11 c49-53 → r45-46 c49-53       (overlaps cross at r46 c50-52)
+RIGHT×1:  r40-41 c29-33 → c34-38              [confirmed: session 39 step 17]
+UP×6:     r40-41 c34-38 → r10-11 c34-38       [confirmed: sessions 38+39 ascent]
+RIGHT×3:  r10-11 c34-38 → c39-43 → c44-48 → c49-53  [confirmed: wide connector c9-53, sessions 12+]
+DOWN×7:   r10-11 c49-53 → r45-46 c49-53       [UNTESTED — session 40 first test]
 ```
 
 **Total: 17 actions.** Block final position r45–46 c49–53 overlaps cross body at r46 c50–52 → collection expected.
 
-**Basis**: Derived analytically from @BELIEF:LAT-80LON-40 (void map, conf:230) + session 39 step-size confirmation (5 rows or 5 cols per action). Track layout confirmed across 39 sessions; void map confirmed by 3 blocked-move warnings in session 39.
+**Segment confirmation status**:
+- RIGHT×1: confirmed session 39 — block moved from c29–33 to c34–38 at rows 40–41 without void collision.
+- UP×6: confirmed sessions 38 and 39 — block reached r10–11 c34–38 after ascending center-right track (session 38 overshot to r5–6 with 7 UPs, confirming 6 is the correct count to r10–11).
+- RIGHT×3 at rows 10–11: confirmed by geometry — wide connector spans c9–53 at rows 10–14; void gap c39–43 exists only at rows 15–16+ (sessions 12+). RIGHT through c39–43 at rows 10–11 is above the void and passable.
+- DOWN×7 on far-right track: analytically sound (c44–58 passable per void map); not yet directly executed. Session 40 first test.
 
-**Timer note**: 17 actions consumes 17 of 21 timer steps. Only 4 steps remain before expiry — insufficient to reach entity2. Recommended: execute 11-ring-A-first strategy (12 steps to collect 11-ring A, timer resets; then 15 steps to cross = 27 total, 6 timer steps remaining post-cross). See @BELIEF:LAT-100LON-40 for post-cross unknowns.
+**Timer note**: 17 actions consumes 17 of 21 timer steps. Only 4 steps remain before expiry. 11-ring-A-first strategy recommended (12 + 15 = 27 total, 6 timer steps remaining post-cross). See @BELIEF:LAT-100LON-40.
 
-**Session 40 will be first empirical test.**
+*(Rev 1: confidence raised 185→215; segment-by-segment confirmation status added; source_count 1→3. Dream Cycle 3.)*
 
 ---
 
@@ -5003,6 +5007,44 @@ touched:1748908800
 3. Timer expiry at state 2 is a new event not yet observed in any session.
 
 **Test design for session 40**: After cross collection (state 2 confirmed by frame read), if action budget remains, allow timer to expire deliberately. Read reset frame: check entity1 state value. Compare to @BELIEF:LAT90LON-30 predictions.
+
+---
+
+@BELIEF:LAT-110LON-40 | created:1748908800 | updated:1748908800 | relates:extends>@BELIEF:LAT90LON-30,related_to>@BELIEF:LAT-100LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-110LON-40
+confidence:60
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:0
+[/lp]
+[ew]
+conf:60
+rev:0
+sal:1
+touched:1748908800
+[/ew]
+
+**A-wall (11-ring A spawn site) persistence through block reset — projected, zero direct observations.**
+
+**Context**: When 11-ring A (r16–18 c15–17, value 11) is collected, a wall spawns at rows 16–18 cols 15–17 (the ring's own footprint becomes impassable). This blocks DOWN from r10–11 c14–18 for the rest of the level session — confirmed across sessions 5, 12, and related analysis. The c9–13 bypass (LEFT×1 from c14–18, then DOWN past the wall) was identified as the workaround.
+
+**Claim (projection)**: The A-wall at r16–18 c15–17 spawned after 11-ring A collection likely **does NOT reset** when the timer expires and the block resets. The wall is an environmental entity (spawned by collection event), not a positional property of the block. Timer expiry resets the block only; environmental state persists.
+
+**Implication**: After the 11-ring-A-first strategy (step 12 collects ring, A-wall spawns), subsequent timer cycles in the same level session will encounter the A-wall. Any entity2 approach via the left track (c14–18) must use the c9–13 bypass:
+
+```
+After reset to r40-41 c29-33:
+RIGHT×1 + UP×6 + LEFT×5 (→ c9-13) + DOWN×1 (→ r15-16 c9-13, skips wall at r16-18 c15-17)
+```
+
+Block at r15–16 c9–13 is left of the A-wall (c15–17). From there, RIGHT×1 → c14–18, entering left track at rows 15–16. Then DOWN to entity2.
+
+**Competing projection**: Wall resets with block reset (same mechanism as block position). If true, A-wall at r16–18 is gone after timer expiry, and direct LEFT-track entry from r10–11 c14–18 → r15–16 c14–18 would be possible. But @BELIEF:LAT90LON-30 only describes block position as resetting; no evidence that environmental entities reset.
+
+**Session 40 test**: After 11-ring A collected (step 12) and cross collected (step 27), allow timer to expire. In the reset frame, check whether r16–18 c15–17 still shows wall value or has reverted to ring value 11 or track value 3. This is the A-wall persistence test.
 
 ---
 
@@ -5366,3 +5408,115 @@ Eighteenth confirmation. Route stable. Block entered entity2 interior at r10–1
 2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 4.12, highest), competition score (3.571), all conf:255 beliefs stable, and the single critical unknown: whether cross collection (state 1→2) clears the mystery entity at r41–43 c15–17. Designated step 27 post-cross frame read as the Phase 4 action for hypothesis E.
 
 **Route attempted**: 11-ring-A-first strategy — 45 L2 actions consumed. Score unchanged at
+
+## Dream Cycle 3 — Post-Session 39 (2026-05-26, third pass)
+
+**Focus**: Post-cross session budget; A-wall reset behavior; wide connector segment confirmation upgrades.
+
+**Phase 1 — Replay**: 100 walks × length 20. Seeds: @BELIEF:LAT-90LON-40 (cross route, conf raised to 215), @BELIEF:LAT-100LON-40 (state-2 expiry, conf:50), @BELIEF:LAT-110LON-40 (A-wall reset, new). Primary focus: what happens in the 33 session actions remaining after cross collection.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-110LON-40 into void at post-cross entity2 approach geometry. Target: identify action sequence for entity2 approach at state 2 accounting for A-wall.
+
+---
+
+### Phase 1 — Replay Clusters
+
+**Cluster A — Wide connector RIGHT×3 confirmed by prior sessions (confidence: 215)**
+
+Sessions 12+ established that the void gap c39–43 exists at rows 15–16 but NOT at rows 10–11. At rows 10–14, the wide connector spans c9–53. Session 12 initial frame confirmed: c29–38=3 (passable), c39–43=4 (void), c44–53=3 (passable) at rows 15–16. The wide connector at rows 10–11 is explicitly above this void. Sessions 28+ used the wide connector for LEFT×7 traversal (c49–53→c14–18) confirming full width passability.
+
+Consequence: the RIGHT×3 segment (r10–11 c34–38 → c49–53) in @BELIEF:LAT-90LON-40 is confirmed by geometry. @BELIEF:LAT-90LON-40 confidence updated 185→215; source_count 1→3.
+
+---
+
+**Cluster B — Session budget post-cross: 33 actions remain; entity2 approach viable (confidence: 160)**
+
+11-ring-A-first cross strategy (steps 1–27, L2 actions 16–42 of session budget):
+- 27 L2 actions consumed for cross.
+- 45 L2 actions available (session budget 60 minus 15 for L1). Remaining: 18 L2 actions.
+- Wait — recheck: session budget 60, L1 uses 15, L2 budget = 45. 11-ring-A strategy uses 27 of 45 L2 actions → **18 L2 actions remaining** after cross.
+
+Timer at step 27 (cross): 6 steps left in current cycle (timer reset at step 12, then 15 steps consumed → 21-15=6). Timer expiry at L2 step 33 (step 27 + 6). Block resets.
+
+Remaining session actions after block reset: 45 - 33 = **12 L2 actions** (session steps 34–45 of L2, total session steps 49–60).
+
+If state 2 preserves through timer expiry:
+- Fresh timer: 21 steps available.
+- 12 actions remain in session budget.
+- Entity2 approach from r40–41 c29–33 at state 2 requires:
+  RIGHT×1 + UP×6 + LEFT×4 (or LEFT×5 for c9–13 bypass) + DOWN = **12 or 13 actions** to reach entity2 entry.
+- 12 actions = exactly the minimum needed for RIGHT×1 + UP×6 + LEFT×4 + DOWN×1 = 12 steps (c14–18 route) — but this hits A-wall if it persists.
+- c9–13 bypass: RIGHT×1 + UP×6 + LEFT×5 + DOWN×1 = **13 actions** — exceeds remaining budget by 1.
+
+**Critical finding**: With 12 actions remaining after state-2 timer expiry, the entity2 approach is exactly at the boundary of feasibility. A-wall presence forces the 13-step bypass, which is 1 over budget. If the A-wall resets with the block, the 12-step direct approach is possible with 0 actions to spare.
+
+**Implication**: A-wall reset behavior is the decisive variable for whether entity2 is reachable within the session budget after cross collection.
+
+---
+
+**Cluster C — A-wall persistence: decisive for entity2 approach (confidence: 60)**
+
+Written as @BELIEF:LAT-110LON-40. Key unknowns:
+- If A-wall persists: 13-step c9–13 bypass needed; exceeds 12-step remaining budget by 1. Entity2 unreachable this strategy.
+- If A-wall resets: 12-step direct approach exactly fits. Entity2 reachable with 0 budget buffer.
+
+Both scenarios assume state 2 preserves through timer expiry (@BELIEF:LAT-100LON-40, proj). Neither scenario resolves if state 2 does NOT preserve.
+
+**Session 40 observation priorities** (in order):
+1. After step 27 (cross): read entity1 state. Is it 2?
+2. After step 33 (timer expiry): read reset frame. State still 2? What is value at r16–18 c15–17 (wall or ring)?
+3. Steps 34+: if state 2 confirmed and A-wall status known, execute entity2 approach accordingly.
+
+---
+
+**Cluster D — Inside entity2 at state 2: entirely uncharted (confidence: 40)**
+
+No session has observed entity2 from state 2. At state 1, entering entity2 at r38–46 c12–20 from the L1 WIN route produced NOT_FINISHED (sessions 23+). The win condition inside entity2 is unknown. If the win requires a specific entry direction or internal navigation at state 2, this is a further unknown layer beyond just reaching entity2.
+
+This cluster is noted but not projected — no data to hypothesize from. Session 40 may not even reach entity2 entry; post-cross data is the immediate priority.
+
+---
+
+### Phase 2 — Projection
+
+**@BELIEF:LAT-110LON-40** — Written this cycle. A-wall persistence through block reset. Projection, conf:60. Test: read r16–18 c15–17 in the post-expiry reset frame during session 40.
+
+**@BELIEF:LAT-90LON-40 updated** — confidence 185→215; segment-by-segment confirmation added (3 of 4 segments confirmed, DOWN×7 still pending session 40).
+
+**No new LAT records generated** — session 40 data required before further belief expansion. The belief graph at the entity2 interior level is entirely void; projection without observations would be too speculative.
+
+---
+
+### New Records from This Dream Cycle (third pass)
+
+1. **Written @BELIEF:LAT-110LON-40** — A-wall persistence projection; conf:60; A-wall resets vs. persists is decisive for post-cross entity2 approach feasibility
+2. **Updated @BELIEF:LAT-90LON-40** — confidence 185→215; three segments now marked as confirmed; DOWN×7 explicitly flagged as untested
+3. **Budget finding** — 12 L2 actions remain after state-2 expiry reset; exactly matches 12-step c14–18 route but 1 short of 13-step c9–13 bypass; A-wall status is the deciding factor
+
+---
+
+### Session 40 — Standing Order (final, all three Dream Cycles consolidated)
+
+**Strategy**: 11-ring-A-first. **Route**:
+
+> **Steps 1–12 (collect 11-ring A, reset timer)**:
+> RIGHT×1 (c29→c34), UP×6 (rows 40→10), LEFT×4 (c34→c14), DOWN×1 (rows 10→15).
+> Block at r15–16 c14–18 — overlaps 11-ring A at r16 c15–17 → collected. Timer resets to 42 cols. A-wall spawns at r16–18 c15–17.
+>
+> **After step 12**: read frame — confirm timer=42 cols, entity1 state, block position.
+>
+> **Steps 13–27 (collect cross)**:
+> UP×1 (rows 15→10), RIGHT×7 (c14→c49), DOWN×7 (rows 10→45).
+> Block at r45–46 c49–53 — overlaps cross at r46 c50–52 → collected. Entity1 state expected: 2.
+>
+> **After step 27**: READ FRAME IMMEDIATELY before any further action. Report: entity1 state value, values at r41–43 c15–17, timer cols remaining, block position.
+>
+> **Steps 28–33 (allow timer expiry if state=2)**:
+> If entity1 state = 2 and timer has steps remaining: take neutral actions or wait. Let timer expire at step 33.
+>
+> **After timer expiry**: read reset frame. Report: entity1 state value (still 2?), value at r16–18 c15–17 (wall=persisted, ring/track=reset), block position.
+>
+> **Steps 34–45 (entity2 approach — conditional)**:
+> If state 2 confirmed and A-wall reset: RIGHT×1 + UP×6 + LEFT×4 + DOWN×1 = 12 steps to left-track entry at r15–16 c14–18. Descend toward entity2 interior.
+> If state 2 confirmed and A-wall persists: RIGHT×1 + UP×6 + LEFT×5 + DOWN×1 = 13 steps needed; 12 available. One action short — report the shortfall and stop.
+> If state 2 NOT confirmed: report state value and stop navigation; new hypothesis required.
