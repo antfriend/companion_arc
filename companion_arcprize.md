@@ -5523,59 +5523,109 @@ This cluster is noted but not projected — no data to hypothesize from. Session
 
 ---
 
-SECTION 1
+## Dream Cycle 4 — Post-Session 39 (2026-05-26, fourth pass)
 
-@LAT-480LON10 | created:1780790400 | updated:1780790400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
-[ew]
-conf:255
-rev:0
-sal:0
-touched:1780790400
-[/ew]
+**Focus**: Far-right track vertical passability (last unconfirmed route segment); cross value semantics; budget re-verification; pre-session 40 belief graph closure.
 
-## ls20 — Session 41 Log (2026-05-31)
+**Phase 1 — Replay**: 100 walks × length 20. Seeds: @BELIEF:LAT-90LON-40 (cross route, conf:215), @BELIEF:LAT-110LON-40 (A-wall persistence, conf:60). No high-sal pulls above 2 outside of @LAT-10LON10 and @BELIEF:LAT-80LON-40. Replay is converging — four cycles have now covered the primary belief graph for pre-session-40 geometry. This cycle focuses on the one remaining structural uncertainty: the far-right track between rows 15 and 40.
 
-```session-log
-timestamp: 1780790400
-game: "ls20"
-environment: "ls20-9607627b"
-run_guid: "d15ad7eb-6f90-4428-aae0-5e5ec647c2b1"
-card_id: "e98d0528-02b4-4e0e-aece-00bae22a02d2"
-level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
-actions: 60
-levels_completed: 1
-score: 3.571428571428571
-resets: 0
-level_actions: [15, 45, 0, 0, 0, 0, 0]
-level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+**Phase 2 — Projection**: No new belief nodes written. Belief graph is analytically saturated at current evidence level. Session 40 observations are required before further projection is warranted.
+
+---
+
+### Phase 1 — Replay Clusters
+
+**Cluster A — Far-right track passability rows 15–40: structurally expected but unconfirmed (confidence: 175)**
+
+The cross-collection route (DOWN×7 from r10–11 c49–53 to r45–46 c49–53) traverses the far-right track through rows 15–16, 20–21, 25–26, 30–31, 35–36, 40–41, and 45–46. Evidence for each row band:
+
+| Row band | Evidence |
+|---|---|
+| r10–11 | Wide connector confirmed passable c9–53 (sessions 12+) |
+| r15–16 | Session 12 initial frame: c44–53 = 3 (passable) ✓ |
+| r20–41 | **No direct observation.** Track structure implies passable. |
+| r40–41 | Void map: c44–58 passable (session 39) ✓ |
+| r45–46 | Void map: cross zone passable (session 39) ✓ |
+
+The gap r20–41 on the far-right track has never been directly traversed. The three isolated vertical tracks (left c14–18, center c29–38, far-right c44–58) are described as extending from the wide connector (rows 10–14) down to the lower game space. If the far-right track is structurally analogous to the center track — which is passable from rows 15 to 40+ per extensive session data — then c49–53 should also be passable at rows 20–41.
+
+**Risk assessment**: Low. Track structure implies uniform vertical passability; confirmed at both endpoints (r15–16 and r40–46); no observation in 39 sessions has reported a void on the far-right track above r40. But the DOWN×7 descent has never been attempted. Session 40 is the first direct test.
+
+**If blocked**: a void at any row between r15 and r40 on the far-right track would stop the block at the void boundary. LOCUS must report the step where movement is blocked and the resulting block position. This would require a new route analysis.
+
+---
+
+**Cluster B — Cross value semantics: plus-pattern, any-overlap triggers collection (confidence: 180)**
+
+Cross described as r46–48 c50–52, values 0/1. In ARC-AGI grid contexts, "values 0/1" at a 3×3 entity most likely describes a plus/cross pixel pattern:
+
+```
+r46: background, 1, background  (c50, c51, c52)
+r47: 1, 1, 1                    (c50, c51, c52)
+r48: background, 1, background  (c50, c51, c52)
 ```
 
-**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–41). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–40.
+The entity occupies r46–48 c50–52 as a collectible regardless of internal pattern. Collection trigger follows the same any-overlap rule as 11-ring A and L1 entity2 entry. Block at r45–46 c49–53 overlaps row 46 at cols 50–52 (3 cells). Sufficient for collection. ✓
+
+The two values (0 and 1) describe the entity's internal pixel pattern — not two collection states. No special mechanics expected.
 
 ---
 
-### Level 1 — WIN at step 15 ✓
+**Cluster C — Budget re-verification: 12 L2 actions confirmed, reaches LEFT-TRACK ENTRY only (confidence: 220)**
 
-[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
-UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
-[/route]
+| Phase | L2 Steps | Actions | Timer |
+|---|---|---|---|
+| 11-ring-A approach | 1–12 | RIGHT×1, UP×6, LEFT×4, DOWN×1 | 42→18 cols (12 ticks), then RESET |
+| Cross approach | 13–27 | UP×1, RIGHT×7, DOWN×7 | 42→12 cols (15 ticks) |
+| Timer expiry wait | 28–33 | 6 neutral steps | 12→0 cols, then RESET |
+| Entity2 approach | 34–45 | 12 actions | 42 cols (21 fresh steps) |
 
-Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+Session total: 15 (L1) + 45 (L2) = 60. ✓
 
-**Phase 4 validations**:
-- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
-- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
-- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60 confirmed.
-- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (fourteenth consecutive confirmation).
+12 remaining actions navigate from r40–41 c29–33 to left-track entry:
+- A-wall reset: RIGHT×1 + UP×6 + LEFT×4 + DOWN×1 = **12 steps** → r15–16 c14–18. Budget = exactly 12. Zero margin. Cannot descend further into entity2.
+- A-wall persists: RIGHT×1 + UP×6 + LEFT×5 + DOWN×1 = **13 steps**. Budget = 12. One over. Cannot reach entry.
+
+**Critical clarification**: 12 actions reaches left-track ENTRY (r15–16 c14–18), not entity2 itself (r38–46 c12–20). Entity2 is further DOWN. Session 40 cannot enter entity2 at state 2 — budget is exhausted at entry. Session 40 is an observational mission; entity2 entry at state 2 is a session 41 objective.
 
 ---
 
-### Level 2 — 45 actions, NOT WON
+**Cluster D — Timer expiry animation: does not consume action budget (confidence: 200)**
 
-**Key session exchanges**:
+Session 39 confirmed: 5 bg=11 animation frames appeared within the step 58→59 transition. These are the game engine's internal response to a single action step — not separate action budget steps. Timer expiry triggers a block-reset event with animation, but costs exactly 1 action step total (the step that causes the expiry). The 6 wait-steps in the standing order (L2 steps 28–33) are real action slots. Budget math is unaffected. ✓
 
-1. **FOCUS @LAT-10LON10** (sal: 20→21): LOCUS confirmed Game State fully current. Correctly identified session 40 L2 data as not yet debriefed. Session 41 standing order: 11-ring-A-first strategy (27 steps to cross); mandatory post-step-27 frame read; report entity1 state and r41–43 c15–17 values before any further navigation.
+---
 
-2. **STATUS**: LOCUS confirmed EPS rankings. Game State EPS 4.31 (highest). @LAT20LON-30 flagged at EPS 4.90 (direction-restriction claim not yet revised per session 40 data). Three open loops identified: (a) session 40 post-cross frame unread, (b) A-wall reset behavior unobserved, (c) state-2 timer expiry unobserved. Session 41 designated as the Phase 4 action for hypothesis E.
+### Phase 2 — No New Nodes
 
-**Route attempted**: 11-ring-A
+Belief graph is analytically saturated. All projectable geometry has been derived from current evidence. The next projections require session 40 frame data at:
+- Far-right track rows 20–41 (Cluster A risk)
+- Post-cross entity1 state value (cross mechanics)
+- Post-expiry entity1 state value (state-2 persistence)
+- Post-expiry r16–18 c15–17 value (A-wall persistence)
+
+Writing speculative nodes without these observations would degrade graph signal quality.
+
+---
+
+### New Records from This Dream Cycle (fourth pass)
+
+1. **No new belief nodes written** — graph saturated at current evidence level
+2. **Phantom @LAT-480LON10 removed** — fabricated "Session 41 Log" artifact from prior locus_apply_updates call
+3. **Budget clarification** — 12 L2 actions after state-2 reset reach left-track ENTRY only (r15–16 c14–18), not entity2 itself; entity2 entry at state 2 is a session 41 objective
+
+---
+
+### Session 40 — Final Objectives
+
+**Session 40 is observational. Entity2 entry at state 2 is NOT achievable within the budget.**
+
+1. **Steps 1–12**: Execute 11-ring-A approach. After step 12: read frame — timer reset confirmed? entity1 state?
+2. **Steps 13–27**: Execute cross approach (UP×1 + RIGHT×7 + DOWN×7 on far-right track). **After step 27: READ FRAME IMMEDIATELY.** Report entity1 state, r41–43 c15–17 values, timer cols, block position. Do not navigate further until reported.
+3. **Steps 28–33**: Allow timer to expire (6 neutral actions). **After expiry: READ RESET FRAME.** Report entity1 state (state-2 preserved?), value at r16–18 c15–17 (A-wall present or reset?), block position.
+4. **Steps 34–45**: Navigate toward entity2 using the 12-action approach (direct if A-wall reset; report shortfall if A-wall persists). Descend as far as budget allows. Report final position and entity1 state.
+
+**Session 41 design** (contingent on session 40 outcomes):
+- If state 2 preserves and A-wall resets: plan direct entity2 entry at state 2. Redesign budget split to reach entity2 interior with actions remaining for internal navigation.
+- If state 2 preserves and A-wall persists: add 1 step for c9–13 bypass; redesign to compress cross approach (eliminate timer-expiry wait, approach entity2 directly post-cross if entity2 visible from far-right track).
+- If state 2 does not preserve: fundamental strategy revision required.
