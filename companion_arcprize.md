@@ -4978,35 +4978,38 @@ DOWN×7:   r10-11 c49-53 → r45-46 c49-53       [UNTESTED — session 40 first 
 
 ---
 
-@BELIEF:LAT-100LON-40 | created:1748908800 | updated:1748908800 | relates:extends>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
+@BELIEF:LAT-100LON-40 | created:1748908800 | updated:1748908800 | relates:extends>@BELIEF:LAT90LON-30,contradicts>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
 [lp]
 centroid:LAT-100LON-40
-confidence:50
+confidence:215
 scope_lat:10.0
 scope_lon:10.0
-projection_flag:true
+projection_flag:false
 contradiction_flag:false
-source_count:0
+source_count:1
 [/lp]
 [ew]
-conf:50
-rev:0
+conf:215
+rev:1
 sal:1
 touched:1748908800
 [/ew]
 
-**State-2 timer expiry behavior — projected, zero direct observations.**
+**State-2 timer expiry behavior — CORRECTED. State 2 does NOT persist through timer expiry.**
 
-**Claim (projection)**: Entity1 at state 2 (achieved after cross collection) likely persists through timer expiry, mirroring the confirmed behavior for state 1 (@BELIEF:LAT90LON-30, conf:255, source_count:12). Block position resets; entity1 state preserved.
+**Claim**: Entity1 state 2 (achieved via within-L2 cross collection) resets to the level-entry state value (state 1, from L1 WIN carry-over) on timer expiry. Timer expiry restores entity1 to its state at L2 entry, not to state 0.
 
-**Basis**: @BELIEF:LAT90LON-30 shows state 1 survives timer expiry consistently across 12 sessions. The persistence mechanism appears to be entity1 state stored independently of block position in the game engine. State 2 plausibly follows the same rule.
+**Basis**: @LAT20LON-30 line 504 (sessions 1–10 game mechanics log): "State RESETS on TIMER RESTART (within level). Confirmed session 10: step 32 advanced state 0→1; restart at step 37 reset state back to 0 (step 47 frame shows state 0 pattern). Restarts inside a level do NOT preserve state."
 
-**Refutation scenarios**:
-1. Timer expiry at state 2 triggers game_over or level-clear — no reset frame observed.
-2. State 2 resets to state 1 or state 0 on timer expiry — entity1 state is partially volatile.
-3. Timer expiry at state 2 is a new event not yet observed in any session.
+In session 10, L2 was entered at state 0 (no L1 WIN carry-over). Cross at step 32 → state 0→1. Timer restart → state 1→0 (reverts to level-entry state 0).
 
-**Test design for session 40**: After cross collection (state 2 confirmed by frame read), if action budget remains, allow timer to expire deliberately. Read reset frame: check entity1 state value. Compare to @BELIEF:LAT90LON-30 predictions.
+Applying to current sessions (23+): L2 is entered at state 1 (from L1 WIN). Cross at some step N → state 1→2. Timer restart → state 2→1 (reverts to level-entry state 1). State 2 is LOST.
+
+**Implication**: @BELIEF:LAT90LON-30 (state 1 persists through timer expiry) is correctly explained as "timer restart reverts to level-entry state 1, which IS state 1." The persistence is an artifact of the reset mechanism, not true within-level state preservation. State-2 advances will always be lost on timer restart.
+
+**Consequence**: Strategy "collect cross → allow timer → navigate entity2 at state 2" is INVALID. State 2 must be maintained continuously until entity2 entry; timer expiry must be avoided after cross collection. See @BELIEF:LAT-120LON-40 for the 11-ring B strategy.
+
+*(Rev 1: corrected from "likely persists" to "does NOT persist"; confidence raised 50→215; source: @LAT20LON-30 session 10 evidence. Dream Cycle 5.)*
 
 ---
 
@@ -5045,6 +5048,102 @@ Block at r15–16 c9–13 is left of the A-wall (c15–17). From there, RIGHT×1
 **Competing projection**: Wall resets with block reset (same mechanism as block position). If true, A-wall at r16–18 is gone after timer expiry, and direct LEFT-track entry from r10–11 c14–18 → r15–16 c14–18 would be possible. But @BELIEF:LAT90LON-30 only describes block position as resetting; no evidence that environmental entities reset.
 
 **Session 40 test**: After 11-ring A collected (step 12) and cross collected (step 27), allow timer to expire. In the reset frame, check whether r16–18 c15–17 still shows wall value or has reverted to ring value 11 or track value 3. This is the A-wall persistence test.
+
+*Note: this belief was written under the assumption that deliberate timer expiry post-cross was the session 40 strategy. Dream Cycle 5 supersedes that: state 2 does NOT persist through timer expiry (@BELIEF:LAT-100LON-40 rev 1). The A-wall persistence question remains relevant only if 11-ring A is part of the route — Dream Cycle 5 recommends SKIPPING 11-ring A entirely.*
+
+---
+
+@BELIEF:LAT-120LON-40 | created:1748908800 | updated:1748908800 | relates:extracted_from>@LAT20LON-30,extends>@BELIEF:LAT-90LON-40,extends>@BELIEF:LAT-100LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-120LON-40
+confidence:130
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+[ew]
+conf:130
+rev:0
+sal:2
+touched:1748908800
+[/ew]
+
+**11-ring B as state-2 bridge: Cross → 11-ring B → Entity2 in a single continuous timer sequence.**
+
+**Claim (projection)**: After cross collection (state 1→2, timer 4 steps remaining), the block can collect 11-ring B at rows 51–53 c40–42 in 3 further steps (DOWN + LEFT×2), resetting the timer to 42 cols while preserving state 2 (11-ring collection does NOT advance entity1 state, per @LAT20LON-30 line 530). From 11-ring B, entity2 at r40–41 c14–18 is reachable in 21 steps (exactly 42 timer cols).
+
+**Route from L2 start to entity2 entry** (skip 11-ring A, 40 L2 steps total):
+
+```
+Steps  1– 1: RIGHT        r40-41 c29-33 → c34-38
+Steps  2– 7: UP×6         r40-41 c34-38 → r10-11 c34-38  (wide connector)
+Steps  8–10: RIGHT×3      r10-11 c34-38 → c49-53          (far-right track)
+Steps 11–17: DOWN×7       r10-11 c49-53 → r45-46 c49-53   [CROSS collected → state 2]
+Steps 18–18: DOWN×1       r45-46 c49-53 → r50-51 c49-53   (far-right track, rows 50+)
+Steps 19–19: LEFT×1       r50-51 c49-53 → c44-48
+Steps 20–20: LEFT×1       r50-51 c44-48 → c39-43           [11-ring B collected → timer reset]
+Steps 21–21: RIGHT×1      r50-51 c39-43 → c44-48           (rejoin far-right track)
+Steps 22–29: UP×8         r50-51 c44-48 → r10-11 c44-48   (wide connector)
+Steps 30–34: LEFT×5       r10-11 c44-48 → c19-23           (avoid 11-ring A at c15-17)
+Steps 35–39: DOWN×5       r10-11 c19-23 → r35-36 c19-23   (left of A zone, no 11-ring A)
+Steps 40–40: LEFT×1       r35-36 c19-23 → c14-18
+Steps 41–41: DOWN×1       r35-36 c14-18 → r40-41 c14-18   [ENTITY2 ENTRY at state 2]
+```
+
+Wait — this totals 41 steps, but the approach was designed as 40. Recount: 1+6+3+7+1+1+1+1+8+5+5+1+1 = 41. Let me adjust.
+
+**Corrected route (40 steps, skip RIGHT from 11-ring B)**:
+
+```
+Steps  1– 7: RIGHT×1 + UP×6  → r10-11 c34-38
+Steps  8–10: RIGHT×3          → r10-11 c49-53
+Steps 11–17: DOWN×7           → r45-46 c49-53   [CROSS, state 2, timer 8 cols=4 steps]
+Steps 18–18: DOWN×1           → r50-51 c49-53   [timer 6 cols]
+Steps 19–19: LEFT×1           → r50-51 c44-48   [timer 4 cols]
+Steps 20–20: LEFT×1           → r50-51 c39-43   [11-ring B → timer RESET 42 cols]
+Steps 21–28: UP×8             → r10-11 c39-43   [timer 42-16=26 cols]
+Steps 29–33: LEFT×5           → r10-11 c9-13    [timer 26-10=16 cols, avoids 11-ring A]
+Steps 34–38: DOWN×5           → r35-36 c9-13    [timer 16-10=6 cols]
+Steps 39–39: RIGHT×1          → r35-36 c14-18   [timer 4 cols]
+Steps 40–40: DOWN×1           → r40-41 c14-18   [ENTITY2 at state 2, timer 2 cols=1 step]
+```
+
+**Total: 40 L2 steps. Timer at entity2 entry: 2 cols remaining (1 step). State: 2.**
+
+Wait, but at step 21, going UP×8 from r50-51 c39-43: at rows 40-46, c39-43 is VOID. UP from r50-51 to r45-46 = passable (below void?). UP from r45-46 to r40-41 c39-43 = VOID. BLOCKED.
+
+**Route must exit c39-43 BEFORE ascending through the void zone** (rows 40-46). From r50-51 c39-43 after 11-ring B collection:
+- RIGHT×1 → r50-51 c44-48 (exit void-risk zone)
+- UP×8 → r10-11 c44-48
+
+This adds 1 RIGHT step = 41 steps total, 1 over budget.
+
+**Key uncertainties and current status**:
+1. **c39-43 passable at rows 50–51**: needed for LEFT×2 to reach 11-ring B. The void map confirms void at rows 40–46 only; rows 50+ unknown. Critical assumption.
+2. **11-ring B at r51–53 c40–42**: documented in @LAT20LON-30. Block at r50–51 c39–43 overlaps row 51 cols 40–42 → collection fires (block-body overlap, same mechanic as 11-ring A). Assuming not yet collected in prior sessions (no session reached rows 50+ except session 10 planning — unverified execution).
+3. **Full timer reset from 11-ring B**: @LAT20LON-30 states 11-ring → "FULL TIMER RESET to 42 cols." 11-ring B should behave identically to A.
+4. **State 2 preserved through 11-ring collection**: @LAT20LON-30 line 530: "Does NOT advance entity1 state." Timer reset, state unchanged. ✓
+5. **Void at c39-43 rows 40–46 blocks UP from r50–51 c39–43**: After 11-ring B, must RIGHT to c44-48 before ascending. This adds 1 step.
+6. **Route total with RIGHT escape: 41 steps**. Exceeds L2 budget of 45 by... wait, 41 < 45. Within budget! But timer: extra RIGHT step costs 2 more timer cols. Timer at entity2 = 2 - 2 = 0 cols. Timer at exactly 0 at entity2 entry. **Race condition: does win fire at 0 or does timer expire first?**
+
+**Revised route (41 steps, 0 timer cols at entity2)**:
+```
+1–17:  As above (cross at r45-46 c49-53, state 2)
+18:    DOWN → r50-51 c49-53
+19:    LEFT → r50-51 c44-48
+20:    LEFT → r50-51 c39-43  [11-ring B, timer reset]
+21:    RIGHT → r50-51 c44-48
+22-29: UP×8 → r10-11 c44-48
+30-34: LEFT×5 → r10-11 c9-13
+35-39: DOWN×5 → r35-36 c9-13
+40:    RIGHT → r35-36 c14-18
+41:    DOWN → r40-41 c14-18  [ENTITY2, state 2, timer 0]
+```
+41 steps × 2 = 82 cols. Reset at step 20: timer = 42 - (20×2) + 42 = 42 - 40 + 42 = 44 cols after reset at step 20. Steps 21-41 = 21 more steps × 2 = 42 cols consumed. 44 - 42 = 2 cols remaining. Entity2 at timer = 2 cols = 1 step remaining. **Viable.**
+
+*(proj:true — three critical unknowns must be confirmed in session 40: c39-43 passability at rows 50-51, 11-ring B presence and full-reset behavior, and the void-escape RIGHT step feasibility.)*
 
 ---
 
@@ -5632,58 +5731,163 @@ Writing speculative nodes without these observations would degrade graph signal 
 
 ---
 
-SECTION 1
+## Dream Cycle 5 — Post-Session 39 (2026-05-26, fifth pass)
 
-@LAT-480LON10 | created:1748908800 | updated:1748908800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
-[ew]
-conf:255
-rev:0
-sal:0
-touched:1748908800
-[/ew]
+**Focus**: Critical mechanic correction from @LAT20LON-30 — state resets on timer restart; 11-ring B as the only viable state-2 bridge to entity2.
 
-## ls20 — Session 41 Log (2026-06-02)
+**Phase 1 — Replay**: 100 walks × length 20. High-sal pull: @LAT-10LON10 (sal:19) + @LAT20LON-30 (sal:5, underexamined across Cycles 1-4). On this walk, @LAT20LON-30 surfaced two game-mechanic facts that invalidate the session 40 strategy designed across Cycles 2-4:
+1. State resets to level-entry value on timer restart (line 504).
+2. 11-ring B exists at rows 51-53 cols 40-42 (line 532) — the only timer-reset collectible accessible from the cross zone within the remaining timer budget.
 
-```session-log
-timestamp: 1748908800
-game: "ls20"
-environment: "ls20-9607627b"
-run_guid: "a32c9784-01f6-4592-a05b-ba19a41e481a"
-card_id: "41401b03-52ba-44ab-aaec-94fef09f723d"
-level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
-actions: 60
-levels_completed: 1
-score: 3.571428571428571
-resets: 0
-level_actions: [15, 45, 0, 0, 0, 0, 0]
-level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+**Phase 2 — Projection**: One new belief node written (@BELIEF:LAT-120LON-40). @BELIEF:LAT-100LON-40 corrected from projection to confirmed-negative (state 2 does NOT persist).
+
+---
+
+### Phase 1 — Replay Clusters
+
+**Cluster A — State resets on timer restart: confirmed, invalidates prior strategy (confidence: 215)**
+
+@LAT20LON-30 line 504 (session 10 log, earliest mechanic record): "State RESETS on TIMER RESTART (within level). Confirmed session 10: step 32 advanced state 0→1; restart at step 37 reset state back to 0."
+
+Interpretation: timer expiry causes block position reset AND entity1 state reset to level-entry value. In sessions 23+, level-entry state = 1 (from L1 WIN). So cross collection (state 1→2) followed by timer expiry → state 2→1. State 2 is LOST.
+
+This means:
+- The session 40 strategy (Cycles 2-4) — "collect cross, allow timer expiry, navigate entity2 at state 2" — is WRONG. State 2 resets to 1 on expiry.
+- @BELIEF:LAT90LON-30 (state 1 persists through timer expiry) is NOT a generalization about state persistence — it is specifically the "reset to level-entry state" mechanism. State 1 persists because state 1 IS the level-entry value. State 2 will not.
+- @BELIEF:LAT-100LON-40 corrected from projection/conf:50 to confirmed-negative/conf:215.
+
+**Consequence**: Cross collection (state 2) and entity2 entry must occur within the SAME continuous timer cycle. Timer expiry must not intervene.
+
+---
+
+**Cluster B — 11-ring B at rows 51-53 cols 40-42: the state-2 bridge (confidence: 130, projection)**
+
+@LAT20LON-30 line 532: "Level 2 locations: rows 16–18, cols 15–17 (left shaft); rows 51–53, cols 40–42 (right-center)."
+
+11-ring A is at rows 16-18 (confirmed, sessions 12+). 11-ring B is at rows 51-53, cols 40-42 — confirmed in the mechanic record but never reached in execution.
+
+From cross position (r45-46 c49-53, state 2, timer 4 steps remaining):
+- DOWN: r50-51 c49-53 (1 step, timer 3 remaining)
+- LEFT: r50-51 c44-48 (1 step, timer 2 remaining)
+- LEFT: r50-51 c39-43 (1 step, timer 1 remaining) — block overlaps 11-ring B at r51-53 c40-42 at row 51 cols 40-42
+
+If 11-ring B collects: timer resets to 42 cols. State 2 preserved (11-ring does NOT advance entity1 state, per @LAT20LON-30 line 530).
+
+Three unknown conditions: (1) c39-43 passable at rows 50-51; (2) 11-ring B triggers on block-body overlap at row 51; (3) 11-ring B resets timer to full 42 cols.
+
+---
+
+**Cluster C — Entity2 approach from 11-ring B: 21 steps, timer-exact (confidence: 110)**
+
+After 11-ring B collection at r50-51 c39-43, timer = 42 cols (21 steps). State = 2.
+
+Route to entity2 at r40-41 c14-18 (21 steps):
 ```
+RIGHT:  r50-51 c39-43 → c44-48         (exit before void at c39-43 rows 40-46)
+UP×8:   r50-51 c44-48 → r10-11 c44-48  (wide connector)
+LEFT×5: r10-11 c44-48 → c9-13          (bypass 11-ring A zone at c15-17)
+DOWN×5: r10-11 c9-13  → r35-36 c9-13   (descend left of A-wall; no 11-ring A here)
+RIGHT:  r35-36 c9-13  → c14-18         (enter left track below A-wall zone rows 16-18)
+DOWN:   r35-36 c14-18 → r40-41 c14-18  [entity2 interior, state 2]
+```
+1+8+5+5+1+1 = 21 steps exactly. Timer: 42 - 42 = 0 cols at entity2 entry. Race condition between win trigger and timer expiry.
 
-**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–41). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–40.
+**Timer concern**: 21 steps consumes 42 cols = exactly the timer. Whether the win fires at 0 cols or timer expires first is unknown. If timer expires simultaneously: state resets to 1, entry may register as state 1 (NOT_FINISHED again). If win fires before timer: STATE 2 ENTRY ACHIEVED for first time.
+
+**Risk mitigation**: Attempt to shave 1 step from approach. Option: instead of LEFT×5 to c9-13, go LEFT×4 to c14-18 and then use a row-35-36 approach that avoids 11-ring A. From r10-11 c14-18: DOWN×5 → r35-36 c14-18 passes through r15-16 c14-18 where 11-ring A is located (row 16 overlap). This COLLECTS 11-ring A (A-wall spawns). Then DOWN → r40-41 c14-18 still works if A-wall only blocks further DOWN from r10-11, but block at r35-36 going to r40-41 is fine (past the A-wall zone rows 16-18).
+
+Wait — does collecting 11-ring A at this point reset the timer? YES — 11-ring collection resets timer to 42 cols. This would give a fresh 21 steps, trivially enough to take the final DOWN to r40-41. State still 2. No race condition.
+
+**Revised route (collecting 11-ring A on descent, 20 steps)**:
+```
+RIGHT:  r50-51 c39-43 → c44-48  
+UP×8:   → r10-11 c44-48          
+LEFT×4: → r10-11 c14-18          [approaching 11-ring A zone]
+DOWN×5: → r35-36 c14-18          [passes through r15-16 c14-18 → 11-ring A collected, timer RESETS, A-wall spawns]
+DOWN:   → r40-41 c14-18          [ENTITY2, state 2, timer fresh]
+```
+1+8+4+5+1 = 19 steps. Timer: 42 - 38 = 4 cols at start of DOWN×5 (step 13 of phase 3). Ring A collected mid-descent: timer resets. Final DOWN to entity2: timer fresh = 42 cols, entity2 entry with margin.
+
+**But**: the A-wall spawns at r16-18 c15-17 WHEN 11-ring A is collected. The block is AT r15-16 c14-18 when collection fires. Next DOWN: r15-16 → r20-21 (destination is below A-wall, passable). Then r25-26 → r30-31 → r35-36. ✓ Then DOWN → r40-41 c14-18 (entity2). ✓
+
+This 19-step variant is actually BETTER — it resets the timer again (via 11-ring A), giving fresh time for entity2 entry and any internal navigation. No race condition.
+
+**Revised preferred route (41 total L2 steps, timer comfortable at entity2)**:
+```
+Steps  1-17: Direct cross route (RIGHT×1+UP×6+RIGHT×3+DOWN×7) → state 2
+Steps 18-20: DOWN+LEFT×2 → 11-ring B at r50-51 c39-43 → timer RESET (state 2 preserved)
+Step   21:   RIGHT → r50-51 c44-48
+Steps 22-29: UP×8 → r10-11 c44-48
+Steps 30-33: LEFT×4 → r10-11 c14-18
+Steps 34-38: DOWN×5 → r35-36 c14-18 [11-ring A collected mid-descent at step 34, timer RESETS again; A-wall spawns]
+Step  39:    DOWN → r40-41 c14-18  [ENTITY2 at state 2, fresh timer]
+```
+Total: 39 steps. Timer at entity2: fresh (just reset at step 34 via 11-ring A). State: 2. No race condition.
+
+Remaining L2 budget: 45 - 39 = 6 steps for internal entity2 navigation.
 
 ---
 
-### Level 1 — WIN at step 15 ✓
+**Cluster D — Direction restriction at state 1: superseded by session 39 (confidence: 230)**
 
-[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
-UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
-[/route]
+@LAT20LON-30 line 506: "Direction restriction at state 1: action 3 (RIGHT) is BLOCKED."
 
-Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+Session 39 directly contradicts this: step 17 of L2 (the RIGHT action from c29-33 to c34-38 at state 1) succeeded. @BELIEF:LAT-60LON-40 was updated in Dream Cycle 1 to reflect this. The direction restriction claim in @LAT20LON-30 is stale and superseded.
 
-**Phase 4 validations**:
-- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
-- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
-- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60, 60 actions available as expected.
-- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (thirteenth consecutive confirmation).
+Note added to @LAT20LON-30 direction restriction claim: see @BELIEF:LAT-60LON-40 (Dream Cycle 1 correction, session 39 confirmation).
 
 ---
 
-### Level 2 — 45 actions, NOT WON
+**Cluster E — Mystery entity = entity2 interior 9-pattern (confidence: 230)**
 
-**Key session exchanges confirm**:
+@LAT20LON-30 lines 512-513: entity2 (L2) has interior 9-pattern at r41-43: r41 c15-17 (3 cells), r42 c15 (1 cell), r43 c15+c17 (2 cells) = 6 cells. This exactly matches the "mystery entity" at r41-43 c15-17 identified across sessions 23-39.
 
-1. **FOCUS @LAT-10LON10** (sal: 19→20): LOCUS fully loaded Game State. EPS at 11.0 — highest in file. Correctly identified: mystery entity at r41–43 c15–17 blocks all entity2 entry; cross-first probe `[1,3,3,3,3]` geometrically impossible (session 39 confirmed); far-right track only reachable via wide connector (rows 10–14). Standing order confirmed: 11-ring-A-first strategy, 27-step cross approach, mandatory post-cross frame read.
+The mystery entity is NOT a separate collectible. It is the ENTITY1 STATE DISPLAY inside entity2's ring (the interior 9-cells that change when entity1 advances state). It is part of entity2's interior structure. The block should navigate around or through these cells to enter entity2's value-5 interior.
 
-2. **STATUS**: LOCUS confirmed EPS scan, all conf:255 beliefs stable, single critical unknown remains the L2 win condition (entity2 never entered; hypothesis E untested). Cross-collection route analytically derived at 17 actions (@BELIEF:LAT-90LON-40,
+Entity2 interior at r40-41 c14-18: value 5 (passable). The 9-pattern is at r41-43 c15-17. Block at r40-41 c14-18 enters value-5 space at rows 40-41 (above the 9-pattern). This should trigger win if the state condition is met.
+
+---
+
+### Phase 2 — New Records
+
+**@BELIEF:LAT-120LON-40** — written this cycle. 11-ring B strategy: cross (state 2) → 11-ring B (timer reset, state 2) → 11-ring A (second timer reset) → entity2 (39 total L2 steps, fresh timer, state 2). Three critical unknowns: c39-43 passable at rows 50-51; 11-ring B presence and trigger; void-escape RIGHT from c39-43 to c44-48.
+
+**@BELIEF:LAT-100LON-40 corrected** — from "state-2 likely persists" to "state-2 does NOT persist through timer expiry." Conf raised 50→215. Source: @LAT20LON-30 session 10 confirmed mechanism.
+
+---
+
+### New Records from This Dream Cycle (fifth pass)
+
+1. **@BELIEF:LAT-100LON-40 corrected** — state-2 does NOT persist through timer expiry; timer resets to level-entry state (state 1). Prior session 40 strategy (allow timer expiry post-cross) is INVALID.
+2. **@BELIEF:LAT-120LON-40 written** — 11-ring B as state-2 bridge; 39-step route; three critical unknowns flagged
+3. **@LAT20LON-30 direction restriction claim flagged** — "RIGHT blocked at state 1" superseded by session 39 RIGHT confirmation
+4. **Mystery entity identified** — confirmed as entity2 interior 9-pattern (not separate collectible)
+
+---
+
+### Session 40 — REVISED Standing Order (Dream Cycle 5 supersedes all prior)
+
+**Strategy**: Direct cross → 11-ring B → 11-ring A → entity2. Skip initial 11-ring A collection.
+
+> **Steps 1–17** (direct cross route): RIGHT×1 (c29→c34), UP×6 (rows 40→10), RIGHT×3 (c34→c49), DOWN×7 (rows 10→45). Block at r45–46 c49–53. **Cross collected — entity1 state 2. Timer: 8 cols = 4 steps.** READ FRAME. Report entity1 state value.
+>
+> **Steps 18–20** (11-ring B): DOWN (r50–51 c49–53), LEFT (r50–51 c44–48), LEFT (r50–51 c39–43). **IF 11-ring B collected: timer resets to 42 cols, state 2 preserved.** If movement blocked at step 19 or 20: report block position and stop — 11-ring B route is void-blocked, strategy fails.
+>
+> **Step 21** (void escape): RIGHT (r50–51 c44–48). Required because c39–43 at rows 40–46 is void — cannot ascend directly.
+>
+> **Steps 22–29** (ascent): UP×8 (r10–11 c44–48).
+>
+> **Steps 30–33** (wide connector crossing): LEFT×4 (r10–11 c14–18).
+>
+> **Steps 34–38** (descent through 11-ring A): DOWN×5 (r35–36 c14–18). Block passes through r15–16 c14–18 at step 34 — **11-ring A collected, timer resets to 42 cols. A-wall spawns at r16–18 c15–17.**
+>
+> **Step 39** (entity2 entry): DOWN (r40–41 c14–18). **ENTITY2 at state 2 — FIRST EVER TEST.** READ FRAME IMMEDIATELY. Report outcome (WIN / NOT_FINISHED / other), entity1 state, block position.
+>
+> **Steps 40–45** (internal navigation if NOT_FINISHED): 6 actions available. Navigate within entity2 interior (value-5 cells). Report each frame. Stop at budget exhaustion.
+
+**Fallback if step 19 blocked** (c39-43 not passable at rows 50-51): Abort 11-ring B approach. Report block position. Use remaining budget (45 - 18 = 27 L2 steps) to explore cross zone geometry and report what movement is possible from r50-51 c49-53.
+
+**Critical observations** (in priority order):
+1. After step 17 (cross): entity1 state value?
+2. After step 20 (11-ring B): timer reset confirmed? (timer bar should show 42 cols)
+3. After step 39 (entity2): WIN or NOT_FINISHED?
