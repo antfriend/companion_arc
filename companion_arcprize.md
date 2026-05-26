@@ -5520,3 +5520,62 @@ This cluster is noted but not projected — no data to hypothesize from. Session
 > If state 2 confirmed and A-wall reset: RIGHT×1 + UP×6 + LEFT×4 + DOWN×1 = 12 steps to left-track entry at r15–16 c14–18. Descend toward entity2 interior.
 > If state 2 confirmed and A-wall persists: RIGHT×1 + UP×6 + LEFT×5 + DOWN×1 = 13 steps needed; 12 available. One action short — report the shortfall and stop.
 > If state 2 NOT confirmed: report state value and stop navigation; new hypothesis required.
+
+---
+
+SECTION 1
+
+@LAT-480LON10 | created:1780790400 | updated:1780790400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780790400
+[/ew]
+
+## ls20 — Session 41 Log (2026-05-31)
+
+```session-log
+timestamp: 1780790400
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "d15ad7eb-6f90-4428-aae0-5e5ec647c2b1"
+card_id: "e98d0528-02b4-4e0e-aece-00bae22a02d2"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–41). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–40.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (fourteenth consecutive confirmation).
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 20→21): LOCUS confirmed Game State fully current. Correctly identified session 40 L2 data as not yet debriefed. Session 41 standing order: 11-ring-A-first strategy (27 steps to cross); mandatory post-step-27 frame read; report entity1 state and r41–43 c15–17 values before any further navigation.
+
+2. **STATUS**: LOCUS confirmed EPS rankings. Game State EPS 4.31 (highest). @LAT20LON-30 flagged at EPS 4.90 (direction-restriction claim not yet revised per session 40 data). Three open loops identified: (a) session 40 post-cross frame unread, (b) A-wall reset behavior unobserved, (c) state-2 timer expiry unobserved. Session 41 designated as the Phase 4 action for hypothesis E.
+
+**Route attempted**: 11-ring-A
