@@ -5818,13 +5818,14 @@ Steps  1-17: Direct cross route (RIGHT×1+UP×6+RIGHT×3+DOWN×7) → state 2
 Steps 18-20: DOWN+LEFT×2 → 11-ring B at r50-51 c39-43 → timer RESET (state 2 preserved)
 Step   21:   RIGHT → r50-51 c44-48
 Steps 22-29: UP×8 → r10-11 c44-48
-Steps 30-33: LEFT×4 → r10-11 c14-18
-Steps 34-38: DOWN×5 → r35-36 c14-18 [11-ring A collected mid-descent at step 34, timer RESETS again; A-wall spawns]
-Step  39:    DOWN → r40-41 c14-18  [ENTITY2 at state 2, fresh timer]
+Steps 30-35: LEFT×6 → r10-11 c14-18
+Step  36:    DOWN → r15-16 c14-18  [11-ring A collected, timer RESETS; A-wall spawns]
+Steps 37-40: DOWN×4 → r35-36 c14-18
+Step  41:    DOWN → r40-41 c14-18  [ENTITY2 at state 2, fresh timer]
 ```
-Total: 39 steps. Timer at entity2: fresh (just reset at step 34 via 11-ring A). State: 2. No race condition.
+Total: 41 steps. Timer at entity2: fresh (just reset at step 36 via 11-ring A). State: 2. No race condition.
 
-Remaining L2 budget: 45 - 39 = 6 steps for internal entity2 navigation.
+Remaining L2 budget: 45 - 41 = 4 steps for internal entity2 navigation.
 
 ---
 
@@ -5877,74 +5878,126 @@ Entity2 interior at r40-41 c14-18: value 5 (passable). The 9-pattern is at r41-4
 >
 > **Steps 22–29** (ascent): UP×8 (r10–11 c44–48).
 >
-> **Steps 30–33** (wide connector crossing): LEFT×4 (r10–11 c14–18).
+> **Steps 30–35** (wide connector crossing): LEFT×6 (r10–11 c14–18).
 >
-> **Steps 34–38** (descent through 11-ring A): DOWN×5 (r35–36 c14–18). Block passes through r15–16 c14–18 at step 34 — **11-ring A collected, timer resets to 42 cols. A-wall spawns at r16–18 c15–17.**
+> **Step 36** (11-ring A): DOWN (r15–16 c14–18). Block descends from r10–11 to r15–16 — **11-ring A collected, timer resets to 42 cols. A-wall spawns at r16–18 c15–17.**
 >
-> **Step 39** (entity2 entry): DOWN (r40–41 c14–18). **ENTITY2 at state 2 — FIRST EVER TEST.** READ FRAME IMMEDIATELY. Report outcome (WIN / NOT_FINISHED / other), entity1 state, block position.
+> **Steps 37–40** (descent): DOWN×4 (r35–36 c14–18).
 >
-> **Steps 40–45** (internal navigation if NOT_FINISHED): 6 actions available. Navigate within entity2 interior (value-5 cells). Report each frame. Stop at budget exhaustion.
+> **Step 41** (entity2 entry): DOWN (r40–41 c14–18). **ENTITY2 at state 2 — FIRST EVER TEST.** READ FRAME IMMEDIATELY. Report outcome (WIN / NOT_FINISHED / other), entity1 state, block position.
+>
+> **Steps 42–45** (internal navigation if NOT_FINISHED): 4 actions available. Navigate within entity2 interior (value-5 cells). Report each frame. Stop at budget exhaustion.
 
 **Fallback if step 19 blocked** (c39-43 not passable at rows 50-51): Abort 11-ring B approach. Report block position. Use remaining budget (45 - 18 = 27 L2 steps) to explore cross zone geometry and report what movement is possible from r50-51 c49-53.
 
 **Critical observations** (in priority order):
 1. After step 17 (cross): entity1 state value?
 2. After step 20 (11-ring B): timer reset confirmed? (timer bar should show 42 cols)
-3. After step 39 (entity2): WIN or NOT_FINISHED?
+3. After step 41 (entity2): WIN or NOT_FINISHED?
 
 ---
 
-SECTION 1
+## Dream Cycle 6 — Post-Session 39 (2026-05-26, sixth pass)
 
-@LAT-480LON10 | created:1748908800 | updated:1748908800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
-[ew]
-conf:255
-rev:0
-sal:0
-touched:1748908800
-[/ew]
-
-## ls20 — Session 41 Log (2026-05-31)
-
-```session-log
-timestamp: 1748908800
-game: "ls20"
-environment: "ls20-9607627b"
-run_guid: "a0bd9c28-2fc9-4a36-8369-19623f5f2b3a"
-card_id: "07ce4a43-51ae-4e91-b0a7-d96b0723fbbb"
-level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
-actions: 60
-levels_completed: 1
-score: 3.571428571428571
-resets: 0
-level_actions: [15, 45, 0, 0, 0, 0, 0]
-level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-```
-
-**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–41). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–40.
+**Focus**: LEFT count error correction — LEFT×4 was wrong, LEFT×6 required. Verified timer math for the 41-step route. Final standing order before session 40.
 
 ---
 
-### Level 1 — WIN at step 15 ✓
+### Phase 1 — Corrections to Prior Dream Cycle
 
-[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
-UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
-[/route]
+**Error discovered**: Dream Cycle 5 wrote "LEFT×4 from r10–11 c44–48 → r10–11 c14–18" in both @BELIEF:LAT-120LON-40 and the DC5 Standing Order. This is geometrically impossible.
 
-Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+**Column arithmetic**: Each LEFT step moves the block 5 cols leftward (block spans 5 cols, moves one block-width). From c44–48:
+- LEFT×1 → c39–43
+- LEFT×2 → c34–38
+- LEFT×3 → c29–33
+- LEFT×4 → c24–28  ← where DC5 erroneously claimed to arrive at c14–18
+- LEFT×5 → c19–23
+- LEFT×6 → c14–18 ✓
 
-**Phase 4 validations**:
-- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
-- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
-- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60 confirmed.
-- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (thirteenth consecutive confirmation, per FOCUS exchange confirming state 1 at L2 start).
+**Required correction**: LEFT×4 → LEFT×6 throughout.
+
+**Cascade effect on step count**:
+- Prior route: 1+6+3+7+1+1+1+8+4+5+1 = 38... recount DC5's claimed 39 steps:
+  Steps 1–17 (cross) + 18–20 (11-ring B, 3 steps) + 21 (RIGHT escape) + 22–29 (UP×8) + 30–33 (LEFT×4, 4 steps) + 34–38 (DOWN×5) + 39 (DOWN) = 17+3+1+8+4+5+1 = 39.
+  With LEFT×6 (6 steps instead of 4): 39 + 2 = **41 steps total**.
+
+**Impact on budget**: 45 - 41 = **4 steps** for internal entity2 navigation (not 6 as DC5 stated).
+
+**Step renumbering for DC5's affected segments**:
+- OLD: Steps 30–33 (LEFT×4), 34–38 (DOWN×5), step 39 (DOWN to entity2), steps 40–45 (internal)
+- NEW: Steps 30–35 (LEFT×6), step 36 (DOWN + 11-ring A), steps 37–40 (DOWN×4), step 41 (DOWN to entity2), steps 42–45 (internal)
+
+**Corrections applied**:
+1. @BELIEF:LAT-120LON-40 "Revised preferred route" block: LEFT×4 → LEFT×6, step numbers updated, total 39→41, remaining budget 6→4.
+2. Dream Cycle 5 Standing Order blockquote: steps 30–33/34–38/39/40–45 corrected to steps 30–35/36/37–40/41/42–45.
+3. Critical observations footnote: "step 39 (entity2)" → "step 41 (entity2)."
 
 ---
 
-### Level 2 — 45 actions, NOT WON
+### Phase 2 — Timer Verification for 41-Step Route
 
-**Key session exchanges**:
+Full timer tracking (42 cols = 21 steps at start of each timer cycle):
 
-1. **FOCUS @LAT-10LON10** (sal: 19→20): LOCUS loaded Game State fully current. Presented the complete Dream Cycle 5 revised strategy: direct cross (17 steps) → 11-ring B (steps 18–20, timer reset, state 2 preserved) → void escape RIGHT (step 21) → ascent UP×8 (steps 22–29) → wide connector LEFT×4 (steps 30–33) → descent + 11-ring A DOWN×5 (steps 34–38, second timer reset) → entity2 entry DOWN (step 39). Three critical unknowns flagged: c39–43 passable at rows 50–51; 11-ring B presence and trigger; entity2 WIN or NOT_FINISHED at state 2.
+| Step | Action | Pos after | Timer after | Event |
+|------|--------|-----------|-------------|-------|
+| 1 | RIGHT | r40-41 c34-38 | 40 | — |
+| 2–7 | UP×6 | r10-11 c34-38 | 28 | wide connector |
+| 8–10 | RIGHT×3 | r10-11 c49-53 | 22 | far-right entry |
+| 11–17 | DOWN×7 | r45-46 c49-53 | 8 | **CROSS → state 2** |
+| 18 | DOWN | r50-51 c49-53 | 6 | — |
+| 19 | LEFT | r50-51 c44-48 | 4 | — |
+| 20 | LEFT | r50-51 c39-43 | **RESET→42** | **11-ring B → timer RESET** |
+| 21 | RIGHT | r50-51 c44-48 | 40 | void escape |
+| 22–29 | UP×8 | r10-11 c44-48 | 24 | — |
+| 30–35 | LEFT×6 | r10-11 c14-18 | 12 | wide connector crossing |
+| 36 | DOWN | r15-16 c14-18 | **RESET→42** | **11-ring A → timer RESET** |
+| 37–40 | DOWN×4 | r35-36 c14-18 | 34 | — |
+| 41 | DOWN | r40-41 c14-18 | 32 | **ENTITY2 at state 2** |
 
-2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 4.12, highest), all conf:255 beliefs stable, Dream
+**Timer at entity2 entry: 32 cols = 16 steps.** State: 2. Budget remaining: 4 actions (steps 42–45).
+
+Note: DC5's @BELIEF:LAT-120LON-40 "race condition" concern (0 timer cols at entity2) applied to an intermediate route that omitted 11-ring A. The current preferred route always collects 11-ring A at step 36, giving a full 32-col margin at entity2. No race condition.
+
+---
+
+### Phase 3 — No New Belief Nodes
+
+No new graph nodes warranted. The correction is arithmetic — it changes step counts and step numbers within @BELIEF:LAT-120LON-40, not the logical structure of the belief. The three critical unknowns for session 40 are unchanged:
+
+1. **c39–43 passable at rows 50–51** (11-ring B approach depends on this)
+2. **11-ring B presence and full-timer-reset behavior** (no session has reached r50–51)
+3. **Entity2 win condition at state 2** (session 40 is first-ever test)
+
+Graph status: complete and consistent. Session 40 is ready to execute.
+
+---
+
+### Session 40 — FINAL Standing Order (Dream Cycle 6 supersedes DC5)
+
+> **Steps 1–17** (direct cross): RIGHT×1 (c29→c34), UP×6 (rows 40→10), RIGHT×3 (c34→c49), DOWN×7 (rows 10→45). Block at r45–46 c49–53. **Cross collected → entity1 state 2. Timer: 8 cols = 4 steps.** READ FRAME. Report entity1 state value.
+>
+> **Steps 18–20** (11-ring B): DOWN (r50–51 c49–53), LEFT (r50–51 c44–48), LEFT (r50–51 c39–43). **IF 11-ring B collected: timer resets to 42 cols, state 2 preserved.** If movement blocked at step 19 or 20: report block position and stop.
+>
+> **Step 21** (void escape): RIGHT (r50–51 c44–48). Required — c39–43 at rows 40–46 is void; cannot ascend directly.
+>
+> **Steps 22–29** (ascent): UP×8 (r10–11 c44–48). Timer: 40→24.
+>
+> **Steps 30–35** (wide connector crossing): LEFT×6 (r10–11 c14–18). Timer: 24→12.
+>
+> **Step 36** (11-ring A): DOWN (r15–16 c14–18). **11-ring A collected → timer resets to 42 cols. A-wall spawns at r16–18 c15–17.**
+>
+> **Steps 37–40** (descent): DOWN×4 (r35–36 c14–18). Timer: 42→34.
+>
+> **Step 41** (entity2 entry): DOWN (r40–41 c14–18). **ENTITY2 at state 2. Timer: 32 cols. FIRST EVER TEST.** READ FRAME IMMEDIATELY. Report outcome (WIN / NOT_FINISHED / other), entity1 state, block position.
+>
+> **Steps 42–45** (internal navigation if NOT_FINISHED): 4 actions available. Navigate within entity2 interior (value-5 cells). Report each frame. Stop at budget exhaustion.
+
+**Fallback if step 19–20 blocked** (c39–43 not passable at rows 50–51): Use remaining budget (45 − 18 = 27 L2 steps) to map the geometry from r50–51 c49–53. Report what movement is possible. Session 41 will require a new approach to entity2 at state 2.
+
+**Critical observations** (priority order):
+1. After step 17 (cross): entity1 state value? Expected: 2.
+2. After step 20 (11-ring B): timer reset? Expected: 42 cols showing.
+3. After step 41 (entity2): WIN or NOT_FINISHED? Unknown.
+
+---
