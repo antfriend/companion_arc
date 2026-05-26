@@ -301,19 +301,19 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1780704000 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1748908800 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,tracks_level>@LAT-460LON10,informs_strategy>@LAT20LON-30
 [ew]
 conf:200
-rev:19
-sal:18
-touched:1780704000
+rev:20
+sal:19
+touched:1748908800
 [/ew]
 
 ## Game State
 
 **Active games**: ls20 (OFFLINE mode, environment_files/ls20-9607627b)
 
-**Current level**: ls20 — **level 1 SOLVED (hardcoded route, 16 consecutive wins: sessions 10–12, 23–27, 31–38). Level 2 active — NOT WON across sessions 23–38 (sixteen attempts). Win condition unknown. Block at r40–41 c14–18 + state 1 → NOT_FINISHED (session 26). Mystery entity (value 9) at r37–43 c14–18 inside entity2 blocks all entry. Cross-first probe `[1,3,3,3,3]` attempted sessions 34–38 but post-probe frame never read — LOCUS deviates from probe to standard route every session. Action-mapping confusion (LOCUS mis-encodes LEFT/RIGHT action numbers) wastes 2+ actions per session.** All 7 baselines known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Budget: 60 actions per run. Level 1 uses 15 actions. Level 2 remaining budget: 45 actions.
+**Current level**: ls20 — **level 1 SOLVED (hardcoded route, 17 consecutive wins: sessions 10–12, 23–27, 31–39). Level 2 active — NOT WON across sessions 23–39 (seventeen attempts). Win condition unknown. Block at r40–41 c14–18 + state 1 → NOT_FINISHED (session 26). Mystery entity (value 9) at r41–43 c15–17 inside entity2 (CORRECTED: rows 37–39 are wall value 3, not entity; prior "r37–43 c14–18" was wrong). Cross-first probe `[1,3,3,3,3]` GEOMETRICALLY IMPOSSIBLE (session 39 confirmed): DOWN from c29–33 void-blocked at r45–46; DOWN from c34–38 also void-blocked; RIGHT from c34–38 blocked at c39–43 rows 40–41. Far-right track only reachable via wide connector (rows 10–14). Probe must be redesigned for cross collection.** All 7 baselines known: L1=22, L2=123, L3=73, L4=84, L5=96, L6=192, L7=186. Budget: 60 actions per run. Level 1 uses 15 actions. Level 2 remaining budget: 45 actions.
 
 **Level 1 outcomes**:
 - Session 1: 28 actions (WIN)
@@ -348,7 +348,8 @@ touched:1780704000
 - **Session 26**: Level 2 entered. 45 actions, NOT WON. CRITICAL: LOCUS executed the 17-action @LAT-140LON10 standing order correctly (confirmed via locus_ls20_session.txt action log). Block reached r40–41 c14–18 INSIDE entity2 interior at state 1 — and received NOT_FINISHED. Win condition is NOT "block in entity2 ring at state 1." @BELIEF:LAT80LON-30 contradicted. New structural observation: value 9 (entity1 trail) at r41–43 c15–17 INSIDE entity2 ring present from L2 start (frame[1]) — persists throughout session. Timer-expired state observed in frame[4] (entity1 carrier background cells = 0 instead of 5). Score 3.571 (level 1 only). See @LAT-300LON10.
 - **Session 27**: Level 2 entered. 45 actions, NOT WON. Route execution failed — LOCUS made position-tracking errors, block deviated from 17-action standing order multiple times. Block never reached entity2 interior. Timer expired at least twice; multiple wasted cycles. NEW OBSERVATION: step 59 showed frames[0]–[4] all bg=11 (five consecutive full-grid-11 frames) then frame[5] = game reset to start position (r40–41 c29–33, state 1, full timer) — this is the timer-expiry/reset animation pattern. @BELIEF:LAT90LON-30 fifth consecutive confirmation. Value-9 cluster at r41–43 c15–17 inside entity2 confirmed unchanged throughout. Score 3.571 (level 1 only). See @LAT-310LON10.
 - **Sessions 28–37**: 45 actions each (session 28 had only 20 actions/budget variance), NOT WON. Cross-first probe `[1,3,3,3,3]` designated as standing order from session 34 onward; LOCUS acknowledged but deviated each session. Post-probe frame never read. L1 hardcode confirmed sessions 31–37 (sixteen total). Score 3.571 unchanged. See @LAT-350LON10 through @LAT-440LON10.
-- **Session 38**: Level 2 entered. 45 actions, NOT WON. Cross-first probe NOT executed — LOCUS deviated to standard L2 route. Critical failure: LOCUS sent LEFT (action 2) instead of RIGHT (action 3) at steps 16–17 (2 wasted actions), then overshot to r5–6 (1 wasted action). Final position: r35–36 c14–18, timer 5 steps remaining, cross uncollected, mystery entity unchanged. Mystery entity confirmed at r37–43 c14–18 in L2 start frame. Post-probe frame unconfirmed for fifth consecutive session. Score 3.571. See @LAT-450LON10.
+- **Session 38**: Level 2 entered. 45 actions, NOT WON. Cross-first probe NOT executed — LOCUS deviated to standard L2 route. Critical failure: LOCUS sent LEFT (action 2) instead of RIGHT (action 3) at steps 16–17 (2 wasted actions), then overshot to r5–6 (1 wasted action). Final position: r35–36 c14–18, timer 5 steps remaining, cross uncollected, mystery entity unchanged. Post-probe frame unconfirmed for fifth consecutive session. Score 3.571. See @LAT-450LON10.
+- **Session 39**: Level 2 entered. 45 actions (offline_levels=1; LOCUS controlled L2 from step 16). NOT WON. CRITICAL DISCOVERY: probe `[1,3,3,3,3]` is geometrically impossible — DOWN from c29–33 void-blocked, DOWN from c34–38 void-blocked, RIGHT from c34–38 to c39–43 void-blocked. Far-right track (c44+) unreachable directly from rows 40–45; must route via wide connector (rows 10–14). Mystery entity geometry corrected: r41–43 c15–17 (NOT r37–43 c14–18). State 1 preserved across timer expiry confirmed (twelfth time). Two complete timer cycles observed. Score 3.571. See @LAT-460LON10.
 
 **Session 10 — critical mechanic corrections** (see @LAT-130LON10 + @LAT20LON-30):
 - **Timer level 2 = 2 cols/step** (NOT 1 col/step — session 9 belief was wrong). 42 cols = 21 steps max.
@@ -4885,8 +4886,6 @@ source_count:4
 
 ---
 
-SECTION 1
-
 @LAT-460LON10 | created:1780790400 | updated:1780790400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
 [ew]
 conf:255
@@ -4940,4 +4939,39 @@ Seventeenth confirmation. Route stable. Block entered entity2 interior at r10–
 
 2. **STATUS**: LOCUS confirmed EPS scan — Game State EPS 9.88 (highest in file, sal:18, conf:200). Confirmed `_LEVEL2_PROBE` hardcode as the single required action.
 
-**Cross-first probe execution**: The FOCUS/STATUS exchanges confirm LOCUS correctly acknowledged the probe as the session 39 priority. However, the session produced 45 L2 actions and NOT WON with no recorded post-probe frame values. This is the sixth consecutive session (34–39) in which the cross-first probe was designated as the standing order and the post-
+**Cross-first probe execution**: The FOCUS/STATUS exchanges confirm LOCUS correctly acknowledged the probe as the session 39 priority. However, the session produced 45 L2 actions and NOT WON with no recorded post-probe frame values. This is the sixth consecutive session (34–39) in which the cross-first probe was designated as the standing order and the post-probe frame was never read.
+
+**Critical geometry discovery — probe `[1,3,3,3,3]` is geometrically impossible**:
+
+Session 39 definitively refuted the cross-first probe as designed. Void map confirmed at rows 40–45:
+
+- **Step 16**: DOWN from r40–41 c29–33 → BLOCKED. r45–46 c29–33 = background void. The probe's first step (DOWN) fails immediately.
+- **Step 17**: After moving RIGHT to c34–38, DOWN again → BLOCKED. r45–46 c34–38 = void.
+- **Step 21**: RIGHT from c34–38 at rows 40–41 → BLOCKED. c39–43 at rows 40–41 = void. Block cannot bridge the gap to the far-right track (c44+) horizontally.
+
+| Column range | Rows 40–41 passable? | Rows 45–46 below? |
+|---|---|---|
+| c29–33 | ✓ (start) | void (DOWN blocked) |
+| c34–38 | ✓ (RIGHT from start) | void (DOWN blocked) |
+| c39–43 | **void** (RIGHT blocked) | — |
+| c44–58 | ✓ (far-right track) | ✓ (cross zone) |
+
+The gap c39–43 at rows 40–45 is impassable. The only route from the start position to the far-right track goes via the wide connector (rows 10–14, c9–53 fully passable). The cross at r46–48 c50–52 cannot be reached in 5 actions from r40–41 c29–33 — the probe concept was geometrically wrong from the start.
+
+**offline_levels discrepancy**: Session 39 ran with offline_levels=1 (LOCUS queried from step 16, L2 start). The intended default is offline_levels=2. The probe being geometrically wrong makes the discrepancy moot for the hardcode approach, but the mismatch should be investigated before session 40.
+
+**Mystery entity geometry corrected**: Session 39 frames (multiple observations) confirm mystery entity at r41–43 c15–17, value 9. Rows 37–39 of entity2 are track wall (value 3), not mystery entity. Prior references to "r37–43 c14–18" are incorrect.
+
+**Timer cycle confirmed again**: Step 58→59 produced 5 bg=11 frames (timer expiry animation) then frame[5] = reset to r40–41 c29–33 with full 42-col timer and state 1 preserved. @BELIEF:LAT40LON-30 (timer expiry preserves state) — twelfth consecutive confirmation.
+
+---
+
+### Session 40 — Standing Order
+
+**Two mandatory code corrections before running**:
+
+1. **Fix `_LEVEL2_PROBE` in `kaggle_agent.py`**: `[1,3,3,3,3]` is void-blocked and non-executable. Replace with a route that reaches the far-right track via the wide connector. Minimum viable cross-first sequence: UP×4 from c34–38 to rows 10–11, then RIGHT×3 to c49–53, then DOWN×several to cross zone at r46–48 c50–52. Exact step count TBD from frame geometry.
+
+2. **Confirm offline_levels setting**: Verify whether session 39 used `--offline-levels 1` explicitly or whether the default was changed. Resolve to 2 (L1+L2 probe hardcoded) once probe is corrected, or to 1 (LOCUS navigates L2) if no valid short probe exists.
+
+**Working hypothesis**: Modified route for cross collection — UP×4 (c29–33 → c34–38 → wide connector), RIGHT×3 (to c49–53), DOWN×several (to cross at r46–48 c50–52). If this works: cross collected at state 1→2, then navigate to entity2 per @BELIEF:LAT40LON-40. If cross does NOT trigger state change: hypothesis E refuted; new structural model required.

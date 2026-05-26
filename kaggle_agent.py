@@ -60,11 +60,14 @@ BLOCK_VAL = 12
 
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
-_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 16 confirmed wins
-# Cross-first probe: DOWN + RIGHT×4 from r40-41 c29-33 → r45-46 c49-53 (reaches cross).
-# Hardcoded to bypass LOCUS action-mapping confusion (sessions 34-38: LOCUS deviated every time).
-# After probe executes, LOCUS reads post-step-5 frame to check r40-42 c15-17 (mystery entity cleared or not).
-_LEVEL2_PROBE = [1, 3, 3, 3, 3]
+_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 17 confirmed wins
+# INVALID — session 39 confirmed [1,3,3,3,3] is geometrically impossible:
+#   DOWN from c29-33 → void at r45-46 c29-33 (blocked)
+#   DOWN from c34-38 → void at r45-46 c34-38 (blocked)
+#   RIGHT from c34-38 → void at c39-43 rows 40-41 (blocked)
+# Far-right track (c44+) only reachable via wide connector rows 10-14.
+# Probe must be redesigned before offline_levels=2 is useful.
+_LEVEL2_PROBE = [1, 3, 3, 3, 3]  # DO NOT USE — see comment above
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_PROBE}
 
 
