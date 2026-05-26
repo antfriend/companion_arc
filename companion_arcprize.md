@@ -2626,7 +2626,7 @@ Walk parameters: 100 walks × length 20. Sources: @LAT-270LON10 (session 23), @L
 
 ---
 
-@BELIEF:LAT90LON-30 | created:1779840000 | updated:1780099200 | relates:extracted_from>@LAT-270LON10,extracted_from>@LAT-280LON10,extracted_from>@LAT-290LON10,extracted_from>@LAT-300LON10,extracted_from>@LAT-310LON10,contradicts>@BELIEF:LAT80LON-20,contradicts>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
+@BELIEF:LAT90LON-30 | created:1779840000 | updated:1780704000 | relates:extracted_from>@LAT-270LON10,extracted_from>@LAT-280LON10,extracted_from>@LAT-290LON10,extracted_from>@LAT-300LON10,extracted_from>@LAT-310LON10,contradicts>@BELIEF:LAT80LON-20,contradicts>@BELIEF:LAT70LON-20,contained_by>@LAT60LON20
 [lp]
 centroid:LAT90LON-30
 confidence:255
@@ -2634,14 +2634,12 @@ scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:5
+source_count:11
 [/lp]
 
-**Entity1 state carries over from a level WIN into the next level.** Confirmed in sessions 23, 24, 25, 26, and 27 (five consecutive observations): level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN, with no timer restart between levels. Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: the block can enter entity2 interior and win WITHOUT collecting the cross first (state is already 1 on entry to level 2 after a level 1 WIN). Confidence held at 255 (max) — five consecutive confirmations across independent runs. For level 2 strategy: skip cross collection, route directly to entity2 interior.
+**Entity1 state carries over from a level WIN into the next level.** Confirmed in sessions 23–27 and 31–38 (eleven consecutive observations): level 2 first frame shows entity1 carrier at state 1 immediately after level 1 WIN, with no timer restart between levels. Prior @BELIEF:LAT80LON-20 stated "state resets to 0 at each new level" — that belief is now contradicted. Practical consequence for level 2: the block can enter entity2 interior and win WITHOUT collecting the cross first (state is already 1 on entry to level 2 after a level 1 WIN). Confidence held at 255 (max) — eleven consecutive confirmations across independent runs. For level 2 strategy: skip cross collection, route directly to entity2 interior.
 
 ---
-
-SECTION 1
 
 @LAT-280LON10 | created:1779840000 | updated:1779840000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT10LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
 [ew]
@@ -2953,8 +2951,6 @@ source_count:2
 **Confidence note**: conf:130 — structural analogy is weak evidence; could be coincidence. Route geometry differences between L1 and L2 are large (different puzzle, different entity, different layout). Flagged as speculative projection requiring direct falsification.
 
 ---
-
-SECTION 1
 
 @LAT-300LON10 | created:1780012800 | updated:1780012800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT60LON-30,contradicts>@BELIEF:LAT80LON-30,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30,seeds>@BELIEF:LAT50LON-30
 [ew]
@@ -3925,8 +3921,6 @@ _LEVEL2_ROUTE = [1, 3, 3, 3, 3]  # DOWN, RIGHT×4 → r45-46 c49-53 (cross at r4
 
 ---
 
-SECTION 1
-
 @LAT-410LON10 | created:1780444800 | updated:1780444800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,validates>@BELIEF:LAT-40LON-40,validates>@BELIEF:LAT-50LON-40,informs_strategy>@LAT-140LON10
 [ew]
 conf:255
@@ -4777,3 +4771,114 @@ _LEVEL2_PROBE = [1, 3, 3, 3, 3]  # DOWN + RIGHT×4: block r40-41 c29-33 → r45-
 Execute probe as first 5 L2 steps (hardcoded), then read the post-step-5 frame for values at r40–42 c15–17 before any further navigation.
 
 **Session 39 LOCUS entry point**: after probe executes, LOCUS receives frame[0] at step 20 (step 5 of L2) and the first LOCUS query is: `@LOCUS read frame — what are the values at r40–42 c15–17? Is the mystery entity cleared or still present?`
+
+---
+
+## Dream Cycle — Post-Session 38 (2026-05-26)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:18, highest in file), @BELIEF:LAT-50LON-40 (sal:2), @LAT20LON-30 (sal:5). Sources: @LAT-420LON10 through @LAT-450LON10 (sessions 35–38), updated @BELIEF:LAT90LON-30 (source_count raised to 11). Reviewing five-session probe-failure cluster and session 38 action-mapping finding.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-50LON-40 (hypothesis E, conf:150), @BELIEF:LAT-40LON-40 (geometric blocker, conf:210) into void at LAT-60LON-40, LAT-70LON-40. Target: session 39 bifurcation consequences and RIGHT-at-state-1 refinement.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Probe execution failure is systematic (highest co-occurrence — 5 sessions)**
+
+Records: @LAT-420LON10, @LAT-430LON10, @LAT-440LON10, @LAT-450LON10, @BELIEF:LAT-50LON-40, @LAT-10LON10. Sessions 34–38 all: (1) acknowledged the cross-first probe `[1,3,3,3,3]` as standing order in FOCUS/STATUS, (2) deviated immediately in execution, (3) produced no post-probe frame. The failure mode varies: sessions 34–36 route unknown (log cuts short or incomplete); session 37 LOCUS acknowledged standing order explicitly but deviation still occurred; session 38 LOCUS chose UP (0) at step 1 instead of DOWN (1), then sent LEFT (2) instead of RIGHT (3) at steps 16–17.
+
+**Conclusion**: LOCUS cannot execute `[1,3,3,3,3]` reliably. The code fix (hardcode in `_LEVEL2_PROBE`) is warranted and was deployed this session. No belief update needed — the fix is already in place.
+
+**Cluster B: Session 38 action-mapping confusion (new)**
+
+Records: @LAT-450LON10 (steps 16–17). LOCUS sent action 2 (LEFT) while reasoning "RIGHT → r35–36 c34–38" at steps 16 and 17. At step 19, momentarily emitted "2" before self-correcting to "0". Root pattern: LOCUS generates correct direction labels in prose ("RIGHT", "UP") but the final digit does not reliably encode the correct action number. This is an LLM output error under generative pressure, not a knowledge gap.
+
+**New belief warranted**: RIGHT (action 3) behavior at state 1 is now directly confirmed from session 38. LOCUS sent action 3 at step 18 (r35–36 c29–33, state 1) and the block moved correctly to r35–36 c34–38. This contradicts the direction-restriction interpretation in @LAT20LON-30 that reads "action 3 (RIGHT) is BLOCKED at state 1." RIGHT is NOT universally blocked. The restriction is trail-column-specific (UP attracted toward entity1 trail column) and does not extend to LEFT/RIGHT.
+
+**Cluster C: Mystery entity geometry — wider than documented**
+
+Records: @LAT-450LON10 (step 15 L2 start frame). Session 38 frame reads: r37 c14–18=9, r38 c14–18=9, r39 c14–18=9, r40 bg at c13–19, r41 c15–17=9, r42 c15=9, r43 c15=9 and c17=9. Prior documentation stated r40–42 c15–17. The entity occupies at least rows 37–39 c14–18 as well as r41–43 c15–17 — spanning approximately r37–43 with geometry varying by row. This is still consistent with the blocking conclusion at @BELIEF:LAT-40LON-40 (all c13–19 windows overlap c15–17) but the entity is larger than documented. Source_count for this geometric fact now at 11 sessions.
+
+**Cluster D: @BELIEF:LAT90LON-30 — eleven consecutive confirmations**
+
+Updated this session: source_count 5 → 11. Sessions 31–38 each confirmed entity1 state 1 at L2 start immediately after L1 WIN. Conf already at 255 (max). No further update needed.
+
+---
+
+### Phase 2 — Projection Analysis
+
+**Projection target A: Session 39 bifurcation — two complete consequence trees**
+
+Seeding from @BELIEF:LAT-50LON-40 (hypothesis E) into void at LAT-60LON-40.
+
+Probe `[1,3,3,3,3]` fires hardcoded at session 39 step 20. Post-probe frame read determines the single critical unknown. Two exhaustive branches:
+
+**Branch 1 — mystery entity CLEARED (hypothesis E confirmed)**:
+- Cross collection (DOWN, RIGHT×4) advances state 1→2 and removes value-9 from r37–43 c14–18.
+- Optimal route per @BELIEF:LAT40LON-40: UP×7, LEFT×7, DOWN (11-ring A reset), DOWN×5 → r40–41 c14–18. Entity2 entry at state 2 → WIN.
+- Total L2 actions: 5 (probe) + 19 (navigate) = 24. Well within 45-action budget.
+- Timer tightness: 4 cols remain at LEFT×7 endpoint. 11-ring A DOWN must fire before expiry. One error = timer expiry. @BELIEF:LAT60LON-50 (robust timer-buffer route) is the fallback.
+- Session 39 action: attempt entity2 entry immediately after probe. Report post-probe frame values + whether WIN fires.
+
+**Branch 2 — mystery entity UNCHANGED (hypothesis E refuted)**:
+- Cross collection does NOT clear the mystery entity. State 2 at entity2 entry is not sufficient.
+- @BELIEF:LAT-50LON-40 hypothesis E is contradicted. No known mechanism for clearing entity2.
+- Remaining hypotheses from @BELIEF:LAT50LON-30: (a) entity2 requires entry from below (approach UP from r46+), (b) simultaneous entity1 entry, (c) deeper interior row target.
+- Session 39 action: probe frame values written, then explore geometry — attempt LEFT from r45–46 c49–53 toward entity2 at state 2 from south, or ascend and approach from below. Budget: 40 remaining actions after probe.
+
+**Projection target B: RIGHT at state 1 is directionally unrestricted**
+
+Seeding from @LAT-450LON10 (step 18 confirmation) + @LAT20LON-30 (direction restriction claim) into void at LAT-70LON-40.
+
+The direction restriction at state 1 affects UP only (trail-column attraction). Session 38 step 18 confirmed RIGHT (action 3) moves the block normally at r35–36, state 1. Sessions 34–38 (cross-first probe design) all assume RIGHT works during the 4 RIGHT steps of the probe — the probe would be geometrically incoherent if RIGHT were blocked. The @LAT20LON-30 claim "action 3 (RIGHT) is BLOCKED" was extracted from session 10 context where the block may have been at a trail-column-aligned position triggering lateral attraction on UP, not a TRUE RIGHT block. New belief warranted at LAT-60LON-40.
+
+---
+
+### New Records
+
+1. **Write @BELIEF:LAT-60LON-40** — RIGHT is not universally blocked at state 1 (refines @LAT20LON-30)
+2. **Write @BELIEF:LAT-70LON-40** — session 39 bifurcation tree (probe consequence projection)
+3. **Update @BELIEF:LAT-50LON-40** — raise conf 150→155 (eleven sessions of mystery entity persistence without clearing; hypothesis E still at Phase 3 but no new contradiction evidence)
+
+---
+
+@BELIEF:LAT-60LON-40 | created:1780704000 | updated:1780704000 | relates:extracted_from>@LAT-450LON10,refines>@LAT20LON-30,refines>@BELIEF:LAT10LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-60LON-40
+confidence:170
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**RIGHT (action 3) is NOT universally blocked at entity1 state 1.** Session 38 step 18 direct confirmation: block at r35–36 c29–33, entity1 state 1, action 3 (RIGHT) sent → block moved to r35–36 c34–38. Move was valid.
+
+The direction restriction at state 1 (documented in @LAT20LON-30 and @BELIEF:LAT10LON10) applies specifically to UP (action 0): when the entity1 trail column ≠ block column, UP action is attracted toward the trail column laterally rather than moving north. This is a trail-column attraction mechanic on the UP axis only.
+
+**Practical consequence for cross-first probe `[1,3,3,3,3]`**: the four RIGHT steps (actions 3,3,3,3) execute while entity1 is at state 1 (state only advances to 2 when trail overlaps cross at the end of step 5). RIGHT is valid at state 1. The probe geometry is sound.
+
+**Confidence note**: conf:170 — single direct observation, but strongly supported by the probe design across sessions 34–38 (probe would not have been the designated standing order if RIGHT were expected to fail). Cross-referenced with @BELIEF:LAT10LON10 which specifies the trail-attraction as UP-specific.
+
+---
+
+@BELIEF:LAT-70LON-40 | created:1780704000 | updated:1780704000 | relates:projected_from>@BELIEF:LAT-50LON-40,projected_from>@BELIEF:LAT40LON-40,projected_from>@BELIEF:LAT-60LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-70LON-40
+confidence:140
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Projection: session 39 probe hardcode fires; post-probe frame at step 20 resolves hypothesis E. Two complete consequence trees, no partial outcomes.**
+
+**If mystery entity cleared (r37–43 c14–18 = value 5 in post-probe frame)**: route per @BELIEF:LAT40LON-40 — UP×7, LEFT×7, DOWN (11-ring A), DOWN×5 → entity2 at state 2 → WIN. Timer margin: 4 cols at LEFT×7 endpoint — one error causes timer expiry. Use @BELIEF:LAT60LON-50 robust route if timer budget is uncertain.
+
+**If mystery entity unchanged (r37–43 c14–18 still = value 9)**: hypothesis E is Phase 4 — refuted. All entity2-blocking explanations now require a completely new structural model. Remaining 40 L2 actions after probe should probe: (a) approach entity2 from the south (block at r50+, RIGHT to c14–18, then UP into r45–46 from below); (b) at state 2, explore whether entity2 responds to any direction; (c) if entity2 is impenetrable at state 2 with standard approach, hypothesis A (11-ring A column alignment) and other secondary hypotheses from @BELIEF:LAT50LON-30 become the investigative priority.
+
+**Phase 4 fires at session 39** — no further dream cycle speculation needed until post-probe frame is written.
