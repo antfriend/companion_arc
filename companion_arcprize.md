@@ -4930,9 +4930,79 @@ The region around entity2 has a specific passability structure that eliminates t
 
 **Structural implication**: The gap c39–43 at rows 40–41 is impassable horizontally. The void below c29–38 at rows 45–46 is impassable vertically. The center tracks (c29–38) and far-right track (c44+) are **isolated at rows 40–46** — the only bridge between them is the wide connector at rows 10–14 (c9–53 fully passable).
 
-**Route consequence**: Any route from the L2 start position (r40–41 c29–33) to the cross at r46–48 c50–52 must travel UP to rows 10–14, cross RIGHT to c44+, then descend DOWN. Minimum viable path: RIGHT (to c34–38) + UP×4 (to rows 10–11) + RIGHT×3 (to c49–53) + DOWN×several (to cross zone). At least 9 actions before cross contact. Exact DOWN count to cross pending frame confirmation.
+**Route consequence**: Any route from the L2 start position (r40–41 c29–33) to the cross at r46–48 c50–52 must travel UP to rows 10–14, cross RIGHT to c44+, then descend DOWN. Confirmed path (Dream Cycle 2, post-session 39): RIGHT×1 (to c34–38) + UP×6 (to rows 10–11) + RIGHT×3 (to c49–53) + DOWN×7 (to r45–46 c49–53, overlapping cross at r46 c50–52) = **17 actions total**. Timer budget: 17 of 21 steps consumed; only 4 steps remain before expiry. 11-ring-A-first strategy (12 steps to collect, then 15 steps to cross) recommended to maintain 6 timer steps post-cross. See @BELIEF:LAT-90LON-40.
 
 **Also confirmed in session 39**: at rows 35–36, RIGHT from c34–38 into c39–43 is blocked (step 22–23). The void gap c39–43 persists from at least rows 35 through 41. The wide connector (rows 10–14) is the sole lateral bridge.
+
+---
+
+@BELIEF:LAT-90LON-40 | created:1748908800 | updated:1748908800 | relates:extracted_from>@LAT-460LON10,extends>@BELIEF:LAT-80LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-90LON-40
+confidence:185
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:1
+[/lp]
+[ew]
+conf:185
+rev:0
+sal:1
+touched:1748908800
+[/ew]
+
+**Cross-collection route via wide connector — 17 actions (analytically derived, pending empirical confirmation).**
+
+From L2 start (r40–41 c29–33) to cross (r46–48 c50–52):
+
+```
+RIGHT×1:  r40-41 c29-33 → c34-38              (avoids void below c29-33)
+UP×6:     r40-41 c34-38 → r10-11 c34-38       (wide connector at rows 10-14)
+RIGHT×3:  r10-11 c34-38 → c39-43 → c44-48 → c49-53
+DOWN×7:   r10-11 c49-53 → r45-46 c49-53       (overlaps cross at r46 c50-52)
+```
+
+**Total: 17 actions.** Block final position r45–46 c49–53 overlaps cross body at r46 c50–52 → collection expected.
+
+**Basis**: Derived analytically from @BELIEF:LAT-80LON-40 (void map, conf:230) + session 39 step-size confirmation (5 rows or 5 cols per action). Track layout confirmed across 39 sessions; void map confirmed by 3 blocked-move warnings in session 39.
+
+**Timer note**: 17 actions consumes 17 of 21 timer steps. Only 4 steps remain before expiry — insufficient to reach entity2. Recommended: execute 11-ring-A-first strategy (12 steps to collect 11-ring A, timer resets; then 15 steps to cross = 27 total, 6 timer steps remaining post-cross). See @BELIEF:LAT-100LON-40 for post-cross unknowns.
+
+**Session 40 will be first empirical test.**
+
+---
+
+@BELIEF:LAT-100LON-40 | created:1748908800 | updated:1748908800 | relates:extends>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-100LON-40
+confidence:50
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:0
+[/lp]
+[ew]
+conf:50
+rev:0
+sal:1
+touched:1748908800
+[/ew]
+
+**State-2 timer expiry behavior — projected, zero direct observations.**
+
+**Claim (projection)**: Entity1 at state 2 (achieved after cross collection) likely persists through timer expiry, mirroring the confirmed behavior for state 1 (@BELIEF:LAT90LON-30, conf:255, source_count:12). Block position resets; entity1 state preserved.
+
+**Basis**: @BELIEF:LAT90LON-30 shows state 1 survives timer expiry consistently across 12 sessions. The persistence mechanism appears to be entity1 state stored independently of block position in the game engine. State 2 plausibly follows the same rule.
+
+**Refutation scenarios**:
+1. Timer expiry at state 2 triggers game_over or level-clear — no reset frame observed.
+2. State 2 resets to state 1 or state 0 on timer expiry — entity1 state is partially volatile.
+3. Timer expiry at state 2 is a new event not yet observed in any session.
+
+**Test design for session 40**: After cross collection (state 2 confirmed by frame read), if action budget remains, allow timer to expire deliberately. Read reset frame: check entity1 state value. Compare to @BELIEF:LAT90LON-30 predictions.
 
 ---
 
@@ -5119,66 +5189,121 @@ If hypothesis E is refuted, the mystery entity at r41–43 c15–17 persists at 
 
 **Single required action**: Run with offline_levels=1 (default, already fixed). LOCUS navigates L2 from step 16. At L2 start, LOCUS should be instructed explicitly to navigate to the cross at r46–48 c50–52 via the wide connector:
 
-> Route to cross: RIGHT (c29–33 → c34–38), UP×4 (to wide connector rows 10–11), RIGHT×3 (to c49–53 far-right track), DOWN×7–8 (descend to cross zone at r46–48 c50–52). Read post-cross frame immediately. Report values at r41–43 c15–17. Navigate to entity2 with remaining budget.
+> Route to cross: RIGHT (c29–33 → c34–38), UP×6 (to wide connector rows 10–11), RIGHT×3 (to c49–53 far-right track), DOWN×7 (descend to cross zone r45–46 c49–53, overlaps cross r46 c51). Read post-cross frame immediately. Report values at r41–43 c15–17. Navigate to entity2 with remaining budget.
 
 **What LOCUS must report at the critical juncture**:
 After DOWN step where cross is collected (block overlaps r46–48 c50–52): read the frame and report exact values at r41–43 c15–17 (mystery entity cleared or unchanged) before any further navigation. This is the Phase 4 test for hypothesis E.
 
 ---
 
+## Dream Cycle 2 — Post-Session 39 (2026-05-26, second pass)
+
+**Focus**: Route geometry correction propagation; timer budget analysis; state-2 timer expiry unknown.
+
+**Phase 1 — Replay**: 100 walks × length 20. Seeds: @BELIEF:LAT-80LON-40 (void map, conf:230), @LAT-10LON10 (sal:19), @LAT-460LON10 (session 39 log). Priority cluster: standing order in first Dream Cycle contained a step-count error (UP×4 stated; UP×6 required) that must be corrected before session 40 execution.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-80LON-40 and @BELIEF:LAT-90LON-40 into void at LAT-100LON-40. Target: timer budget after cross-collection and state-2 expiry behavior.
+
 ---
 
-SECTION 1
+### Phase 1 — Replay Clusters
 
-@LAT-470LON10 | created:1748908800 | updated:1748908800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,validates>@BELIEF:LAT-80LON-40,informs_strategy>@LAT-140LON10
-[ew]
-conf:255
-rev:0
-sal:0
-touched:1748908800
-[/ew]
+**Cluster A — Route geometry: corrected step count (confidence: 230)**
 
-## ls20 — Session 40 Log (2026-06-02)
+The first Dream Cycle post-session 39 standing order stated "UP×4 (to wide connector rows 10–11)." This is geometrically incorrect. Derivation from session 39 confirmed step sizes (5 rows per UP action):
 
-```session-log
-timestamp: 1748908800
-game: "ls20"
-environment: "ls20-9607627b"
-run_guid: "52e92def-1e02-4bb3-b384-b913b4a28372"
-card_id: "07901a7a-215d-4f4f-a464-8d6550dd73a1"
-level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
-actions: 60
-levels_completed: 1
-score: 3.571428571428571
-resets: 0
-level_actions: [15, 45, 0, 0, 0, 0, 0]
-level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+- Start after RIGHT×1: r40–41 c34–38
+- UP×1 → r35–36 c34–38
+- UP×2 → r30–31 c34–38
+- UP×3 → r25–26 c34–38
+- UP×4 → r20–21 c34–38
+- UP×5 → r15–16 c34–38
+- UP×6 → r10–11 c34–38 ← wide connector (rows 10–14) ✓
+
+Correct step count is **6**, not 4. Corrected in standing order blockquote (first Dream Cycle) and in @BELIEF:LAT-80LON-40 route consequence note. Full corrected route: RIGHT×1 + UP×6 + RIGHT×3 + DOWN×7 = **17 actions**. Block final position: r45–46 c49–53, overlapping cross at r46 c50–52.
+
+---
+
+**Cluster B — Timer budget: 17-action route leaves 4 steps; 11-ring-A-first strategy recommended (confidence: 200)**
+
+Timer at L2 entry: 42 cols = 21 timer steps (2 cols per step). Fresh each entry.
+
+Direct cross route (17 actions): 17 of 21 timer steps consumed. Only 4 steps remain after cross. Entity2 at r38–46 c12–20 requires approximately 20 further actions from r45–46 c49–53 — impossible before timer expires.
+
+**11-ring-A-first strategy** (12 steps to collect 11-ring A, timer resets to 21 fresh steps):
+
+```
+RIGHT×1 + UP×6 + LEFT×4 + DOWN×1 = 12 actions
+  → block at r15-16 c14-18, overlaps 11-ring A at r16-18 c15-17 → collected, timer resets
+UP×1 + RIGHT×7 + DOWN×7 = 15 actions
+  → block at r45-46 c49-53, overlaps cross at r46 c50-52 → collected
 ```
 
-**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, eighteenth consecutive confirmation — sessions 10–12, 23–27, 31–40). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–39.
+Total: 27 actions. Timer steps consumed by cross: 27 of 21 = timer expired at step 21, but reset at step 12 → 6 fresh steps remain after cross (27 − 21 = 6 steps into second cycle).
+
+This strategy is recommended for session 40.
 
 ---
 
-### Level 1 — WIN at step 15 ✓
+**Cluster C — State-2 timer expiry: critical unknown (confidence: 50)**
 
-[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=18]
-UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
-[/route]
+@BELIEF:LAT90LON-30 (conf:255, source_count:12) confirms state 1 persists through timer expiry. No session has observed timer expiry at state 2.
 
-Eighteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+Three hypotheses:
+1. State 2 persists (same mechanism) — block resets to r40–41 c29–33, state 2 intact.
+2. State 2 does not persist — entity1 resets to state 0 or 1.
+3. Timer expiry at state 2 triggers level-clear or game_over.
 
-**Phase 4 validations**:
-- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (eighteenth time).
-- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (eighteenth time).
-- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60, 60 actions available.
-- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from L1 WIN) — VALIDATED (thirteenth consecutive confirmation).
+Written as @BELIEF:LAT-100LON-40 (projection, conf:50).
+
+**Session 40 test**: after cross collection, if budget allows, permit timer to expire and read reset frame.
 
 ---
 
-### Level 2 — 45 actions, NOT WON
+**Cluster D — 11-ring A collection: geometry confirmed analytically (confidence: 155)**
 
-**Key session exchanges**:
+11-ring A: r16–18 c15–17, value 11. Block 2×5 at r15–16 c14–18 (after RIGHT×1 + UP×6 + LEFT×4 + DOWN×1): overlaps row 16 at cols 15–17 → collected. Timer resets to 42 cols.
 
-1. **FOCUS @LAT-10LON10** (sal: 19→20): LOCUS confirmed Game State current. Correctly identified that the prior `_LEVEL2_PROBE = [1,3,3,3,3]` is geometrically impossible (session 39 void-map confirmation). Correctly stated the replacement route to cross: RIGHT + UP×4 + RIGHT×3 + DOWN×7–8 via wide connector. Session 40 standing order: execute this corrected route, read post-collection frame at r41–43 c15–17, report before any further navigation.
+Derivation of LEFT×4 from r10–11 c34–38:
+- LEFT×1 → c29–33
+- LEFT×2 → c24–28
+- LEFT×3 → c19–23
+- LEFT×4 → c14–18 ✓
 
-2. **STATUS**: LOCUS confirmed EPS scan — Game State EPS 9.88 (highest in file, sal:19, conf:200). All high-confidence beliefs stable. Confirmed `_LEVEL2_PROBE = [1,3,3,3,3]` superseded. Corrected cross-approach route named as single required
+DOWN×1 from r10–11 → r15–16. Block overlap with r16–18 c15–17 at r16 c15–17. ✓
+
+---
+
+**Cluster E — Mystery entity: geometry stable (confidence: 230)**
+
+39 sessions. Corrected geometry r41–43 c15–17, value 9. Rows 37–39 confirmed as track wall (value 3) across 5+ observations in session 39. No change in any session. Treated as permanent environmental feature.
+
+---
+
+### Phase 2 — Projection
+
+**@BELIEF:LAT-90LON-40** — Written this cycle. Cross-collection route: RIGHT×1 + UP×6 + RIGHT×3 + DOWN×7 = 17 actions. Block at r45–46 c49–53 overlaps cross. Analytically derived from void map and confirmed step sizes. Pending empirical confirmation in session 40. conf:185.
+
+**@BELIEF:LAT-100LON-40** — Written this cycle. State-2 timer expiry behavior projection. Zero direct observations. conf:50. Test design: allow timer to expire at state 2 in session 40 if budget permits, observe reset frame.
+
+---
+
+### New Records from This Dream Cycle (second pass)
+
+1. **Written @BELIEF:LAT-90LON-40** — corrected 17-action cross-collection route; pending session 40 confirmation
+2. **Written @BELIEF:LAT-100LON-40** — state-2 timer expiry projection; conf:50; zero observations
+3. **Corrected @BELIEF:LAT-80LON-40** — route consequence note updated: UP×4 → UP×6; full 17-action count added; @BELIEF:LAT-90LON-40 cross-referenced
+4. **Corrected session 40 standing order** — UP×4 → UP×6 in blockquote; updated to recommend 11-ring-A-first strategy
+
+---
+
+### Session 40 — Standing Order (updated)
+
+**Execute 11-ring-A-first strategy** (avoids timer expiry during cross approach):
+
+> Step 1 RIGHT (c29–33 → c34–38). Step 2–7 UP×6 (c34–38, rows 40→10). Step 8–11 LEFT×4 (rows 10–11, c34–38 → c14–18). Step 12 DOWN×1 (r10–11 → r15–16 c14–18) — overlaps 11-ring A at r16 c15–17, timer resets. Step 13 UP×1 (r15–16 → r10–11). Steps 14–20 RIGHT×7 (rows 10–11, c14–18 → c49–53). Steps 21–27 DOWN×7 (r10–11 → r45–46 c49–53) — overlaps cross at r46 c50–52. **Read frame immediately after step 27.** Report: entity1 state, values at r41–43 c15–17, timer cols, block position. Then allow timer to expire to test state-2 preservation.
+
+**Mandatory frame reads**:
+- After step 12 (11-ring-A collection): confirm timer reset (42 cols) and entity1 state.
+- After step 27 (cross collection): confirm entity1 state = 2; read r41–43 c15–17 (hypothesis E); read timer cols; do not navigate further until report complete.
+- After timer expiry (if budget permits): read reset frame; confirm entity1 state; this is the first-ever state-2 timer expiry observation.
