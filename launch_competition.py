@@ -2,11 +2,12 @@
 """
 launch_competition.py — ARC-AGI competition, level 1 offline.
 
-Upload this file and companion_arcprize.md as a Kaggle Dataset.
-Run from a notebook cell:
+Upload this file, companion_arcprize.md, and the environment_files/ folder
+as a Kaggle Dataset. Run from a notebook cell:
     !python /kaggle/input/<your-dataset>/launch_competition.py ls20
 
-Only ARC_API_KEY is required. No internet needed. No Anthropic key needed.
+No internet access required. No Anthropic key needed.
+ARC_API_KEY is not required for offline mode.
 Writes /kaggle/working/submission.parquet.
 
 The L1 route is read from companion_arcprize.md (same directory as this
@@ -19,7 +20,6 @@ script) by looking for a [route] block written by LOCUS:
 Falls back to a hardcoded default if the block is absent.
 """
 
-import os
 import re
 import sys
 from pathlib import Path
@@ -91,7 +91,11 @@ def is_done(frames: list, latest_frame) -> bool:
 
 
 def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
-    arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
+    _env_dir = str(Path(__file__).parent / "environment_files")
+    arc = arc_agi.Arcade(
+        operation_mode=OperationMode.OFFLINE,
+        environments_dir=_env_dir,
+    )
     env = arc.make(game_id)
     obs = None
     step = 0
@@ -103,7 +107,7 @@ def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
         step += 1
         if verbose:
             _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
-            print(f"  step={step} {action_idx}({_name}) → state={obs.state} levels={obs.levels_completed}")
+            print(f"  step={step} {action_idx}({_name}) state={obs.state} levels={obs.levels_completed}")
         if is_done([], obs):
             break
     scorecard = None
@@ -133,8 +137,6 @@ def write_submission(result: dict, output_dir: Path) -> None:
 
 
 def main() -> None:
-    if not os.environ.get("ARC_API_KEY"):
-        raise EnvironmentError("ARC_API_KEY not set.")
     route = _load_route(GAME_ID)
     print(f"\n[launch] '{GAME_ID}' — L1 offline route ({len(route)} steps)\n")
     result = run_level1(GAME_ID, route)
