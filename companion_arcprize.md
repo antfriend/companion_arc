@@ -8108,4 +8108,179 @@ Twenty-eighth confirmation. Route stable. Block entered entity2 interior at r10�
 
 **Key session exchanges**:
 
-1. **FOCUS @LAT-10LON10** (sal: 27→28): LOCUS confirmed Game State fully current. 27 consecutive L1 wins, 27 failed L2 attempts. Corrected 43-step `_LEVEL2_ROUTE` confirmed as the session 50 route. All four DC6 unknowns reviewed; three resolved (c39–43 passable ✅, 11-ring B timer reset ✅, A
+1. **FOCUS @LAT-10LON10** (sal: 27→28): LOCUS confirmed Game State fully current. 27 consecutive L1 wins, 27 failed L2 attempts. Corrected 43-step `_LEVEL2_ROUTE` confirmed as the session 50 route. All four DC6 unknowns reviewed; three resolved (c39–43 passable ✅, 11-ring B timer reset ✅, A-wall non-blocking ✅). Unknown 4 (entity2 at state 2 → WIN?) remains the target.
+
+2. **ACTION step=58** (first LOCUS query): Route steps 1–43 ran. Route step 43 (DOWN from r35–36 to r40–41) produced a WARNING — no movement. Block remained at r35–36 c14–18. Frame showed entity1 at r37–39 c14–18=9 (new position, never observed before). Indicator row r61: c56–57=8, c59–60=8, c62–63=8 — all three collectibles collected (cross ✅, ring B ✅, ring A ✅). Timer: c13–20=3 (8 consumed), c21–54=11 (34 remaining). LOCUS chose UP (action 0).
+
+3. **ACTION step=59** (second LOCUS query, final): Block moved to r30–31 c14–18 (UP confirmed). Entity1 followed: r32–34 c14–18=9 (tracking confirmed — moved UP 5 rows, same as block). Timer: 10 consumed, 32 remaining. Cross at r46–48 c50–52 still shows values 0/1 (visual unchanged after collection). LOCUS chose DOWN (action 1). Budget exhausted (60 total actions). Level 2 NOT WON.
+
+---
+
+## Dream Cycle 17 — Entity1 Tracker Analysis
+
+`[dc]`
+`[ew] conf:190 sal:28 rev:50 touched:1748995200`
+
+### Phase 1 — Replay
+
+**Session 50 geometry confirmed correct**:
+
+The corrected 43-step `_LEVEL2_ROUTE` (DC16) ran without geometry errors. All three collectibles were processed at intended positions. Timer at entity2 approach = 34 remaining (8 consumed across 4 DOWN steps from ring A reset). No expiry risk. The DC16 fix (c44–48 void, c49–53 ascent) was validated.
+
+---
+
+**Collectible indicator row — all three collected**:
+
+Step 58 frame, r61: `c56-57=8, c59-60=8, c62-63=8`
+
+All three indicator pairs show value 8, confirming:
+- Cross collected (route step 17): c59–60 = 8
+- Ring B collected (route step 20): c56–57 = 8
+- Ring A collected (route step 38): c62–63 = 8
+
+DC16 noted c62–63 ambiguity. Resolved: c62–63=3 = ring A present (uncollected); c62–63=8 = ring A collected. The three-pair indicator row at r61–62 is the collectibles status display. All three pairs at 8 = full collection confirmed for session 50.
+
+Cross cells at r46–48 c50–52 visually unchanged (values 0/1 remain). Cross is a **non-consumable trigger**: it does not disappear on collection; its indicator is c59–60 in the status row. Rings ARE consumable (cells revert to value 3 after collection).
+
+---
+
+**Entity1 tracker — new mechanic (state 2)**:
+
+Step 58 frame (all 5 primary frames, bg=4):
+```
+r35: c14-18=12  ← block bottom
+r36: c14-18=12  ← block top
+r37: c14-18=9   ← entity1 tracker top    ← NEW
+r38: c12-13=3, c14-18=9, c19-20=3        ← entity1 tracker mid (at ring top wall)
+r39: c12=3, c13=5, c14-18=9, c19=5, c20=3 ← entity1 tracker bottom
+r40: c12=3, c13-19=5, c20=3              ← ring interior (empty)
+r41: c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3  ← entity2 body (permanent)
+r42: c12=3, c13-14=5, c15=9, c16-19=5, c20=3
+r43: c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3
+```
+
+Tracking gap: block bottom = r36, entity1 top = r37. Gap = 1 row. Entity1 is 3 rows tall.
+
+Step 58→59 tracking confirmation: block moved UP from r35–36 to r30–31. Entity1 moved from r37–39 to r32–34 (same direction, same distance, same column). Tracking mechanic: entity1 maintains "1 row below block bottom" at all times, same column as block.
+
+---
+
+**Entity1 tracking timeline reconstruction**:
+
+Entity1 enters tracking mode when state advances from 1 to 2 (cross collection, route step 17). Starting from step 17 (block at r45–46 c49–53), entity1 initialises at r47–49 c49–53 and follows the block through all subsequent route steps:
+
+| Route step | Block position | Entity1 position |
+|-----------|---------------|------------------|
+| 17 (cross) | r45–46 c49–53 | r47–49 c49–53 (starts) |
+| 18–20 (DOWN+LEFT×2) | r50–51 c39–43 | r52–54 c39–43 |
+| 21–22 (RIGHT×2) | r50–51 c49–53 | r52–54 c49–53 |
+| 23–30 (UP×8) | r10–11 c49–53 | r12–14 c49–53 |
+| 31–37 (LEFT×7) | r10–11 c14–18 | r12–14 c14–18 |
+| 38 (DOWN, ring A) | r15–16 c14–18 | r17–19 c14–18 |
+| 39 (DOWN) | r20–21 c14–18 | r22–24 c14–18 |
+| 40 (DOWN) | r25–26 c14–18 | r27–29 c14–18 |
+| 41 (DOWN) | r30–31 c14–18 | r32–34 c14–18 |
+| 42 (DOWN) | r35–36 c14–18 | r37–39 c14–18 |
+| 43 (DOWN, BLOCKED) | r35–36 (no move) | r37–39 (no move) |
+
+Ring A collection at step 38 does **not** deactivate tracking. Entity1 continues tracking through all 5 DOWN steps (39–43).
+
+---
+
+**Blocking mechanism — deadlock at ring top**:
+
+Entity1 tracking works by entity1 "stepping out of the way" in the same direction before the block moves. This allows the 5-row jump to complete with entity1 clearing the intermediate rows. The mechanism fails at step 43:
+
+1. Block at r35–36 attempts DOWN to r40–41.
+2. Entity1 at r37–39 must step out of way DOWN to r42–44.
+3. Entity1's descent from r37–39 to r42–44 passes through r41 c14–18.
+4. Entity2 body (value 9, solid) occupies r41–43 c15–17 ← blocks entity1's move.
+5. Entity1 cannot clear r37–39.
+6. Block's intermediate rows (r37–39) remain occupied by entity1.
+7. Block DOWN blocked. WARNING. No movement.
+
+This is a **circular deadlock**: block can't enter r40–41 because entity1 occupies r37–39; entity1 can't leave r37–39 because entity2 body at r41 blocks entity1's descent.
+
+Entity2 body is permanently at r41–43 c15–17 in all states (it is the WIN target, not a temporary obstacle). This deadlock cannot be broken by any horizontal approach — c21–43 and c9–13 are void at rows 38–41, making horizontal entry to r40–41 c14–18 geometrically impossible.
+
+---
+
+**bg=0 at r55–60 indicator**:
+
+Frames 0–4 at step 58 show bg=0 at r55–60 (background value 0, not 4=void or 5=UI). Frame 5 and step 59 frame 0 show bg=5. Interpretation: bg=0 appears when entity1 is AT the ring top zone (r37–39 overlapping ring top wall at r38 c12–20). When entity1 moves away (step 59, entity1 at r32–34), bg reverts to 5. This is a positional proximity indicator, not a state-machine flag.
+
+LOCUS's step 59 reading ("bg=5 → State 1") was incorrect. Entity1 was in tracking mode (state 2) at step 59. LOCUS misidentified the state from the bg value. The VALUE-9 pattern at r55–60 (entity1 indicator shape) is identical in state 1 and state 2; only the background differs and that background reflects entity1 proximity to the ring top, not the state number.
+
+---
+
+### Phase 2 — Projection
+
+**The entity1 deadlock is intentional game design**:
+
+State 2 is accessible and verified. The cross-triggered entity1 tracker is the designed barrier preventing naive entity2 entry. Circumvention requires either:
+(A) A state 3 trigger that allows entity1 to pass through entity2 body (or deactivates tracking).
+(B) A different collectible sequence that creates a window without entity1 blocking r37–39.
+
+**Structural circumvention table**:
+
+| Approach | Analysis | Verdict |
+|----------|----------|---------|
+| Horizontal entry to r40–41 c14–18 | c21–43 void rows 38–41; c9–13 void rows 35–41 | IMPOSSIBLE |
+| UP from below (r45–46→r40–41) | r50–51 c14–18 void; no floor access below ring | IMPOSSIBLE |
+| Different column (c15–19, c13–17) | c19 void rows 35–36; c13 void rows 35–36 | IMPOSSIBLE |
+| Entity1 collision as trigger | Block pushes DOWN into entity1 at r37–39 | **UNTESTED — Hypothesis 3A** |
+
+**State 3 hypotheses**:
+
+| Hypothesis | Trigger | Prediction |
+|-----------|---------|------------|
+| 3A (entity1 collision) | Block moves DOWN into entity1 (blocked but overlap triggers state 3) | Entity1 becomes passable or deactivates; entity2 accessible |
+| 3B (undiscovered collectible) | Unknown item not yet seen in any session frame | New map area or time-gated spawn |
+| 3C (ring B is state 2→3 trigger) | Ring B collected at state 2 → entity1 returns to ring or deactivates | Current route does ring B BEFORE entity1 reaches ring top; unclear if reachable at state 2 with entity1 tracking |
+| 3D (no state 3 — re-sequencing needed) | Approach entity2 BEFORE entity1 reaches r37–39 | Block must reach r40–41 during DOWN×1 or DOWN×2 (not after DOWN×4) |
+
+**Hypothesis 3D analysis** — resequencing:
+
+After ring A collection at r15–16, entity1 is at r17–19. Can the block reach r40–41 in ONE DOWN move from r15–16? r15–16 → r20–21 (1 DOWN), not r40–41. In FIVE DOWN moves, entity1 tracks from r17–19 to r37–39. There is no shortcut: entity1 arrives at r37–39 precisely when block arrives at r35–36. The geometry forces this convergence. No resequencing of DOWN steps changes the entity1 position at entity2 approach time.
+
+**Hypothesis 3A — entity1 collision — RECOMMENDED TEST**:
+
+LOCUS at step 58 chose UP. What happens if LOCUS instead chooses DOWN (action 1) when entity1 is at r37–39 and DOWN is "blocked"? The route step 43 WARNING confirms no movement. But does repeated DOWN-into-entity1 trigger a state change? This requires deliberate testing in session 51.
+
+**Cross zone depth analysis** — does DOWN pass THROUGH cross?
+
+Route step 17 lands block at r45–46. Route step 18 moves DOWN to r50–51. During the r45–46→r50–51 DOWN jump, the block's bottom edge sweeps from r46 to r51, passing through r46–50. The cross occupies r46–48 c50–52. The block (c49–53) sweeps through r47–48 c50–52 during this passage, covering cross value=1 cells (r47 c50=1, r48 c51=1). If cross collection occurs during the DOWN PASSAGE (not just at the stop position), then cross IS collected at route step 18, not step 17. This shifts entity1 tracking start by one step. Entity1 position at entity2 approach is unchanged (same final position regardless of step 17 vs step 18 trigger).
+
+---
+
+### Phase 3 — Record Updates Required
+
+1. **@LAT20LON-30 (Mechanics Record)**: Add entity1 tracker mechanic (state 2, cross triggers, 1-row tracking gap, 3-row tall). Add collectible indicator row (c56–57/c59–60/c62–63). Correct cross visual persistence (cells remain 0/1 after collection). sal: 5 (remains high-priority; entity1 tracker changes WIN strategy). conf: raise to 230 (core mechanics now well-understood). Rev up.
+
+2. **@BELIEF:LAT-50LON-40 (Mystery Entity)**: The "mystery entity" at r40–42 c15–17 in state 1 sessions was entity1 dormant (overlapping entity2 body). At state 2, entity1 detaches and tracks. Entity2 body permanently at r41–43 c15–17 (the WIN target). conf: 150→175.
+
+3. **@LAT-10LON10 (Game State)**: sal = 28 (updated FOCUS session 50). Note entity1 deadlock as the new L2 barrier. Session 51 pending: entity1 collision test.
+
+4. **@BELIEF:LAT-120LON-40 (11-ring B route)**: Route confirmed correct (ring B collected at step 20, timer reset confirmed). conf: raise 130→165. Note: ring B does NOT deactivate entity1 tracking.
+
+### Session 51 — Standing Order
+
+> **Objective**: Test entity1 collision as state 3 trigger. Observe entity1 response to deliberate DOWN-into-entity1.
+>
+> **Probe route (17 steps)** — cross zone approach only, LOCUS takes remaining 28 L2 steps:
+>
+> ```
+> RIGHT×1 + UP×6 + RIGHT×3 + DOWN×7  → r45-46 c49-53  [CROSS zone; state 2 entry]
+> ```
+>
+> **LOCUS receives step 33** (session 15 L1 + 17 L2 + 1). LOCUS MUST:
+> 1. Immediately report entity1 position. If entity1 at r47–49 c49–53 (1 row below block) → tracking confirmed from cross. If NOT present → cross did not trigger tracking; report actual entity1 location.
+> 2. Navigate to left track (UP×6 + LEFT×7 = 13 steps = block at r10–11 c14–18, entity1 at r12–14 c14–18).
+> 3. Collect ring A (DOWN to r15–16). Entity1 moves to r17–19.
+> 4. Move DOWN×4 to r35–36. Entity1 tracks to r37–39.
+> 5. Attempt DOWN (action 1) 2–3 times with entity1 at r37–39. Report any state change after entity1 collision.
+> 6. If state 3 triggered: describe all visual changes. Attempt entity2 entry.
+>
+> **Implementation**: Update `_LEVEL2_ROUTE` in `kaggle_agent.py` to 17-step probe. Keep `offline_levels=2`. LOCUS controls steps 33–60 (28 L2 steps available for entity1 collision test).
+
+`[/dc]`

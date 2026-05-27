@@ -61,24 +61,16 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 17 confirmed wins
-# INVALID — session 39 confirmed [1,3,3,3,3] is geometrically impossible:
-#   DOWN from c29-33 → void at r45-46 c29-33 (blocked)
-#   DOWN from c34-38 → void at r45-46 c34-38 (blocked)
-#   RIGHT from c34-38 → void at c39-43 rows 40-41 (blocked)
-# Far-right track (c44+) only reachable via wide connector rows 10-14.
-# Probe must be redesigned before offline_levels=2 is useful.
+# Session 50 result: 43-step route ran correctly; timer OK; entity1 TRACKER blocks final DOWN.
+# After cross (step 17), entity1 enters tracking mode (state 2): stays 1 row below block bottom.
+# At route step 43, entity1 at r37-39 blocks DOWN to r40-41 (entity2 body at r41-43 traps entity1).
+# DC17: entity1 deadlock is the barrier. Session 51 = 17-step probe + LOCUS entity1 collision test.
 _LEVEL2_ROUTE = [
-    3,                          # step 1:  RIGHT → r40-41 c34-38
-    0, 0, 0, 0, 0, 0,           # steps 2-7:  UP×6 → r10-11 c34-38
-    3, 3, 3,                    # steps 8-10: RIGHT×3 → r10-11 c49-53
-    1, 1, 1, 1, 1, 1, 1,        # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2]
-    1, 2, 2,                    # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [11-ring B → timer reset]
-    3, 3,                       # steps 21-22: RIGHT×2 → r50-51 c49-53  [escape; c44-48 VOID above r40]
-    0, 0, 0, 0, 0, 0, 0, 0,     # steps 23-30: UP×8 → r10-11 c49-53  [c49-53 passable entire height]
-    2, 2, 2, 2, 2, 2, 2,        # steps 31-37: LEFT×7 → r10-11 c14-18
-    1,                          # step 38: DOWN → r15-16 c14-18  [11-ring A → timer reset]
-    1, 1, 1, 1, 1,              # steps 39-43: DOWN×5 → r40-41 c14-18  [ENTITY2 at state 2]
-]  # DC6 corrected 43-step route (session 49: c44-48 void above row 40; switched to c49-53 ascent)
+    3,                    # step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,     # steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,              # steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1, 1,  # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2; entity1 tracker starts]
+]  # 17-step probe (DC17 session 51); LOCUS takes remaining 28 L2 steps for entity1 collision test
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
