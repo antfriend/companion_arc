@@ -8985,4 +8985,132 @@ Thirty-second confirmation. Route stable. Block entered entity2 interior at r10�
 - Steps 1–11: RIGHT×1, UP×6, LEFT×4 → r10–11 c14–18
 - Step 12: DOWN → r15–16 c14–18 **[ring A → entity1 state 2; timer reset to 42]**
 - Step 13: UP → r10–11 c14–18 (exit ring A zone)
-- Steps 14–
+- Steps 14–20: RIGHT×7 → r10–11 c49–53
+- Steps 21–27: DOWN×7 → r45–46 c49–53 **[CROSS collected at step 27 at STATE 2 — non-consumable visual, cells 0/1 persist]**
+- Step 28: DOWN → r50–51 c49–53
+- Step 29: LEFT → r50–51 c44–48
+- Step 30: LEFT → r50–51 c39–43 **[ring B → timer reset 42; all 3 collectibles collected in one run]**
+
+**LOCUS handoff (session step 45, L2 step 31)**:
+Block at r50–51 c39–43. Entity1 tracker at r52–54 c39–43 (value 9) = STATE 2 ACTIVE. Timer c13–54=11 (full 42 = ring B just collected). Ring A anomaly: r16 c15–17=11 (ring A value visible in this frame despite collection at step 27 — 1-frame appearance after ring B timer reset). c62–63=8 (no prior timer expiry). LOCUS chose RIGHT (action 3) → r50–51 c44–48. Ring A absent at step 46 frame (c15–17=3).
+
+**Hypothesis 4A check (step 46)**:
+Block at r50–51 c44–48. Entity1 tracker at r52–54 c44–48 (value 9) = STATE 2 ACTIVE. Cross visible at r46–48 c50–52 (values 0/1 — non-consumable). Timer 40 remaining. **Entity1 NOT deactivated. Hypothesis 4A NULL.**
+
+**LOCUS steps 46–70 (25 steps)**:
+LOCUS oscillated between c39–43, c44–48, c49–53. Entity1 tracker visible in state 2 at all observed positions. Timer expired at step ~67 (bg=11 animation × 5 frames, then reset to spawn). Steps 68–69 post-reset: block at r40–41 c34–38 then r35–36 c34–38; entity1 tracker at r42–44 then r37–39 c34–38 (no deadlock at c34–38 confirmed). Session ended NOT WON. 32nd L2 failure. Score 3.571 unchanged.
+
+---
+
+`[dc]`
+title: Dream Cycle 21 — Session 54: Hypothesis 4A REFUTED; All Collectibles Gathered; Ring A Anomaly; Hypothesis 5B Design (ring A → ring B, skip cross)
+session: 54
+anchors: @LAT-10LON10, @LAT20LON-30, @BELIEF:LAT-50LON-40, @BELIEF:LAT-140LON-40, @LAT-610LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+---
+
+### Phase 1 — Replay
+
+**Session 54 objective (from DC20):** Hypothesis 4A — cross collected at state 2 (ring A as first collectible triggers state 2; cross as second collectible) → entity1 deactivation.
+
+---
+
+**Finding 1 — Hypothesis 4A REFUTED: Cross at state 2 does NOT deactivate entity1.**
+
+DC20 30-step hardcoded probe executed correctly:
+- Step 12: ring A at r15–16 c14–18 → entity1 STATE 2 trigger; timer reset 42.
+- Step 27: cross at r45–46 c49–53 (at STATE 2 — entity1 tracking throughout).
+- Step 30: ring B at r50–51 c39–43 → timer reset 42.
+
+At LOCUS handoff (step 45/46): entity1 tracker at r52–54 c39–43 (step 45) and r52–54 c44–48 (step 46) = STATE 2 ACTIVE. Entity1 was not deactivated by cross collection at state 2. All subsequent LOCUS steps (46–70) confirmed entity1 in state 2 with tracker visible at c39–43, c44–48, c49–53. **Hypothesis 4A REFUTED.**
+
+**Status of entity1 deactivation hypotheses:**
+
+| Hypothesis | Test | Session | Result |
+|------------|------|---------|--------|
+| 3A — 13 consecutive blocked DOWN | c14–18 repeated DOWN | 52 | REFUTED |
+| 3E — state-1 approach (skip all collectibles) | geometric invariant | 53 | REFUTED |
+| 4A — cross at state 2 | ring A → cross at state 2 | 54 | REFUTED |
+
+---
+
+**Finding 2 — All 3 collectibles collected; entity1 remains state 2.**
+
+Session 54 is the first session where all 3 collectibles (ring A, cross, ring B) were collected in a single run. Entity1 remained in state 2 throughout. Collecting all 3 collectibles does NOT change entity1 state.
+
+---
+
+**Finding 3 — Ring A respawn anomaly: value 11 appears at r16 c15–17 for exactly 1 frame after ring B collection.**
+
+At step 45 (ring B just collected, timer reset to 42): `r16: c9–14=3, c15–17=11, c18–23=3` — ring A value (11) present. Ring A had been collected at step 27 (18 steps earlier). At step 46 (after LOCUS moved RIGHT): `r16: c9–23=3` — ring A absent (floor).
+
+Hypotheses:
+- **(a) Timer-reset respawn**: ring B collection triggers ring A respawn for 1 frame; then ring A decays because block is not at r15–16 c14–18.
+- **(b) Non-consumable structure**: ring A is a permanent structural feature at r16 c15–17 (like the cross). It disappears visually only while block occupies r15–16 c14–18. Ring B event reset the display state, revealing ring A is structurally always there.
+- **(c) Display artifact**: ring B timer-reset animation briefly restores all ring display states for 1 frame.
+
+**Practical implication (consistent across all three)**: ring A is always "available" at r15–16 c14–18. Any descent on c14–18 past r14 will interact with ring A and trigger state 2. This does not open any new approach path.
+
+---
+
+**Finding 4 — Entity1 deadlock is c14–18-specific; no deadlock at c34–38 (step 69 confirmation).**
+
+Block at r35–36 c34–38 (steps 68–69, post-reset); entity1 tracker at r37–39 c34–38. LOCUS chose DOWN (action 1), correctly noting entity2 body at c15–17 does not block entity1's jump from r37–39 to r42–44 at c34–38. Deadlock is specific to c14–18 where entity1's jump would land in entity2 body at r41–43 c15–17.
+
+---
+
+### Phase 2 — Projection
+
+**Tested collectible sequences (all → entity1 state 2, deadlock):**
+- Cross first (sessions 48–52)
+- Ring A first, no further (session 53)
+- Ring A → cross at state 2 → ring B (session 54, Hypothesis 4A)
+
+**Untested: ring A → ring B (skipping cross entirely)**
+
+**Hypothesis 5B**: Ring A collected first (state 2 trigger), then ring B collected second (no cross) → entity1 deactivation or state-3 transition.
+
+**Why cross is skippable**: The c49–53 descent from r10–11 reaches r40–41 in 6 DOWN steps (r15, r20, r25, r30, r35, r40). The cross is at r45–46 (7th DOWN). Stopping at r40–41 and going LEFT to c44–48, then DOWN×2 to r50–51 c44–48, then LEFT to r50–51 c39–43 (ring B) — the cross is never collected. c44–48 at r40+: floor (geometry confirmed).
+
+**Hypothesis 5B route (DC21, 30 steps):**
+
+| Steps | Action | Position | Note |
+|-------|--------|----------|------|
+| 1 | RIGHT | r40–41 c34–38 | |
+| 2–7 | UP×6 | r10–11 c34–38 | |
+| 8–11 | LEFT×4 | r10–11 c14–18 | |
+| 12 | DOWN | r15–16 c14–18 | **ring A → STATE 2; timer reset 42** |
+| 13 | UP | r10–11 c14–18 | exit ring A zone |
+| 14–20 | RIGHT×7 | r10–11 c49–53 | |
+| 21–26 | DOWN×6 | r40–41 c49–53 | **STOPS before cross at r45–46** |
+| 27 | LEFT | r40–41 c44–48 | |
+| 28 | DOWN | r45–46 c44–48 | floor ✓ (c44–48 void only rows 25–39) |
+| 29 | DOWN | r50–51 c44–48 | floor ✓ |
+| 30 | LEFT | r50–51 c39–43 | **ring B → timer reset 42; SECOND collectible; cross uncollected** |
+
+LOCUS receives 25 steps (session step 46). Budget: max_steps=70.
+
+**LOCUS task (step 46)**:
+Check entity1 at r52–54 c39–43.
+- **Absent** (entity1 deactivated): WIN route — RIGHT×2 → r50–51 c49–53; UP×8 → r10–11 c49–53; LEFT×7 → r10–11 c14–18; DOWN×5 → r35–36 c14–18; DOWN → r40–41 c14–18 **[WIN attempt]**. 23 steps total, within 25-step budget.
+- **Present** (state 2 persists): Hypothesis 5B NULL. Explore cross zone (RIGHT×2, UP to r45–46 c49–53). Report entity1 position and cross status.
+
+---
+
+### Phase 3 — Record Updates Required
+
+1. **@LAT-10LON10 (Game State)**: sal: 32→33. Session 54 done: 32nd L1 WIN; Hypothesis 4A REFUTED; all 3 collectibles → entity1 state 2 unchanged. Session 55 = Hypothesis 5B (ring A → ring B, skip cross). conf: 215→220. Rev up.
+
+2. **@LAT20LON-30 (Mechanics Record)**: Add: all 3 collectibles → entity1 state 2 persists. Add: ring A 1-frame respawn anomaly at ring B collection (possible non-consumable structure). Add: entity1 deadlock c14–18-specific (confirmed step 69). conf: hold. Rev up.
+
+3. **@BELIEF:LAT-50LON-40 (entity1 state machine)**: Hypothesis 4A REFUTED. Hypotheses 3A, 3E, 4A all refuted. Session 55 = Hypothesis 5B (ring A → ring B, skip cross). conf: 195→175. Rev up.
+
+4. **@BELIEF:LAT-140LON-40 (entity2 approach)**: All three entity1 deactivation hypotheses exhausted. Only surviving untested path: Hypothesis 5B (ring A → ring B). If 5B null, no known deactivation trigger exists. conf: 140→115. Rev up.
+
+`[/dc]`
