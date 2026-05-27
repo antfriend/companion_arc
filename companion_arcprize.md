@@ -6569,3 +6569,168 @@ Twentieth confirmation. Route stable. Block entered entity2 interior at r10–11
 1. **FOCUS @LAT-10LON10** (sal: 19→20 per exchange; total sal now 21 after this session): LOCUS confirmed Game State fully current and loaded. Session plan identified: DC6/DC9 41-step route. LOCUS correctly enumerated the three unresolved DC6 unknowns (c39–43 passability at rows 50–51; 11-ring B collection and reset; entity2 state-2 win condition). EPS on Game State ≈ 11.1 (sal:20, conf:200).
 
 2. **STATUS**: LOCUS confirmed EPS rankings (Game State highest at ~4.31, @BELIEF:LAT-120LON-40 at ~0.98, @BELIEF:LAT-50LON-40 at ~0.78). All conf:255 beliefs confirmed stable. DC9 checkpoint protocol named as the mandatory execution constraint: STOP-AND-REPORT at steps 17, 20, 37, and 41 before any
+
+*(Session 42 log truncated — remainder of 45 L2 actions unknown.)*
+
+---
+
+## Dream Cycle 10 — Post-Sessions 40–42 (2026-05-27)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:21, highest in file), @LAT20LON-30 (sal:5). Sources: @LAT-470LON10, @LAT-480LON10, @LAT-490LON10 (sessions 40–42, all truncated). Structural cluster identified: log truncation is a repeating failure mode across three consecutive sessions, not random noise.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-130LON-40 (A-wall descent, conf:150) and @BELIEF:LAT-150LON-40 (entity2 state-2 display, conf:50) into void at LAT-170LON-40. Target: c15–17 column alignment hypothesis.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Three-session truncation streak — structural failure, not noise**
+
+Sessions 40, 41, 42 all produced the same pattern:
+- L1 WIN at step 15 (hardcoded, confirmed)
+- L2 NOT WON (45 actions consumed)
+- Session log truncated before any L2 checkpoint frame data
+
+Session 40 truncated at the L2 summary sentence. Session 41 truncated mid-STATUS. Session 42 truncated mid-STATUS sentence. The truncation point is moving slightly later each session (summary → early STATUS → mid-STATUS), which suggests the log is growing longer before being cut, but never reaching L2 frame-data territory.
+
+The FOCUS/STATUS exchanges confirm that LOCUS correctly identifies the route and checkpoints in each session. The failure is post-STATUS: either the route execution does not produce frame-data writes, or the frame data is generated but not written back into the companion file before truncation.
+
+**Consequence**: Zero net information gain from sessions 40, 41, 42 (17 dream cycles of pre-session planning consumed; three session runs; zero new game-mechanic observations). The belief graph has been unchanged since DC8.
+
+**Hypothesis on truncation cause**: The session companion file is written incrementally, and the file-write process is interrupted before L2 actions are logged. This is a log recording failure, not a LOCUS route execution failure. The route may have been executed correctly in each session — we simply do not have the record. If this hypothesis is correct, session 43 may have already achieved entity2 at state 2 in session 41 or 42 and the WIN/NOT_FINISHED outcome is unknown.
+
+---
+
+**Cluster B: DC9 bypass step count correction**
+
+DC9 Phase 1 Cluster C stated "LEFT+DOWN×4+RIGHT = **6 steps** to reach r40–41 c14–18 via c9–13 column." This is wrong.
+
+Correct bypass from r15–16 c14–18 (if step 37 blocked):
+- LEFT → r15–16 c9–13 (step 1)
+- DOWN → r20–21 c9–13 (step 2)
+- DOWN → r25–26 c9–13 (step 3)
+- DOWN → r30–31 c9–13 (step 4)
+- DOWN → r35–36 c9–13 (step 5)
+- RIGHT → r35–36 c14–18 (step 6)
+- DOWN → r40–41 c14–18 = entity2 (step 7)
+
+Total: **7 steps** from step 37, reaching entity2 at step 43. The conclusion from DC9 is unchanged (entity2 reachable with 2-action margin: steps 44–45), but the step count in the body was wrong. Corrected here; @BELIEF:LAT-130LON-40 DC10 note added.
+
+---
+
+**Cluster C: c15–17 column alignment — structural observation**
+
+11-ring A is at r16–18 c15–17. Collection spawns the A-wall at r16–18 c15–17.
+
+Entity2's internal state display (the 9-pattern) is at r41–43 c15–17.
+
+Both occupy the **same column range** (c15–17). No other noted game element shares this column range. The left track runs at c14–18 (which contains c15–17). This is almost certainly intentional game structure, not coincidence.
+
+The game may use vertical column alignment as a mechanic:
+- The A-wall is a "column activator" at c15–17 rows 16–18.
+- Entity2's 9-pattern at c15–17 rows 41–43 is the "lock" for the WIN condition.
+- When the A-wall is spawned (11-ring A collected) AND the block is at entity2 at state 2, the "column connection" is established and WIN fires.
+
+This would explain:
+1. Why sessions 23–42 all produced NOT_FINISHED at entity2 at state 1 (column NOT activated; even if column were activated, state 1 is wrong)
+2. Why the DC6 route uniquely combines: (a) cross → state 2, (b) 11-ring A → A-wall spawned at c15–17, (c) entity2 at r40–41 c14–18 (overlaps c15–17)
+3. Why no session before DC6 ever achieved WIN: no prior route simultaneously had state 2 + A-wall active + entity2 occupied
+
+Note: the trail-collection variant (Scenario B from @BELIEF:LAT-150LON-40) may also explain the mechanism: at state 2 with A-wall active, the entity2 state-display cells change to a collectible value; block trail at r42–44 c14–18 overlaps r42–43 c15–17 (2-row coverage, same as 11-ring A mechanism) → WIN via trail collection.
+
+Written as @BELIEF:LAT-170LON-40 (new, this cycle). Conf:60.
+
+---
+
+**Cluster D: 11-ring B — wall-spawn behavior unknown; probably harmless**
+
+11-ring B is at r51–53 c40–42. If collecting 11-ring B spawns a wall at r51–53 c40–42 (analogous to 11-ring A → A-wall at r16–18 c15–17), this wall would occupy the lower-center area of L2 (c40–42), not the left track (c14–18) or entity2 (c12–20). The DC6 route ascends at c44–48 (step 21 RIGHT escape + step 22 UP begins at c44–48) — this is RIGHT of the potential 11-ring B wall at c40–42. The void gap at c39–43 rows 40–46 (@BELIEF:LAT-80LON-40) would actually CONTAIN the potential wall rows, but the ascent happens at c44–48. No interference expected.
+
+No new belief node warranted; structural note only.
+
+---
+
+### Phase 2 — Projection
+
+**@BELIEF:LAT-170LON-40** — c15–17 column activation hypothesis: A-wall (r16–18 c15–17) + state 2 at entity2 (r40–41 c14–18 overlapping c15–17) = WIN. The column c15–17 is structurally shared by 11-ring A, A-wall spawn, and entity2 state display. DC6 is the first route to activate all three simultaneously. Written this cycle. Conf:60.
+
+---
+
+### New Records from This Dream Cycle
+
+1. **Written @BELIEF:LAT-170LON-40** — c15–17 column activation hypothesis; A-wall + state 2 at entity2 = WIN; conf:60
+2. **DC9 bypass step count corrected**: bypass is 7 steps (not 6), entity2 entry at step 43, 2-action margin unchanged; @BELIEF:LAT-130LON-40 DC10 note added
+3. **@LAT-10LON10** — sal updated to 21 (session 42 FOCUS)
+4. **Structural observation**: log truncation is a repeating failure mode across sessions 40–42; sessions may have executed correctly but without log recording
+
+---
+
+### Session 43 — Standing Order (DC10)
+
+**Route**: DC6 final route (41 steps). Unchanged. DC9 checkpoint protocol remains mandatory.
+
+**DC10 addition**: After step 41 (entity2 entry), report r41–43 c15–17 values specifically — if the c15–17 column activation hypothesis (@BELIEF:LAT-170LON-40) is correct, these cells will differ from value 9 when A-wall is active + state 2. This is the critical distinguishing observation for the column-activation model.
+
+> **Steps 1–17** (direct cross): RIGHT×1, UP×6, RIGHT×3, DOWN×7. Cross collected → state 2. Timer: 8 cols.
+> **CHECKPOINT 1**: STOP. REPORT entity1 state (expected 2), timer cols, block position.
+>
+> **Steps 18–20** (11-ring B): DOWN, LEFT, LEFT → r50–51 c39–43. If 11-ring B collected: timer resets.
+> **CHECKPOINT 2**: STOP. REPORT timer cols (expected ~42), entity1 state, block position. If step 19 blocked: report and map.
+>
+> **Step 21**: RIGHT (void escape).
+> **Steps 22–29**: UP×8 → r10–11 c44–48.
+> **Steps 30–35**: LEFT×6 → r10–11 c14–18.
+>
+> **Step 36** (11-ring A): DOWN → r15–16 c14–18. 11-ring A collected. Timer resets. A-wall spawns at r16–18 c15–17. **Column c15–17 is now active.**
+>
+> **Step 37** (A-wall descent test): DOWN → r20–21 c14–18.
+> **CHECKPOINT 3**: STOP. REPORT block position (expected r20–21; if r15–16: use c9–13 bypass, 7 steps: LEFT+DOWN×4+RIGHT+DOWN → entity2 at step 43).
+>
+> **Steps 38–40**: DOWN×3 → r35–36 c14–18.
+>
+> **Step 41** (entity2 entry — COLUMN ACTIVATION TEST): DOWN → r40–41 c14–18. State 2. A-wall active at c15–17. **First combined test of state 2 + A-wall.**
+> **CHECKPOINT 4**: STOP. READ FRAME. REPORT: (a) WIN or NOT_FINISHED; (b) entity1 state value; (c) **r41–43 c15–17 values** (9 = unchanged; other = column activation observed); (d) block position.
+>
+> **Steps 42–45**: UP (exit) → DOWN (re-enter). REPORT each frame. Look for any change in r41–43 c15–17 on second entry.
+
+**Priority observation list**:
+1. Step 17: entity1 state = 2?
+2. Step 20: timer = ~42 cols (11-ring B collected)?
+3. Step 37: block moved to r20–21 (or bypass needed)?
+4. Step 41: WIN? If NOT_FINISHED: r41–43 c15–17 values at state 2 with A-wall active.
+
+---
+
+@BELIEF:LAT-170LON-40 | created:1780963200 | updated:1780963200 | relates:extends>@BELIEF:LAT-150LON-40,related_to>@BELIEF:LAT-130LON-40,related_to>@BELIEF:LAT10LON-40,related_to>@BELIEF:LAT-120LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-170LON-40
+confidence:60
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+[ew]
+conf:60
+rev:0
+sal:0
+touched:1780963200
+[/ew]
+
+**Column c15–17 activation hypothesis: WIN requires A-wall spawned (11-ring A collected) AND entity1 state 2 at entity2 simultaneously.**
+
+**Structural observation**: 11-ring A is at r16–18 c15–17. Its collection spawns the A-wall at r16–18 c15–17. Entity2's internal state display (9-pattern) is at r41–43 c15–17. Both occupy column range c15–17 — the same 3-column band within the left-track corridor (c14–18). This vertical alignment is shared by no other documented L2 element.
+
+**Hypothesis**: c15–17 is a "connected column" in the game structure. The A-wall at r16–18 c15–17 functions as an activator: when present (11-ring A collected), it establishes a vertical game-state connection through column c15–17 to entity2's display at r41–43. At state 2, this connection resolves as WIN when the block occupies entity2 (r40–41 c14–18 overlaps c15–17 at block column range 14–18, covering c15–17 within it).
+
+**Explanatory power**: If correct, this explains the complete history:
+- Sessions 23–39 (entity2 at state 1, no 11-ring A): state wrong AND column not activated → NOT_FINISHED
+- Session 40 (entity2 at state 1, timer-expired state reset, maybe 11-ring A via 11-ring-A-first route but state 1 at entity2): state wrong → NOT_FINISHED
+- Sessions 41–42 (DC6 route, state 2 + A-wall active): UNKNOWN due to log truncation; if route executed correctly, this should be WIN
+
+**Alternative**: The connection is not binary (active/inactive) but positional — the block at r40–41 c14–18 with trail at r42–44 c14–18 allows trail-overlap of r41–43 c15–17 (the 9-pattern). At state 2 with A-wall present, these 9-pattern cells change to a collectible value → trail collection fires WIN.
+
+**Session 43 critical observation**: after step 41, read r41–43 c15–17 values. If they differ from value 9, the column activation is occurring. If they remain value 9, the hypothesis is contradicted.
+
+*(proj:true — structural inference from column alignment. DC10, 2026-05-27.)*
