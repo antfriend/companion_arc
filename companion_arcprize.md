@@ -6264,3 +6264,60 @@ If NOT_FINISHED at step 41 (entity2 entry at state 2):
 If WIN fires at step 41, steps 42–45 are unused. Session complete.
 
 ---
+
+---
+
+SECTION 1
+
+@LAT-480LON10 | created:1780790400 | updated:1780790400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780790400
+[/ew]
+
+## ls20 — Session 41 Log (2026-05-31)
+
+```session-log
+timestamp: 1780790400
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "1d95dc74-c68e-486a-906d-977ef0b75482"
+card_id: "d4572e65-c49e-4f04-8c6d-9b0e09d7fec3"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–41). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–40.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60, 60 actions available.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (fourteenth consecutive confirmation).
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 19→20): LOCUS loaded Game State. Confirmed session 40 standing order: DC6 final route (41 L2 steps: direct cross → 11-ring B → void escape → UP×8 → LEFT×6 → 11-ring A → DOWN×4 → entity2 at state 2). Correctly identified the three critical unknowns: (a) c39–43 passable at rows 50–51 for 11-ring B approach, (b) 11-ring B collectability and full-reset behavior, (c) entity2 win condition at state 2.
+
+2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 10.59 — highest; @LAT20LON-30 EPS 4.90 second), all conf:255 beliefs stable, and the session 40 standing order as designed across Dream Cycles 5–8. Identified that 45 L2
