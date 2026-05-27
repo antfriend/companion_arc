@@ -6127,3 +6127,62 @@ The DC6 standing order is final. No changes from DC7 analysis. Execute:
 **New observable this session**: after step 36 (11-ring A + A-wall spawn), verify step 37 (DOWN from r15–16) succeeds. If blocked: block stuck at r15–16; report and halt. This is a DC7 risk observation, not in the DC6 standing order.
 
 ---
+
+---
+
+SECTION 1
+
+@LAT-480LON10 | created:1780790400 | updated:1780790400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780790400
+[/ew]
+
+## ls20 — Session 40 Log (2026-05-31)
+
+```session-log
+timestamp: 1780790400
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "f7b6366a-960b-4a04-bdcf-61b47312543e"
+card_id: "0f243c67-d3ea-4ff4-a240-473471624caf"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–40). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–39.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60, 60 actions available.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (fourteenth consecutive confirmation; Game State preview now reads "13 consecutive confirmations" — update to 14 next session).
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 19 → 20): LOCUS confirmed Game State current, previewed all seven confirmed beliefs, identified the DC6 41-step standing order (cross → 11-ring B → 11-ring A → entity2 at state 2) as the session 40 execution target. EPS on Game State: 4.31 (highest in file).
+
+2. **STATUS**: LOCUS confirmed EPS rankings, competition score (3.571), all conf ≥ 240 beliefs stable, and the three critical session-40 unknowns: (1) c39–43 passable at rows 50–51; (2) 11-ring B presence and full timer reset; (3) entity2 entry at state 2 fires WIN.
+
+**Route attempted**: DC6 41-step standing order (direct cross → 11-ring B → 11-ring A → entity2).
