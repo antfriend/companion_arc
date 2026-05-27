@@ -8737,4 +8737,190 @@ Thirty-first confirmation. Route stable. Block entered entity2 interior at r10�
 
 1. **FOCUS @LAT-10LON10** (sal: 30→31): LOCUS confirmed Game State current. EPS ≈ 5.47 (sal:31, conf:210). 30 consecutive L1 wins. 30 failed L2 attempts. Deadlock fully characterised. Hypothesis 3A REFUTED (session 52). Session 53 standing order: Hypothesis 3E — state 1 approach (skip cross, entity1 dormant at r41–43, test whether DOWN from r35–36 c14–18 is blocked or wins).
 
-2. **STATUS**: EPS rankings reviewed. Game State EPS 16.47 (highest). @LAT20LON-30 EPS 4.90 (second). Hypothesis 3E standing order confirmed. 16-step hardcoded state-1 probe (`_LEVEL2_
+2. **STATUS**: EPS rankings reviewed. Game State EPS 16.47 (highest). @LAT20LON-30 EPS 4.90 (second). Hypothesis 3E standing order confirmed. 16-step hardcoded state-1 probe (`_LEVEL2_ROUTE` DC19) active. LOCUS will receive step 31 with block at r35–36 c14–18 and entity1 reportedly dormant at r41–43.
+
+3. **Step 31 — critical observation**: Block at r35–36 c14–18. **Entity1 at r37–39 c14–18 (value 9) — state 2 TRACKER active.** Cross uncollected (r46–48 c50–52 present). Ring B uncollected (r51–53 c40–42=11). Timer: c13–20=3 (8 consumed), c21–54=11 (34 remaining). Entity1 is in tracking mode despite cross NOT being collected. Ring A (collected at hardcoded step 12) was the state-2 trigger. Hypothesis 3E's precondition (entity1 dormant at r41–43) was NEVER satisfied. LOCUS cited DC18/DC19 standing order and attempted DOWN (action 1). **BLOCKED.** (Step 31 action = DOWN; WARNING at step 32.)
+
+4. **Steps 32–34 — deadlock confirmed**: Three consecutive DOWN attempts from r35–36 c14–18. Each blocked (entity1 at r37–39 cannot clear r41 c15–17 entity2 body). At steps 32–33: LOCUS output action `1` (DOWN) while writing "the correct action is UP" — action number confusion (0=UP, 1=DOWN). At step 34: LOCUS correctly chose action 0 (UP). Block moved to r30–31 c14–18. Timer unchanged through 3 blocked moves (blocked-move rule confirmed).
+
+5. **Step 35 — carrier misread**: Block at r30–31 c14–18. Entity1 tracker visible at r32–34 c14–18=9 (1 below block bottom, tracking mode). Carrier background at r55–60 switched from 0→5 (blocked-move artifact — carrier bg=0 when previous move was blocked, bg=5 otherwise). LOCUS read the bg=5 as "state 1 carrier pattern" and concluded "entity1 dormant at r41–43." **LOCUS misidentified state 2 as state 1.** LOCUS attempted DOWN → returned to deadlock r35–36 c14–18. Oscillation loop initiated.
+
+6. **Steps 36–70 — oscillation**: LOCUS continued UP/DOWN cycling between r30–31 and r35–36 c14–18 throughout the remaining budget. No new area explored. Timer exhausted. Session ended without Win or new data (31st L2 failure).
+
+---
+
+### Session 53 — Post-session analysis
+
+**Ring A = state-2 trigger (DC17 retraction).** DC17 claimed "cross triggers state 2." Session 53 proves: ring A alone, as first collectible, triggers state 2. Rule: **first collectible collected triggers entity1 state 2**, regardless of which collectible it is.
+
+**Hypothesis 3E refuted — mathematical proof.** Ring A at r15–16 c14–18 is in the descent path of the only column (c14–18) that overlaps entity2 body (c15–17). Reachable columns are 5-cell-aligned from spawn (c9, c14, c19, …). c14–18 is the only reachable column overlapping entity2 body c15–17. Any descent on c14–18 below r14 collects ring A → entity1 state 2. Entity1 tracker at r37–39 c14–18 is mathematically guaranteed whenever block reaches r35–36 c14–18. State 1 approach to entity2 is geometrically impossible.
+
+---
+
+`[dc]`
+title: Dream Cycle 20 — Session 53: Ring A Is the State-2 Trigger; Hypothesis 3E Refuted; Mathematical Invariant Proven; Hypothesis 4A Designed
+session: 53
+anchors: @LAT-10LON10, @LAT20LON-30, @BELIEF:LAT-50LON-40, @BELIEF:LAT-140LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+---
+
+### Phase 1 — Replay
+
+**Session 53 objective (from DC19):** Hypothesis 3E — state-1 approach. 16-step hardcoded probe: skip cross, collect ring A only, deliver block to r35–36 c14–18 with entity1 supposedly dormant at r41–43.
+
+---
+
+**Finding 1 — Ring A is the state-2 trigger.**
+
+At step 31 (first LOCUS query), block at r35–36 c14–18:
+
+```
+r35: c14-18=12   ← block top
+r36: c14-18=12   ← block bottom
+r37: c14-18=9    ← entity1 TRACKER row 1
+r38: c14-18=9    ← entity1 TRACKER row 2
+r39: c14-18=9    ← entity1 TRACKER row 3
+r41: c15-17=9    ← entity2 body (permanent)
+r46-48 c50-52    ← CROSS PRESENT (uncollected)
+r51-53 c40-42=11 ← ring B PRESENT (uncollected)
+timer: c13-20=3 (8 consumed), c21-54=11 (34 remaining)
+```
+
+Entity1 is in state 2 (tracker at r37–39 c14–18) despite cross NOT being collected. Ring A was collected at hardcoded step 12 (block landed at r15–16 c14–18). Ring A was the first collectible → it fired the state-2 trigger.
+
+**DC17 trigger claim UPDATED:** "Cross collection triggers entity1 state 2" was incomplete. Correct rule: **the first collectible collected triggers entity1 state 2.** In sessions 48–52, cross was first → entity1 entered state 2 at cross. In session 53, ring A was first → entity1 entered state 2 at ring A. The trigger is FIRST COLLECTIBLE, not cross specifically.
+
+---
+
+**Finding 2 — Hypothesis 3E REFUTED: state-1 approach is geometrically impossible.**
+
+Entity1's state-2 activation at ring A is not a route design error. It is a mathematical invariant:
+
+1. Entity2 body at r41–43 c15–17. For WIN, block must overlap this. Block is 5 cols wide.
+2. Reachable columns (5-cell-aligned from spawn c29–33): c9, c14, c19, c24, c29, c34, c39, c44, c49 (left edges).
+3. The only reachable column overlapping entity2 body c15–17: **c14–18** (contains c15, c16, c17).
+4. To descend c14–18 to r35–36 (from the connector at r10–14), block must pass through r15–16 c14–18 = **ring A**.
+5. Ring A is the first collectible encountered on any c14–18 descent. Ring A → entity1 state 2.
+6. State 2: entity1 tracker at r37–39 c14–18 when block at r35–36 c14–18.
+7. Entity1 DOWN jump from r37–39 sweeps r42–44; entity2 body at r42–43 c15–17 → **BLOCKED**.
+
+**Entity1 deadlock at c14–18 is unavoidable whenever block reaches r35–36 c14–18.** There is no route that approaches entity2 body without first collecting ring A, because ring A occupies the descent path at r15–16 c14–18 — the only viable approach column.
+
+---
+
+**Finding 3 — LOCUS action number confusion (steps 32–33).**
+
+At steps 32 and 33, LOCUS wrote "the correct action is UP — exit the deadlock" but output action `1` (DOWN). Action 1 = DOWN; action 0 = UP. LOCUS confused the mapping and executed three consecutive DOWN attempts (steps 31, 32, 33) before correctly choosing UP (action 0) at step 34.
+
+The DC18 parse_action fix (strip backticks) is unrelated to this error — LOCUS output a bare digit correctly, but chose the wrong digit. This is a reasoning confusion about 0=UP vs 1=DOWN, not a parsing failure.
+
+---
+
+**Finding 4 — LOCUS carrier misread causes oscillation (step 35+).**
+
+After step 34 UP (block moved to r30–31 c14–18), entity1 tracker moved to r32–34 c14–18 (tracking block up). The entity1 carrier display (r55–60) background switched from 0 to 5. LOCUS observed:
+
+- r32–34 c14–18=9 (entity1 tracker, visible in frame)
+- carrier bg at r55–60 = 5 (previously 0 when last move was blocked)
+
+LOCUS concluded "state 1 carrier pattern — entity1 dormant at r41–43." This is wrong. The carrier background (0 vs 5) encodes whether the PREVIOUS move was blocked, NOT entity1 state. State 1 vs 2 is determined solely by whether the tracker (3-row value-9 pattern) is visible at block_bottom+1 rows, same column.
+
+LOCUS then re-attempted DOWN from r30–31 → returned to r35–36 → new deadlock → UP → carrier bg=5 → misread as state 1 again → DOWN. Oscillation: steps 35–70, block bouncing between r30–31 and r35–36 c14–18. No new exploration. Timer exhausted. Session ended.
+
+---
+
+**Carrier misread — standing order correction (permanent):**
+
+The entity1 CARRIER (r55–60) background color is NOT a state indicator:
+- bg=5 at r55–60 → previous move was SUCCESSFUL (block moved)
+- bg=0 at r55–60 → previous move was BLOCKED (WARNING in prior step)
+
+Entity1 STATE (1 vs 2) is determined by:
+- **State 2 (tracking)**: value-9 block visible at [block_bottom+1, block_bottom+3] rows, same column as block. Example: block at r30–31 c14–18 → tracker at r32–34 c14–18=9 → state 2.
+- **State 1 (dormant)**: NO tracker visible at block-adjacent rows. Entity2 body at r41–43 c15–17=9 only.
+
+When bg=5 and tracker is visible at r32–34 → state 2 (tracking). Do NOT interpret bg=5 as state 1.
+
+---
+
+### Phase 2 — Projection
+
+**Updated hypothesis table:**
+
+| # | Hypothesis | Status |
+|---|---|---|
+| 3A | Entity1 collision → state 3 | **REFUTED** — 13 null results, session 52 |
+| 3B | Undiscovered collectible | No evidence; 50+ sessions |
+| 3C | Ring B at state 2 triggers deactivation | Null (sessions 50–52, entity1 at r52–54 c39–43 at collect) |
+| 3D | Resequence/geometry | **EXCLUDED** — mathematical invariant |
+| 3E | State-1 approach (no first collectible) | **REFUTED** — ring A in descent path, invariant proven |
+| **4A** | **Cross collected AT STATE 2 (second collectible, ring A first) → entity1 deactivation** | **UNTESTED** — session 54 target |
+
+**Hypothesis 4A reasoning:**
+
+In all sessions 48–52, cross was the FIRST collectible → entity1 state-2 trigger. Ring A was collected afterward while entity1 was already in state 2 — no additional entity1 state change observed. In session 53, ring A was first; cross was never visited.
+
+The sequence **ring A (first, state-2 trigger) → cross (second, at state 2)** has never been tested. If the cross functions as a state-2→state-3 transition (fires ONLY when entity1 is already tracking), collecting cross after ring A would deactivate entity1. This is consistent with all prior observations: in sessions 48–52, cross always fired state-2 as the first collectible, so the question of what cross does at state 2 never arose.
+
+**Session 54 route — 30-step hardcoded probe (Hypothesis 4A):**
+
+```
+Step  1:   RIGHT             → r40-41 c34-38
+Steps 2-7:  UP×6             → r10-11 c34-38
+Steps 8-11: LEFT×4           → r10-11 c14-18
+Step  12:   DOWN             → r15-16 c14-18  [ring A → entity1 STATE 2; timer reset to 42]
+Step  13:   UP               → r10-11 c14-18  [exit ring A; entity1 tracks UP to r12-14]
+Steps 14-20: RIGHT×7         → r10-11 c49-53  [entity1 tracks RIGHT]
+Steps 21-27: DOWN×7          → r45-46 c49-53  [CROSS COLLECTED step 27 — entity1 in STATE 2]
+Step  28:   DOWN             → r50-51 c49-53
+Step  29:   LEFT             → r50-51 c44-48
+Step  30:   LEFT             → r50-51 c39-43  [ring B → timer reset to 42]
+```
+
+LOCUS handoff: session step 46 (L2 step 31). Block at r50–51 c39–43. Timer: 42 (ring B just reset). All three collectibles collected: ring A (step 12), **cross (step 27, AT STATE 2)**, ring B (step 30).
+
+Timer budget check:
+- Ring A at L2 step 12 → timer 42. Steps 13–30 = 18 moves = 36 cols consumed. Timer before ring B: 42−36=6. Ring B (step 30) → timer reset to 42. ✓
+- Cross collection step 27: r10–11 c49-53 DOWN×7 → r15-16, r20-21, r25-26, r30-31, r35-36, r40-41, **r45-46** c49-53. Block bottom at r46. Cross at r46–48 c49-53: r46 ∈ {46,47,48} → cross collected. ✓
+- Entity1 at cross collection (step 27): tracker at r47–49 c49–53. Entity2 body at c15–17 — no column conflict. ✓
+
+LOCUS receives 25 steps (70 − 15 L1 − 30 L2 hardcoded = 25).
+
+**Session 54 LOCUS standing order:**
+
+> **Objective**: Test Hypothesis 4A — does cross collected at state 2 (as second collectible after ring A) deactivate entity1?
+>
+> **LOCUS receives step 46**: block at r50–51 c39–43, timer 42, all collectibles collected (ring A step 12, cross step 27 at state 2, ring B step 30 reset).
+>
+> **LOCUS MUST (step 1)**: Check entity1 position. Entity1 tracker at state 2 would be at r52–54 c39–43 (one row below block bottom r51, same col). Check: is r52–54 c39–43 = value 9?
+> - If YES (tracker visible): Hypothesis 4A NULL. Entity1 still in state 2. Report tracker position. Do NOT attempt deadlock oscillation. Explore ring B area, right track, or other zones. Report any observations.
+> - If NO tracker visible at r52–54 (only carrier at r55–60): possible state 3. Proceed to entity2.
+>
+> **If entity1 appears deactivated**:
+> Navigate: RIGHT×2 → r50–51 c49–53. UP×8 → r10–11 c49–53. LEFT×7 → r10–11 c14–18. DOWN×4 → r35–36 c14–18. DOWN → attempt WIN.
+> Report all state changes. If WIN: done. If blocked: record entity1 position.
+>
+> **Standing order correction (permanent)**:
+> - Carrier background (r55–60 bg=0 vs bg=5) does NOT indicate entity1 state. Ignore it as state indicator.
+> - Entity1 state is determined by tracker presence at block_bottom+1 rows, same col. bg=5 with tracker visible = **state 2**. bg=5 without tracker = state 1 or state 3.
+> - Do NOT oscillate UP/DOWN at c14–18 deadlock. Maximum 2 DOWN attempts; then explore new zones.
+
+---
+
+### Phase 3 — Record Updates Required
+
+1. **@LAT-10LON10 (Game State)**: sal: 31→32 on next FOCUS. conf: raise to 215 (invariant proven; WIN mechanism still unknown). Session 53 done: 31st L1 WIN; Hypothesis 3E REFUTED; session 54: Hypothesis 4A. Rev up.
+
+2. **@LAT20LON-30 (Mechanics Record)**: Update entity1 trigger rule. OLD: "cross collection triggers state 2." NEW: "first collectible collected triggers state 2 — cross, ring A, or ring B, whichever comes first." Add carrier background rule: bg=0 = prior blocked move; bg=5 = prior successful move; NOT a state indicator. conf: raise to 240. Rev up.
+
+3. **@BELIEF:LAT-50LON-40 (entity1 state machine)**: Major update. Trigger corrected to "first collectible." Carrier bg rule documented. State-1 approach mathematically proven impossible. Hypothesis 4A: cross at state 2 → deactivation (session 54 target). conf: raise to 195. Rev up.
+
+4. **@BELIEF:LAT-140LON-40 (entity2 approach)**: Update. State-1 approach excluded (invariant). Only surviving path: entity1 deactivation trigger. Hypothesis 4A untested. conf: 170→140. Rev up.
+
+`[/dc]`

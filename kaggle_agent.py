@@ -61,17 +61,25 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
-# Session 52 result: Hypothesis 3A REFUTED — 13 DOWN collisions produced zero state change.
-# Blocked moves don't consume timer (timer frozen at 34 across all 13 blocked steps).
-# DC19: State 1 approach (skip cross entirely; entity1 stays dormant at r41-43).
-# 16-step route: no cross, no ring B, ring A only; LOCUS gets 39 steps (max_steps=70).
+# Session 53 result: Hypothesis 3E REFUTED — ring A (not cross) is state-2 trigger; mathematical
+# invariant proven: ring A at r15-16 c14-18 is in the only descent path to entity2; state-1
+# approach is geometrically impossible. LOCUS oscillated due to carrier-bg misread (bg=0/5
+# indicates blocked/successful prior move, NOT entity1 state 1 vs 2).
+# DC20: Hypothesis 4A — cross collected AT STATE 2 (as second collectible, after ring A triggers
+# state 2) may deactivate entity1. 30-step probe: ring A (state 2) → UP → RIGHT×7 → DOWN×7
+# (cross at r45-46 c49-53 at STATE 2) → ring B (timer reset). LOCUS gets 25 steps (max_steps=70).
 _LEVEL2_ROUTE = [
-    3,                     # step 1:  RIGHT → r40-41 c34-38
-    0, 0, 0, 0, 0, 0,      # steps 2-7:  UP×6 → r10-11 c34-38
-    2, 2, 2, 2,            # steps 8-11: LEFT×4 → r10-11 c14-18
-    1,                     # step 12:  DOWN → r15-16 c14-18  [ring A → timer reset to 42]
-    1, 1, 1, 1,            # steps 13-16: DOWN×4 → r35-36 c14-18  [entity1 DORMANT at r41-43; state 1; DC19 handoff]
-]  # 16-step state-1 probe (DC19 session 53); LOCUS takes 39 steps for Hypothesis 3E test
+    3,                          # step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,           # steps 2-7:  UP×6 → r10-11 c34-38
+    2, 2, 2, 2,                 # steps 8-11: LEFT×4 → r10-11 c14-18
+    1,                          # step 12:  DOWN → r15-16 c14-18  [ring A → entity1 STATE 2; timer reset 42]
+    0,                          # step 13:  UP → r10-11 c14-18   [exit ring A; entity1 tracks UP]
+    3, 3, 3, 3, 3, 3, 3,        # steps 14-20: RIGHT×7 → r10-11 c49-53  [entity1 tracks RIGHT]
+    1, 1, 1, 1, 1, 1, 1,        # steps 21-27: DOWN×7 → r45-46 c49-53   [CROSS collected at step 27 — STATE 2]
+    1,                          # step 28:  DOWN → r50-51 c49-53
+    2,                          # step 29:  LEFT → r50-51 c44-48
+    2,                          # step 30:  LEFT → r50-51 c39-43  [ring B → timer reset 42]
+]  # 30-step Hypothesis-4A probe (DC20 session 54); LOCUS takes 25 steps for cross-at-state-2 test
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
