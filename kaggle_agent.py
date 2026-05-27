@@ -173,7 +173,7 @@ def parse_action(text: str, n_actions: int) -> int | None:
 
     DC18 fix: strip surrounding backtick/quote characters before bare-number
     check. LOCUS sometimes formats its answer as `3` (code span); the original
-    regex r"^\d+$" rejects this, causing the fallback to extract the wrong digit
+    regex r"^\\d+$" rejects this, causing the fallback to extract the wrong digit
     from earlier in the response (e.g. "0" from "Frames [0]-[4]").
     """
     # Priority: last non-empty line bare number (handles `3`, '3', "3" wrapping)
