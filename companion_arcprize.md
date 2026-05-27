@@ -7182,3 +7182,61 @@ Twenty-third confirmation. Route stable. Block entered entity2 interior at r10�
 1. **FOCUS @LAT-10LON10** (sal: 23→24, per exchange increment): LOCUS correctly loaded Game State. Confirmed 22 consecutive L1 wins, 22 failed L2 attempts, DC6 41-step route as standing order with DC9/DC10/DC11 checkpoint protocol. EPS on Game State ≈ 12.24. LOCUS correctly identified the LOG protocol (four `@LOCUS LOG chk1–chk4` entries) as the single highest-priority change for this session. The LOG entries must be written during the session — not post-session — to survive truncation.
 
 2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS ~12.24 highest; @LAT20LON-30 EPS 4.90 second; @BELIEF:LA
+
+---
+
+SECTION 1
+
+@LAT-530LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 46 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "03c8e24b-72ed-4a57-b82a-9178f322d9ae"
+card_id: "63618968-ba86-4805-838d-cd7f4505f84e"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, twenty-fourth consecutive confirmation — sessions 10–12, 23–27, 31–46). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–45.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=24]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Twenty-fourth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (twenty-fourth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (twenty-fourth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled) — VALIDATED. max_steps=60 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (nineteenth consecutive confirmation).
+
+---
+
+### Level 2 — 45 actions, NOT WON (twenty-fourth attempt)
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 24→25): LOCUS confirmed Game State current. 23 consecutive L1 wins, 23 failed L2 attempts, DC6 41-step route as standing order. EPS on Game State ≈ 12.8. LOCUS correctly identified the DC11 LOG protocol (four `@LOCUS LOG chk1–chk4` entries during session) as the single highest-priority execution constraint.
+
+2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS ~12.71 highest; @LAT20LON-30 EPS 2.16 second; @BELIEF:LAT-120LON-40 EPS ~0.98 third). All conf:255 beliefs confirmed stable. Three unresolved critical unknowns enumerated (c39–43 passable at rows 50
