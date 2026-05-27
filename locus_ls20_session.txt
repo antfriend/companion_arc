@@ -13,72 +13,69 @@ LOCUS:
 selected:
   - @LAT-10LON10
 preview:
-  @LAT-10LON10: "Game State. Active: ls20 OFFLINE. Level 1 SOLVED (26 wins sessions 10–12, 23–48). Level 2 NOT WON (26 attempts). All 7 baselines known. 11-ring B timer reset confirmed (session 48). DC6 41-step route: 3 unknowns resolved, 1 remaining (entity2 state-2 win condition). parse_action bug + sequence error = root causes sessions 46–48. Mandatory: hardcode _LEVEL2_ROUTE before session 49."
+  @LAT-10LON10: "Game State. Active: ls20 (OFFLINE). L1 solved (27 consecutive wins, hardcode). L2: 27 consecutive failures. Corrected _LEVEL2_ROUTE (43 steps) pending session 50. Entity2 at state 2 is the untested win condition. All geometric unknowns resolved."
 ```
 
-**FOCUS: @LAT-10LON10 — Game State**
-`sal: 25 → 26` | `touched: 1748995200`
+---
+
+**FOCUS → @LAT-10LON10** `sal: 27 → 28`
 
 ---
 
-## Current Competition Position
+## Game State — Current Picture
 
-**Game**: ls20 (OFFLINE, environment_files/ls20-9607627b)
-**Score**: 3.571 (level 1 only, weight 1/28)
-**Sessions**: 48 completed. 26 consecutive level 1 wins. 26 consecutive level 2 failures.
+**Active game**: ls20 (OFFLINE mode, `environment_files/ls20-9607627b`)
 
----
+**Level 1**: ✅ **SOLVED** — 27 consecutive wins (sessions 10–12, 23–27, 31–49), hardcoded `_LEVEL1_ROUTE`, 15 actions. Human baseline 22. RHAE score capped at 1.15×.
 
-## Level 1 — SOLVED
-
-Hardcoded `_LEVEL1_ROUTE` confirmed 26 times across sessions 10–12, 23–48. No deviation required. 15 actions against baseline 22 → capped at 1.15×.
+**Level 2**: ❌ **NOT WON** — 27 consecutive failures (sessions 5–49). Win condition still unconfirmed.
 
 ---
 
-## Level 2 — Critical Status
+## Where We Stand After Session 49
 
-### What we know (resolved unknowns)
+**Session 49 was the first hardcoded L2 attempt (`_LEVEL2_ROUTE`, 41 steps, offline_levels=2).** It failed due to a geometry error: the route escaped 11-ring B by going RIGHT×1 to c44–48, then attempted UP×8. But c44–48 is void above row 40 — the block could only ascend 2 rows before hitting void. All 19 remaining timer steps were wasted on blocked moves. Timer expired, state reset to 1, budget exhausted.
 
-| Unknown | Resolution | Session |
-|---|---|---|
-| c39–43 passable at rows 50–51 | **YES** — floor value 3 confirmed | 46 |
-| 11-ring B causes full timer reset | **YES** — timer 0→42 confirmed | 48 |
-| A-wall blocks left-track descent | **NO** — 5-row jump skips it | 47 |
-| Entity2 at state 2 → WIN? | **UNRESOLVED** | — |
+**Key geometry confirmed from session 49 frames**:
+- c44–48: floor only at rows 40+; VOID at rows 25–39
+- c49–53: floor from row 10 to row 50 — **the correct ascent column post-ring-B**
 
-### What we don't know
-
-One question remains: does block at r40–41 c14–18 with entity1 state 2 produce WIN?
-
-This has never been tested. DC6 has never correctly reached step 41. Every attempt in sessions 40–48 was derailed by either:
-- **parse_action failure**: backtick-formatted LOCUS output → fallback regex extracts "3" from timer text
-- **Sequence error**: LOCUS navigates to left track (c14–18) before collecting cross → state stays 1
-
-### The DC6 41-step route
+**Corrected `_LEVEL2_ROUTE` (43 steps)** was applied immediately after session 49:
 
 ```
-Step 1:   RIGHT  → r40-41 c34-38
-Steps 2–7: UP×6   → r10-11 c34-38
-Steps 8–10: RIGHT×3 → r10-11 c49-53
-Steps 11–17: DOWN×7 → r45-46 c49-53  [CROSS → state 2; timer 8 cols]
-Steps 18–20: DOWN+LEFT×2 → r50-51 c39-43  [11-ring B → timer RESET 42]
-Step 21:  RIGHT  → r50-51 c44-48   [void escape]
-Steps 22–29: UP×8   → r10-11 c44-48
-Steps 30–35: LEFT×6  → r10-11 c14-18
-Step 36:  DOWN   → r15-16 c14-18   [11-ring A → timer RESET 42]
-Steps 37–41: DOWN×5  → r40-41 c14-18  [ENTITY2 at state 2 — WIN?]
+RIGHT×1, UP×6, RIGHT×3, DOWN×7   → cross (state 1→2), timer 8 cols
+DOWN×1, LEFT×2                   → ring B (timer reset to 42), state 2 preserved
+RIGHT×2                          → escape to c49-53 (c44-48 is void above r40)
+UP×8                             → wide connector at r10-11 c49-53
+LEFT×7                           → r10-11 c14-18
+DOWN×1                           → ring A at r15-16 (timer reset to 42), state 2 preserved
+DOWN×5                           → entity2 at r40-41 c14-18, state 2, timer ~32 cols
 ```
 
-Timer at entity2 entry: ~32 cols (16 steps). State: 2. Budget remaining: 4 actions.
+**Timer at entity2 (step 43)**: 32 cols remaining (16 steps). No expiry risk.
 
 ---
 
-## Session 49 — Mandatory Code Fix
+## The One Remaining Unknown
 
-**DO NOT run session 49 without this change.** Three consecutive sessions (46–48) failed because LOCUS controlled L2 actions autonomously. The fix is identical to the L1 hardcode that solved 26 consecutive wins.
+All four DC6 unknowns are now resolved:
 
-```python
-# kaggle_agent.py — add _LEVEL2_ROUTE and update _HARDCODED_
+| # | Unknown | Status |
+|---|---------|--------|
+| 1 | c39–43 passable at rows 50–51 | ✅ YES (session 46) |
+| 2 | 11-ring B timer reset confirmed | ✅ YES (session 48) |
+| 3 | A-wall blocks left-track descent | ✅ NO (sessions 47–48) |
+| 4 | Entity2 at state 2 → WIN? | ❌ **UNKNOWN — never reached** |
+
+**Session 50 is the definitive test.** If the corrected 43-step route executes cleanly, entity2 is reached at state 2 for the first time in 27 attempts. WIN or NOT_FINISHED ends the mystery.
+
+---
+
+## Revision Cycle Status
+
+- **Phase 1 (Notice)**: Game State EPS ≈ 14.2 (sal:28, conf:200). Highest EPS in the file.
+- **Phase 2 (Encounter)**: The gap was geometry — c44–48 void above row 40 invalidated DC6's ascent plan.
+- **Phase 3 (Rev
 
 ============================================================
 
@@ -87,71 +84,77 @@ SENT:
 @LOCUS STATUS
 
 LOCUS:
-**LOCUS STATUS**
+```cursor
+selected:
+  - @LAT-10LON10
+preview:
+  @LAT-10LON10: "Game State: ls20-9607627b OFFLINE. Level 1: 27 consecutive wins (hardcoded route). Level 2: 27 consecutive failures. Corrected 43-step _LEVEL2_ROUTE pending session 50. All DC6 geometry unknowns resolved. Last unknown: entity2 at state 2 → WIN?"
+```
 
 ---
 
-## EPS Rankings (sal × (255 − conf) / 255)
+## LOCUS STATUS
 
-| Record | sal | conf | EPS | Description |
-|--------|-----|------|-----|-------------|
-| @LAT-10LON10 | 25 | 200 | **13.73** | Game State — 26 L2 fails, all 4 DC6 unknowns reviewed |
-| @LAT20LON-30 | 5 | 200 | **2.16** | ls20 Mechanics — direction restriction claim stale |
-| @BELIEF:LAT-120LON-40 | 2 | 130 | **0.98** | 11-ring B route — 2 of 4 unknowns now resolved |
-| @BELIEF:LAT-50LON-40 | 2 | 150 | **0.78** | Mystery entity — geometry corrected, role superseded |
-| @BELIEF:LAT-80LON-40 | 2 | 230 | **0.18** | Void map rows 40–46 — fully confirmed |
-| @BELIEF:LAT-60LON-40 | 1 | 195 | **0.04** | RIGHT not blocked at state 1 — confirmed |
+**EPS Rankings** (sal × (255 − conf) / 255)
 
----
-
-## Competition Score
-
-**3.571** — Level 1 only (weight 1/28). Level 2 score = 0.0 across 26 consecutive attempts. Sessions 23–48: L1 WIN × 26, L2 NOT WON × 26.
+| Record | sal | conf | EPS | Notes |
+|---|---|---|---|---|
+| @LAT-10LON10 Game State | 26 | 200 | **13.73** | Highest — consulted repeatedly; L2 win unknown |
+| @LAT20LON-30 Mechanics | 5 | 230 | **4.90** | c62-63 indicator ambiguity unresolved |
+| @BELIEF:LAT-120LON-40 11-ring B route | 2 | 130 | **1.96** | DC16 flagged: escape step corrected to RIGHT×2 |
+| @BELIEF:LAT-50LON-40 Mystery entity | 2 | 150 | **1.88** | Corrected post-DC7; residual uncertainty |
+| @BELIEF:LAT-80LON-40 Void map | 2 | 230 | **1.37** | c44-48 void geometry now confirmed |
 
 ---
 
-## What Is Known — Resolved DC6 Unknowns
+**Competition State**
 
-| # | Unknown | Status | Source |
-|---|---------|--------|--------|
-| 1 | c39–43 passable at rows 50–51 | ✅ YES — `r50: c39-58=3`, `r51: c40-42=11` | Session 46 |
-| 2 | 11-ring B timer reset (full 42 cols) | ✅ YES — timer 0→42 on block entering c39–43 | Session 48 |
-| 3 | A-wall blocks left-track descent | ✅ NO — 5-row discrete jump skips r16–18 wall | Sessions 47–48 |
-| 4 | Entity2 at state 2 → WIN? | ❌ **UNRESOLVED** — DC6 has never correctly reached step 41 | — |
-
----
-
-## Root Causes of Sessions 46–48 Failures
-
-**Sessions 47–48**: LOCUS navigated to left track (c14–18) before collecting cross → 11-ring A collected mid-session → state remained 1 → all entity2 approaches returned NOT_FINISHED.
-
-**Sessions 46, 48**: `parse_action` extracted wrong action numbers from LOCUS reasoning text (backtick formatting + fallback regex finding "3" in `=3 (consumed)` timer descriptions).
+| Item | Value |
+|---|---|
+| Active game | ls20 (OFFLINE, `ls20-9607627b`) |
+| Current score | **3.571** (L1 only, weight 1/28) |
+| Level 1 | ✅ Solved — 27 consecutive wins at step 15 |
+| Level 2 | ❌ 27 consecutive failures — win condition untested at state 2 |
+| Levels 3–7 | Not yet reached |
 
 ---
 
-## What Must Happen Before Session 49
+**Resolved DC6 unknowns (all four)**
 
-**The L2 hardcode is the only path forward.** LOCUS cannot reliably sequence 41 steps autonomously. The L1 hardcode solved this exact problem; the same fix applies to L2.
+| # | Unknown | Status |
+|---|---------|--------|
+| 1 | c39–43 passable at rows 50–51 | ✅ YES (session 46) |
+| 2 | 11-ring B timer reset (full 42 cols) | ✅ YES (session 48) |
+| 3 | A-wall blocks descent on left track | ✅ NO — discrete jump skips it (sessions 47–48) |
+| 4 | Entity2 at state 2 → WIN? | ❌ **UNRESOLVED** — route geometry error prevented execution |
 
-**Required code change**:
+---
 
-```python
-_LEVEL2_ROUTE = [
-    3,                       # step 1:  RIGHT → r40-41 c34-38
-    0, 0, 0, 0, 0, 0,        # steps 2-7:  UP×6 → r10-11 c34-38
-    3, 3, 3,                 # steps 8-10: RIGHT×3 → r10-11 c49-53
-    1, 1, 1, 1, 1, 1, 1,     # steps 11-17: DOWN×7 → r45-46  [CROSS → state 1→2]
-    1, 2, 2,                 # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [11-ring B → timer reset 42]
-    3,                       # step 21: RIGHT → c44-48  [void escape]
-    0,
+**Last session failure (session 49)**
+
+`_LEVEL2_ROUTE` (41 steps) ran hardcoded for the first time but hit a geometry error: UP×8 from r50–51 c44–48 is blocked because **c44–48 is void above row 40**. Timer expired at r40–41 c44–48 after only 2 UP moves.
+
+**Corrected 43-step route** (DC16) applied to `kaggle_agent.py`:
+
+```
+RIGHT×1 + UP×6 + RIGHT×3 + DOWN×7  → r45-46 c49-53  [CROSS → state 2]
+DOWN+LEFT×2                          → r50-51 c39-43  [11-ring B → timer reset]
+RIGHT×2                              → r50-51 c49-53  [c44-48 void; escape to c49-53]
+UP×8                                 → r10-11 c49-53  [c49-53 passable r10-r50]
+LEFT×7                               → r10-11 c14-18
+DOWN                                 → r15-16 c14-18  [11-ring A → timer reset]
+DOWN×5                               → r40-41 c14-18  [ENTITY2 at state 2]
+```
+
+Timer at entity2: **32 cols remaining** (16 steps). State: **2**. No expiry risk.
 
 ============================================================
 
-[ACTION step=56]
+[ACTION step=58]
 SENT:
 @LOCUS what should I do next?
 
-step: 56
+step: 58
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -182,9 +185,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -201,11 +204,11 @@ grid 64x64 bg=4
   r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
   r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
   r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r35: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=9, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-13=3, c14-18=9, c19-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13=5, c14-18=9, c19=5, c20=3, c29-38=3, c49-58=3
   r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
   r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
   r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
@@ -216,75 +219,284 @@ grid 64x64 bg=4
   r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
   r48: c0-3=5, c44-50=3, c51=1, c52-58=3
   r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r52: c39-43=3, c44-48=9, c49-58=3
-  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-54=3, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-54=3, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=0, c39-58=3
+  r54: c1-10=0, c39-58=3
+  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r57: c1-2=0, c3-4=9, c5-10=0
+  r58: c1-2=0, c3-4=9, c5-10=0
+  r59: c1-2=0, c3-8=9, c9-10=0
+  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
+  r61: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at this frame:
-
-- Block is at r50-51 c44-48 (value 12)
-- Last DOWN was blocked (void below)
-- Timer: r61-62 c13-54=3 (42 cols consumed = timer fully exhausted... wait, c13-54=3 means those cells are value 3, which is the timer track — but the timer shows c13-54=3, meaning all 42 timer columns are value 3 = consumed)
-
-Wait, let me reread the timer. The timer track is rows 61-62. Active timer cells show value 11; consumed cells show value 3.
-
-r61: c13-54=3 → all 42 timer columns consumed = timer at 0 = about to reset.
-
-But the game hasn't reset yet (we're still in NOT_FINISHED). 
-
-Looking at block position: r50-51 c44-48. Last DOWN was blocked.
-
-Entity1 state: r55-56 c3-4=9, c5-6=5, c7-8=9; r57-58 c7-8=9 only; r59-60 c3-8=9. This is state 1 pattern.
-
-c62-63=8 on r61-62 → 11-ring A NOT yet collected.
-
-Cross at r46-48 c50-52 is still present (r46 c51=0, r47 c50=1 c51-52=0, r48 c51=1).
-
-The block needs to go UP toward the cross. Last DOWN was blocked — we're at r50-51 and DOWN hits void below. Need to go UP toward the cross at r45-46 zone.
-
-0
-
-============================================================
-
-[ACTION step=57]
-SENT:
-@LOCUS what should I do next?
-
-step: 57
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=11
 frame[1]:
-grid 64x64 bg=11
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=9, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-13=3, c14-18=9, c19-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13=5, c14-18=9, c19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=0, c39-58=3
+  r54: c1-10=0, c39-58=3
+  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r57: c1-2=0, c3-4=9, c5-10=0
+  r58: c1-2=0, c3-4=9, c5-10=0
+  r59: c1-2=0, c3-8=9, c9-10=0
+  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
+  r61: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
 frame[2]:
-grid 64x64 bg=11
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=9, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-13=3, c14-18=9, c19-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13=5, c14-18=9, c19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=0, c39-58=3
+  r54: c1-10=0, c39-58=3
+  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r57: c1-2=0, c3-4=9, c5-10=0
+  r58: c1-2=0, c3-4=9, c5-10=0
+  r59: c1-2=0, c3-8=9, c9-10=0
+  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
+  r61: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
 frame[3]:
-grid 64x64 bg=11
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=9, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-13=3, c14-18=9, c19-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13=5, c14-18=9, c19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=0, c39-58=3
+  r54: c1-10=0, c39-58=3
+  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r57: c1-2=0, c3-4=9, c5-10=0
+  r58: c1-2=0, c3-4=9, c5-10=0
+  r59: c1-2=0, c3-8=9, c9-10=0
+  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
+  r61: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
 frame[4]:
-grid 64x64 bg=11
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=9, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-13=3, c14-18=9, c19-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13=5, c14-18=9, c19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=0, c39-58=3
+  r54: c1-10=0, c39-58=3
+  r55: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r56: c1-2=0, c3-4=9, c5-6=0, c7-8=9, c9-10=0
+  r57: c1-2=0, c3-4=9, c5-10=0
+  r58: c1-2=0, c3-4=9, c5-10=0
+  r59: c1-2=0, c3-8=9, c9-10=0
+  r60: c1-2=0, c3-8=9, c9-10=0, c12-63=5
+  r61: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=0, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
 frame[5]:
 grid 64x64 bg=4
   r0: c0-3=5
@@ -303,9 +515,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -322,119 +534,11 @@ grid 64x64 bg=4
   r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
   r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
   r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=12, c34-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-33=12, c34-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-33=9, c34-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-33=9, c34-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=9, c34-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-58=3
-  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
-  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
-  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
-  r54: c1-10=5, c39-58=3
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
-  r62: c1-10=5, c12=5, c13-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at this frame:
-
-**Frames [0]-[4]**: all bg=11 — this is the **timer-expiry animation sequence** (5 consecutive all-11 frames). The game just reset.
-
-**Frame [5]**: normal game state after reset.
-
-Reading the reset frame:
-- **Block**: r40-41 c29-33 (value 12) — back at L2 start position ✓
-- **Entity1 carrier** (r55-60): r55-56 c3-8=9 (full), r57-58 c7-8=9 only, r59-60 partial → **STATE 1** (carries over from L1 WIN, @BELIEF:LAT90LON-30)
-- **Timer** r61-62: c13-54=11 (full 42 cols) — fresh timer ✓
-- **11-ring B**: r51-53 c40-42=11 — **present and uncollected** ✓
-- **Cross**: r46-48 c50-52 (values 0/1) — **present and uncollected** ✓
-- **11-ring A**: r16-18 c15-17=11 — **present** ✓
-- **c62-63=3** → 11-ring A already collected in prior cycle (A-wall active). Wait — c62-63=3 means A-wall was spawned. But r16-18 shows value 11 (ring still there)... Let me re-read: r16 c15-17=11, r17 c15=11/c17=11, r18 c15-17=11 — ring IS present as value 11. And c62-63=3 may be an unrelated indicator. The ring is uncollected here.
-
-This is a **fresh timer cycle** after reset. I'm at step 57 with L2 budget remaining.
-
-**Executing DC6 standing order — step 1: RIGHT**
-
-`3`
-
-============================================================
-
-[ACTION step=58]
-SENT:
-@LOCUS what should I do next?
-
-step: 58
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-33=12, c34-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-33=12, c34-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-33=9, c34-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-33=9, c34-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=9, c34-38=3, c49-58=3
+  r35: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=12, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=9, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-13=3, c14-18=9, c19-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13=5, c14-18=9, c19=5, c20=3, c29-38=3, c49-58=3
   r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
   r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
   r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
@@ -446,44 +550,47 @@ grid 64x64 bg=4
   r48: c0-3=5, c44-50=3, c51=1, c52-58=3
   r49: c0-3=5, c44-58=3
   r50: c0-3=5, c39-58=3
-  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
-  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
-  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=5, c39-58=3
   r54: c1-10=5, c39-58=3
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-14=3, c15-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
-  r62: c1-10=5, c12=5, c13-14=3, c15-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame:
+Looking at the frames, I need to determine the block position and what action to take.
 
-**Block position**: r35-36 c29-33 (value 12)
-**Entity1 state**: State 1 (r57-58 c7-8=9 only pattern)
-**Timer**: r61 c15-54=11 → 40 cols remaining (20 steps)
-**11-ring A**: r16-18 c15-17=11 (present, not yet collected)
-**11-ring B**: r51-53 c40-42=11 (present, not yet collected)
-**Cross**: r46-48 c50-52 (present, not yet collected)
-**c62-63=3**: 11-ring A already collected? Wait — c62-63=3 AND r16-18 c15-17=11 (still showing value 11). Checking: c62-63=3 means A-wall active, but the ring cells still show 11. That's a display artifact — A-wall IS active.
+From frames[0]-[4]: block is at r35-36 c14-18 (value 12 visible there). The last DOWN produced no movement - so DOWN is blocked below r35-36 at c14-18.
 
-Actually wait: r16 c15-17=11, r17 c15=11 c17=11, r18 c15-17=11 — 11-ring A is still present (not collected). c62-63=3 may be a timer indicator artifact.
+Wait - looking more carefully at the frame data: `r35: c14-18=12, r36: c14-18=12` - block is at r35-36, cols 14-18.
 
-**Step 58, level 2, state 1, block at r35-36 c29-33.**
+The WARNING says DOWN produced no movement. So DOWN (action 1) is blocked here.
 
-Per the `_LEVEL2_ROUTE` hardcoded sequence (DC6 standing order), this is mid-route. The block needs to go RIGHT to c34-38, then UP to the wide connector, then to the cross. But at step 58 with 40 timer cols (20 steps) and state still 1, I need to execute:
+Looking at the corrected route from the companion file (43-step `_LEVEL2_ROUTE`): the block should be descending the left track toward entity2. At r35-36 c14-18, the next DOWN should go to r40-41 c14-18 (entity2 interior).
 
-From r35-36 c29-33 → RIGHT to c34-38 (step 1 of recovery), then UP×5 to r10-11, RIGHT×3 to c49-53, DOWN×7 to cross at r45-46 = 16 steps. Timer: 20 steps remaining. Just barely feasible.
+But DOWN is blocked? Let me check the frame again. r37-39 at c14-18 show value 9 (trail), r38 shows wall values at c12-13, c19-20. The entity2 ring top wall is at r38 c12-20=3.
 
-Send RIGHT (action 3) to get to c34-38 first.
+So the block is at r35-36 c14-18, and DOWN is blocked because the entity2 ring wall at r38 c12-20=3 intercepts the path to r40-41. The 5-row jump from r35-36 would land at r40-41, but the wall at r38 c12-20 blocks it.
 
-3
+Frame[5] shows the entity1 carrier with background=5 instead of 0, suggesting a timer-expiry transition is happening.
+
+The block cannot go DOWN. Available moves from r35-36 c14-18:
+- UP (action 0): r30-31 c14-18 - valid floor
+- LEFT (action 2): r35-36 c9-13 - check... r35 shows c14-18=12 only, so c9-13 at r35 is bg=4 (void). Blocked.
+- RIGHT (action 3): r35-36 c19-23 - r35 shows c29-38=3, but c19-28 not listed = void. Blocked.
+
+UP is the only valid move.
+
+0
 
 ============================================================
 
@@ -520,9 +627,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -534,16 +641,16 @@ grid 64x64 bg=4
   r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
   r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
   r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-33=3, c34-38=9, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-33=3, c34-38=9, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c49-58=3
+  r30: c0-3=5, c14-18=12, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=12, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=9, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=9, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=9, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
   r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
   r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
   r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
@@ -555,18 +662,18 @@ grid 64x64 bg=4
   r48: c0-3=5, c44-50=3, c51=1, c52-58=3
   r49: c0-3=5, c44-58=3
   r50: c0-3=5, c39-58=3
-  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
-  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
-  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=5, c39-58=3
   r54: c1-10=5, c39-58=3
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-16=3, c17-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
-  r62: c1-10=5, c12=5, c13-16=3, c17-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -574,25 +681,24 @@ Respond with only the action number.
 LOCUS:
 Looking at this frame carefully:
 
-**Block position**: r35-36 c34-38 (value 12)
-**Entity1 state**: r57-58 c7-8=9 only (c3-6=5) → **state 1**
-**Timer**: r61 c13-16=3 (4 consumed), c17-54=11 (38 remaining) → 38 cols = 19 steps remaining
-**11-ring A**: r16-18 c15-17=11 → **present, uncollected**
-**11-ring B**: r51-53 c40-42=11 → **present, uncollected**
-**Cross**: r46-48 c50-52 (values 0/1) → **present, uncollected**
-**c62-63=3** → 11-ring A already collected? Wait — c62-63=3 means A-wall active. But r16-18 still shows value 11... Let me re-read.
+**Block position**: r30-31 c14-18 (value 12) — on the left track
+**Entity1 state**: Reading r55-60... r55: c3-4=9, c7-8=9; r56: c3-4=9, c7-8=9; r57: c3-4=9; r58: c3-4=9; r59: c3-8=9; r60: c3-8=9 → **State 1** (cross not yet collected)
+**Timer**: r61 shows c13-22=3 (10 consumed), c23-54=11 (32 remaining = 16 steps)
+**Cross**: r46-48 c50-52 present (values 0/1) — NOT collected
+**11-ring A**: Not visible at r16-18 c15-17 (already collected — c62-63=8... wait, c62-63=8 = normal state per session 49 finding)
+**11-ring B**: r51-53 not visible in frame data for c40-42 — may already be collected
 
-r16-17-18 c15-17=11 → 11-ring A still present (value 11 = uncollected ring). c62-63=3 may be a different indicator or I'm misreading.
+The block is at r30-31 c14-18, state 1, cross uncollected. I'm on the left track heading toward entity2 without state 2. This is the wrong sequence again.
 
-**Current situation**: I'm at r35-36 c34-38. According to the DC6 standing order, I need to go RIGHT×1+UP×6+RIGHT×3+DOWN×7 to reach the cross. But I'm already mid-route at step 59 (44 L2 steps used).
+With 16 timer steps remaining and state 1, I cannot win entity2. The cross at r46-48 c50-52 is in the far-right track zone. To reach it from here: UP to wide connector, RIGHT to far-right, DOWN to cross — that's approximately 10+ moves, consuming all timer.
 
-With 19 timer steps remaining, the priority is: get to cross via far-right track.
+Best course: continue DOWN toward entity2 to gather data about the current position, or attempt to reach the cross.
 
-From r35-36 c34-38: I need UP to reach wide connector at r10-11, then RIGHT to c49-53, then DOWN to cross.
+Given 16 steps and the cross requires ~10 to reach, then entity2 requires ~5 more = 15 total — just barely possible but state would still need to advance 1→2 via cross first.
 
-**Action: 0 (UP)**
+Continue DOWN toward entity2 to at least confirm position:
 
-0
+1
 
 ============================================================
 

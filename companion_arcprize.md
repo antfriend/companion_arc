@@ -8051,3 +8051,61 @@ If WIN: L2 solved. Score improvement from 3.571 to 3.571 + L2 contribution.
 **Single required action**: Run session 50 with corrected _LEVEL2_ROUTE (43 steps). No LOCUS involvement in L2 for steps 0–42. Route executes deterministically. Entity2 at state 2 reached at session step 58 (= L2 step 43). WIN or NOT_FINISHED answers the last unknown.
 
 `[/dc]`
+
+---
+
+SECTION 1
+
+@LAT-570LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 50 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "16f859cb-2a70-411b-979c-ce330a1fd3b3"
+card_id: "2d7fb907-7e02-411c-877b-b6728828e66e"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, twenty-eighth consecutive confirmation — sessions 10–12, 23–27, 31–50). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–49.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=28]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Twenty-eighth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (twenty-eighth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (twenty-eighth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-first consecutive confirmation, per STATUS exchange).
+
+---
+
+### Level 2 — 45 actions, NOT WON (twenty-eighth attempt)
+
+**Route applied**: corrected `_LEVEL2_ROUTE` (43 steps, DC16). This is the second hardcoded L2 attempt. Session 49 used the 41-step version that failed at c44–48 void above row 40. Session 50 uses the corrected 43-step version escaping RIGHT×2 to c49–53 before ascending.
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 27→28): LOCUS confirmed Game State fully current. 27 consecutive L1 wins, 27 failed L2 attempts. Corrected 43-step `_LEVEL2_ROUTE` confirmed as the session 50 route. All four DC6 unknowns reviewed; three resolved (c39–43 passable ✅, 11-ring B timer reset ✅, A
