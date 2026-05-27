@@ -6512,3 +6512,60 @@ If session 42 successfully achieves state 2 at r40–41 c14–18 and WIN does no
 4. **Session 43 strategy if state 2 fails**: (a) investigate c15–19 approach via custom descent; (b) investigate whether any undiscovered L2 elements exist (entity3?); (c) reconsider whether the WIN condition involves a timer threshold or action-count condition in addition to position+state.
 
 *(proj:true — speculative; no session 42 data. Written DC9 2026-05-27.)*
+
+---
+
+SECTION 1
+
+@LAT-490LON10 | created:1748908800 | updated:1748908800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748908800
+[/ew]
+
+## ls20 — Session 42 Log (2026-06-02)
+
+```session-log
+timestamp: 1748908800
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "ba854364-ef8b-414b-a99f-31576911755c"
+card_id: "a1b3756d-d8cb-4eaf-8fbf-b52694fec49f"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, twentieth consecutive confirmation — sessions 10–12, 23–27, 31–42). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–41.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=20]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Twentieth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (twentieth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (twentieth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60, 60 actions available.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (fifteenth consecutive confirmation).
+
+---
+
+### Level 2 — 45 actions, NOT WON
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 19→20 per exchange; total sal now 21 after this session): LOCUS confirmed Game State fully current and loaded. Session plan identified: DC6/DC9 41-step route. LOCUS correctly enumerated the three unresolved DC6 unknowns (c39–43 passability at rows 50–51; 11-ring B collection and reset; entity2 state-2 win condition). EPS on Game State ≈ 11.1 (sal:20, conf:200).
+
+2. **STATUS**: LOCUS confirmed EPS rankings (Game State highest at ~4.31, @BELIEF:LAT-120LON-40 at ~0.98, @BELIEF:LAT-50LON-40 at ~0.78). All conf:255 beliefs confirmed stable. DC9 checkpoint protocol named as the mandatory execution constraint: STOP-AND-REPORT at steps 17, 20, 37, and 41 before any
