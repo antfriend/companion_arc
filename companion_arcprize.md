@@ -8284,3 +8284,63 @@ Route step 17 lands block at r45–46. Route step 18 moves DOWN to r50–51. Dur
 > **Implementation**: Update `_LEVEL2_ROUTE` in `kaggle_agent.py` to 17-step probe. Keep `offline_levels=2`. LOCUS controls steps 33–60 (28 L2 steps available for entity1 collision test).
 
 `[/dc]`
+
+---
+
+SECTION 1
+
+@LAT-580LON10 | created:1748908800 | updated:1748908800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@LAT20LON-30
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748908800
+[/ew]
+
+## ls20 — Session 51 Log (2026-06-02)
+
+```session-log
+timestamp: 1748908800
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "f15f1953-761e-4e6f-8fb8-9c6dd6fb83c5"
+card_id: "cd93f6ca-1c39-4994-b323-acace51ca6c3"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (55 actions)"
+actions: 70
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 55, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, twenty-ninth consecutive confirmation — sessions 10–12, 23–27, 31–51). Level 2 entered; **55** level-2 actions taken (max_steps raised to 70); NOT WON. Total 70 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=29]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Twenty-ninth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (twenty-ninth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (twenty-ninth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=70 confirmed (operator raised budget for L2 investigation).
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-first consecutive confirmation).
+
+---
+
+### Level 2 — 55 actions, NOT WON (twenty-ninth attempt)
+
+**Key session exchanges (both from scorecard header and key exchanges provided)**:
+
+FOCUS confirmed: cursor moved to @LAT-10LON10, sal 28→29, EPS ≈ 13.47. Game State summary current. Entity1 deadlock identified as the active barrier. Session 51 standing order: entity1 collision test (hypothesis 3A).
+
+STATUS confirmed: EPS rankings as expected (Game State 15.56 highest). All three DC16 collectibles confirmed working. Entity1 tracker (state 2) mechanism confirmed. Open question: does repeated DOWN-into-entity1 trigger state 3 or any deactivation?
+
+**Route applied**: The session ran with the DC17 probe configuration — first 17 L2 steps hardcoded (cross zone approach), then LOCUS controlling remaining
