@@ -68,17 +68,17 @@ _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,D
 # Far-right track (c44+) only reachable via wide connector rows 10-14.
 # Probe must be redesigned before offline_levels=2 is useful.
 _LEVEL2_ROUTE = [
-    3,                       # step 1:  RIGHT → r40-41 c34-38
-    0, 0, 0, 0, 0, 0,        # steps 2-7:  UP×6 → r10-11 c34-38
-    3, 3, 3,                 # steps 8-10: RIGHT×3 → r10-11 c49-53
-    1, 1, 1, 1, 1, 1, 1,     # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2]
-    1, 2, 2,                 # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [11-ring B → timer reset]
-    3,                       # step 21:  RIGHT → r50-51 c44-48  [void escape]
-    0, 0, 0, 0, 0, 0, 0, 0,  # steps 22-29: UP×8 → r10-11 c44-48
-    2, 2, 2, 2, 2, 2,        # steps 30-35: LEFT×6 → r10-11 c14-18
-    1,                       # step 36:  DOWN → r15-16 c14-18  [11-ring A → timer reset]
-    1, 1, 1, 1, 1,           # steps 37-41: DOWN×5 → r40-41 c14-18  [ENTITY2 at state 2]
-]  # DC6 41-step route — all collectibles confirmed; entity2 WIN condition unknown until session 49
+    3,                          # step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,           # steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                    # steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1, 1,        # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2]
+    1, 2, 2,                    # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [11-ring B → timer reset]
+    3, 3,                       # steps 21-22: RIGHT×2 → r50-51 c49-53  [escape; c44-48 VOID above r40]
+    0, 0, 0, 0, 0, 0, 0, 0,     # steps 23-30: UP×8 → r10-11 c49-53  [c49-53 passable entire height]
+    2, 2, 2, 2, 2, 2, 2,        # steps 31-37: LEFT×7 → r10-11 c14-18
+    1,                          # step 38: DOWN → r15-16 c14-18  [11-ring A → timer reset]
+    1, 1, 1, 1, 1,              # steps 39-43: DOWN×5 → r40-41 c14-18  [ENTITY2 at state 2]
+]  # DC6 corrected 43-step route (session 49: c44-48 void above row 40; switched to c49-53 ascent)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 

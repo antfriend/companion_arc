@@ -7851,4 +7851,203 @@ Twenty-seventh confirmation. Route stable. Block entered entity2 interior at r10
 
 1. **FOCUS @LAT-10LON10** (sal: 25→26): LOCUS confirmed Game State current. 26 consecutive L1 wins, 26 failed L2 attempts. All four DC6 unknowns reviewed; three resolved (c39–43 passable ✅, 11-ring B timer reset ✅, A-wall non-blocking ✅); one unresolved (entity2 state-2 win condition ❌). Mandatory code fix identified: hardcode `_LEVEL2_ROUTE` in kaggle_agent.py before session 49.
 
-2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 13.73 — highest; @LAT20LON-30 EPS 2.16 second
+2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 13.73 — highest; @LAT20LON-30 EPS 2.16 second; entity2 WIN condition still open). No conf:255 changes. DC15 standing order accepted.
+
+---
+
+## Session 49 (2026-05-27)
+
+**Summary**: L1 WON (step 15, hardcode, 27th consecutive). L2 NOT WON (27th failure). _LEVEL2_ROUTE hardcoded (41 steps), offline_levels=2 applied. Route ran 41 L2 steps (session steps 15–55) but timer expired — LOCUS queried from step 56. Root cause: DC6 geometry error. c44-48 is VOID above row 40; UP×8 from r50-51 c44-48 was blocked at r40-41. Timer drained on wasted blocked moves. Budget exhausted at step 59.
+
+---
+
+### Level 1 — WON (step 15, hardcode)
+
+Standard `_LEVEL1_ROUTE` confirmation. 27th consecutive win.
+
+---
+
+### Level 2 — 45 actions, NOT WON (twenty-seventh attempt, second with _LEVEL2_ROUTE hardcode)
+
+**Hardcoded route execution (session steps 15–55 = L2 steps 0–40)**:
+
+Route ran 41 steps without LOCUS involvement. All L1/L2 step data suppressed (no LOCUS queries fired).
+
+**First LOCUS query: step 56**
+
+```
+Block: r50-51 c44-48 (value 12)
+Timer: r61-62 c13-54=3 — ALL 42 cols consumed = 0 remaining
+c62-63=8: 11-ring A not collected
+Cross: r46-48 c50-52 still present (values 0/1) — NOT collected
+Entity1: state 1
+WARNING: last move (DOWN) produced NO movement — void below r51 at c44-48
+```
+
+LOCUS analysis: sent action 0 (UP). BUT parse_action extracted 0 from "[0]-[4]" in "Frames [0]-[4]" text (backtick-formatted `` `3` `` caused primary regex failure; fallback found "0" first).
+
+**Step 57: timer expiry animation + game reset**
+
+5 bg=11 frames then reset frame:
+```
+Block: r40-41 c29-33 — back at L2 start ✓
+Timer: c13-54=11 — full 42 cols (fresh cycle) ✓
+11-ring B: r51-53 c40-42=11 — restored ✓
+Cross: r46-48 c50-52 — restored ✓
+11-ring A: r16-18 c15-17=11 — restored ✓
+c62-63=3 (NOTE: both ring present AND c62-63=3; prior belief c62-63=3 → collected MAY BE WRONG)
+Entity1: state 1 (timer expiry resets state ✓ confirmed)
+```
+
+LOCUS sent action 3 (RIGHT) — last line was "3" (bare, not backtick), primary regex succeeded.
+
+**Step 58: block at r35-36 c29-33** (UP from step 57 action 0)
+
+Wait — step 57 sent action 0 (UP). Block moved from r40-41 to r35-36 ✓. Timer: c13-14=3 (4 consumed), c15-54=11 (38 remaining = 19 steps).
+
+LOCUS sent action 3 (RIGHT). Last line "3" — primary regex succeeded. Block → r35-36 c34-38.
+
+**Step 59: block at r35-36 c34-38**. Timer 38 consumed/4 remaining: c13-16=3, c17-54=11. 19 steps remaining. LOCUS sent 0 (UP). Budget exhausted. NOT_FINISHED.
+
+---
+
+### Root cause analysis — c44-48 void geometry
+
+**The critical error in DC6 / _LEVEL2_ROUTE (41-step version)**:
+
+After 11-ring B entry (r50-51 c39-43, step 20), the route escapes RIGHT to c44-48 (step 21) then attempts UP×8 to r10-11 c44-48. Session 49 frame evidence:
+
+```
+r20-24: c9-23=3, c29-38=3, c49-58=3  → c44-48 NOT listed → VOID
+r25-34: c14-18=3, c34-43=3, c49-53=3  → c44-48 NOT listed → VOID
+r35-38: c14-18=3, c29-38=3, c49-53=3  → c44-48 NOT listed → VOID
+r39:    c29-38=3, c49-58=3            → c44-48 NOT listed → VOID
+r40+:   c44-58=3                      → c44-48 FLOOR (rows 40+)
+```
+
+UP from r50-51 c44-48: only 2 moves possible (→ r40-41), then BLOCKED at r35-36. All subsequent UP and LEFT moves are wasted. Timer drained in 21 steps after ring B reset.
+
+**Confirmed passable column: c49-53**:
+
+```
+r10-14: c9-53=3     ✓
+r15-19: c44-53=3    ✓
+r20-24: c49-58=3    ✓
+r25-34: c49-53=3    ✓
+r35-38: c49-53=3    ✓
+r39+:   c49-58=3    ✓
+r50:    c39-58=3    ✓
+```
+
+c49-53 is floor from r50 all the way to r10. This is the correct ascent column.
+
+---
+
+### Corrected route — 43 steps (applied to kaggle_agent.py immediately after this session)
+
+```python
+_LEVEL2_ROUTE = [
+    3,                          # step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,           # steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                    # steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1, 1,        # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2]
+    1, 2, 2,                    # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [11-ring B → timer reset]
+    3, 3,                       # steps 21-22: RIGHT×2 → r50-51 c49-53  [c44-48 VOID above row 40]
+    0, 0, 0, 0, 0, 0, 0, 0,     # steps 23-30: UP×8 → r10-11 c49-53
+    2, 2, 2, 2, 2, 2, 2,        # steps 31-37: LEFT×7 → r10-11 c14-18
+    1,                          # step 38: DOWN → r15-16 c14-18  [11-ring A → timer reset]
+    1, 1, 1, 1, 1,              # steps 39-43: DOWN×5 → r40-41 c14-18  [ENTITY2 at state 2]
+]
+```
+
+Timer validation (43 steps):
+- Steps 1-10: 20 cols consumed → timer 22
+- Steps 11-17: 14 cols → timer 8
+- Steps 18-20: 6 cols → timer 2 → ring B → RESET to 42
+- Steps 21-22: 4 cols → timer 38
+- Steps 23-30: 16 cols → timer 22
+- Steps 31-37: 14 cols → timer 8
+- Step 38: 2 cols → timer 6 → ring A → RESET to 42
+- Steps 39-43: 10 cols → timer **32** at entity2
+
+No expiry risk. Entity2 reached at state 2 with 32 timer cols (16 steps) remaining.
+
+---
+
+### New findings — c62-63 indicator ambiguity
+
+Step 57 reset frame shows c62-63=3 AND r16-18 c15-17=11 (ring A present, uncollected) simultaneously. Prior belief that c62-63=3 → ring A collected (A-wall active) may be incorrect. Tentative revision: c62-63=3 may be the baseline indicator state (unrelated to ring collection), c62-63=8 is something else. Confidence: low. Not corrected in beliefs until more data.
+
+---
+
+### Session 49 standing order update
+
+`_LEVEL2_ROUTE` has been corrected to 43 steps (RIGHT×2 escape after ring B, UP×8 via c49-53, LEFT×7 to c14-18). kaggle_agent.py updated. offline_levels=2. Session 50 is the corrected WIN attempt.
+
+---
+
+## Dream Cycle 16 — Geometry Correction Pass
+
+`[dc]`
+`[ew] conf:180 sal:26 rev:49 touched:1748995200`
+
+### Phase 1 — Replay
+
+**Session 49 geometry failure summary**:
+
+After 26 sessions with LOCUS-controlled L2, the root cause of every failure is now confirmed to one of:
+1. parse_action extraction error (sessions 35–48, LOCUS-controlled)
+2. DC6 geometry error — c44-48 void above row 40 (session 49, first hardcoded attempt)
+
+The DC6 route was designed assuming c44-48 was passable as an ascent column. Session 49 proved it is NOT: floor only exists at c44-48 for rows 40+ (r40: c44-58=3). Rows 25–39 at c44-48 are void. The route's UP×8 from r50-51 c44-48 reaches r40-41 (2 moves), then every subsequent move is void-blocked. All 19 remaining timer steps are wasted.
+
+**The fix was in the frame the entire time**:
+
+Session 48 step 59 showed c49-53 floor at r50-51. Session 46 step 19 frame (the one that confirmed c39-43 passable) also contained the c49-53 floor evidence. DC6 assumed the natural escape was RIGHT×1 to c44-48, but the correct escape is RIGHT×2 to c49-53.
+
+**Three-session correction table**:
+
+| Session | Hardcode attempt | Geometry error | Root cause | Fix applied |
+|---------|-----------------|----------------|------------|-------------|
+| 49 | 1st (_LEVEL2_ROUTE 41 steps) | UP blocked at r40-41 c44-48 | c44-48 void above row 40 | RIGHT×2, UP via c49-53 |
+| 50 | 2nd (_LEVEL2_ROUTE 43 steps) | **unknown** | — | corrected route |
+
+### Phase 2 — Projection
+
+**Updated belief: @BELIEF:LAT30LON0 (c49-53 ascent column)**
+
+@BELIEF:LAT-120LON-40 (11-ring B route) requires correction: the "void escape" step was RIGHT×1 (c44-48). Corrected to RIGHT×2 (c49-53). The reason c49-53 is the correct column:
+- `r50-r10 c49-53=3` — full vertical passability confirmed from multiple session frames
+- `r25-39 c44-48` is NOT listed in any frame as floor → void (bg=4)
+- `r40+ c44-48=3` — floor only below the void gap
+
+**Session 50 projection**:
+
+If corrected route executes without new geometry errors:
+- Cross collected at step 17 (state 1→2)
+- 11-ring B at step 20 (timer reset, state 2 preserved)
+- Escape to c49-53 at step 22
+- Ascent to r10-11 at step 30
+- LEFT×7 to c14-18 at step 37
+- 11-ring A at step 38 (timer reset, state 2 preserved)
+- Entity2 reached at step 43 at STATE 2
+
+**WIN or NOT_FINISHED** — the answer to the 27-session mystery.
+
+If NOT_FINISHED: entity2 at state 2 is not the win condition. A fourth state (state 3 → entity2 entry) must exist. Cross may not be the state-advance trigger; 11-ring B may be the trigger. New investigation needed.
+
+If WIN: L2 solved. Score improvement from 3.571 to 3.571 + L2 contribution.
+
+### Phase 3 — Record Updates Required
+
+1. **@BELIEF:LAT-120LON-40** (11-ring B route): update escape step from RIGHT×1 (c44-48) to RIGHT×2 (c49-53). conf:170→150 (geometry uncertainty raised — if one step was wrong, others may be too).
+
+2. **@LAT-10LON10** (Game State): sal:26→27. Session 49 done. 27 consecutive L1 wins, 27 L2 failures. Corrected route pending session 50.
+
+3. **@BELIEF:LAT30LON0** update: c49-53 passable r10-r50 confirmed. c44-48 passable ONLY r40+. This is a new structural fact about the L2 map geometry.
+
+### Session 50 — Standing Order
+
+**Single required action**: Run session 50 with corrected _LEVEL2_ROUTE (43 steps). No LOCUS involvement in L2 for steps 0–42. Route executes deterministically. Entity2 at state 2 reached at session step 58 (= L2 step 43). WIN or NOT_FINISHED answers the last unknown.
+
+`[/dc]`
