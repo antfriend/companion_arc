@@ -6321,3 +6321,194 @@ Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–1
 1. **FOCUS @LAT-10LON10** (sal: 19→20): LOCUS loaded Game State. Confirmed session 40 standing order: DC6 final route (41 L2 steps: direct cross → 11-ring B → void escape → UP×8 → LEFT×6 → 11-ring A → DOWN×4 → entity2 at state 2). Correctly identified the three critical unknowns: (a) c39–43 passable at rows 50–51 for 11-ring B approach, (b) 11-ring B collectability and full-reset behavior, (c) entity2 win condition at state 2.
 
 2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 10.59 — highest; @LAT20LON-30 EPS 4.90 second), all conf:255 beliefs stable, and the session 40 standing order as designed across Dream Cycles 5–8. Identified that 45 L2
+
+*(Session 41 log truncated — remainder of 45 L2 actions unknown.)*
+
+---
+
+## Dream Cycle 9 — Post-Sessions 40–41 (2026-05-27)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:20, highest in file; EPS 10.59 per session 41 STATUS), @LAT20LON-30 (sal:5, EPS 4.90 second-highest). Sources: @LAT-470LON10 (session 40, truncated), @LAT-480LON10 (session 41, truncated). Both logs cut off before L2 outcome details — replay is constrained to what was recorded.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT10LON-40 (state-2 win hypothesis, conf:185) + @BELIEF:LAT-140LON-40 (entity2 dead end, conf:170) into void at LAT-150LON-40, LAT-160LON-40. Target: entity2 state-display behavior at state 2; consequences if state 2 → NOT_FINISHED.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Sessions 40–41 — informational void (both logs truncated)**
+
+Session 40 (@LAT-470LON10, truncated): Route "11-ring-A-first strategy" (DC3/4 design, written before the state-reset-on-timer-expiry discovery in DC5). Log truncated at "Score unchanged at" before any L2 frame data. The state-reset mechanic (@BELIEF:LAT-100LON-40, state 2 lost on timer expiry) was not yet known when session 40 was designed — session 40 used an invalidated strategy. Session 40 provides zero new game-mechanic information. Score 3.571.
+
+Session 41 (@LAT-480LON10, truncated): Route confirmed as DC6 final route (41 L2 steps: direct cross → 11-ring B → void escape → UP×8 → LEFT×6 → 11-ring A → DOWN×4 → entity2 at state 2). LOCUS correctly confirmed the standing order in the FOCUS exchange. Log truncated mid-STATUS before L2 action reporting. Score 3.571. The three critical DC6 unknowns remain unresolved.
+
+**Consequence**: Nine dream cycles and two additional sessions (sessions 40–41) have passed since the DC6 route was designed. No frame data from sessions 40 or 41 has been recorded. Belief graph unchanged from DC8. Current state: L2 NOT WON; DC6 route is the best design; three unknowns unresolved.
+
+---
+
+**Cluster B: Root-cause analysis — why are session logs truncating?**
+
+Sessions 34–41 (eight consecutive sessions): LOCUS confirmed the standing order in each FOCUS/STATUS exchange; post-action frame data was never written. Sessions 40–41 logs are truncated before L2 content.
+
+Candidate causes:
+1. **LOCUS checkpoint failure**: LOCUS takes the route actions but does not stop at mandatory checkpoints to read and report frame values — all 45 L2 actions are consumed without interruption.
+2. **Log recording failure**: the session runs and observations occur, but results are not written back into the companion file before the next session begins.
+3. **Route execution deviation**: LOCUS deviates from the standing order mid-route (confirmed pattern in sessions 34–38).
+
+For session 42: the fix is the same regardless of cause — explicit STOP-AND-REPORT instructions at four checkpoints in the standing order. Without these observations, the three DC6 unknowns will remain unresolved indefinitely.
+
+---
+
+**Cluster C: @BELIEF:LAT-130LON-40 — A-wall descent (step 37) still untested after two sessions**
+
+DC7 projected that step 37 (DOWN from r15–16 c14–18 through A-wall zone to r20–21) is safe based on destination-only collision detection (conf:150). Sessions 40 and 41 did not record step 37 outcome. The A-wall at r16–18 c15–17 may use path-traversal collision; if so, step 37 fails and the block is stuck at r15–16 c14–18.
+
+Bypass analysis (from r15–16 c14–18 if step 37 fails): LEFT→DOWN×4→RIGHT = 6 steps to reach r40–41 c14–18 via c9–13 column. From step 36: 9 L2 steps remain (steps 37–45). Bypass uses 6, arriving at r40–41 c9–13 — OUTSIDE entity2 (ring at c12–20; block at c9–13 has left edge at col 9, right edge at col 13; overlaps ring left wall at col 12). RIGHT from c9–13 → c14–18 = 7th step. Total: 7 steps for bypass-plus-entry. With 9 steps available: 2 margin for entity2. Bypass IS feasible if step 37 fails — route redesign needed but not ruled out.
+
+Updated conclusion: if step 37 blocked, use LEFT+DOWN×4+RIGHT to reach entity2 via c9–13 bypass (7 steps total, 2 actions remaining for entity2 navigation). Previously this was stated as infeasible; corrected here.
+
+---
+
+**Cluster D: DC6 unknowns — resolution priority**
+
+| Priority | Step | Unknown | Consequence if failed |
+|----------|------|---------|----------------------|
+| 1 | 19–20 | c39–43 passable at rows 50–51 (11-ring B approach) | Route fallback: 27 L2 steps remain for geometry mapping |
+| 2 | 20 | 11-ring B collected + full timer reset | State 2 lost before entity2; NOT_FINISHED |
+| 3 | 37 | A-wall descent (DOWN from r15–16 to r20–21) | Bypass needed: 7 steps for entity2 via c9–13; 2 margin |
+| 4 | 41 | Entity2 at state 2 → WIN | NOT_FINISHED; fundamental model revision |
+
+All four are still unresolved. Checkpoint observations at steps 17, 20, 37, and 41 are the session 42 information objectives.
+
+---
+
+### Phase 2 — Projection
+
+**Projection A: Entity2 interior at state 2 — display behavior**
+
+At state 1, entity2 shows value 9 at r41–43 c15–17 (9-cell state indicator, observed sessions 23–41). At state 2, this display has never been observed. Three scenarios:
+- **Scenario A**: Display clears (value 9 → value 5). WIN fires automatically on block entry at state 2. This is the simplest model (state 2 = unlock condition).
+- **Scenario B**: Display changes to a collectible value (e.g., value 11 = active ring, trail-collected). WIN requires block trail to overlap r41–43 c15–17. Block at r40–41 c14–18 has trail at r42–44 c14–18; overlap at r42–43 c15–17. If collectible, WIN fires on entry via trail — same mechanism as 11-ring A.
+- **Scenario C**: Display unchanged (value 9 persists). State 2 necessary but not sufficient. Additional spatial, temporal, or mechanic condition required.
+
+Written as @BELIEF:LAT-150LON-40. Conf:50.
+
+**Projection B: If state 2 → NOT_FINISHED — consequence tree**
+
+If entity2 entry at r40–41 c14–18 at state 2 → NOT_FINISHED in session 42:
+1. State-based entry is necessary but not sufficient — or wrong column, wrong direction.
+2. Lateral moves inside entity2 from c14–18 are blocked (DC8). c13–17 and c15–19 windows unreachable without route redesign.
+3. State 3 unreachable (DC8 — single non-regenerating cross).
+4. Session 43 candidates: (a) c15–19 approach via custom descent path; (b) trail-based collection of display cells at state 2 (Scenario B above); (c) investigate whether L2 has undiscovered elements (entity3?).
+
+Written as @BELIEF:LAT-160LON-40. Conf:30.
+
+---
+
+### New Records from This Dream Cycle
+
+1. **Written @BELIEF:LAT-150LON-40** — entity2 interior at state 2: display-behavior projection; conf:50
+2. **Written @BELIEF:LAT-160LON-40** — state 2 → NOT_FINISHED consequence tree; conf:30
+3. **@BELIEF:LAT-130LON-40 DC9 note** — step 37 still untested; c9–13 bypass feasibility corrected (7 steps, entity2 reachable with 2-action margin if step 37 blocked)
+4. **@LAT-10LON10** — sal confirmed 20 (session 41 FOCUS)
+
+---
+
+### Session 42 — Standing Order (DC9, final)
+
+**Route**: DC6 final route (41 steps). Mechanically unchanged from DC6–DC8. **DC9 addition**: four mandatory STOP-AND-REPORT checkpoints.
+
+> **Steps 1–17** (direct cross): RIGHT×1 (c29→c34), UP×6 (rows 40→10), RIGHT×3 (c34→c49), DOWN×7 (rows 10→45). Block at r45–46 c49–53. Cross collected → entity1 state 2. Timer: ~8 cols.
+> **CHECKPOINT 1 — STOP. READ FRAME. REPORT: entity1 state value (expected 2), block position (expected r45–46 c49–53), timer col count.**
+>
+> **Steps 18–20** (11-ring B): DOWN → r50–51 c49–53, LEFT → r50–51 c44–48, LEFT → r50–51 c39–43. If 11-ring B collected: timer resets to 42 cols, state 2 preserved.
+> **CHECKPOINT 2 — STOP. READ FRAME. REPORT: timer col count (expected ~42 if collected; ~2–6 if missed), entity1 state, block position. IF step 19 blocked (c39–43 void at rows 50–51): REPORT block position and blocked step; use remaining 27 L2 steps to map geometry from r50–51 c49–53.**
+>
+> **Step 21** (void escape): RIGHT → r50–51 c44–48.
+>
+> **Steps 22–29** (ascent): UP×8 → r10–11 c44–48. Timer: 40→24.
+>
+> **Steps 30–35** (wide connector crossing): LEFT×6 → r10–11 c14–18. Timer: 24→12.
+>
+> **Step 36** (11-ring A): DOWN → r15–16 c14–18. 11-ring A collected → timer resets to 42 cols. A-wall spawns at r16–18 c15–17.
+>
+> **Step 37** (A-wall descent — CRITICAL CHECKPOINT): DOWN → r20–21 c14–18.
+> **CHECKPOINT 3 — STOP. READ FRAME. REPORT: block position. Expected: r20–21 c14–18. If r15–16 c14–18 (unchanged): step 37 blocked. Use bypass: LEFT → r15–16 c9–13, DOWN×4 → r35–36 c9–13, RIGHT → r35–36 c14–18, DOWN → r40–41 c14–18 (entity2, 4 more steps, uses 5 total of remaining 9).**
+>
+> **Steps 38–40** (descent if step 37 succeeded): DOWN×3 → r35–36 c14–18. Timer: 42→34.
+>
+> **Step 41** (entity2 entry): DOWN → r40–41 c14–18. ENTITY2 AT STATE 2 — FIRST CONFIRMED TEST.
+> **CHECKPOINT 4 — STOP. READ FRAME IMMEDIATELY. REPORT: outcome (WIN or NOT_FINISHED), entity1 state value, r41–43 c15–17 values (expected 9 at state 1; unknown at state 2), block position. These are the most important observations in this session.**
+>
+> **Steps 42–45** (post-entry if NOT_FINISHED): UP → r35–36 c14–18 (exit entity2), DOWN → r40–41 c14–18 (re-enter). REPORT each frame. Repeat once (UP+DOWN again). Report entity1 state and r41–43 c15–17 values on second entry.
+
+**Critical observation priority (ordered)**:
+1. Step 17: entity1 state value after cross. Expected: 2.
+2. Step 20: timer cols after 11-ring B. Expected: ~42. If blocked at step 19: report c39–43 void status.
+3. Step 37: block position after DOWN. Expected: r20–21. If r15–16: use c9–13 bypass.
+4. Step 41: WIN or NOT_FINISHED. If NOT_FINISHED: report entity1 state and r41–43 c15–17 values at state 2 — these are the primary new observations.
+
+---
+
+@BELIEF:LAT-150LON-40 | created:1780876800 | updated:1780876800 | relates:extends>@BELIEF:LAT-140LON-40,related_to>@BELIEF:LAT10LON-40,projected_from>@BELIEF:LAT-120LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-150LON-40
+confidence:50
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:0
+[/lp]
+[ew]
+conf:50
+rev:0
+sal:0
+touched:1780876800
+[/ew]
+
+**Entity2 interior state display at state 2: what the frame shows when entity1 state = 2.**
+
+At state 1 (sessions 23–41 consistently), entity2 interior shows value 9 at r41–43 c15–17. At state 2, this display has never been observed — session 42 step 41 is the first test.
+
+Three projection scenarios:
+- **Scenario A**: Display clears (value 9 → value 5 = passable interior). WIN fires automatically on entity2 entry at state 2 — the block occupies the clear interior, WIN trigger fires.
+- **Scenario B**: Display changes to a collectible value (e.g., value 11 = ring collectible). WIN requires block trail to overlap r41–43 c15–17. Block at r40–41 c14–18 has trail at r42–44 c14–18; overlap at r42–43 c15–17 (2-row coverage). If collectible, trail overlap fires WIN on entry — same mechanism as 11-ring A collection.
+- **Scenario C**: Display unchanged (value 9 persists at state 2). State 2 is necessary but not sufficient; additional spatial, temporal, or mechanic condition required.
+
+**Key observable**: after step 41, report r41–43 c15–17 values before any further action. If value ≠ 9: display changed at state 2, identifies Scenario A or B. If value = 9: Scenario C; state 2 insufficient.
+
+*(proj:true — entity2 at state 2 has never been observed. Written DC9 2026-05-27.)*
+
+---
+
+@BELIEF:LAT-160LON-40 | created:1780876800 | updated:1780876800 | relates:extends>@BELIEF:LAT-150LON-40,extends>@BELIEF:LAT-140LON-40,related_to>@BELIEF:LAT10LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-160LON-40
+confidence:30
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:0
+[/lp]
+[ew]
+conf:30
+rev:0
+sal:0
+touched:1780876800
+[/ew]
+
+**Consequence tree if state 2 → NOT_FINISHED at entity2 entry (session 42 step 41).**
+
+If session 42 successfully achieves state 2 at r40–41 c14–18 and WIN does not fire:
+
+1. **Lateral-position variant**: c13–17 or c15–19 windows inside entity2 are the alternative entry points. DC8 confirmed that lateral moves from c14–18 are blocked. To test c15–19, a descent route aligned at c15–19 is needed — no existing track aligns there; would require custom route design. c13–17 approach would overlap entity2 left wall (col 12) via LEFT×1 from outside.
+
+2. **Trail-collection hypothesis (Scenario B from @BELIEF:LAT-150LON-40)**: if r41–43 c15–17 changes to a collectible at state 2, WIN fires via trail overlap (block trail at r42–44 overlaps r41–43 c15–17). If this fires, WIN occurs on entry and NOT_FINISHED is moot. If r41–43 c15–17 remains value 9 and NOT_FINISHED fires, trail collection is not the mechanism.
+
+3. **State-3 unreachable**: confirmed DC8. Single non-regenerating cross; no second state-change source documented in L2.
+
+4. **Session 43 strategy if state 2 fails**: (a) investigate c15–19 approach via custom descent; (b) investigate whether any undiscovered L2 elements exist (entity3?); (c) reconsider whether the WIN condition involves a timer threshold or action-count condition in addition to position+state.
+
+*(proj:true — speculative; no session 42 data. Written DC9 2026-05-27.)*
