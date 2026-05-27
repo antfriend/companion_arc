@@ -8681,3 +8681,60 @@ Timer risk: initial L2 timer (before ring A reset) must be ≥ 22 cols (11 steps
 3. **@BELIEF:LAT-50LON-40 (mystery entity / entity1 state machine)**: Add state 1 description more precisely: entity1 dormant at r41–43 c15–17 has NOT been tested as a physical obstacle when block approaches from above. Hypothesis 3E assumes dormant entity1 may not block (or may WIN) differently from tracker entity1. conf: lower slightly (140→130) to reflect the open 3E question.
 
 `[/dc]`
+---
+
+SECTION 1
+
+@LAT-600LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 53 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "b7c39405-c80d-436a-ae26-94fb849e29d9"
+card_id: "1856d747-2182-439b-90d1-94863348f0de"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (55 actions)"
+actions: 70
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 55, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, thirty-first consecutive confirmation — sessions 10–12, 23–27, 31–53). Level 2 entered; 55 level-2 actions taken (max_steps=70); NOT WON. Total 70 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=31]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Thirty-first confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (thirty-first time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (thirty-first time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=70 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-second consecutive confirmation).
+
+---
+
+### Level 2 — 55 actions, NOT WON (thirty-first attempt)
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 30→31): LOCUS confirmed Game State current. EPS ≈ 5.47 (sal:31, conf:210). 30 consecutive L1 wins. 30 failed L2 attempts. Deadlock fully characterised. Hypothesis 3A REFUTED (session 52). Session 53 standing order: Hypothesis 3E — state 1 approach (skip cross, entity1 dormant at r41–43, test whether DOWN from r35–36 c14–18 is blocked or wins).
+
+2. **STATUS**: EPS rankings reviewed. Game State EPS 16.47 (highest). @LAT20LON-30 EPS 4.90 (second). Hypothesis 3E standing order confirmed. 16-step hardcoded state-1 probe (`_LEVEL2_
