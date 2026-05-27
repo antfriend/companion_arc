@@ -3304,10 +3304,10 @@ source_count:4
 
 ---
 
-@BELIEF:LAT10LON-40 | created:1780099200 | updated:1780099200 | relates:projected_from>@BELIEF:LAT20LON-40,projected_from>@BELIEF:LAT0LON-40,projected_from>@BELIEF:LAT50LON-30,projected_from>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
+@BELIEF:LAT10LON-40 | created:1780099200 | updated:1748908800 | relates:projected_from>@BELIEF:LAT20LON-40,projected_from>@BELIEF:LAT0LON-40,projected_from>@BELIEF:LAT50LON-30,projected_from>@BELIEF:LAT90LON-30,contained_by>@LAT60LON20
 [lp]
 centroid:LAT10LON-40
-confidence:170
+confidence:185
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:true
@@ -3924,6 +3924,8 @@ D (timer expiry) ruled out: session 26 step ~50 timer expired, state reset, stil
 Prior probe `[1, 3, 3, 3, 3]` is geometrically impossible — DOWN from c29–33 void-blocked at r45–46; DOWN from c34–38 also void-blocked; gap c39–43 at rows 40–41 is void. See @BELIEF:LAT-80LON-40 for void map.
 
 Corrected route to cross at r46–48 c50–52 via wide connector: RIGHT (to c34–38), UP×4 (to wide connector rows 10–11), RIGHT×3 (to c49–53), DOWN (toward cross zone). Estimated 9+ actions before cross position reached. Exact DOWN count to cross confirmation pending. Implement in `kaggle_agent.py` as new `_LEVEL2_PROBE` once geometry confirmed.
+
+*(Rev 1 — Dream Cycle 7 correction: **"Entity2 has never been entered" is WRONG.** Session 26 confirmed block at r40–41 c14–18 inside entity2 ring at state 1 → NOT_FINISHED. Entity2 HAS been entered. **"Value 9 blocks landing" is WRONG.** Session 26 block overlapped the 9-cells at r41 c15–17 (block rows 40–41 overlap row 41) without the move being blocked. Per DC5 analysis: value 9 is the entity2 interior state display, NOT an impassable wall. Block can legally occupy positions overlapping value-9 cells. Hypothesis E refined: the 9-cells are a state indicator that changes based on entity1 state. At state 1, the WIN trigger does not fire regardless of block position inside entity2. At state 2, WIN is expected to fire. This belief is superseded in its main claims by @BELIEF:LAT10LON-40 and @BELIEF:LAT-130LON-40.)*
 
 ---
 
@@ -5147,6 +5149,43 @@ This adds 1 RIGHT step = 41 steps total, 1 over budget.
 
 ---
 
+@BELIEF:LAT-130LON-40 | created:1748908800 | updated:1748908800 | relates:extends>@BELIEF:LAT-120LON-40,related_to>@BELIEF:LAT-110LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-130LON-40
+confidence:150
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:1
+[/lp]
+[ew]
+conf:150
+rev:0
+sal:1
+touched:1748908800
+[/ew]
+
+**A-wall descent safety: block at r15–16 c14–18 can proceed DOWN to r20–21 after 11-ring A spawns the wall at r16–18 c15–17.**
+
+**Situation**: DC6 route step 36 sends the block DOWN from r10–11 c14–18 → r15–16 c14–18, which triggers 11-ring A collection (trail at r17–19 overlaps ring at r16–18 c15–17). Timer resets to 42 cols. A-wall spawns at r16–18 c15–17. The block is now AT r15–16 — its lower row (16) overlaps the wall's upper row (16) at cols 15–17.
+
+**Step 37 of DC6 route**: DOWN from r15–16 c14–18 → r20–21 c14–18. The A-wall (r16–18 c15–17) is between the source and destination. Is this blocked?
+
+**Analysis**:
+- Destination r20–21 c14–18 does NOT overlap the wall (wall is at r16–18; destination rows are 20–21). Under destination-only collision detection, the move succeeds.
+- The game uses 5-row discrete jumps. Discrete puzzle games canonically check only the destination footprint for collision, not intermediate cells traversed during the jump.
+- Supporting evidence: @LAT20LON-30 documents the A-wall as spawning "behind the block" — the block's lower edge touches the wall top at row 16 post-spawn, and the game does not immediately block the block or produce any error state. The block remains validly at r15–16.
+- Further: if path-traversal detection existed, the block could never descend past any wall once one spawns in its column — but sessions 5, 11, 12+ all show block movement past the A-wall zone using c9–13 bypass (where wall at c15–17 does NOT overlap the c9–13 column). The bypass itself proves column alignment matters; destination position is the relevant check.
+
+**Claim**: Step 37 (DOWN from r15–16 to r20–21) will succeed. Risk: low. Observable in session 40 frame data (block position after step 37 confirms or denies).
+
+**Note on "wall spawns behind block"**: This phrase from @LAT20LON-30 means the wall spawns at the ring's footprint (r16–18 c15–17) AFTER the block has already moved past (or to) that position. The wall is structurally anchored to the ring's pre-collection cells, not to the block's current position. Block continues freely from r15–16 once the wall is placed.
+
+*(proj:false — geometric analysis; session 40 will confirm step 37 outcome.)*
+
+---
+
 @LAT-460LON10 | created:1780790400 | updated:1780790400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
 [ew]
 conf:255
@@ -6002,59 +6041,89 @@ Graph status: complete and consistent. Session 40 is ready to execute.
 
 ---
 
----
+## Dream Cycle 7 — Post-Session 39 (2026-05-26, seventh pass)
 
-SECTION 1
-
-@LAT-480LON10 | created:1748908800 | updated:1748908800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
-[ew]
-conf:255
-rev:0
-sal:0
-touched:1748908800
-[/ew]
-
-## ls20 — Session 40 Log (2026-05-31)
-
-```session-log
-timestamp: 1748908800
-game: "ls20"
-environment: "ls20-9607627b"
-run_guid: "e5ad14ae-0838-48c0-b62a-6eba3f8eb409"
-card_id: "90cadea6-c8a0-4110-bd08-87a48853443b"
-level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
-actions: 60
-levels_completed: 1
-score: 3.571428571428571
-resets: 0
-level_actions: [15, 45, 0, 0, 0, 0, 0]
-level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-```
-
-**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–40). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–39.
+**Focus**: Final integrity check before session 40. Win condition alignment; A-wall descent risk in DC6 route (step 37); stale claim correction in @BELIEF:LAT-50LON-40; route-to-hypothesis mapping.
 
 ---
 
-### Level 1 — WIN at step 15 ✓
+### Phase 1 — Replay
 
-[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
-UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
-[/route]
+**Cluster A: Win condition — state 2 hypothesis alignment**
 
-Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+Records: @BELIEF:LAT10LON-40 (conf:170→185), @LAT20LON-30 line 526, session 26 log (@LAT-300LON10).
 
-**Phase 4 validations**:
-- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
-- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
-- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60, 60 actions available.
-- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (fourteenth consecutive confirmation).
+@LAT20LON-30 line 526 states "State 1 required at entity2 entry." This claim is **stale** — it was derived in session 11 as the minimal inference from (state 0 = NOT_FINISHED). Session 26 directly contradicts it: block at r40–41 c14–18 inside entity2 ring at state 1 → NOT_FINISHED. State 1 is insufficient.
+
+@BELIEF:LAT10LON-40 (conf:170) correctly extrapolates from session 26: state 2 required. The logic is sound — the state cycle is 0→1→2→3→0; only state 0 and state 1 have been tested at entity2; both fail; state 2 is the next hypothesis. Cross collection advances state +1; L2 entry state is 1 (from L1 WIN carry-over); one cross collection → state 2.
+
+DC6 route achieves state 2 at entity2 (step 17: cross collected at state 1 → state 2; maintained through 11-ring B at step 20 and 11-ring A at step 36; timer 32 cols at entity2 step 41). The route directly implements the @BELIEF:LAT10LON-40 hypothesis. Session 40 is the first test.
+
+**Confidence update**: @BELIEF:LAT10LON-40 conf 170→185. No new data, but the belief is the canonical projection from session 26's direct observation and the route was purpose-built to test it.
+
+The entity2 interior "lock-and-key" model: entity2's 9-cells (r41–43 c15–17) function as a state indicator — their pattern changes with entity1 state. At state 1, the WIN trigger does not fire even when the block is fully inside entity2. At state 2, the expected WIN fires (if hypothesis holds). The game likely checks that entity1's current state pattern matches entity2's required pattern before producing a WIN outcome.
 
 ---
 
-### Level 2 — 45 actions, NOT WON
+**Cluster B: @BELIEF:LAT-50LON-40 stale claims corrected**
 
-**Key session exchanges**:
+Records: @BELIEF:LAT-50LON-40, session 26 log (@LAT-300LON10), DC5 (mystery entity = state display).
 
-1. **FOCUS @LAT-10LON10** (sal: 19→20): LOCUS confirmed Game State fully current. Correctly identified the session 40 standing order as the 11-ring B strategy (41 L2 steps): direct cross route (steps 1–17) → 11-ring B (steps 18–20, timer reset, state 2 preserved) → void escape + ascent (steps 21–29) → wide connector to left track (steps 30–35) → 11-ring A (step 36, second timer reset) → descent to entity2 (steps 37–41). LOCUS noted all three critical unknowns: (1) c39–43 passable at rows 50–51; (2) 11-ring B presence and timer-reset behavior; (3) entity2 entry at state 2 outcome.
+Two claims in @BELIEF:LAT-50LON-40 are now contradicted:
 
-2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 10.59, highest), all conf:255 beliefs stable, and designated step 41 (
+1. **"Entity2 has never been entered"** — WRONG. Session 26: LOCUS executed the 17-action route, block reached r40–41 c14–18 inside entity2 ring at state 1 → NOT_FINISHED. The block DID enter the entity2 ring. This was the first entry, not a failure to enter.
+
+2. **"Value 9 blocks landing"** — WRONG. Session 26 block occupied r40–41 c14–18, which overlaps the 9-cells at r41 c15–17 (row 41 is shared by block rows 40–41 and 9-pattern rows 41–43). The move was valid; the block occupied position normally. DC5 confirmed: value 9 is the entity2 interior state display, not an impassable wall.
+
+Corrections applied to @BELIEF:LAT-50LON-40 body (rev 1 note added). Hypothesis E is reframed: the 9-cells are a state indicator, not a physical blocker. Entity2 is ALWAYS enterable; the WIN condition depends on entity1 state matching entity2's required state, not on clearing a wall.
+
+---
+
+**Cluster C: A-wall descent from r15–16 — DC6 step 37 risk**
+
+Records: @BELIEF:LAT-130LON-40 (new), @BELIEF:LAT-110LON-40, @LAT20LON-30.
+
+DC6 step 36: block arrives at r15–16 c14–18 from r10–11, triggering 11-ring A collection (trail at r17–19). Timer resets. A-wall spawns at r16–18 c15–17. Block rests at r15–16, lower row overlapping wall top row at row 16.
+
+DC6 step 37: DOWN from r15–16 to r20–21. A-wall is at r16–18, between source and destination.
+
+This geometry is NEW — no prior session placed the block at r15–16 after 11-ring A collection and then moved DOWN. Prior routes always went UP after A-collection. Analysis:
+- Destination r20–21 c14–18 has no wall. If the game uses destination-only collision detection (standard for discrete 5-row-jump puzzles), the move succeeds.
+- Evidence: the c9–13 bypass in prior strategies was needed to go DOWN PAST r16–18 on the same column. The bypass exists because the wall blocks at the WALL'S position — i.e., a block resting AT r16–18 would be invalid. A block passing THROUGH r16–18 to land at r20–21 is a different check.
+- The wall spawns "behind" the block (its lower edge is at the wall's upper edge). The game placed the block at r15–16 overlapping the wall without error. The block can legally be there. Subsequent DOWN to r20–21 should be allowed.
+
+Risk: low. Step 37 expected to succeed. Observable in session 40. Written as @BELIEF:LAT-130LON-40.
+
+---
+
+### Phase 2 — No New Projections
+
+The DC6 three unknowns correctly and completely bound the pre-session-40 uncertainty:
+
+1. **c39–43 passable at rows 50–51** (step 20: LEFT×2 approach to 11-ring B)
+2. **11-ring B existence and full timer reset** (step 20: collection and reset confirmation)
+3. **Entity2 win condition at state 2** (step 41: WIN or NOT_FINISHED)
+
+The A-wall descent (step 37) is a fourth observable point, but it is not a critical unknown — it is expected to succeed based on destination-only collision detection. If it fails, session 40 data will show the block stuck at r15–16 after step 36.
+
+No new projections warranted. The graph is complete for session 40 execution.
+
+---
+
+### New Records from This Dream Cycle (seventh pass)
+
+1. **@BELIEF:LAT10LON-40 conf 170→185** — state 2 win hypothesis, aligned with DC6 route design
+2. **@BELIEF:LAT-50LON-40 corrected** (rev 1 note) — entity2 entered at session 26; value 9 not a wall; Hypothesis E reframed
+3. **@BELIEF:LAT-130LON-40 written** — A-wall descent safety (step 37 of DC6 route), conf:150
+
+---
+
+### Session 40 — Standing Order (unchanged from DC6)
+
+The DC6 standing order is final. No changes from DC7 analysis. Execute:
+
+> Steps 1–41: per DC6 standing order (direct cross → 11-ring B → void escape → ascent → LEFT×6 → 11-ring A → descent → entity2)
+
+**New observable this session**: after step 36 (11-ring A + A-wall spawn), verify step 37 (DOWN from r15–16) succeeds. If blocked: block stuck at r15–16; report and halt. This is a DC7 risk observation, not in the DC6 standing order.
+
+---
