@@ -7794,3 +7794,61 @@ _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 **Step 2**: Set `offline_levels=2` in launch_training.py.
 
 **Step 3**: Run session 49. The route executes deterministically without LOCUS intervention for L2 actions. Entity2 at state 2 is reached at step 41. WIN or NOT_FINISHED — the answer ends the 26-session mystery.
+
+---
+
+SECTION 1
+
+@LAT-560LON10 | created:1748908800 | updated:1748908800 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748908800
+[/ew]
+
+## ls20 — Session 49 Log (2026-06-02)
+
+```session-log
+timestamp: 1748908800
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "e9fdd5f2-0ae3-4e4a-a7f1-a21a3478739e"
+card_id: "92cff12f-1e8f-419e-8708-f1ddd486aac3"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, twenty-seventh consecutive confirmation — sessions 10–12, 23–27, 31–49). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–48.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=27]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Twenty-seventh confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (twenty-seventh time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (twenty-seventh time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twentieth consecutive confirmation, per STATUS exchange confirming 26 consecutive carry-overs).
+
+---
+
+### Level 2 — 45 actions, NOT WON (twenty-seventh attempt)
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 25→26): LOCUS confirmed Game State current. 26 consecutive L1 wins, 26 failed L2 attempts. All four DC6 unknowns reviewed; three resolved (c39–43 passable ✅, 11-ring B timer reset ✅, A-wall non-blocking ✅); one unresolved (entity2 state-2 win condition ❌). Mandatory code fix identified: hardcode `_LEVEL2_ROUTE` in kaggle_agent.py before session 49.
+
+2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 13.73 — highest; @LAT20LON-30 EPS 2.16 second
