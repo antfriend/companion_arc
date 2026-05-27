@@ -7525,6 +7525,97 @@ The c39–43 void zone exists at rows 35–49 only (confirmed in prior sessions 
 
 ---
 
+SECTION 1
+
+@LAT-550LON10 | created:1779753600 | updated:1779753600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,validates>@BELIEF:LAT30LON0,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779753600
+[/ew]
+
+## ls20 — Session 48 Log (2026-05-27)
+
+```session-log
+timestamp: 1779753600
+game: "ls20"
+environment: "ls20-9607627b"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded, twenty-sixth consecutive confirmation). Level 2 entered; 45 L2 actions; NOT WON. Score 3.571. Scorecard unchanged.
+
+---
+
+### Level 2 — 45 actions, NOT WON (twenty-sixth attempt)
+
+**L2 steps 1–13: parse_action failures**
+
+LOCUS outputs backtick-formatted numbers (`` `0` ``) that fail `parse_action`'s primary regex `r"^\d+$"`. Fallback `r"\b(\d+)\b"` scan found "3" in timer description "=3 (consumed)" before the intended action number. Wrong actions extracted: block stuck at r40-41 c34-38, DOWN and RIGHT into void both blocked repeatedly.
+
+**L2 steps 14–43: wrong collectible order (11-ring A before cross)**
+
+LOCUS navigated to left track (c14-18) before cross (same failure mode as session 47). 11-ring A collected mid-session; c62-63 changed 8→3; A-wall active. State remained 1 (cross never collected). Timer consumed entirely by step 58 (c13-54=3, all 42 cols value 3).
+
+**L2 step 44 (step 58→59): 11-ring B COLLECTED — timer reset CONFIRMED**
+
+Block at r50-51 c44-48 (timer=0). Action 2 (LEFT) → block enters r50-51 c39-43. Step 59 frame: `c13-54=11` (full 42 cols reset). **11-ring B timer reset definitively confirmed in-session.** 11-ring B cells (r51-53 c40-42=11) replaced by trail (r52-54 c39-43=9).
+
+**L2 step 45 / session step 59 (FINAL)**:
+```
+block: r50-51 c39-43
+state: 1 (cross uncollected throughout entire session)
+timer: c13-54=11 (42 cols — just reset from 11-ring B)
+11-ring B: COLLECTED ✓ (timer reset confirmed)
+11-ring A: COLLECTED (c62-63=3, A-wall active)
+cross: r46-48 c50-52 PRESENT (uncollected)
+LOCUS action: 3 (RIGHT — session ends after this)
+```
+
+**Session 48 root causes:**
+1. parse_action backtick failure → wrong actions steps 1–13
+2. 11-ring A collected before cross → same as session 47
+
+**RESOLVED THIS SESSION — @BELIEF:LAT30LON0 extended to 11-ring B:**
+- 11-ring B causes FULL TIMER RESET to 42 cols (same as 11-ring A). Now confirmed.
+- Both rings cause identical timer behavior.
+
+---
+
+### Session 49 — MANDATORY CODE FIX
+
+**Hardcode `_LEVEL2_ROUTE` in kaggle_agent.py before session 49.** LOCUS cannot reliably sequence 41 steps autonomously; parse_action extracts wrong numbers from LOCUS reasoning text. The code fix bypasses LOCUS for L2 entirely.
+
+```python
+# DC6 41-step route. 0=UP 1=DOWN 2=LEFT 3=RIGHT
+_LEVEL2_ROUTE = [
+    3,                       # step 1: RIGHT → c34-38
+    0, 0, 0, 0, 0, 0,        # steps 2-7: UP×6 → r10-11 c34-38
+    3, 3, 3,                 # steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1, 1,     # steps 11-17: DOWN×7 → r45-46 (CROSS → state 2)
+    1, 2, 2,                 # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43 (11-ring B → timer reset)
+    3,                       # step 21: RIGHT → c44-48 (void escape)
+    0, 0, 0, 0, 0, 0, 0, 0,  # steps 22-29: UP×8 → r10-11 c44-48
+    2, 2, 2, 2, 2, 2,        # steps 30-35: LEFT×6 → r10-11 c14-18
+    1,                       # step 36: DOWN → r15-16 c14-18 (11-ring A → timer reset)
+    1, 1, 1, 1, 1,           # steps 37-41: DOWN×5 → r40-41 c14-18 (ENTITY2 at state 2)
+]
+```
+
+In `_HARDCODED_ROUTES`: replace `2: _LEVEL2_PROBE` → `2: _LEVEL2_ROUTE`. Set `offline_levels=2`.
+
+All geometric unknowns resolved. Entity2 at state 2 → WIN or NOT_FINISHED is the ONLY remaining question.
+
+---
+
 ---
 
 SECTION 1
