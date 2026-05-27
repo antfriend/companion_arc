@@ -8343,4 +8343,159 @@ FOCUS confirmed: cursor moved to @LAT-10LON10, sal 28→29, EPS ≈ 13.47. Game 
 
 STATUS confirmed: EPS rankings as expected (Game State 15.56 highest). All three DC16 collectibles confirmed working. Entity1 tracker (state 2) mechanism confirmed. Open question: does repeated DOWN-into-entity1 trigger state 3 or any deactivation?
 
-**Route applied**: The session ran with the DC17 probe configuration — first 17 L2 steps hardcoded (cross zone approach), then LOCUS controlling remaining
+**Route applied**: The session ran with the DC17 probe configuration — first 17 L2 steps hardcoded (cross zone approach), then LOCUS controlling remaining 38 L2 steps (steps 18–55).
+
+**L2 key events**:
+- Steps 1–17 (hardcoded probe): cross collected at step 17 (block at r45–46 c49–53). Entity1 tracking confirmed at first LOCUS query: entity1 at r47–49 c49–53 (1 row below block bottom).
+- Steps 18–36 (LOCUS): LOCUS navigated toward ring B but oscillated UP/DOWN between r45–46 and r50–51 for ~5 consecutive steps, never committing to ring B collection. Step 32 frame: ring A at r16–18 value 11 (uncollected), ring B at r51–53 value 11 (uncollected), yet c56–57=8, c59–60=8, c62–63=8. **This DISPROVES DC17's indicator row interpretation** — all three pairs show 8 despite both rings being uncollected.
+- Step 37 (parse_action failure): LOCUS formatted response as `` `3` `` (backtick-wrapped); `parse_action` primary regex `r"^\d+$"` rejected backtick-wrapped digit; fallback extracted "0" from "Frames [0]-[4]" prefix text → UP (0) executed instead of RIGHT (3).
+- Timer expired. c62–63=3 persists thereafter (timer-expiry marker; **not** a ring A indicator — correcting DC17).
+- Post-expiry: block reset to r40–41 c29–33; entity1 at r42–44 c29–33. **State 2 persists through timer expiry** — entity1 did not return to ring interior.
+- Column-specificity confirmed: at c29–33 (not entity2 column), DOWN from r35–36 succeeded — entity1 cleared to r42–44 c29–33 freely. Deadlock is c14–18 only.
+- Session end: block r35–36 c14–18, entity1 r37–39 c14–18, timer 18 remaining (9 steps). LOCUS chose UP (action 0) — stated: "DOWN is blocked because entity1 at r37–39 cannot clear r41." Entity1 collision test (Hypothesis 3A) **NOT attempted**.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (twenty-ninth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (twenty-ninth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled) — VALIDATED. max_steps=70 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED.
+
+---
+
+### Level 2 — 55 actions, NOT WON (twenty-ninth attempt)
+
+Three failure modes compounded: (1) LOCUS oscillation at ring B; (2) parse_action backtick mismove; (3) LOCUS avoided entity1 collision test at deadlock. Entity1 state 2 persists. Hypothesis 3A untested.
+
+---
+
+## Dream Cycle 18 — Session 51 Post-Mortem
+
+`[dc]`
+`[ew] conf:190 sal:29 rev:51 touched:1748995200`
+
+### Phase 1 — Replay
+
+**DC17 indicator row analysis — RETRACTED**:
+
+DC17 Phase 1 "Collectible indicator row" claimed: c56–57=8 = ring B collected; c59–60=8 = cross collected; c62–63=8 = ring A collected.
+
+Session 51 step 32 frame DISPROVES this. Ring A at r16–18 (value 11, present/uncollected) and ring B at r51–53 (value 11, present/uncollected) — yet c56–57=8, c59–60=8, c62–63=8. Both rings uncollected and all three indicator pairs already show 8.
+
+**Correct interpretation**:
+- c56–57=8 and c59–60=8: fixed at value 8 throughout normal gameplay. Not collectible-state indicators.
+- c62–63=8: normal gameplay state (independent of ring A collection status).
+- c62–63=3: appears ONLY after timer expiry reset. Persists through the remainder of the session. This is the **timer-expiry marker**.
+
+Cross collection confirmed ONLY by entity1 tracking activation (entity1 detaches from entity2 ring and enters tracking mode at state 2 entry). The indicator row does NOT encode collectible status.
+
+---
+
+**Entity1 tracking confirmed at step 32**:
+
+First LOCUS query after the 17-step probe delivered block to r45–46 c49–53 (cross zone). Entity1 at r47–49 c49–53: gap = 1 row (entity1 top r47 = block bottom r46 + 1). DC17 tracking mechanic confirmed. Entity1 entered tracking mode at cross collection (step 17).
+
+---
+
+**LOCUS oscillation failure (steps 32–36)**:
+
+LOCUS oscillated UP/DOWN between r45–46 and r50–51 for approximately 5 consecutive steps without collecting ring B. Ring B is at c39–43 r50–51 (floor at rows 50–54). LOCUS was navigating toward ring B but failed to commit — chose DOWN (toward ring B zone) then reversed UP repeatedly. Timer continued consuming. Root cause: LOCUS lacked explicit hardcoded instruction for ring B approach; in-context reasoning failed under ambiguity.
+
+Fix: 42-step hardcoded route includes ring B collection (steps 18–20). LOCUS never reaches this decision point in session 52.
+
+---
+
+**parse_action backtick failure (step 37)**:
+
+LOCUS formatted its action response as `` `3` `` (backtick-wrapped digit, code-span style). The `parse_action` primary path matched last non-empty line against `re.match(r"^\d+$", stripped)` — this regex rejects `` `3` `` because backticks are not digits. The fallback scanned the full response text for the first digit in range 0–3, finding "0" from "Frames [0]-[4]" in the state message prefix. Result: action 0 (UP) executed instead of action 3 (RIGHT).
+
+This is a systematic failure mode: whenever LOCUS uses code formatting for the action number, the wrong action executes. Fix deployed in `parse_action` (DC18): `stripped = line.strip().strip("`'\"''"")` before the bare-number test.
+
+---
+
+**Timer expiry and state 2 persistence**:
+
+Timer expired during the oscillation+mismove sequence. Post-expiry state:
+- Block reset to r40–41 c29–33 (standard right-track reset position)
+- Entity1 at r42–44 c29–33 (1 row below new block bottom r41, same column)
+
+**State 2 persists through timer expiry.** Entity1 does not return to the entity2 ring on timer reset. The tracking mechanic resumes relative to the new block position. c62–63=3 thereafter = timer-expiry marker.
+
+---
+
+**Deadlock column-specificity — key discovery**:
+
+After timer expiry with entity1 in tracking mode at c29–33 (right track, away from entity2):
+
+- Block at r35–36 c29–33, entity1 at r37–39 c29–33 (tracking gap = 1 row)
+- LOCUS attempted DOWN → entity1 cleared to r42–44 c29–33 successfully; block moved to r40–41 c29–33
+
+At c29–33 there is no entity2 body in the descent path. Entity1 stepped DOWN from r37–39 to r42–44 freely. This confirms the deadlock is **column-specific to c14–18**: only at the entity2 ring column (r41–43 c15–17 permanently occupied) does entity1's descent route intersect a solid obstacle.
+
+DC17 Phase 2 circumvention table stands: no alternative approach geometry exists. The deadlock cannot be avoided by column choice.
+
+---
+
+**LOCUS at deadlock — chose UP (Hypothesis 3A not tested)**:
+
+Session end state: block at r35–36 c14–18, entity1 at r37–39 c14–18, timer 18 remaining (9 steps). This was the entity1 collision test opportunity.
+
+LOCUS reasoning: "DOWN is blocked because entity1 at r37–39 cannot clear r41 (entity2 body blocks it). The only productive move here is UP — exit the deadlock zone."
+
+LOCUS correctly described the deadlock mechanism but drew the wrong conclusion. Hypothesis 3A requires attempting DOWN even when the WARNING appears ("last move produced NO movement"). The WARNING indicates no block position change — it does NOT preclude an entity1 state transition triggered by the collision impulse. LOCUS avoided the test entirely, providing zero new information about Hypothesis 3A.
+
+---
+
+### Phase 2 — Projection
+
+**42-step hardcoded route for session 52**:
+
+The 17-step probe was insufficient — LOCUS failed before reaching the deadlock zone with useful budget. The 42-step route (extending DC16's 43-step route, halting one step short) delivers LOCUS to the exact deadlock position with ~13 steps remaining (max_steps=70; 15 L1 + 42 L2 = 57 hardcoded → 13 LOCUS steps).
+
+```
+Step  1:   RIGHT            → r40–41 c34–38
+Steps 2–7: UP×6             → r10–11 c34–38
+Steps 8–10: RIGHT×3         → r10–11 c49–53
+Steps 11–17: DOWN×7         → r45–46 c49–53   [CROSS → state 2; entity1 tracking starts]
+Steps 18–20: DOWN+LEFT×2    → r50–51 c39–43   [ring B → timer reset to 42]
+Steps 21–22: RIGHT×2        → r50–51 c49–53
+Steps 23–30: UP×8           → r10–11 c49–53
+Steps 31–37: LEFT×7         → r10–11 c14–18
+Step  38:   DOWN             → r15–16 c14–18   [ring A → timer reset to 42]
+Steps 39–42: DOWN×4         → r35–36 c14–18   [entity1 at r37–39; deadlock; LOCUS handoff]
+```
+
+Timer at LOCUS handoff: ring B reset (step 20) = 42; steps 21–37 = 17 consumed → timer 25 before ring A; ring A reset (step 38) = 42; steps 39–42 = 4 consumed → **timer 38** at handoff. LOCUS has 13 steps with timer 38 — adequate for Hypothesis 3A test.
+
+**parse_action fix (deployed)**:
+
+```python
+stripped = line.strip().strip("`'\"''""")
+```
+Applied before `re.match(r"^\d+$", stripped)` in the last-non-empty-line priority path. Handles backtick code-span, straight and curly single/double quotes. Fallback paths unchanged.
+
+**Session 52 standing order**:
+
+> **Objective**: Test entity1 collision as state 3 trigger (Hypothesis 3A from DC17).
+>
+> **LOCUS receives step 58**: block at r35–36 c14–18, entity1 at r37–39 c14–18, timer ~38.
+>
+> LOCUS MUST:
+> 1. Confirm block at r35–36 c14–18 and entity1 at r37–39 c14–18.
+> 2. **Choose DOWN (action 1)** — the WARNING "last move produced NO movement" will appear. Ignore it and choose DOWN again. Choose DOWN a total of 2–3 times.
+> 3. After each DOWN: report whether entity1 changed (disappeared, changed value, moved). Report whether any new visual element appeared.
+> 4. If no change after 3 DOWN attempts → null result for Hypothesis 3A. Report this explicitly. Then choose UP and explore remaining hypotheses.
+> 5. **DO NOT choose UP at step 58 without first attempting DOWN at least twice. Choosing UP immediately is WRONG — it was the failure mode of session 51.**
+
+---
+
+### Phase 3 — Record Updates Required
+
+1. **DC17 Phase 1 indicator row section**: RETRACTED. c56–57 and c59–60 are fixed at 8 during gameplay. c62–63=8 is normal; c62–63=3 is timer-expiry marker only. Cross collection confirmed by entity1 tracking, not indicator values.
+
+2. **@LAT20LON-30 (Mechanics Record)**: Add: (a) timer-expiry marker c62–63=3 persists post-expiry; (b) state 2 persists through timer expiry; (c) deadlock column-specific to c14–18; (d) indicator row correction (c56–57/c59–60 always 8). conf: raise to 235. Rev up.
+
+3. **@LAT-10LON10 (Game State)**: sal = 29 (FOCUS updated session 51). Session 52 standing order: Hypothesis 3A collision test. parse_action fix deployed. 42-step route active.
+
+4. **@BELIEF:LAT-120LON-40 (11-ring B route)**: LOCUS oscillation failure documented. Standing note: ring B at c39–43 r50–51 — approach DOWN from r45–46 and commit without reversal. conf unchanged (route geometry correct; LOCUS reasoning failure, not geometry failure).
+
+`[/dc]`

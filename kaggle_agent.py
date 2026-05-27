@@ -60,17 +60,24 @@ BLOCK_VAL = 12
 
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
-_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 17 confirmed wins
-# Session 50 result: 43-step route ran correctly; timer OK; entity1 TRACKER blocks final DOWN.
-# After cross (step 17), entity1 enters tracking mode (state 2): stays 1 row below block bottom.
-# At route step 43, entity1 at r37-39 blocks DOWN to r40-41 (entity2 body at r41-43 traps entity1).
-# DC17: entity1 deadlock is the barrier. Session 51 = 17-step probe + LOCUS entity1 collision test.
+_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 29 confirmed wins
+# Session 51 result: 17-step probe; LOCUS oscillated at ring B (never collected); parse_action
+# backtick failure (session 51, step 37); timer expired; entity1 collision test NOT performed.
+# DC18: 42-step hardcoded route delivers LOCUS directly to entity1 deadlock with ~13 steps.
+# State 2 persists through timer expiry. Deadlock column-specific to c14-18 (entity2 ring column).
+# parse_action fix: strip backticks before bare-number check (DC18 fix deployed).
 _LEVEL2_ROUTE = [
-    3,                    # step 1:  RIGHT → r40-41 c34-38
-    0, 0, 0, 0, 0, 0,     # steps 2-7:  UP×6 → r10-11 c34-38
-    3, 3, 3,              # steps 8-10: RIGHT×3 → r10-11 c49-53
-    1, 1, 1, 1, 1, 1, 1,  # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2; entity1 tracker starts]
-]  # 17-step probe (DC17 session 51); LOCUS takes remaining 28 L2 steps for entity1 collision test
+    3,                               # step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,                # steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                         # steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1, 1,             # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2; entity1 tracker starts]
+    1, 2, 2,                         # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [ring B → timer reset to 42]
+    3, 3,                            # steps 21-22: RIGHT×2 → r50-51 c49-53
+    0, 0, 0, 0, 0, 0, 0, 0,          # steps 23-30: UP×8 → r10-11 c49-53
+    2, 2, 2, 2, 2, 2, 2,             # steps 31-37: LEFT×7 → r10-11 c14-18
+    1,                               # step 38:  DOWN → r15-16 c14-18  [ring A → timer reset to 42]
+    1, 1, 1, 1,                      # steps 39-42: DOWN×4 → r35-36 c14-18  [entity1 at r37-39; DC18 deadlock handoff]
+]  # 42-step route (DC18 session 52); LOCUS takes ~13 steps for entity1 collision test (Hypothesis 3A)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
@@ -169,10 +176,15 @@ def parse_action(text: str, n_actions: int) -> int | None:
     Checks the last non-empty line first — LOCUS ends with just the number.
     This prevents false matches when LOCUS echoes "action N" in its reasoning
     (e.g. "Last action 0 produced no movement" in blocked-move warnings).
+
+    DC18 fix: strip surrounding backtick/quote characters before bare-number
+    check. LOCUS sometimes formats its answer as `3` (code span); the original
+    regex r"^\d+$" rejects this, causing the fallback to extract the wrong digit
+    from earlier in the response (e.g. "0" from "Frames [0]-[4]").
     """
-    # Priority: last non-empty line bare number
+    # Priority: last non-empty line bare number (handles `3`, '3', "3" wrapping)
     for line in reversed(text.strip().splitlines()):
-        stripped = line.strip()
+        stripped = line.strip().strip("`'\"‘’“”")
         if re.match(r"^\d+$", stripped):
             idx = int(stripped)
             if 0 <= idx < n_actions:
