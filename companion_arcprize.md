@@ -5124,7 +5124,7 @@ This adds 1 RIGHT step = 41 steps total, 1 over budget.
 
 **Key uncertainties and current status**:
 1. **c39-43 passable at rows 50–51**: needed for LEFT×2 to reach 11-ring B. The void map confirms void at rows 40–46 only; rows 50+ unknown. Critical assumption.
-2. **11-ring B at r51–53 c40–42**: documented in @LAT20LON-30. Block at r50–51 c39–43 overlaps row 51 cols 40–42 → collection fires (block-body overlap, same mechanic as 11-ring A). Assuming not yet collected in prior sessions (no session reached rows 50+ except session 10 planning — unverified execution).
+2. **11-ring B at r51–53 c40–42**: documented in @LAT20LON-30. Block at r50–51 c39–43 → trail at rows 52–54 c39–43 overlaps ring at rows 52–53 c40–42 (2 of 3 ring rows = 2/3 coverage — same proportion as 11-ring A trail at r17–19 overlapping ring at r17–18). Trail-based collection, same mechanic as 11-ring A. DC8 correction: prior note said "block-body overlap" (1/3 row); trail overlap gives 2/3 coverage — more confident. Assuming not yet collected in prior sessions.
 3. **Full timer reset from 11-ring B**: @LAT20LON-30 states 11-ring → "FULL TIMER RESET to 42 cols." 11-ring B should behave identically to A.
 4. **State 2 preserved through 11-ring collection**: @LAT20LON-30 line 530: "Does NOT advance entity1 state." Timer reset, state unchanged. ✓
 5. **Void at c39-43 rows 40–46 blocks UP from r50–51 c39–43**: After 11-ring B, must RIGHT to c44-48 before ascending. This adds 1 step.
@@ -5183,6 +5183,46 @@ touched:1748908800
 **Note on "wall spawns behind block"**: This phrase from @LAT20LON-30 means the wall spawns at the ring's footprint (r16–18 c15–17) AFTER the block has already moved past (or to) that position. The wall is structurally anchored to the ring's pre-collection cells, not to the block's current position. Block continues freely from r15–16 once the wall is placed.
 
 *(proj:false — geometric analysis; session 40 will confirm step 37 outcome.)*
+
+---
+
+@BELIEF:LAT-140LON-40 | created:1748908800 | updated:1748908800 | relates:extends>@BELIEF:LAT-130LON-40,extends>@BELIEF:LAT-120LON-40,related_to>@BELIEF:LAT10LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-140LON-40
+confidence:170
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+[ew]
+conf:170
+rev:0
+sal:1
+touched:1748908800
+[/ew]
+
+**Entity2 internal navigation is a dead end from r40–41 c14–18. Session outcome is determined at step 41.**
+
+**Geometry**: Entity2 ring spans r38–46 c12–20. Interior value-5 cells: r39–45 c13–19. Block at r40–41 c14–18 (step 41 entry position) is fully within the interior. From this position, all four possible moves produce a blocked or exit outcome:
+
+| Action | Destination | Result |
+|--------|------------|--------|
+| UP | r35–36 c14–18 | Exits entity2 (r35–36 is above ring top at r38) |
+| DOWN | r45–46 c14–18 | Row 46 = ring bottom wall → destination overlaps wall → **BLOCKED** |
+| LEFT | r40–41 c9–13 | Col 12 = ring left wall → destination overlaps wall → **BLOCKED** |
+| RIGHT | r40–41 c19–23 | Col 20 = ring right wall → destination overlaps wall → **BLOCKED** |
+
+Entity2 interior is 7 cols wide (c13–19); block is 5 cols wide. Three column-windows fit: c13–17, c14–18, c15–19. A LEFT or RIGHT move is a 5-col jump — from c14–18, LEFT lands at c9–13 (hits c12 left wall) and RIGHT lands at c19–23 (hits c20 right wall). There is no valid lateral move that stays inside entity2.
+
+**Consequence for session 40**: If NOT_FINISHED fires at step 41 (entity2 entry at state 2), the remaining 4 actions (steps 42–45) produce no useful data. Only UP is valid, which exits entity2 to r35–36 c14–18. Subsequent DOWN re-enters entity2 at r40–41 — firing NOT_FINISHED again (same position, same state). Steps 42–45 are information-null if the WIN condition is position/state based and already not met at step 41.
+
+**Consequence for session 41 if state 2 fails**: State 3 is the next hypothesis. State 3 requires two cross collections: L2 entry state 1 + cross = state 2 + second cross = state 3. The cross at r46–48 c50–52 does not regenerate (one-time collectible per @LAT20LON-30 general mechanics). No alternative state changers have been documented in L2. **State 3 is unreachable within the current known game structure.**
+
+If state 2 → NOT_FINISHED, the WIN condition hypothesis requires full revision. Possibilities: (a) WIN requires state 0 (full cycle: 1→2→3→0 = three cross collections — impossible); (b) WIN requires some additional spatial condition beyond block position + state; (c) WIN requires BOTH position AND a timer threshold; (d) WIN never fires in L2 in current game version (unlikely). Session 41 strategy if state 2 fails: read entity1 state from frame at step 41, verify geometry, then run extended exploration.
+
+*(proj:true — entity2 interior geometry analysis; state-3 unreachability is a logical consequence of single cross + no regeneration.)*
 
 ---
 
@@ -6128,61 +6168,99 @@ The DC6 standing order is final. No changes from DC7 analysis. Execute:
 
 ---
 
----
+## Dream Cycle 8 — Post-Session 39 (2026-05-26, eighth pass)
 
-SECTION 1
-
-@LAT-480LON10 | created:1780790400 | updated:1780790400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
-[ew]
-conf:255
-rev:0
-sal:0
-touched:1780790400
-[/ew]
-
-## ls20 — Session 40 Log (2026-05-31)
-
-```session-log
-timestamp: 1780790400
-game: "ls20"
-environment: "ls20-9607627b"
-run_guid: "f7b6366a-960b-4a04-bdcf-61b47312543e"
-card_id: "0f243c67-d3ea-4ff4-a240-473471624caf"
-level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
-actions: 60
-levels_completed: 1
-score: 3.571428571428571
-resets: 0
-level_actions: [15, 45, 0, 0, 0, 0, 0]
-level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-```
-
-**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, nineteenth consecutive confirmation — sessions 10–12, 23–27, 31–40). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–39.
+**Focus**: 11-ring B trail mechanism; entity2 interior navigation analysis; state-3 unreachability; session 40 steps 42–45 protocol.
 
 ---
 
-### Level 1 — WIN at step 15 ✓
+### Phase 1 — Replay
 
-[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=19]
-UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
-[/route]
+**Cluster A: 11-ring B collection mechanism — trail, not block-body**
 
-Nineteenth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+Records: @BELIEF:LAT-120LON-40 (corrected DC8), @LAT20LON-30 lines 519, 524, 563.
 
-**Phase 4 validations**:
-- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (nineteenth time).
-- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (nineteenth time).
-- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=60, 60 actions available.
-- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (fourteenth consecutive confirmation; Game State preview now reads "13 consecutive confirmations" — update to 14 next session).
+Prior note in @BELIEF:LAT-120LON-40 said "block-body overlap, same mechanic as 11-ring A." This is wrong on two counts: (1) 11-ring A uses TRAIL overlap, not block-body; (2) 11-ring B analysis should therefore use trail as well.
+
+Evidence chain:
+- Level 1 cluster: "Collection fires when entity1 TRAIL overlaps cluster cells (not block body)" (@LAT20LON-30 line 519)
+- Level 2 cross: block at r45–46 c49–53 → trail at r47–49 → overlaps cross at r47–48 c50–52 (trail-based, same pattern)
+- Level 2 11-ring A: "trail at rows 17–19 always overlaps on first DOWN from rows 10–11" (trail at r17–19 overlaps ring at r17–18 c15–17 = 2 of 3 ring rows)
+
+For 11-ring B at r51–53 c40–42, block at r50–51 c39–43:
+- Trail = 3 rows below block bottom (row 51) = rows 52–54 c39–43
+- Ring = rows 51–53 c40–42
+- Overlap: rows 52–53 c40–42 (2 of 3 ring rows = 2/3 coverage)
+
+This matches 11-ring A exactly: 2/3 ring-row coverage by trail. Collection should fire on the same mechanism with the same reliability.
+
+**Update applied**: @BELIEF:LAT-120LON-40 corrected ("block-body" → "trail overlap, 2/3 coverage"). Confidence in 11-ring B collectability raised from "unconfirmed" to "projected collectible" based on mechanism parity with 11-ring A.
 
 ---
 
-### Level 2 — 45 actions, NOT WON
+**Cluster B: Entity2 interior — dead end analysis**
 
-**Key session exchanges**:
+Records: @BELIEF:LAT-140LON-40 (new), @LAT20LON-30 lines 509–515, session 26 log, @BELIEF:LAT10LON-40.
 
-1. **FOCUS @LAT-10LON10** (sal: 19 → 20): LOCUS confirmed Game State current, previewed all seven confirmed beliefs, identified the DC6 41-step standing order (cross → 11-ring B → 11-ring A → entity2 at state 2) as the session 40 execution target. EPS on Game State: 4.31 (highest in file).
+Entity2 interior (r39–45 c13–19) accommodates exactly three 5-wide block positions: c13–17, c14–18, c15–19. The block enters at c14–18 (left track alignment). From r40–41 c14–18:
 
-2. **STATUS**: LOCUS confirmed EPS rankings, competition score (3.571), all conf ≥ 240 beliefs stable, and the three critical session-40 unknowns: (1) c39–43 passable at rows 50–51; (2) 11-ring B presence and full timer reset; (3) entity2 entry at state 2 fires WIN.
+- **UP**: lands r35–36 c14–18 (exits entity2 above ring top r38). Valid move but abandons position.
+- **DOWN**: lands r45–46 c14–18 (row 46 = ring bottom wall) → BLOCKED.
+- **LEFT**: lands r40–41 c9–13 (col 12 = ring left wall) → BLOCKED.
+- **RIGHT**: lands r40–41 c19–23 (col 20 = ring right wall) → BLOCKED.
 
-**Route attempted**: DC6 41-step standing order (direct cross → 11-ring B → 11-ring A → entity2).
+No viable move stays inside entity2. The 5-col jump mechanic precludes lateral shifts between the three interior positions (c13–17, c14–18, c15–19 are 1 col apart, not 5).
+
+**Consequence**: If NOT_FINISHED fires at step 41, steps 42–45 produce no new information. The session is resolved at step 41. No second entry route exists within session 40's remaining budget. Steps 42–45 standing order: attempt UP (exit entity2), then one DOWN (re-enter entity2 at r40–41 — confirm NOT_FINISHED again or WIN). This uses 2 of 4 remaining actions and provides one re-confirmation. Remaining 2 actions: further UP/DOWN pair for a third observation if desired.
+
+---
+
+**Cluster C: State-3 unreachability**
+
+Records: @LAT20LON-30 lines 517–526, @BELIEF:LAT-140LON-40, @BELIEF:LAT10LON-40.
+
+The cross at r46–48 c50–52 is a one-time collectible. Sessions 23–39 confirm the cross field persists unchanged through block reset cycles (timer expiry returns block to start without clearing environmental entities). No session has observed a second cross appearing anywhere in L2.
+
+If state 2 → NOT_FINISHED in session 40, the next hypothesis is state 3. State 3 requires two cross collections from L2 entry state 1: cross → state 2 → cross → state 3. With a single non-regenerating cross, state 3 is unreachable. There is no known path to state 3.
+
+**Projection**: if session 40 returns NOT_FINISHED at step 41, the game's L2 WIN condition is either:
+(a) state-based but not yet met (requires something not yet discovered), OR
+(b) position-dependent in a way the route hasn't tested (wrong column c14–18 instead of c15–19 or c13–17), OR
+(c) requires additional in-level action beyond entering entity2 at state 2.
+
+Session 41 would need fresh strategy design. The current 41-step route would be run again to re-confirm state 2 at entity2, then devote remaining budget to systematic probing of the three interior column positions (c13–17, c14–18, c15–19) and the entity2 geometry.
+
+---
+
+### Phase 2 — No New Projections
+
+All identifiable projection space is covered:
+- The three DC6 unknowns bound session 40 route feasibility
+- @BELIEF:LAT-130LON-40 covers A-wall descent risk
+- @BELIEF:LAT-140LON-40 covers entity2 internal navigation and state-3 unreachability
+- @BELIEF:LAT10LON-40 (conf:185) projects state 2 required for WIN
+
+No further geometry or mechanic can be projected without session 40 frame data. Graph finalized.
+
+---
+
+### New Records from This Dream Cycle (eighth pass)
+
+1. **@BELIEF:LAT-120LON-40 corrected** (DC8 note): 11-ring B uses trail-based collection (same as 11-ring A, 2/3 ring-row coverage) — prior "block-body" claim wrong
+2. **@BELIEF:LAT-140LON-40 written**: entity2 internal navigation dead end; state-3 unreachability; steps 42–45 protocol; conf:170
+
+---
+
+### Session 40 — Steps 42–45 Protocol (DC8 addition)
+
+If NOT_FINISHED at step 41 (entity2 entry at state 2):
+
+> **Step 42**: UP (r35–36 c14–18). Exit entity2. Note: this loses position.
+>
+> **Step 43**: DOWN (r40–41 c14–18). Re-enter entity2 at state 2. **READ FRAME.** Does WIN fire? If NOT_FINISHED again: confirms state 2 alone is insufficient regardless of direction of approach. Report entity1 state value.
+>
+> **Steps 44–45**: UP + DOWN once more (third entity2 entry). Final confirmation. Report entity1 state value after each step.
+
+If WIN fires at step 41, steps 42–45 are unused. Session complete.
+
+---
