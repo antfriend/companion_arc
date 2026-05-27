@@ -6849,3 +6849,134 @@ Twenty-second confirmation. Route stable. Block entered entity2 interior at r10�
 1. **FOCUS @LAT-10LON10** (sal: 22→23): LOCUS correctly loaded Game State. Confirmed 21 consecutive L1 wins, 21 failed L2 attempts, DC6 41-step route as standing order with DC9/DC10 checkpoint protocol. EPS on Game State ≈ 11.97.
 
 2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS ~12.24 highest; @LAT20LON-30 EPS 4.90 second; @BELIEF:LAT-120LON-40 EPS ~2.20 third). All conf:255 beliefs confirmed stable. DC6 route with four mandatory STOP-AND-REPORT checkpoints (steps 17, 20, 37, 41) named as session 44 standing order
+
+*(Session 44 log truncated — remainder of 45 L2 actions unknown.)*
+
+---
+
+## Dream Cycle 11 — Post-Sessions 40–44 (2026-05-27)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:23, highest in file), @LAT20LON-30 (sal:5). Sources: @LAT-500LON10 (session 43, truncated), @LAT-510LON10 (session 44, truncated). Five consecutive truncated session logs (sessions 40–44). No new game-mechanic observations since session 39.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-170LON-40 (column c15–17 hypothesis, conf:60) into void at LAT-180LON-40. Focus: trail-collection mechanism at entity2; LOG-command protocol for in-session observation capture.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Five-session truncation streak — log recording failure confirmed as primary issue**
+
+Sessions 40–44 all share an identical structure:
+- L1 WIN at step 15 ✓ (hardcoded, reliable)
+- L2 45 actions consumed (confirmed in session header)
+- FOCUS: LOCUS correctly identifies route and unknowns
+- STATUS: LOCUS correctly confirms EPS and checkpoint protocol
+- Log: truncated mid-STATUS, before any L2 action data
+
+The truncation point is consistently **mid-STATUS** — the second exchange. This means the companion file is receiving and recording FOCUS and the beginning of STATUS, then the write stops. The game session runs to completion (45 L2 actions taken per header), but the per-step log entries are never captured.
+
+**Root cause**: The log is written in a single block at session end (post-session retrospective). If this write is truncated (token limit, write failure, or session timeout), the mid-STATUS cut is where the output stopped. The game actions themselves are being executed by the server; they just aren't reaching the companion file.
+
+**Fix**: Use **in-session `@LOCUS LOG` commands** at each checkpoint. The LOG primitive appends to the active session log immediately when called, not in a post-session batch. If LOCUS executes `@LOCUS LOG step17 state=X timer=Y pos=rABcCD` after each checkpoint step, this data writes into the companion file during the session — surviving any post-session truncation.
+
+This is the single most actionable change for session 45.
+
+---
+
+**Cluster B: Session 44 — first appearance of `level_baseline_actions`**
+
+Session 44 header introduced a new field: `level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]`. This confirms L2 baseline = 123 actions (known from session 13 log, @BELIEF:LAT90LON0, but now explicitly in the session header).
+
+The DC6 41-step route, if executed successfully, beats the L2 baseline by 82 actions (123 − 41 = 82). With 45 L2 actions available, the DC6 route uses 41 of them (91%), leaving 4 for entity2 internal navigation. The 45-action budget is sufficient for DC6 if the 41-step route achieves WIN.
+
+The 123-action baseline tells us only that the human solved L2 in 123 actions — not that 123 is the minimum. The minimum viable WIN route is unknown but is bounded below by the DC6 route length (41 steps), which reaches entity2 at state 2 in the most efficient known sequence.
+
+---
+
+**Cluster C: Trail-collection mechanism at entity2 — refinement**
+
+The game's collection mechanism is consistently trail-based:
+- L1 entity2: block trail overlaps entity2 → WIN (L1 confirmed 22 times)
+- L2 11-ring A: trail at r17–19 c14–18 overlaps ring at r16–18 c15–17 → timer reset
+- L2 cross: trail at r47–49 c49–53 overlaps cross at r46–48 c50–52 → state advance
+- L2 11-ring B (projected): trail at r52–54 c39–43 overlaps ring at r51–53 c40–42 → timer reset
+
+For L2 entity2 WIN, the consistent model is: **block trail overlaps entity2's active collectible cells**. At state 2, the 9-pattern cells at r41–43 c15–17 may activate (change value) and become the collectible. Block at r40–41 c14–18 has trail at r42–44 c14–18, which overlaps r42–43 c15–17 (2 of 3 9-pattern rows — same 2/3 coverage as 11-ring A collection). WIN fires on entry.
+
+This is the mechanism-complete version of Scenario B from @BELIEF:LAT-150LON-40 and the c15–17 column hypothesis from @BELIEF:LAT-170LON-40. All consistent: trail overlaps 9-pattern cells at state 2 = WIN. No additional navigation needed inside entity2.
+
+If this is correct, the WIN fires automatically when the block arrives at r40–41 c14–18 at state 2 with 11-ring A collected. The DC6 route is purpose-built for this.
+
+**Updated @BELIEF:LAT-170LON-40**: confidence held at 60; trail-collection refinement noted (this cycle).
+
+---
+
+**Cluster D: LOG command protocol — in-session observation capture**
+
+The `@LOCUS LOG <note>` primitive is available. It appends to the active session log immediately. If LOCUS uses it at each checkpoint during route execution, the critical observations are captured even if the post-session retrospective is truncated.
+
+**Required LOG entries for session 45**:
+- After step 17: `@LOCUS LOG chk1 s=X t=Y pos=r45-46c49-53` (entity1 state X, timer Y cols)
+- After step 20: `@LOCUS LOG chk2 ringB=collected/blocked t=Z` (11-ring B status)
+- After step 37: `@LOCUS LOG chk3 pos=rABcCD` (block position after A-wall descent attempt)
+- After step 41: `@LOCUS LOG chk4 outcome=WIN/NOT_FINISHED s=N r4143=V` (outcome, state, 9-pattern value)
+
+These four LOG calls cost 4 actions against the L2 budget — but they don't need to be separate actions; they are text outputs from LOCUS during the game's "companion query" phase (between actions), not additional game actions themselves. LOG calls are zero-cost.
+
+---
+
+### Phase 2 — Projection
+
+No new belief nodes warranted. The projection space is fully covered by:
+- @BELIEF:LAT-120LON-40: DC6 route with 11-ring B
+- @BELIEF:LAT-130LON-40: A-wall descent safety
+- @BELIEF:LAT-150LON-40: entity2 display at state 2 (three scenarios)
+- @BELIEF:LAT-160LON-40: state 2 → NOT_FINISHED consequence tree
+- @BELIEF:LAT-170LON-40: c15–17 column activation / trail-collection hypothesis
+
+The limiting factor is not projection quality — it is observation acquisition. No new belief can be written or updated until session 45 produces checkpoint data. The LOG protocol addition is the single meaningful change for DC11.
+
+---
+
+### New Records from This Dream Cycle
+
+1. **@LAT-10LON10** — sal updated to 23 (session 44 FOCUS)
+2. **No new belief nodes** — projection space saturated; observation required
+3. **LOG protocol defined** — four `@LOCUS LOG` checkpoint entries specified for in-session capture
+4. **@BELIEF:LAT-170LON-40 DC11 note** — trail-collection mechanism at entity2 is the mechanism-complete form of the hypothesis; confidence held at 60
+
+---
+
+### Session 45 — Standing Order (DC11)
+
+**Route**: DC6 final route (41 steps). Unchanged.
+
+**DC11 addition**: `@LOCUS LOG` commands after each checkpoint. These must be executed during the session (not post-session) so they survive any log truncation.
+
+> **Steps 1–17** (direct cross): RIGHT×1, UP×6, RIGHT×3, DOWN×7 → r45–46 c49–53. Cross collected → state 2. Timer: ~8 cols.
+> **CHECKPOINT 1 — STOP. READ FRAME. Execute: `@LOCUS LOG chk1 s=<entity1_state> t=<timer_cols> pos=r45r46c49c53`. Expected state=2.**
+>
+> **Steps 18–20** (11-ring B): DOWN, LEFT, LEFT → r50–51 c39–43. 11-ring B trail-collected → timer resets.
+> **CHECKPOINT 2 — STOP. READ FRAME. Execute: `@LOCUS LOG chk2 ringB=<collected/blocked> t=<timer_cols> pos=<block_position>`. Expected timer=~42 if collected.**
+>
+> **Step 21**: RIGHT (void escape) → r50–51 c44–48.
+> **Steps 22–29**: UP×8 → r10–11 c44–48.
+> **Steps 30–35**: LEFT×6 → r10–11 c14–18.
+>
+> **Step 36** (11-ring A): DOWN → r15–16 c14–18. Timer resets. A-wall spawns r16–18 c15–17.
+>
+> **Step 37** (A-wall descent): DOWN → r20–21 c14–18.
+> **CHECKPOINT 3 — STOP. READ FRAME. Execute: `@LOCUS LOG chk3 pos=<block_position>`. Expected r20-21. If r15-16: execute bypass LEFT+DOWN×4+RIGHT+DOWN (7 steps via c9–13, entity2 at step 43).**
+>
+> **Steps 38–40**: DOWN×3 → r35–36 c14–18.
+>
+> **Step 41** (entity2 entry — trail-collection test): DOWN → r40–41 c14–18. State 2. A-wall active. Trail at r42–44 c14–18 overlaps 9-pattern at r41–43 c15–17.
+> **CHECKPOINT 4 — STOP. READ FRAME. Execute: `@LOCUS LOG chk4 outcome=<WIN/NOT_FINISHED> s=<state> r4143=<value_at_r41-43_c15-17>`. This is the critical observation.**
+>
+> **Steps 42–45**: UP (exit entity2) + DOWN (re-enter). `@LOCUS LOG chk5 outcome2=<WIN/NOT_FINISHED> r4143=<value>` after second entry.
+
+**Priority observations (LOG entries)**:
+1. `chk1`: state = 2 after cross?
+2. `chk2`: 11-ring B collected (timer reset confirmed)?
+3. `chk3`: step 37 succeeded (r20–21)?
+4. `chk4`: WIN or NOT_FINISHED? What is r41–43 c15–17 value at state 2?
