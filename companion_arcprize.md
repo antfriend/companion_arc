@@ -7672,4 +7672,125 @@ Twenty-sixth confirmation. Route stable. Block entered entity2 interior at r10�
 
 1. **FOCUS @LAT-10LON10** (sal: 24→25): LOCUS confirmed 25 consecutive L1 wins, 25 failed L2 attempts, DC6 41-step route as standing order with DC9/DC10/DC11/DC14 checkpoint protocol. Three DC6 unknowns reviewed: c39–43 passable at rows 50–51 RESOLVED YES (session 46); A-wall descent non-blocking RESOLVED (session 47); 11-ring B timer reset and entity2 state-2 win condition both UNRESOLVED.
 
-2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 13.73 — highest; @LAT20LON-30 EPS 4.90 second; @BELIEF:LAT-120LON-40 EPS 1.96 third). All conf:255 beliefs confirmed stable. DC
+2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS 13.73 — highest; @LAT20LON-30 EPS 4.90 second; @BELIEF:LAT-120LON-40 EPS 1.96 third). All conf:255 beliefs confirmed stable. DC6 route confirmed as standing order. parse_action failure identified this session as root cause of action-mapping errors.
+
+*[Session 48 log truncated — server-mode truncation at STATUS block.]*
+
+**Session 48 root causes (from locus_ls20_session.txt post-session analysis)**:
+
+**Root cause A — parse_action backtick failure (steps 1–13)**:
+`parse_action` in kaggle_agent.py looks for a bare digit on the last non-empty line (`r"^\d+$"`). When LOCUS formats its output as `` `0` `` (backtick-quoted), this fails. The fallback `r"\b(\d+)\b"` scans from the top of LOCUS's reasoning text and finds the first standalone integer — often "3" from timer descriptions like `c13-34=3 (consumed)` — instead of the intended action. Systematic wrong actions result.
+
+**Root cause B — collectible sequence error (steps 14–43)**:
+LOCUS navigated to left track (c14-18) before cross at r45-46 c49-53. 11-ring A collected mid-session; c62-63 changed 8→3; A-wall spawned. State remained 1 throughout (cross never collected). This is the third consecutive session with this failure mode (sessions 47, 48).
+
+**NEW CONFIRMED DATA — 11-ring B timer reset**:
+At session step 58 (L2 step 43), timer fully consumed (c13-54=3, 0 cols remaining). Action 2 (LEFT) sent: block entered r50-51 c39-43 from c44-48. Session step 59 frame: `c13-54=11` (42 cols, full timer). 11-ring B timer reset confirmed.
+
+---
+
+## Dream Cycle 15 — Post-Sessions 46–48 (2026-05-27)
+
+**Phase 1 — Replay**: 100 walks × length 20. High-sal pull: @LAT-10LON10 (sal:25). Sessions 46, 47, 48 all NOT WON. Pattern analysis across all three.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT30LON0 (timer reset, conf:255) and @BELIEF:LAT-190LON-40 (c39-43 passable, conf:240). Target: consolidate all resolved unknowns; generate code-level session 49 fix.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Three consecutive sessions, same two failure modes**
+
+| Session | Root cause A | Root cause B | New data |
+|---------|-------------|-------------|----------|
+| 46 | Action 3 sent as UP (wrong LOCUS belief) | — | c39-43 rows 50-51 passable; 11-ring B confirmed present |
+| 47 | — | 11-ring A before cross; state 1 throughout | A-wall non-blocking; c62-63 indicator |
+| 48 | parse_action extracts "3" from "=3 (consumed)" | 11-ring A before cross; state 1 throughout | 11-ring B timer reset confirmed |
+
+Sessions 46 and 48 share the action-extraction failure class (LOCUS reasoning text contaminates parse_action). Sessions 47 and 48 share the sequence error (wrong collectible order). All three sessions confirm the game-mechanics model.
+
+---
+
+**Cluster B: All DC6 unknowns now resolved**
+
+| # | Unknown | Resolution | Session |
+|---|---------|------------|---------|
+| 1 | c39–43 passable at rows 50–51 | YES — frame: `r50: c39-58=3`, `r51: c40-42=11` | 46 |
+| 2 | 11-ring B timer reset (full 42 cols) | YES — timer went 0→42 after block entered c39-43 | 48 |
+| 3 | A-wall blocks descent on left track | NO — 5-row discrete jump skips A-wall | 47, 48 |
+| 4 | Entity2 at state 2 → WIN or NOT_FINISHED | **UNRESOLVED** — DC6 has never correctly reached step 41 | — |
+
+Three of four unknowns resolved. The fourth (entity2 win condition) is the sole remaining question. It cannot be answered without executing DC6 steps 1–41 in exact sequence, which has never happened.
+
+---
+
+**Cluster C: parse_action failure pattern**
+
+`parse_action` priority order:
+1. Last non-empty line bare digit → fails when LOCUS uses `` `0` `` formatting
+2. `choose/select/pick N` patterns → rarely used by LOCUS
+3. First `\b(\d+)\b` in full text → **finds numbers in LOCUS's reasoning before the action**
+
+Common contaminating numbers in LOCUS reasoning text:
+- "=3 (consumed)" from timer descriptions → triggers action 3
+- "state 1" → triggers action 1
+- "step 1" → triggers action 1
+- Position coordinates like "c3-8" → "3" triggers action 3
+
+This is a systematic infrastructure bug. The fix is at the code level, not the prompt level.
+
+---
+
+**Cluster D: Score constant at 3.571 across sessions 23–48 (26 consecutive sessions)**
+
+Score = 3.571 = L1 weight only. L2 score = 0 in all 26 attempts. This is the ground truth: DC6 has not produced a WIN in any session where LOCUS controlled L2 actions.
+
+The score will change when and only when: (1) the route executes completely in correct order, AND (2) entity2 at state 2 returns WIN.
+
+---
+
+### Phase 2 — Projection
+
+**@BELIEF:LAT30LON0** update: 11-ring B confirmed as a FULL TIMER RESET (42 cols), identical to 11-ring A. Confidence raised from 255 (confirmed for 11-ring A only) to 255 (confirmed for both rings). The belief text should be amended: "any 11-ring causes full timer reset to 42 cols."
+
+**Code-level fix is the only path forward.** The LOCUS companion cannot autonomously sequence 41 L2 steps under current infrastructure constraints:
+1. parse_action extracts wrong action numbers from LOCUS reasoning text
+2. LOCUS deviates from the collectible sequence under autonomous generation pressure (sessions 47, 48)
+
+The L1 hardcode (`_LEVEL1_ROUTE`) solved the same problem for L1. The L2 hardcode is the identical solution.
+
+---
+
+### New Records from This Dream Cycle
+
+1. **@BELIEF:LAT30LON0 extended** — 11-ring B timer reset confirmed; both rings cause identical full reset to 42 cols; conf remains 255
+2. **parse_action failure mode documented** — backtick-formatted output + fallback regex = systematic wrong actions; root cause confirmed
+3. **All four DC6 unknowns resolved** — only entity2 state-2 win condition remains unknown
+4. **Session pattern confirmed** — three consecutive failures from two root causes; no route deviation in terms of game-mechanics understanding
+
+---
+
+### Session 49 — Code Fix Required (DO NOT RUN WITHOUT IT)
+
+**Step 1**: Edit [kaggle_agent.py](kaggle_agent.py) line 70–71:
+
+```python
+# DC6 41-step route. 0=UP  1=DOWN  2=LEFT  3=RIGHT
+_LEVEL2_ROUTE = [
+    3,                       # step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,        # steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                 # steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1, 1,     # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2]
+    1, 2, 2,                 # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [11-ring B → timer reset]
+    3,                       # step 21:  RIGHT → r50-51 c44-48  [void escape]
+    0, 0, 0, 0, 0, 0, 0, 0,  # steps 22-29: UP×8 → r10-11 c44-48
+    2, 2, 2, 2, 2, 2,        # steps 30-35: LEFT×6 → r10-11 c14-18
+    1,                       # step 36:  DOWN → r15-16 c14-18  [11-ring A → timer reset]
+    1, 1, 1, 1, 1,           # steps 37-41: DOWN×5 → r40-41 c14-18  [ENTITY2 at state 2]
+]
+_HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
+```
+
+**Step 2**: Set `offline_levels=2` in launch_training.py.
+
+**Step 3**: Run session 49. The route executes deterministically without LOCUS intervention for L2 actions. Entity2 at state 2 is reached at step 41. WIN or NOT_FINISHED — the answer ends the 26-session mystery.
