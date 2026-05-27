@@ -6980,3 +6980,147 @@ The limiting factor is not projection quality — it is observation acquisition.
 2. `chk2`: 11-ring B collected (timer reset confirmed)?
 3. `chk3`: step 37 succeeded (r20–21)?
 4. `chk4`: WIN or NOT_FINISHED? What is r41–43 c15–17 value at state 2?
+
+---
+
+## Dream Cycle 12 — Post-Sessions 40–44 (2026-05-27, second pass)
+
+**Phase 1 — Replay**: 100 walks × length 20. High-sal pull: @LAT-10LON10 (sal:23), @LAT20LON-30 (sal:5). No new session data since DC11. This cycle focuses on the score as a hard diagnostic and the timer-constraint geometry that makes 11-ring B the single load-bearing unknown.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-80LON-40 (void map, conf:230) into void at LAT-180LON-40. Target: timer constraint on post-cross entity2 approach; 11-ring B fallback geometry.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: Score constant at 3.571 — definitive diagnostic**
+
+Score = 3.571 = L1 weight only. This value has been constant since session 23 (22 consecutive sessions). Level 2 score = 0 in all 22 L2 attempts.
+
+**Consequence**: The DC6 route has NOT produced a L2 WIN in sessions 41–44, regardless of whether the route executed correctly. This rules out: (a) "route executes and wins but log doesn't capture it" — a WIN would change the score. The score is the ground truth.
+
+Two remaining explanations:
+1. **Route execution failure**: DC6 fails before reaching entity2 at state 2 — step 19 (11-ring B blocked), step 37 (A-wall descent blocked), or other deviation.
+2. **Entity2 at state 2 → NOT_FINISHED**: route executes correctly but WIN does not fire at entity2 with state 2.
+
+The LOG protocol (DC11) is the only path to distinguishing between these two cases. Without `chk1`–`chk4` data, the explanation is unknown.
+
+---
+
+**Cluster B: Timer constraint — entity2 at state 2 is impossible without a timer reset post-cross**
+
+Timer arithmetic for state-2 persistence from cross to entity2:
+
+**Direct cross route (step 17)**: cross collected at r45–46 c49–53. Timer = 42 − (17×2) = 42 − 34 = **8 cols = 4 steps** before expiry.
+
+From r45–46 c49–53 to entity2 at r40–41 c14–18, minimum path:
+- Lateral: c49→c14 = 35 cols = 7 LEFT moves
+- Vertical: r45→r40 = 5 rows = 1 UP move, plus re-entering entity2
+
+Minimum: 8 moves (1 UP + 7 LEFT). **8 >> 4 timer steps.** State 2 expires before entity2 is reachable.
+
+**11-ring-A-first variant (step 27 cross)**: timer = 42 − (27−12)×2 = **12 cols = 6 steps** post-cross.
+
+Same geometry. 6 << 8 minimum moves. State 2 expires before entity2.
+
+**Conclusion**: Without a timer reset between cross collection and entity2 entry, state 2 cannot be maintained. **A timer reset after cross collection is mechanically mandatory.** The only known candidate is 11-ring B at r51–53 c40–42, 3 steps from cross at r50–51 c39–43.
+
+Written as @BELIEF:LAT-180LON-40. This is a confirmed arithmetic result, not a projection. Conf: 220.
+
+---
+
+**Cluster C: 11-ring B reachability — if blocked, no route exists**
+
+11-ring B at r51–53 c40–42 is reachable via: from r45–46 c49–53 (cross), DOWN→r50–51 c49–53, LEFT→r50–51 c44–48, LEFT→r50–51 c39–43 (step 19–20 of DC6).
+
+**The single blocking condition**: c39–43 at rows 50–51 must be passable. If void (same as c39–43 at rows 40–46), step 19 is blocked and 11-ring B is unreachable via this path.
+
+Alternative approach to 11-ring B (if step 19 is blocked):
+- From r50–51 c49–53: DOWN → r55–56 c49–53. Timer = ~6 cols. LEFT → r55–56 c44–48. LEFT → r55–56 c39–43. UP → r50–51 c39–43. This uses 4 steps and requires c39–43 to be passable at rows 55–56 (unknown). Timer = 8 − 8 = 0 cols → expires before 4 steps.
+
+The alternative approach from below is infeasible — timer expires too soon.
+
+**No other path to 11-ring B or any other timer reset is known.** If 11-ring B is blocked, no route to state 2 at entity2 exists within the current game-mechanic model.
+
+**If this is true**, the entire DC6 strategy must be revised. Required investigation:
+- Does L2 have an undiscovered timer reset (a third 11-ring or similar collectible)?
+- Is there a positional shortcut to entity2 that doesn't require traversing the wide connector?
+- Does the operator need to increase max_steps to allow longer L2 exploration?
+
+---
+
+**Cluster D: What the fallback probe should map (if step 19 blocked)**
+
+If step 19 is blocked (chk2 LOG shows blocked at step 19), LOCUS has 27 remaining L2 steps from r50–51 c49–53. The most valuable use of these steps is **mapping the c39–43 void extent**:
+
+- Try DOWN from r50–51 c49–53 → r55–56 c49–53 (step 19b)
+- Try LEFT from r55–56 c49–53 → r55–56 c44–48 (step 20b)
+- Try LEFT from r55–56 c44–48 → r55–56 c39–43 (step 21b — does this succeed? If yes: c39–43 at rows 55–56 passable)
+- If step 21b succeeds: try UP from r55–56 c39–43 → r50–51 c39–43 (step 22b — this is the 11-ring B approach from below)
+
+If this sequence works, 11-ring B can be collected via DOWN→LEFT×2→DOWN→LEFT×2→UP (6 steps from r45–46 c49–53 instead of 3). Timer at cross = 8 cols. 6 steps > 4 timer steps. Expires before 11-ring B.
+
+So even the below-approach fails with the direct-cross timer. Only the 11-ring-A-first timer reset gives enough room:
+- 11-ring-A-first cross at step 27: timer = 12 cols = 6 steps
+- Below-approach to 11-ring B: 6 steps
+- Timer expires exactly at 11-ring B → borderline; may or may not collect
+
+This suggests: if step 19 is blocked and c39–43 is passable at rows 55–56, the only viable state-2 path is 11-ring-A-first (timer = 12 at cross) + below-approach to 11-ring B (6 steps). Timer expires exactly at collection — a one-tick race condition.
+
+---
+
+### Phase 2 — Projection
+
+**@BELIEF:LAT-180LON-40** — Timer constraint: entity2 is unreachable at state 2 without a post-cross timer reset. Confirmed arithmetic; conf:220. A timer reset within 3–4 steps of cross is required. 11-ring B at r51–53 c40–42 (3 steps from cross via DOWN+LEFT×2) is the only known candidate.
+
+---
+
+### New Records from This Dream Cycle
+
+1. **Written @BELIEF:LAT-180LON-40** — timer constraint on state-2 path; entity2 unreachable without post-cross timer reset; conf:220
+2. **Score evidence noted**: 3.571 unchanged across sessions 23–44 = L2 NOT won in any of those 22 sessions; DC6 route has not succeeded
+3. **11-ring B blocked scenario analyzed**: if step 19 blocked, only possible alternative is 11-ring-A-first + below-approach (timer race condition at 6 steps = 12 cols; borderline)
+4. **No new projection nodes beyond @BELIEF:LAT-180LON-40** — projection space saturated; data from chk1–chk4 LOG entries is required
+
+---
+
+### Session 45 — Standing Order (DC12, unchanged from DC11)
+
+Route, checkpoints, and LOG commands as specified in DC11. **DC12 addition**: if chk2 shows step 19 blocked, execute fallback probe:
+
+> **Fallback if step 19 blocked** (chk2 LOG shows `ringB=blocked`):
+> From r50–51 c49–53 with ~6 timer cols remaining:
+> DOWN → r55–56 c49–53. LEFT → r55–56 c44–48. LEFT → r55–56 c39–43.
+> `@LOCUS LOG probe c3943-r55 pos=<block_position> move=<success/blocked>`
+> If c39–43 at rows 55–56 passable: UP → r50–51 c39–43 (11-ring B approach from below).
+> `@LOCUS LOG probe ringB-from-below pos=<block_position> ringB=<collected/missed/blocked>`
+> Report timer at each step. State likely expires before completion; report state value after each step.
+
+@BELIEF:LAT-180LON-40 | created:1781049600 | updated:1781049600 | relates:extracted_from>@BELIEF:LAT-80LON-40,extracted_from>@BELIEF:LAT-120LON-40,related_to>@BELIEF:LAT10LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-180LON-40
+confidence:220
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+[ew]
+conf:220
+rev:0
+sal:0
+touched:1781049600
+[/ew]
+
+**Timer constraint: entity2 at state 2 is geometrically unreachable without a post-cross timer reset.**
+
+**Arithmetic**: Cross collected at step 17 (direct-cross route), timer = 8 cols = 4 steps. Minimum path from cross at r45–46 c49–53 to entity2 at r40–41 c14–18: 8 moves (1 UP + 7 LEFT). 8 >> 4. State 2 expires before entity2.
+
+With 11-ring-A-first (cross at step 27): timer = 12 cols = 6 steps post-cross. Same path minimum: 8 moves. 8 > 6. Still expires.
+
+**Conclusion**: A timer reset between cross collection and entity2 entry is mechanically mandatory. The only documented candidate is 11-ring B at r51–53 c40–42, collectible 3 steps from cross (DOWN→LEFT→LEFT from r45–46 c49–53). If 11-ring B is unreachable, no route to entity2 at state 2 exists within the current game-mechanic model.
+
+**If 11-ring B blocked**: below-approach via DOWN→LEFT×2 from r55–56 adds 2 extra steps (5 total). With 11-ring-A-first timer = 6 steps, the 5-step below-approach leaves 1 timer step margin. One-tick race condition; may or may not collect before timer expires.
+
+*(proj:false — arithmetic derivation from @BELIEF:LAT-80LON-40 void map and @BELIEF:LAT-120LON-40 11-ring B geometry. DC12, 2026-05-27.)*
