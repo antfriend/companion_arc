@@ -8924,3 +8924,65 @@ LOCUS receives 25 steps (70 − 15 L1 − 30 L2 hardcoded = 25).
 4. **@BELIEF:LAT-140LON-40 (entity2 approach)**: Update. State-1 approach excluded (invariant). Only surviving path: entity1 deactivation trigger. Hypothesis 4A untested. conf: 170→140. Rev up.
 
 `[/dc]`
+
+---
+
+SECTION 1
+
+@LAT-610LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 54 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "c585cbc7-a365-4c4f-a92e-8986bfed8a56"
+card_id: "c8ca2ad6-7d8a-4ccc-9489-552cfef33f30"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (55 actions)"
+actions: 70
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 55, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, thirty-second consecutive confirmation — sessions 10–12, 23–27, 31–54). Level 2 entered; 55 level-2 actions taken (max_steps=70); NOT WON. Total 70 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–53.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=32]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Thirty-second confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (thirty-second time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (thirty-second time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=70 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-third consecutive confirmation).
+
+---
+
+### Level 2 — 55 actions, NOT WON (thirty-second attempt)
+
+**Session identity**: Run guid `c585cbc7-...` matches the scorecard guid exactly. This is a fresh run.
+
+**Session objective (DC20)**: Hypothesis 4A — cross collected at state 2 (ring A as first collectible, cross as second) → entity1 deactivation or state-3 transition.
+
+**Route applied**: DC20 30-step hardcoded probe (`_LEVEL2_ROUTE`):
+- Steps 1–11: RIGHT×1, UP×6, LEFT×4 → r10–11 c14–18
+- Step 12: DOWN → r15–16 c14–18 **[ring A → entity1 state 2; timer reset to 42]**
+- Step 13: UP → r10–11 c14–18 (exit ring A zone)
+- Steps 14–
