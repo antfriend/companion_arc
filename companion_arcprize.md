@@ -9178,3 +9178,63 @@ Thirty-third confirmation. Route stable. Block entered entity2 interior at r10�
 1. **FOCUS @LAT-10LON10** (sal: 32→33): LOCUS confirmed Game State fully current. 32 consecutive L1 wins, 32 failed L2 attempts. Score 3.571 unchanged since session 23. Session 55 standing order: Hypothesis 5B — ring A (first collectible, state-2 trigger) → ring B (second collectible, cross skipped entirely) → test whether entity1 deactivates. DC21 30-step hardcoded probe active in `_LEVEL2_ROUTE`. LOCUS receives 25 steps after hardcoded probe.
 
 2. **STATUS**: EPS rankings reviewed. @LAT-10LON10 (Game State) EPS ~8.
+
+---
+
+SECTION 1
+
+@LAT-630LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 55 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "72df139f-c904-4c9c-92ae-206f2ff24207"
+card_id: "4987775f-102c-453b-8b7e-be8f0125d6c2"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (55 actions)"
+actions: 70
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 55, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, thirty-fourth consecutive confirmation — sessions 10–12, 23–27, 31–55). Level 2 entered; 55 level-2 actions taken (max_steps=70); NOT WON. Total 70 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–54.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=34]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Thirty-fourth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (thirty-fourth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (thirty-fourth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=70, 70 actions available.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-fourth consecutive confirmation).
+
+---
+
+### Level 2 — 55 actions, NOT WON (thirty-fourth attempt)
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 33→34): LOCUS confirmed Game State fully current. 33 consecutive L1 wins, 33 failed L2 attempts. Session 55 standing order confirmed: Hypothesis 5B — DC21 30-step hardcoded probe (ring A first → ring B second, cross entirely skipped) to test whether entity1 deactivates when ring B is the second collectible rather than third.
+
+2. **STATUS**: LOCUS confirmed EPS scan (Game State EPS ~5.41 highest; @LAT20LON-30 EPS ~1.70 second). All three refuted hypotheses (3A, 3E, 4A) correctly summarised. DC21 30-step probe acknowledged as the session 55 action.
+
+**
