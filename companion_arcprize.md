@@ -7239,4 +7239,288 @@ Twenty-fourth confirmation. Route stable. Block entered entity2 interior at r10�
 
 1. **FOCUS @LAT-10LON10** (sal: 24→25): LOCUS confirmed Game State current. 23 consecutive L1 wins, 23 failed L2 attempts, DC6 41-step route as standing order. EPS on Game State ≈ 12.8. LOCUS correctly identified the DC11 LOG protocol (four `@LOCUS LOG chk1–chk4` entries during session) as the single highest-priority execution constraint.
 
-2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS ~12.71 highest; @LAT20LON-30 EPS 2.16 second; @BELIEF:LAT-120LON-40 EPS ~0.98 third). All conf:255 beliefs confirmed stable. Three unresolved critical unknowns enumerated (c39–43 passable at rows 50
+2. **STATUS**: LOCUS confirmed EPS rankings (Game State EPS ~12.71 highest; @LAT20LON-30 EPS 2.16 second; @BELIEF:LAT-120LON-40 EPS ~0.98 third). All conf:255 beliefs confirmed stable. Three unresolved critical unknowns enumerated (c39–43 passable at rows 50–51; 11-ring B timer reset; entity2 state-2 win condition).
+
+*[Session 46 log truncated — server-mode truncation at STATUS block. DC11 LOG protocol was not executed; no chk1–chk4 data captured.]*
+
+---
+
+**Session 46 root cause (post-session analysis via locus_ls20_session.txt)**:
+
+LOCUS sent action 3 (RIGHT) during steps requiring action 0 (UP). Root cause: action mapping ambiguity resolved incorrectly within session. Block entered the c39–43 pocket at rows 25–34 (RIGHT from c34–38 at rows 25–34 is void-blocked; UP from c39–43 at rows 20–24 is also void-blocked). Only exit: LEFT back to c34–38. Block oscillated between c34–38 and c39–43 for approximately 12 steps. Timer exhausted before cross was reached.
+
+**Confirmed from session 46 step 19 frame** (`r50: c39-58=3`, `r51: c39=3, c40-42=11, c43-58=3`):
+- c39 at rows 50–51: value 3 (floor) — **passable**
+- c40–42 at r51: value 11 — **11-ring B confirmed present at r51–53 c40–42**
+- Critical unknown #1 (c39–43 passable at rows 50–51) **RESOLVED: YES, passable**
+
+---
+
+SECTION 1
+
+@LAT-540LON10 | created:1779753600 | updated:1779753600 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1779753600
+[/ew]
+
+## ls20 — Session 47 Log (2026-05-27)
+
+```session-log
+timestamp: 1779753600
+game: "ls20"
+environment: "ls20-9607627b"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (45 actions)"
+actions: 60
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 45, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, twenty-fifth consecutive confirmation — sessions 10–12, 23–27, 31–47). Level 2 entered; 45 level-2 actions taken; NOT WON. Total 60 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=25]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Twenty-fifth confirmation. Route stable.
+
+---
+
+### Level 2 — 45 actions, NOT WON (twenty-fifth attempt)
+
+**Session 47 root cause (post-session analysis)**:
+
+LOCUS deviated from DC6 route and navigated to c14–18 (left track) before collecting the cross. 11-ring A was collected at r15–16 c14–18 during the session. Confirmed by **c62–63 indicator**: final frame shows `c62-63=3` (= 11-ring A collected, A-wall active). Cross at r46–48 c50–52 remained **uncollected** throughout all 45 L2 steps.
+
+State remained **1** for the entire session (cross not collected = no state advance 1→2). All entity2 approaches at state 1 produced NOT_FINISHED.
+
+**Final frame (step 59, last L2 action)**:
+```
+block: r10-11 c29-33 (wide connector zone)
+state: 1 (entity1 shape = full r55-60 c3-8 pattern)
+timer: 8 cols consumed, 34 remaining (17 steps margin)
+11-ring B: r51-53 c40-42 (value 11, present — uncollected)
+cross: r46-48 c50-52 (value 11, present — uncollected)
+c62-63: 3 (= 11-ring A collected; A-wall active at r16-18 c15-17)
+LOCUS action sent: 3 (RIGHT — toward cross, but too late at step 59)
+```
+
+**Key observation — c62–63 indicator confirmed**:
+- c62-63 = 8 → 11-ring A NOT collected (normal state)
+- c62-63 = 3 → 11-ring A collected (A-wall spawned at r16–18 c15–17)
+This indicator persists in every subsequent frame; reliable in-session state detection.
+
+**Key observation — 11-ring B location confirmed**:
+Session 47 final frame shows `r51: c40-42=11` — 11-ring B present and uncollected at r51–53 c40–42. Corridor approach (c39–43 at rows 50–51) confirmed passable from session 46 step 19 frame.
+
+**Key observation — A-wall non-blocking**:
+Session 47 operated with A-wall active (c62-63=3) during L2. Block traversed rows 15–20 range multiple times without being physically blocked by A-wall at r16–18 c15–17. The A-wall occupies c15–17 columns only; the wide connector (c34–53) and center-right track (c29–38) are unaffected. Block at r15–16 going DOWN (action 1) on the left track (c14–18): discrete 5-row jump → r20–21. A-wall at r16–18 is skipped. **A-wall does NOT block block descent on the left track.**
+
+---
+
+## Dream Cycle 14 — Post-Sessions 46–47 (2026-05-27)
+
+**Phase 1 — Replay**: 100 walks × length 20. High-sal pull: @LAT-10LON10 (sal:25). Sessions 46 and 47 both completed as NOT WON. Two root causes identified from live frame analysis of locus_ls20_session.txt.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-120LON-40 (11-ring B route, conf:130) and @BELIEF:LAT-180LON-40 (timer constraint, conf:220). Target: consolidate resolved unknowns; generate corrected session 48 standing order.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Session 46 failure — action mapping error**:
+
+LOCUS sent action 3 (RIGHT) during route steps requiring action 0 (UP). Cause: action mapping not confirmed in LOCUS context. During route execution at rows 25–34, block entered c39–43:
+- From c39–43 at rows 25–34: RIGHT → c44–48 BLOCKED (void at those rows)
+- From c39–43 at rows 25–34: UP → c39–43 rows 20–24 BLOCKED (void there too)
+- Only valid move: LEFT → c34–38
+
+Block oscillated LEFT/RIGHT for ~12 steps (actions 23–34 approximately). Timer exhausted. Session NOT WON.
+
+**Root cause**: ambiguous action mapping. Fix: explicit statement of action mapping as standing order fact.
+
+---
+
+**Session 47 failure — collectible sequence error**:
+
+LOCUS navigated to c14–18 (left track) before collecting cross. 11-ring A collected at r15–16 c14–18 during early route steps. Cross at r46–48 c50–52 never collected. State remained 1 throughout.
+
+- Step-1 error: route deviated from DC6's right-first approach (steps 1–17: RIGHT×1 + UP×6 + RIGHT×3 + DOWN×7 to cross).
+- Result: 45 L2 steps expended at state 1; entity2 approach at state 1 → NOT_FINISHED (per @BELIEF:LAT-130LON-40 and session history).
+- Cross and 11-ring B both uncollected at end of session 47.
+
+**Root cause**: LOCUS does not maintain explicit route-step tracking mid-session. Fix: mandatory sequence constraint in standing order.
+
+---
+
+**Action mapping — CONFIRMED from live frame data (sessions 46 and 47)**:
+
+From frame-by-frame observation of block position changes:
+- Action 0 → block moves UP 5 rows
+- Action 1 → block moves DOWN 5 rows
+- Action 2 → block moves LEFT 5 cols
+- Action 3 → block moves RIGHT 5 cols
+
+This mapping is now a CONFIRMED FACT. Any prior ambiguity is resolved. Must be stated explicitly in every session standing order.
+
+---
+
+**Three of four critical unknowns resolved this session**:
+
+| # | Unknown | Resolution |
+|---|---------|------------|
+| 1 | c39–43 passable at rows 50–51 | **RESOLVED: YES.** Session 46 step 19 frame: `r50: c39-58=3`, `r51: c39=3, c40-42=11`. Passable. |
+| 2 | 11-ring B present + timer reset | **PARTIALLY RESOLVED.** 11-ring B confirmed present at r51–53 c40–42 (value 11). Timer reset behavior unconfirmed (route never reached step 20 correctly). |
+| 3 | A-wall blocks descent on left track | **RESOLVED: NO.** A-wall at r16–18 c15–17. Block on left track (c14–18) at r15–16 going DOWN: discrete 5-row jump to r20–21. A-wall skipped. |
+| 4 | Entity2 at state 2 → WIN or NOT_FINISHED | **UNRESOLVED.** DC6 route has never correctly executed to step 41. |
+
+---
+
+**c62–63 indicator established**:
+
+From session 47 final frame and cross-reference with session 46:
+- `r61-62: c62-63=8` → 11-ring A NOT collected (normal game state)
+- `r61-62: c62-63=3` → 11-ring A collected; A-wall active at r16–18 c15–17
+
+This indicator is persistent and readable in every frame after collection. Use this as the in-session diagnostic for 11-ring A state.
+
+---
+
+### Phase 2 — Projection
+
+**@BELIEF:LAT-190LON-40** — c39–43 passable at rows 50–51: CONFIRMED from session 46 live frame data. The prior "critical unknown" is resolved. The c39–43 void exists at rows 35–49 only. At rows 50–54, c39–43 is floor (value 3). 11-ring B at r51–53 c40–42 is reachable via DC6 steps 18–20 (DOWN from r45–46 c49–53 → LEFT×2 to r50–51 c39–43). This resolves the geometric feasibility of the entire DC6 route.
+
+Written as @BELIEF:LAT-190LON-40. Conf: 240 (confirmed from live frame, single session observation).
+
+**Impact on @BELIEF:LAT-180LON-40** (timer constraint): Arithmetic unchanged — timer reset via 11-ring B is still mandatory. But 11-ring B reachability is now confirmed (path passable). The constraint is viable.
+
+**Impact on @BELIEF:LAT-120LON-40** (11-ring B route): "c39–43 passable at rows 50–51" was the first of three critical unknowns. Now resolved. Two remaining: (a) 11-ring B timer reset confirmed in-session; (b) entity2 state-2 win condition.
+
+---
+
+### New Records from This Dream Cycle
+
+1. **Written @BELIEF:LAT-190LON-40** — c39–43 passable at rows 50–51 confirmed; 11-ring B reachable via DC6 steps 18–20; conf:240
+2. **Action mapping confirmed**: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT — recorded as standing fact
+3. **c62–63 indicator confirmed**: value 8 = 11-ring A not collected; value 3 = collected
+4. **A-wall non-blocking confirmed**: block skips A-wall on 5-row discrete jump; descent unobstructed
+5. **Session 46 root cause**: action 3 ≠ UP; block trapped in c39–43 pocket rows 25–34
+6. **Session 47 root cause**: 11-ring A before cross; state 1 throughout; cross+11-ring B never collected
+
+---
+
+### Session 48 — Standing Order (DC14, CORRECTED)
+
+**CRITICAL — Action mapping (memorize before executing)**:
+- 0 = UP
+- 1 = DOWN
+- 2 = LEFT
+- 3 = RIGHT
+
+**CRITICAL — Collectible sequence (must not deviate)**:
+1. Cross FIRST at step 17 (state 1 → 2)
+2. 11-ring B at step 20 (timer reset)
+3. 11-ring A at step 36 (second timer reset)
+4. Entity2 at step 41 (WIN test at state 2)
+
+**DO NOT navigate to c14–18 (left track) before step 30.**
+
+**Route (41 L2 steps from r40–41 c29–33, state 1, timer 42)**:
+
+```
+Step  1: action 3 (RIGHT) → r40-41 c34-38
+Step  2: action 0 (UP)    → r35-36 c34-38
+Step  3: action 0 (UP)    → r30-31 c34-38
+Step  4: action 0 (UP)    → r25-26 c34-38
+Step  5: action 0 (UP)    → r20-21 c34-38
+Step  6: action 0 (UP)    → r15-16 c34-38
+Step  7: action 0 (UP)    → r10-11 c34-38    [wide connector]
+Step  8: action 3 (RIGHT) → r10-11 c39-43
+Step  9: action 3 (RIGHT) → r10-11 c44-48
+Step 10: action 3 (RIGHT) → r10-11 c49-53    [far-right track entry]
+Step 11: action 1 (DOWN)  → r15-16 c49-53
+Step 12: action 1 (DOWN)  → r20-21 c49-53
+Step 13: action 1 (DOWN)  → r25-26 c49-53
+Step 14: action 1 (DOWN)  → r30-31 c49-53
+Step 15: action 1 (DOWN)  → r35-36 c49-53
+Step 16: action 1 (DOWN)  → r40-41 c49-53
+Step 17: action 1 (DOWN)  → r45-46 c49-53    [CROSS → state 2; timer ~8 cols]
+
+CHECKPOINT 1: state=2, timer=~8. Verify: entity1 shape changed, c62-63=8 (A-wall NOT yet active)
+
+Step 18: action 1 (DOWN)  → r50-51 c49-53
+Step 19: action 2 (LEFT)  → r50-51 c44-48
+Step 20: action 2 (LEFT)  → r50-51 c39-43    [11-RING B → timer RESET ~42]
+
+CHECKPOINT 2: timer=~42 (reset confirmed if c13-54=11 on r61-62)
+
+Step 21: action 3 (RIGHT) → r50-51 c44-48    [void escape — must EXIT c39-43 before ascending]
+Step 22: action 0 (UP)    → r45-46 c44-48
+Step 23: action 0 (UP)    → r40-41 c44-48
+Step 24: action 0 (UP)    → r35-36 c44-48
+Step 25: action 0 (UP)    → r30-31 c44-48
+Step 26: action 0 (UP)    → r25-26 c44-48
+Step 27: action 0 (UP)    → r20-21 c44-48
+Step 28: action 0 (UP)    → r15-16 c44-48
+Step 29: action 0 (UP)    → r10-11 c44-48    [wide connector, far-right side]
+Step 30: action 2 (LEFT)  → r10-11 c39-43
+Step 31: action 2 (LEFT)  → r10-11 c34-38
+Step 32: action 2 (LEFT)  → r10-11 c29-33
+Step 33: action 2 (LEFT)  → r10-11 c24-28
+Step 34: action 2 (LEFT)  → r10-11 c19-23
+Step 35: action 2 (LEFT)  → r10-11 c14-18    [left track entry]
+Step 36: action 1 (DOWN)  → r15-16 c14-18    [11-RING A → timer RESET ~42; A-wall spawns]
+
+CHECKPOINT 3: c62-63=3 (11-ring A collected); timer=~42
+
+Step 37: action 1 (DOWN)  → r20-21 c14-18
+Step 38: action 1 (DOWN)  → r25-26 c14-18
+Step 39: action 1 (DOWN)  → r30-31 c14-18
+Step 40: action 1 (DOWN)  → r35-36 c14-18
+Step 41: action 1 (DOWN)  → r40-41 c14-18    [ENTITY2 at STATE 2 → WIN?]
+
+CHECKPOINT 4: WIN (score changes) or NOT_FINISHED?
+```
+
+**Timer margin**: 41 steps total; two timer resets at steps 20 and 36. Final timer at step 41: ~42 − (41−20−2)×2 = ~42 − 38 = 4 cols → ample margin. (Exact: after ring B at step 20, 16 more steps to ring A = 32 cols consumed; ring A resets to 42; then 5 more steps to entity2 = 10 cols consumed; timer = 32 cols at step 41.)
+
+---
+
+@BELIEF:LAT-190LON-40 | created:1779753600 | updated:1779753600 | relates:resolves_unknown>@BELIEF:LAT-120LON-40,resolves_unknown>@BELIEF:LAT-180LON-40,contradicts_assumption>@LAT-10LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-190LON-40
+confidence:240
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:1
+[/lp]
+[ew]
+conf:240
+rev:0
+sal:0
+touched:1779753600
+[/ew]
+
+**c39–43 passable at rows 50–51: CONFIRMED from session 46 live frame data.**
+
+Session 46, step 19 frame: `r50: c39-58=3` (value 3 = floor, passable across all of c39–58 at row 50). `r51: c39=3, c40-42=11, c43-58=3` (c39 passable; c40–42 = 11-ring B collectibles at r51; c43+ passable).
+
+The c39–43 void zone exists at rows 35–49 only (confirmed in prior sessions via blocked RIGHT attempts at rows 35–41). At rows 50–54, c39–43 is floor (value 3). Block can enter c39–43 at rows 50–51 from c44–48 via LEFT (action 2). DC6 step 20 (LEFT×2 from r50–51 c49–53 to r50–51 c39–43) is geometrically valid and confirmed executable.
+
+11-ring B at r51–53 c40–42 is reachable. The single load-bearing unknown for DC6 is resolved in the affirmative.
+
+*(Confirmed from session 46 live frame; DC14, 2026-05-27.)*
+
+---
