@@ -60,24 +60,18 @@ BLOCK_VAL = 12
 
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
-_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 29 confirmed wins
-# Session 51 result: 17-step probe; LOCUS oscillated at ring B (never collected); parse_action
-# backtick failure (session 51, step 37); timer expired; entity1 collision test NOT performed.
-# DC18: 42-step hardcoded route delivers LOCUS directly to entity1 deadlock with ~13 steps.
-# State 2 persists through timer expiry. Deadlock column-specific to c14-18 (entity2 ring column).
-# parse_action fix: strip backticks before bare-number check (DC18 fix deployed).
+_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
+# Session 52 result: Hypothesis 3A REFUTED — 13 DOWN collisions produced zero state change.
+# Blocked moves don't consume timer (timer frozen at 34 across all 13 blocked steps).
+# DC19: State 1 approach (skip cross entirely; entity1 stays dormant at r41-43).
+# 16-step route: no cross, no ring B, ring A only; LOCUS gets 39 steps (max_steps=70).
 _LEVEL2_ROUTE = [
-    3,                               # step 1:  RIGHT → r40-41 c34-38
-    0, 0, 0, 0, 0, 0,                # steps 2-7:  UP×6 → r10-11 c34-38
-    3, 3, 3,                         # steps 8-10: RIGHT×3 → r10-11 c49-53
-    1, 1, 1, 1, 1, 1, 1,             # steps 11-17: DOWN×7 → r45-46 c49-53  [CROSS → state 2; entity1 tracker starts]
-    1, 2, 2,                         # steps 18-20: DOWN+LEFT×2 → r50-51 c39-43  [ring B → timer reset to 42]
-    3, 3,                            # steps 21-22: RIGHT×2 → r50-51 c49-53
-    0, 0, 0, 0, 0, 0, 0, 0,          # steps 23-30: UP×8 → r10-11 c49-53
-    2, 2, 2, 2, 2, 2, 2,             # steps 31-37: LEFT×7 → r10-11 c14-18
-    1,                               # step 38:  DOWN → r15-16 c14-18  [ring A → timer reset to 42]
-    1, 1, 1, 1,                      # steps 39-42: DOWN×4 → r35-36 c14-18  [entity1 at r37-39; DC18 deadlock handoff]
-]  # 42-step route (DC18 session 52); LOCUS takes ~13 steps for entity1 collision test (Hypothesis 3A)
+    3,                     # step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,      # steps 2-7:  UP×6 → r10-11 c34-38
+    2, 2, 2, 2,            # steps 8-11: LEFT×4 → r10-11 c14-18
+    1,                     # step 12:  DOWN → r15-16 c14-18  [ring A → timer reset to 42]
+    1, 1, 1, 1,            # steps 13-16: DOWN×4 → r35-36 c14-18  [entity1 DORMANT at r41-43; state 1; DC19 handoff]
+]  # 16-step state-1 probe (DC19 session 53); LOCUS takes 39 steps for Hypothesis 3E test
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 

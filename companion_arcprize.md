@@ -8556,4 +8556,128 @@ Thirtieth confirmation. Route stable. Block entered entity2 interior at r10–11
 
 1. **FOCUS @LAT-10LON10** (sal: 29→30): LOCUS confirmed Game State current. EPS ≈ 16.55 (sal:30, conf:200) — highest in file. All standing orders confirmed: 42-step hardcoded probe via DC18 `_LEVEL2_ROUTE`, then LOCUS controls ~13 remaining steps. DC18 standing order: LOCUS MUST attempt DOWN (action 1) at least 2–3 times when entity1 is at r37–39 c14–18, before choosing UP. Hypothesis 3A (entity1 collision = state 3 trigger) is the session objective. LOCUS avoided this test in session 51 by immediately choosing UP.
 
-2. **STATUS**:
+2. **STATUS**: EPS rankings reviewed. @LAT-10LON10 (Game State) sal 29→30, EPS ≈ 16.55 (highest). @LAT20LON-30 (Mechanics) conf 230, sal 5, EPS 4.90. Hypothesis 3A standing order confirmed. parse_action backtick fix and 42-step route confirmed deployed.
+
+3. **ACTION steps 57–69 (all LOCUS)**: Entity1 deadlock at r35–36 c14–18 (entity1 r37–39). LOCUS correctly cited DC18 standing order at EVERY step and chose DOWN (action 1) 13 consecutive times. Each step produced WARNING "last move (DOWN) produced NO movement — block position unchanged." Block remained at r35–36 c14–18. Entity1 remained at r37–39 c14–18. **No state change observed.** Timer indicator r61–62: c13–20=3, c21–54=11 (8 consumed, 34 remaining) at EVERY step from 57 through 69 — **blocked moves do NOT consume timer**. Budget exhausted at step 70. NOT WON.
+
+---
+
+### Level 2 — 55 actions, NOT WON (thirtieth attempt)
+
+Hypothesis 3A definitively tested: 13 consecutive blocked DOWN collisions — null result. Entity1 did not change state. Timer did not advance on blocked moves. Budget exhausted entirely at deadlock position.
+
+---
+
+## Dream Cycle 19 — Hypothesis 3A Refuted; State 1 Approach
+
+`[dc]`
+`[ew] conf:190 sal:30 rev:52 touched:1748995200`
+
+### Phase 1 — Replay
+
+**Hypothesis 3A — REFUTED (13-attempt null result)**:
+
+Session 52 was the first clean test of entity1 collision (Hypothesis 3A). LOCUS correctly followed the DC18 standing order at all 13 LOCUS steps (steps 57–69), choosing DOWN (action 1) every time. Result:
+
+| Step | Action | Result | Block pos | Entity1 pos | Timer |
+|------|--------|--------|-----------|-------------|-------|
+| 57 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 58 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 59 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 60 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 61 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 62 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 63 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 64 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 65 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 66 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 67 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 68 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+| 69 | DOWN | BLOCKED | r35–36 c14–18 | r37–39 c14–18 | 34 |
+
+Entity1 position unchanged. Entity1 value unchanged (value 9 at r37–39). No new visual elements. No frame differences between step 57 and step 69 (entity1 carrier bg oscillates between 0 and 5 due to proximity-based rendering — this is the same positional artifact seen in DC17, not a state change). **Hypothesis 3A conclusively refuted. Repeated entity1 collision does NOT trigger state 3 or any state transition.**
+
+---
+
+**New mechanic — blocked moves do NOT consume timer**:
+
+The timer indicator r61–62 remained at c13–20=3 (8 consumed), c21–54=11 (34 remaining) across all 13 blocked DOWN steps. Timer ticked to this value at the end of the 42-step hardcoded route (ring A reset at step 38 → 42 cols; steps 39–42 = 4 moves × 2 cols = 8 consumed). Then 13 blocked DOWN steps produced zero additional timer consumption.
+
+**Timer only ticks on SUCCESSFUL block movement.** Blocked moves (WARNING "produced NO movement") do not consume timer. This is a significant mechanic property — the deadlock position can be held indefinitely without timer penalty, but since entity1 collision is now ruled out as a trigger, there is no action to perform there that would help.
+
+---
+
+**LOCUS execution — flawless**:
+
+LOCUS correctly cited DC17/DC18 standing orders at every step. No deviation from the collision test protocol. Session 52 represents clean execution. The null result is unambiguous: 13 attempts is sufficient to establish Hypothesis 3A as false.
+
+---
+
+### Phase 2 — Projection
+
+**Hypothesis table updated**:
+
+| # | Hypothesis | Status |
+|---|---|---|
+| 3A | Entity1 collision (DOWN×N while blocked) triggers state 3 | **REFUTED** — 13 null results, session 52 |
+| 3B | Undiscovered collectible not yet observed | No evidence; all visible cells scanned across 30 sessions |
+| 3C | Ring B at state 2 triggers entity1 deactivation | Ring B collected at state 2 (route step 20) in sessions 50–52; no deactivation observed. May require specific entity1 POSITION at ring B collect |
+| 3D | Resequence approach before entity1 reaches r37–39 | DC17 analysis: entity1 convergence forced by geometry; refuted |
+| 3E | **State 1 approach**: reach entity2 WITHOUT cross collection (entity1 dormant at r41–43) | **UNTESTED** — session 53 objective |
+| 3F | Entity1 transition window: the exact cross-collection frame has entity1 in neither r41–43 nor r37–39 | **THEORETICAL** — hard to probe |
+
+**Hypothesis 3E analysis — State 1 approach**:
+
+In all sessions to date, the route collects the cross (step 17), triggering entity1 to leave the entity2 ring and enter tracking mode (state 2). The deadlock at c14–18 results from entity1 tracker at r37–39.
+
+If the cross is NOT collected, entity1 remains dormant at r41–43 c15–17. The block then approaches entity2 at r35–36 c14–18 with NO tracker at r37–39. The 5-row DOWN jump from r35–36 c14–18 sweeps rows r37–r41 — entity1 dormant at r41–43 c15–17 occupies row r41. 
+
+Three possible outcomes of the state 1 DOWN from r35–36:
+1. **Blocked at r41 c15–17** (entity1 dormant body is a solid obstacle, same failure mode as state 2 but at r41 instead of r37): WARNING, no movement, same deadlock type.
+2. **Jump succeeds, block lands at r40–41 c14–18**: Entity1 dormant at r41–43 c15–17 IS within the landing zone (r41 c15–17 overlaps r40–41 c14–18 at r41 c15–17). This would mean entity1 dormant does NOT block the jump — possibly because state 1 entity1 is the WIN target itself, and block + entity2 body overlap = WIN.
+3. **Win triggered**: block entering entity2 interior (r40–41 c14–18) triggers GameState.WIN regardless of entity1 position.
+
+This has never been tested in any session because all routes since session 17 have collected the cross. The cross collection was assumed necessary for the route; it has instead been the source of the deadlock.
+
+**State 1 route design**:
+
+Skip cross. Collect ring A only (timer reset sufficient). Approach entity2 from above at c14–18. Entity1 dormant throughout.
+
+```
+Step  1:  RIGHT            → r40–41 c34–38
+Steps 2–7: UP×6            → r10–11 c34–38
+Steps 8–11: LEFT×4         → r10–11 c14–18
+Step  12:  DOWN            → r15–16 c14–18   [ring A → timer reset to 42]
+Steps 13–16: DOWN×4        → r35–36 c14–18   [entity1 at r41–43, state 1; LOCUS handoff]
+```
+
+16 hardcoded steps. LOCUS receives step 32 (session total). Timer at handoff: 42 − 4×2 = **34 remaining** (same as session 52 after ring A reset). LOCUS has **39 steps** (70 − 15 L1 − 16 L2 probe). Entity1 dormant at r41–43 c15–17. Cross NOT collected. No tracking mode.
+
+Timer risk: initial L2 timer (before ring A reset) must be ≥ 22 cols (11 steps × 2) to survive steps 1–11. Based on observable timer start of 42 cols per session: after 11 steps = 42 − 22 = 20 remaining; step 12 ring A reset to 42. Safe margin exists.
+
+**Session 53 standing order**:
+
+> **Objective**: Test Hypothesis 3E — state 1 entity2 approach (cross never collected, entity1 dormant).
+>
+> **LOCUS receives step 32**: block at r35–36 c14–18, entity1 dormant at r41–43 c15–17 (NOT at r37–39 — no tracking), timer 34.
+>
+> LOCUS MUST:
+> 1. Confirm entity1 is at r41–43 c15–17 (dormant, value 9). Confirm entity1 is NOT at r37–39.
+> 2. Attempt DOWN from r35–36 c14–18. Report result:
+>    - If WARNING "no movement": report entity1 position. Is it still at r41–43? Hypothesis 3E blocked — same deadlock type as state 2 (entity1 dormant body solid).
+>    - If block moves to r40–41: report whether GameState changes (WIN?). Report entity1 position after move.
+>    - If WIN: report success and all visible state changes.
+> 3. If blocked, attempt DOWN 2–3 more times (same protocol as session 52). Report any change.
+> 4. If still blocked after 3 attempts: report null result for 3E. Move UP to r30–31 and explore available space. Do not waste remaining 39 steps at the deadlock.
+
+---
+
+### Phase 3 — Record Updates Required
+
+1. **@LAT-10LON10 (Game State)**: sal = 30 (FOCUS updated session 52). Hypothesis 3A REFUTED. Session 53 plan: State 1 approach (Hypothesis 3E). conf: raise to 210 (deadlock mechanism now fully characterized). Rev up.
+
+2. **@LAT20LON-30 (Mechanics Record)**: Add blocked-move timer rule: timer ticks ONLY on successful block movement; blocked moves consume no timer. Add Hypothesis 3A null result (entity1 collision does not trigger state change). conf: raise to 235→240. Rev up.
+
+3. **@BELIEF:LAT-50LON-40 (mystery entity / entity1 state machine)**: Add state 1 description more precisely: entity1 dormant at r41–43 c15–17 has NOT been tested as a physical obstacle when block approaches from above. Hypothesis 3E assumes dormant entity1 may not block (or may WIN) differently from tracker entity1. conf: lower slightly (140→130) to reflect the open 3E question.
+
+`[/dc]`
