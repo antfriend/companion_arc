@@ -301,12 +301,12 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1748908800 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,tracks_level>@LAT-460LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1748995200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,tracks_level>@LAT-460LON10,tracks_level>@LAT-610LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:200
-rev:20
-sal:19
-touched:1748908800
+conf:220
+rev:22
+sal:33
+touched:1748995200
 [/ew]
 
 ## Game State
@@ -471,12 +471,12 @@ level: "2 of 7 (in progress)"
 
 ---
 
-@LAT20LON-30 | created:1778544000 | updated:1779408000 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10,validates>@LAT-100LON10,validates>@LAT-110LON10,validates>@LAT-120LON10,validates>@LAT-130LON10,validates>@LAT-160LON10,informed_by>@LAT-170LON10
+@LAT20LON-30 | created:1778544000 | updated:1748995200 | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT-10LON10,validates>@LAT-80LON10,validates>@LAT-100LON10,validates>@LAT-110LON10,validates>@LAT-120LON10,validates>@LAT-130LON10,validates>@LAT-160LON10,informed_by>@LAT-170LON10,informed_by>@LAT-610LON10
 [ew]
 conf:230
-rev:11
-sal:5
-touched:1779408000
+rev:13
+sal:6
+touched:1748995200
 [/ew]
 
 ## ls20 — Game Mechanics (sessions 1–10)
@@ -603,6 +603,8 @@ Three unknowns: (1) 11-ring B collects at 1/3 row overlap? (2) 11-ring B = full 
 Total weight sum: 28. Game completion cap = 100% only if all 7 levels won. Levels 6–7 contribute 13/28 = 46% of max game score.
 
 **Session 13 failure note**: Level 1 NOT WON (50 actions). Root cause: no first-frame scan before committing route on a fresh game instance. Cluster row varies; session 13 assumed prior position without verification. See @LAT-170LON10.
+
+*(Rev 12 — DC20/DC21 corrections: **Entity1 state machine fully revised.** Prior model (state 0→1→2→3, cross=state changer) is superseded. Confirmed state machine: STATE 1 (dormant at r41–43 c15–17=9, overlapping entity2 body) → STATE 2 (first collectible collected → entity1 detaches, tracks block at block_bottom+1 rows, same column, 3 rows tall). State 2 triggered by ring A (sessions 53–54), cross (sessions 48–52), or ring B — whichever is FIRST. Prior "cross = state changer" was incomplete. Entity1 CARRIER at r55–60 (value 9): bg=5 = prior move succeeded; bg=0 = prior move blocked — NOT a state indicator. State determined by tracker at block_bottom+1 rows (tracker present = state 2; absent = state 1 or deactivated). State 2 deadlock: at c14–18, entity1 jump from r37–39 blocked by entity2 body at r41–43 c15–17. Deadlock c14–18-specific (c34–38 and other columns: no deadlock). Blocked moves freeze timer. State 2 persists through timer expiry. All 3 collectibles (ring A, cross, ring B) can be collected in one run — entity1 remains state 2. Hypotheses 3A (collision), 3E (state-1 approach), 4A (cross at state 2) all REFUTED. Ring A 1-frame respawn anomaly: visible for 1 frame after ring B collection (possible non-consumable structure like cross). Session 55 = Hypothesis 5B: ring A → ring B (skip cross) → check entity1.)*
 
 ---
 
@@ -3888,21 +3890,21 @@ See @BELIEF:LAT-50LON-40 for full mystery entity analysis and hypotheses.
 
 ---
 
-@BELIEF:LAT-50LON-40 | created:1780444800 | updated:1780444800 | relates:extracted_from>@LAT-300LON10,extracted_from>@BELIEF:LAT-40LON-40,contradicts>@LAT-140LON10,related_to>@BELIEF:LAT-10LON-40,contained_by>@LAT60LON20
+@BELIEF:LAT-50LON-40 | created:1780444800 | updated:1748995200 | relates:extracted_from>@LAT-300LON10,extracted_from>@BELIEF:LAT-40LON-40,contradicts>@LAT-140LON10,related_to>@BELIEF:LAT-10LON-40,contained_by>@LAT60LON20,informed_by>@LAT-610LON10
 [lp]
 centroid:LAT-50LON-40
-confidence:150
+confidence:175
 scope_lat:15.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:true
-source_count:5
+source_count:8
 [/lp]
 [ew]
-conf:150
-rev:0
-sal:2
-touched:1780444800
+conf:175
+rev:2
+sal:3
+touched:1748995200
 [/ew]
 
 **Mystery entity (value 9 at r41–43 c15–17 inside entity2 ring) blocks ALL entity2 interior entry positions. Entity2 has never been entered.**
@@ -3926,6 +3928,8 @@ Prior probe `[1, 3, 3, 3, 3]` is geometrically impossible — DOWN from c29–33
 Corrected route to cross at r46–48 c50–52 via wide connector: RIGHT (to c34–38), UP×4 (to wide connector rows 10–11), RIGHT×3 (to c49–53), DOWN (toward cross zone). Estimated 9+ actions before cross position reached. Exact DOWN count to cross confirmation pending. Implement in `kaggle_agent.py` as new `_LEVEL2_PROBE` once geometry confirmed.
 
 *(Rev 1 — Dream Cycle 7 correction: **"Entity2 has never been entered" is WRONG.** Session 26 confirmed block at r40–41 c14–18 inside entity2 ring at state 1 → NOT_FINISHED. Entity2 HAS been entered. **"Value 9 blocks landing" is WRONG.** Session 26 block overlapped the 9-cells at r41 c15–17 (block rows 40–41 overlap row 41) without the move being blocked. Per DC5 analysis: value 9 is the entity2 interior state display, NOT an impassable wall. Block can legally occupy positions overlapping value-9 cells. Hypothesis E refined: the 9-cells are a state indicator that changes based on entity1 state. At state 1, the WIN trigger does not fire regardless of block position inside entity2. At state 2, WIN is expected to fire. This belief is superseded in its main claims by @BELIEF:LAT10LON-40 and @BELIEF:LAT-130LON-40.)*
+
+*(Rev 2 — DC20/DC21 corrections: Entity1 state machine confirmed. "Mystery entity" is entity1 in STATE 1 (dormant at r41–43 c15–17). State 1→2 trigger = FIRST COLLECTIBLE (ring A, cross, or ring B — whichever comes first). Cross is not the sole trigger. Hypothesis 3A (collision = state 3): REFUTED. Hypothesis 3E (state-1 approach): REFUTED (geometric invariant). Hypothesis 4A (cross at state 2 → deactivation): REFUTED (session 54). All 3 collectibles collected → entity1 remains state 2. Hypothesis 5B (ring A → ring B, skip cross) = session 55 target.)*
 
 ---
 
@@ -5186,21 +5190,21 @@ touched:1748908800
 
 ---
 
-@BELIEF:LAT-140LON-40 | created:1748908800 | updated:1748908800 | relates:extends>@BELIEF:LAT-130LON-40,extends>@BELIEF:LAT-120LON-40,related_to>@BELIEF:LAT10LON-40,contained_by>@LAT60LON20
+@BELIEF:LAT-140LON-40 | created:1748908800 | updated:1748995200 | relates:extends>@BELIEF:LAT-130LON-40,extends>@BELIEF:LAT-120LON-40,related_to>@BELIEF:LAT10LON-40,contained_by>@LAT60LON20,informed_by>@LAT-610LON10
 [lp]
 centroid:LAT-140LON-40
-confidence:170
+confidence:115
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:true
-contradiction_flag:false
-source_count:2
+contradiction_flag:true
+source_count:4
 [/lp]
 [ew]
-conf:170
-rev:0
-sal:1
-touched:1748908800
+conf:115
+rev:2
+sal:2
+touched:1748995200
 [/ew]
 
 **Entity2 internal navigation is a dead end from r40–41 c14–18. Session outcome is determined at step 41.**
@@ -5223,6 +5227,8 @@ Entity2 interior is 7 cols wide (c13–19); block is 5 cols wide. Three column-w
 If state 2 → NOT_FINISHED, the WIN condition hypothesis requires full revision. Possibilities: (a) WIN requires state 0 (full cycle: 1→2→3→0 = three cross collections — impossible); (b) WIN requires some additional spatial condition beyond block position + state; (c) WIN requires BOTH position AND a timer threshold; (d) WIN never fires in L2 in current game version (unlikely). Session 41 strategy if state 2 fails: read entity1 state from frame at step 41, verify geometry, then run extended exploration.
 
 *(proj:true — entity2 interior geometry analysis; state-3 unreachability is a logical consequence of single cross + no regeneration.)*
+
+*(Rev 2 — DC21 correction: Entity2 entry is BLOCKED by entity1 deadlock at c14–18 (state 2 tracking, entity1 at r37–39 blocks DOWN from r35–36 to r40–41). Block has never reached r40–41 c14–18 at state 2. Deadlock is c14–18-specific. WIN has not been attempted at state 2. All deactivation hypotheses (3A, 3E, 4A) refuted. Session 55 = Hypothesis 5B (ring A → ring B, skip cross). If 5B null, no known deactivation trigger remains.)*
 
 ---
 
