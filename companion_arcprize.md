@@ -9989,3 +9989,172 @@ _LEVEL2_ROUTE = [
 **LOCUS task at handoff (L2 step 43, r35-36 c14-18, timer 17 steps):**
 1. Check entity1 tracker at r37-39 c14-18 (value 9). If ABSENT → state 3 → DOWN from r35-36 → entity2 → WIN.
 2. If PRESENT → 8B REFUTED. Report and escalate to DC28. Note: all 8 collectible hypotheses will then be exhausted; DC28 must test non-collectible mechanism (temporal, deadlock-N, or structural).
+
+---
+
+`[dc]`
+title: Dream Cycle 25 — Post-Sessions 57–59: 6B/8A Refuted; Collectible Space Exhausted; Non-Collectible Mechanism Projection for DC28+
+session: 60
+anchors: @LAT-10LON10, @BELIEF:LAT-50LON-40, @BELIEF:LAT-140LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+---
+
+### Phase 1 — Replay (Sessions 57–59 Synthesis)
+
+**Parameters**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:41, highest in file), @BELIEF:LAT-50LON-40 (sal:6), @BELIEF:LAT-140LON-40 (sal:5). Sources: @LAT-650LON10 (session 57), @LAT-660LON10 (session 58), @LAT-670LON10 (session 59).
+
+---
+
+**Cluster A: Hypothesis refutation record — sessions 57–59**
+
+Sessions 57–59 executed DC24, DC25, and DC26 probes respectively:
+
+| Session | Design | Result |
+|---------|--------|--------|
+| 57 | DC24 — 6B via LOCUS oscillation | INCONCLUSIVE — LOCUS failed ring B re-collect after timer expiry |
+| 58 | DC25 — 6B hardcode (ring B ×2) | **6B REFUTED STRUCTURAL** — tracker blocks ring B zone (value 11) in state 2 |
+| 59 | DC26 — 8A: ring B → ring A | **8A REFUTED** — entity1 tracker present at r37–39 c14–18 at handoff |
+
+All tested collectible hypotheses (8 total, pending 8B):
+
+| # | Hypothesis | Result | Session |
+|---|-----------|--------|---------|
+| 3A | Collision → state 3 | REFUTED | 52 |
+| 3E | State-1 approach | REFUTED (geometric invariant) | 53 |
+| 4A | Cross at state 2 → deactivation | REFUTED | 54 |
+| 5B | Ring A → ring B | REFUTED (×2 runs) | 55 |
+| 5C | Ring B first | REFUTED | 56 |
+| 6A | Timer expiry at state 2 | REFUTED (direct observation) | 56 |
+| 6B | Ring B ×2 after timer reset | REFUTED STRUCTURAL | 58 |
+| 8A | Ring B (first) + ring A (second) | REFUTED | 59 |
+| **8B** | Ring B + cross + ring A | **PENDING — DC27, session 60** | — |
+
+If 8B null: all 9 collectible hypotheses exhausted. DC28 must probe non-collectible mechanism.
+
+---
+
+**Cluster B: Entity1 tracker geometry — refined model**
+
+Sessions 58–59 together produce a refined tracker understanding:
+
+- **Tracker solid vs ring B cells (value 11)**: entity1 tracker cannot enter ring B display zone (r51–53 c40–42 = value 11). LEFT from c44–48 to c39–43 at state 2 is blocked (tracker path overlaps ring B). This is why Hypothesis 6B failed structurally — ring B is only collectible in state 1 (entity1 dormant, no tracker).
+- **Tracker in entity2 ring boundary**: at deadlock (block r35–36 c14–18), tracker at r37–39 c14–18. r38 = entity2 ring top (normally value 3), r39 = entity2 ring interior (normally value 5). Tracker value 9 overwrites these cells. Tracker CAN occupy ring wall and void-interior cells.
+- **Deadlock bottom confirmed**: r35–36 c14–18 is the lowest reachable block position at c14–18 in state 2. DOWN from r35–36 blocked by tracker at r37–39 ⊂ 5-row path r37–41. Timer FROZEN on entity1-deadlock (confirmed session 52, reconfirmed session 59).
+- **Tracker source_count**: deadlock at c14–18 directly observed in sessions 50, 52, 59. Geometry r37–39 c14–18 confirmed in session 59 step-57 frame. source_count = 4.
+
+---
+
+**Cluster C: Timer mechanics — stable confirmed facts**
+
+- Timer = 21 actions = 42 cols (2 cols/action). Confirmed DC24 analysis.
+- Void-blocked moves tick timer (YES). Entity1-deadlock moves FREEZE timer (YES).
+- Ring A and ring B collections reset timer to 21 steps = 42 cols.
+- Cross collection: no timer reset (assumed; non-consumable; no confirmatory frame).
+- Ring A collectible via any approach direction (LEFT or DOWN to r15–16 c14–18). Confirmed session 59.
+- Ring B respawns after timer expiry. Ring A respawn behavior after session-59 expiry not verified in final frame.
+
+---
+
+**Cluster D: Entity2 ring deadlock is geometrically universal**
+
+All three valid 5-wide column windows inside entity2 ring interior (c13–17, c14–18, c15–19) deadlock at state 2:
+
+- Block at any valid entry column → tracker at block_bottom+1 through block_bottom+3 (same column).
+- DOWN from any of these positions → tracker in 5-row path → BLOCKED.
+- Lateral entry (LEFT/RIGHT) blocked by ring walls at c12 and c20 for any 5-wide block.
+- Entry from below (UP through ring bottom wall at r46) blocked by wall.
+
+**Conclusion**: Entity2 entry at state 2 is geometrically impossible until entity1 tracker deactivates. State 3 (deactivated tracker) is required. State 3 trigger is completely unknown.
+
+---
+
+### Phase 2 — Projection: Non-Collectible Mechanism Hypotheses for DC28+
+
+**Parameters**: 50 walks × length 10, seeded from @BELIEF:LAT-50LON-40 (conf:115) + @BELIEF:LAT-140LON-40 (conf:65) into coordinate void at LAT-200LON-40, LAT-210LON-40, LAT-220LON-40, LAT-230LON-40. Focus: non-collectible triggers for entity1 state 3.
+
+---
+
+**Projection A — Hypothesis 9A: N consecutive deadlock events trigger state 3**
+
+Seeding into void at LAT-200LON-40.
+
+The deadlock at r35–36 c14–18 is repeatable: each DOWN attempt is blocked (entity1-deadlock), no timer consumed, block stays at r35–36. LOCUS can issue DOWN indefinitely from this position.
+
+**Known floor**: session 52 — 13 consecutive blocked DOWN attempts → no state change. Session 59 — LOCUS issued approximately 27 DOWN-blocked events → no state change visible before budget exhausted.
+
+**Hypothesis**: entity1 deactivates after exactly N blocked-DOWN events from r35–36 c14–18. N > 27 (lower bound from session 59). If N ≤ 80, LOCUS can reach it within combined session 59 (~27) + DC28 handoff budget (53 steps → 53 additional blocked DOWNs). Cumulative count across sessions may not matter if state resets on level entry — in that case N must be reachable within a single LOCUS budget of 53.
+
+**DC28 design (if 8B refuted)**: After handoff at r35–36 c14–18 (timer 17 steps, entity1 at r37–39), LOCUS executes: DOWN (blocked) × 53. Check entity1 after every 10 blocked DOWNs. If state 3 triggered (entity1 absent) → execute WIN (DOWN from r35–36 → entity2). Total: 53 deadlock events within handoff budget.
+
+**Confidence**: 80 (medium-high). Deadlock is a unique entity1–block interaction; count-based triggers are a common game mechanic.
+
+---
+
+**Projection B — Hypothesis 9B: N full timer cycles at state 2 trigger state 3**
+
+Seeding into void at LAT-210LON-40.
+
+Session 56 confirmed: 1 full timer cycle at state 2 → entity1 remains STATE 2 (6A REFUTED). N=2 untested.
+
+**Timer cycle protocol**: from r35–36 c14–18, UP to non-deadlock position (e.g., r30–31 c14–18, or RIGHT to c19–23 then oscillate). Each UP/DOWN pair in non-deadlock zone ticks 2 timer cols. 21 pairs = 1 full cycle. Must avoid c14–18 DOWN (deadlock) and ring B zone LEFT. c44–48 or c49–53 oscillation zones are safe.
+
+**Budget analysis**: each timer cycle costs ~42 LOCUS steps. With 53 LOCUS steps at handoff, LOCUS cannot complete 1 full additional timer cycle (42 steps) AND check entity1 (1 step) within budget (43 steps needed > 53 available is fine, but ring B re-collection adds ~20 steps). Without recollecting a ring first, timer will expire from whatever remains at handoff (~17 steps = 34 cols). After expiry: ring B respawns, state preserved. One additional cycle = ~21 more steps. Net from handoff: 17 (remaining) → expiry → 21-step cycle → expiry. Two expiries within 53 steps: 17+21=38 steps to 2nd expiry, 15 steps remaining for entity1 check. **Feasible in one session.**
+
+**DC28 design variant (9A+9B combined)**: At handoff (r35–36 c14–18, timer 17 steps), execute: (1) DOWN×10 deadlock events [0 timer]; (2) UP×1 to r30–31 c14–18 [1 timer col]; (3) oscillate UP/DOWN at r25–31 c14–18 to exhaust remaining timer [~16 steps]; (4) timer expires, ring B respawns; (5) navigate to ring B and collect (20 steps) [timer reset 42]; (6) descend to deadlock, DOWN×22 blocked DOWNs. Total LOCUS steps: 10+1+16+20+4+22=73 — exceeds 53-step budget. Requires max_steps=115+.
+
+Simpler: dedicate DC28 purely to 9A (maximum deadlocks in 53 steps). Save 9B for DC29 with extended max_steps.
+
+**Confidence**: 70 (medium).
+
+---
+
+**Projection C — Hypothesis 9C: N cross visits at state 2 trigger state 3**
+
+Seeding into void at LAT-220LON-40.
+
+Cross at r45–46 c49–53 is non-consumable. DC27 visits it once (as second collectible). If N=2 or N=3 visits triggers state 3, DC28 can test this.
+
+**Cross re-visit route from deadlock (r35–36 c14–18)**:
+UP×5 → r10–11 c14–18 (5 timer cols; ring A NOT collected, block arrives from below). RIGHT×7 → r10–11 c49–53 (14 timer cols). DOWN×7 → r45–46 c49–53 [cross visit 2]. Timer consumed: 5+14+14=33 cols from 34 remaining at handoff → 1 col left → expiry likely on return. **Timer is the binding constraint.**
+
+**Modified DC28 ring A midpoint**: from deadlock, UP×1→r30–31→UP→r25–26→...→r15–16 c14–18 [ring A: timer reset 42]. Then UP×1→r10–11→RIGHT×7→r10–11 c49–53→DOWN×7→cross. Timer from ring A: 42−2(UP to r10)−14(RIGHT×7)−14(DOWN×7)=12 cols left. Return to deadlock: UP×7→r10–11→LEFT×7→r10–11 c14–18→DOWN→r15–16[ring A consumed]→DOWN×4→r35–36. Timer: 12−2−14=impossible (negative). Ring A was already consumed. Timer expires on return.
+
+**Conclusion**: cross re-visit without additional ring B collection exhausts timer. A DC28 design must either: (a) add a ring B recollect mid-route, or (b) accept timer expiry and do entity1 check after re-entering state 2 via ring B post-expiry. Possible but complex.
+
+**Confidence**: 65 (low-medium). Cross non-consumable mechanic is unexplored. N-visit trigger is speculative but testable.
+
+---
+
+**Projection D — Hypothesis 9D: Entity1 carrier contact triggers state 3**
+
+Seeding into void at LAT-230LON-40.
+
+Entity1 carrier at r55–60 c1–10 (observed from level 2 start frames). This zone has never been intentionally approached. Geometry of c1–10 at rows 40–55 is completely unknown.
+
+**Hypothesis**: block reaching entity1 carrier zone (r55–60 c1–10) at state 2 triggers state 3 — entity1 "recognizes" block arrival and deactivates.
+
+**Geometry obstacles**: left corridor c14–18 is passable rows 15–37. c1–13 at rows 35–37 is unknown. LEFT from r35–36 c14–18 → r35–36 c9–13 may be blocked (unknown). And r35–36 c9–13 at the block position would have c12 = entity2 ring left wall in range → likely blocked.
+
+**LOW PRIORITY**: pursue only after 9A, 9B, 9C exhausted. Requires significant map exploration with high uncertainty.
+
+**Confidence**: 40 (low).
+
+---
+
+### Phase 3 — Record Updates Required
+
+1. **@BELIEF:LAT-50LON-40** (entity1 state machine): Add Rev 6 note — 6B REFUTED STRUCTURAL (tracker solid vs ring B value-11; session 58). 8A REFUTED (ring B + ring A; session 59). 8 collectible hypotheses exhausted. Session 60 = DC27 (8B: ring B + cross + ring A). If 8B null: 9C exhausted; DC28 = non-collectible mechanism — primary candidate 9A (N deadlock events, max ~53 in LOCUS budget). conf: 115→90. rev: 5→6. sal: 6→7.
+
+2. **@BELIEF:LAT-140LON-40** (entity2 approach): Add Rev 6 note — deadlock universal across all valid entry columns (c13–17, c14–18, c15–19). Lateral and below-ring approaches geometrically blocked. Entity2 interior unreachable at state 2 until entity1 deactivated. DC28 designs: 9A > 9B > 9C > 9D. conf: 65→45. rev: 5→6. sal: 5→6.
+
+3. **Write @BELIEF:LAT-200LON-40**: Non-collectible mechanism hypothesis space. projection_flag:true. confidence:80. Contains: 9A (N deadlock events — highest priority, testable in DC28 53-step LOCUS budget), 9B (N timer cycles — requires extended max_steps or 9A+9B combined), 9C (N cross visits — timer-constrained, complex route), 9D (carrier contact — low priority, unexplored geometry). DC28 first target: 9A — issue DOWN blocked×53 from r35–36 c14–18, check entity1 after each 10.
+
+4. **@LAT-10LON10** (Game State): sal: 38→39 (session 59 touch). Hypothesis tally: 8 collectible refuted + 1 pending (8B). Session 60 = DC27. conf: 240→245. rev: increment to current.
+
+`[/dc]`
