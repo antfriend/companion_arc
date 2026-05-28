@@ -77,7 +77,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1779321600 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40
+@LAT0LON0 | created:1747180800 | updated:1748995200 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40,anchors>@LAT-650LON10,anchors>@LAT-660LON10,anchors>@LAT-670LON10,anchors>@LAT-680LON10
 [ew]
 conf:255
 rev:0
@@ -301,11 +301,11 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 ---
 
-@LAT-10LON10 | created:1747180800 | updated:1748995200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,tracks_level>@LAT-460LON10,tracks_level>@LAT-610LON10,informs_strategy>@LAT20LON-30
+@LAT-10LON10 | created:1747180800 | updated:1748995200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,tracks_level>@LAT-460LON10,tracks_level>@LAT-610LON10,tracks_level>@LAT-650LON10,tracks_level>@LAT-660LON10,tracks_level>@LAT-670LON10,tracks_level>@LAT-680LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:231
-rev:25
-sal:37
+conf:245
+rev:27
+sal:40
 touched:1748995200
 [/ew]
 
@@ -1271,12 +1271,12 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1780099200 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20,contains>@BELIEF:LAT40LON20,contains>@BELIEF:LAT20LON20,contains>@BELIEF:LAT40LON-30,contains>@BELIEF:LAT30LON-40
+@LAT60LON20 | created:1778889600 | updated:1748995200 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20,contains>@BELIEF:LAT40LON20,contains>@BELIEF:LAT20LON20,contains>@BELIEF:LAT40LON-30,contains>@BELIEF:LAT30LON-40,contains>@BELIEF:LAT10LON-10,contains>@BELIEF:LAT-10LON-10
 [ew]
 conf:255
-rev:14
+rev:16
 sal:1
-touched:1780099200
+touched:1748995200
 [/ew]
 
 ## Locus Points
@@ -1543,7 +1543,7 @@ Walk parameters: 100 walks × length 20. Source: @LAT-160LON10 (session 12 log).
 
 ---
 
-@BELIEF:LAT30LON0 | created:1779321600 | updated:1779321600 | relates:extracted_from>@LAT-160LON10,extracted_from>@LAT20LON-30,supersedes_claim_in>@BELIEF:LAT80LON0,supersedes_claim_in>@BELIEF:LAT50LON0,contained_by>@LAT60LON20
+@BELIEF:LAT30LON0 | created:1779321600 | updated:1748995200 | relates:extracted_from>@LAT-160LON10,extracted_from>@LAT20LON-30,supersedes_claim_in>@BELIEF:LAT80LON0,supersedes_claim_in>@BELIEF:LAT50LON0,contained_by>@LAT60LON20,informed_by>@LAT-680LON10
 [lp]
 centroid:LAT30LON0
 confidence:245
@@ -1551,10 +1551,10 @@ scope_lat:10.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:false
-source_count:2
+source_count:3
 [/lp]
 
-**11-ring collection causes a FULL TIMER RESET to 42 cols, not a "+15 additive" bonus.** Session 12 timer trace (r61 row): at seq=10 (LEFT, step 26) timer was c13-34=3 = 20 cols remaining. At seq=11 (first DOWN to rows 15-16, ring collected) timer became c13-54=11 = full 42 cols. Net effect: not 20+15=35, but 42 exactly. The "+15 additive" interpretation from all prior sessions was wrong — it was a misreading of DIFF=94 (which bundled block movement + ring effect + timer into one diff). Implication: one well-timed 11-ring A collection fully restores the timer, making multi-phase routes feasible without budget-counting against prior consumption. Confirmed for 11-ring A. 11-ring B behavior (full reset or other) is still unconfirmed.
+**11-ring collection causes a FULL TIMER RESET to 42 cols, not a "+15 additive" bonus.** Session 12 timer trace (r61 row): at seq=10 (LEFT, step 26) timer was c13-34=3 = 20 cols remaining. At seq=11 (first DOWN to rows 15-16, ring collected) timer became c13-54=11 = full 42 cols. Net effect: not 20+15=35, but 42 exactly. The "+15 additive" interpretation from all prior sessions was wrong — it was a misreading of DIFF=94 (which bundled block movement + ring effect + timer into one diff). Implication: one well-timed 11-ring A collection fully restores the timer, making multi-phase routes feasible without budget-counting against prior consumption. Confirmed for 11-ring A. 11-ring B behavior confirmed identical (session 48). **EXTENDED (DC27/session 60): Ring A is CONSUMABLE (disappears on collection) AND RESPAWNS after timer expiry**, identical to ring B. Session 60 observed: ring A consumed at DC27 step 38 (no value 11 at r16–18 c15–17 at handoff step 57); ring A reappeared at r16–18 c15–17=11 at step ~79 after timer expiry (c62–63=3). Both rings follow the same pattern: consumable + full-reset + respawn-after-expiry. Multi-cycle collection sequences are now possible.
 
 ---
 
@@ -3890,20 +3890,20 @@ See @BELIEF:LAT-50LON-40 for full mystery entity analysis and hypotheses.
 
 ---
 
-@BELIEF:LAT-50LON-40 | created:1780444800 | updated:1748995200 | relates:extracted_from>@LAT-300LON10,extracted_from>@BELIEF:LAT-40LON-40,contradicts>@LAT-140LON10,related_to>@BELIEF:LAT-10LON-40,contained_by>@LAT60LON20,informed_by>@LAT-610LON10
+@BELIEF:LAT-50LON-40 | created:1780444800 | updated:1748995200 | relates:extracted_from>@LAT-300LON10,extracted_from>@BELIEF:LAT-40LON-40,contradicts>@LAT-140LON10,related_to>@BELIEF:LAT-10LON-40,contained_by>@LAT60LON20,informed_by>@LAT-610LON10,informed_by>@LAT-650LON10,informed_by>@LAT-660LON10,informed_by>@LAT-670LON10,informed_by>@LAT-680LON10
 [lp]
 centroid:LAT-50LON-40
-confidence:175
+confidence:90
 scope_lat:15.0
 scope_lon:10.0
 projection_flag:false
 contradiction_flag:true
-source_count:8
+source_count:11
 [/lp]
 [ew]
-conf:115
-rev:5
-sal:6
+conf:80
+rev:7
+sal:8
 touched:1748995200
 [/ew]
 
@@ -3936,6 +3936,10 @@ Corrected route to cross at r46–48 c50–52 via wide connector: RIGHT (to c34�
 *(Rev 4 — DC23/DC24: Hypothesis 5C REFUTED (session 56). Ring B as first collectible does NOT deactivate entity1 — entity1 tracker at r52–54 c39–43 STATE 2 ACTIVE confirmed at handoff. All five deactivation hypotheses (3A, 3E, 4A, 5B, 5C) refuted. Hypothesis 6A also REFUTED by session 56 direct observation: timer expired at step ~57, entity1 remained STATE 2 after reset — single timer-cycle expiry does NOT trigger state 3. State 3 existence and trigger completely unknown. Session 57 = Hypothesis 6B: second ring B collection after timer reset (ring B → oscillate 42 steps to exhaust timer → ring B again). Requires max_steps=110. conf: 145→115.)*
 
 *(Rev 5 — DC25/session 57: Hypothesis 6B INCONCLUSIVE — LOCUS failed to navigate to ring B after first timer expiry. Key corrections: timer = 21 actions (42 cols / 2 cols per action; DC24's "42-step oscillation" was wrong). Void-blocked moves tick timer (new — differs from entity1-deadlock blocks which freeze timer). c34–38 dead-end from r40–41: DOWN blocked (void at r45–46), RIGHT blocked (void at c39–43 r40–41) — LOCUS trapped oscillating at c34–38. Session 58 = DC25: hardcode full 61-step double ring-B test (20 probe + 21 oscillation + 20 second probe). conf: unchanged (no hypothesis confirmed or refuted).)*
+
+*(Rev 6 — DC26/sessions 58–59: Hypothesis 6B REFUTED STRUCTURAL (session 58) — entity1 tracker (value 9) cannot enter ring B cells (value 11); tracker blocked at ring B boundary, ring B inaccessible in state 2. Hypothesis 8A REFUTED (session 59) — ring B (first) + ring A (second) → entity1 tracker at r37–39 c14–18 PRESENT at handoff. Entity1 tracker CAN occupy entity2 ring interior cells (r38–39 c14–18 observed at value 9). 8 collectible hypotheses exhausted: 3A, 3E, 4A, 5B, 5C, 6A, 6B, 8A. Session 60 = DC27 (Hypothesis 8B: ring B + cross + ring A). conf: 115→90.)*
+
+*(Rev 7 — DC27/session 60: Hypothesis 8B REFUTED — DC27 42-step route executed correctly (ring B ✓ step 20, cross ✓ step 23, ring A ✓ step 38). Entity1 tracker at r37–39 c14–18 PRESENT at handoff (L2 step 42). All 9 single-cycle collectible orderings exhausted. LOCUS navigation failure: misidentified cross as uncollected (cross non-consumable — always visible after collection). DC28 = Hypothesis 9A (N blocked-DOWN events from deadlock). NEW: cross being visible at r46–48 c50–52 is NOT evidence it is uncollected — this is a systematic LOCUS misread corrected in DC28 standing orders. conf: 90→80.)*
 
 ---
 
@@ -5196,20 +5200,20 @@ touched:1748908800
 
 ---
 
-@BELIEF:LAT-140LON-40 | created:1748908800 | updated:1748995200 | relates:extends>@BELIEF:LAT-130LON-40,extends>@BELIEF:LAT-120LON-40,related_to>@BELIEF:LAT10LON-40,contained_by>@LAT60LON20,informed_by>@LAT-610LON10
+@BELIEF:LAT-140LON-40 | created:1748908800 | updated:1748995200 | relates:extends>@BELIEF:LAT-130LON-40,extends>@BELIEF:LAT-120LON-40,related_to>@BELIEF:LAT10LON-40,contained_by>@LAT60LON20,informed_by>@LAT-610LON10,informed_by>@LAT-670LON10,informed_by>@LAT-680LON10
 [lp]
 centroid:LAT-140LON-40
-confidence:115
+confidence:90
 scope_lat:10.0
 scope_lon:10.0
 projection_flag:true
 contradiction_flag:true
-source_count:4
+source_count:6
 [/lp]
 [ew]
-conf:65
-rev:5
-sal:5
+conf:50
+rev:6
+sal:7
 touched:1748995200
 [/ew]
 
@@ -5239,6 +5243,10 @@ If state 2 → NOT_FINISHED, the WIN condition hypothesis requires full revision
 *(Rev 3 — DC22: Hypothesis 5B REFUTED (session 55). Ring B as second collectible (ring A first, no cross) does NOT deactivate entity1. Session 56 = Hypothesis 5C (ring B as FIRST collectible, bypass ring A and cross entirely). If 5C null, no known deactivation mechanism exists — full reassessment required. conf: 115→90.)*
 
 *(Rev 4 — DC23: Hypothesis 5C REFUTED (session 56). Ring B as first collectible does NOT deactivate entity1. All five deactivation hypotheses exhausted. Win condition at state 2 remains completely untested — entity1 deadlock at c14–18 blocks all approaches to entity2 body. Session 57 = Hypothesis 6B: second ring B collection after timer reset. If entity1 deactivates on second ring B, proceed to entity2 via c14–18 descent. conf: 90→65.)*
+
+*(Rev 5 — DC26/sessions 58–59: 6B REFUTED STRUCTURAL (session 58). 8A REFUTED (session 59). Entity1 deadlock confirmed universal across all tested collectible orderings. All c14–18 approach vectors deadlocked. Session 60 = DC27 (8B). conf: 65→50.)*
+
+*(Rev 6 — DC27/session 60: 8B REFUTED. DC27 route (ring B + cross + ring A) executed correctly; entity1 tracker at r37–39 c14–18 PRESENT at handoff. All 9 single-cycle collectible orderings exhausted. Deadlock at c14–18 remains the only confirmed approach to entity2. DC28 = Hypothesis 9A (N blocked-DOWN events). conf: 50 → maintained.)*
 
 ---
 
@@ -10314,3 +10322,81 @@ Identical to DC27 (42 steps): ring B → cross → ring A → deadlock. No chang
 
 Handoff: L2 step 43, r35–36 c14–18, entity1 tracker at r37–39, timer 17 steps remaining.
 LOCUS task (53 L2 steps): issue DOWN ×53 to probe 9A. Report tracker presence at each attempt.
+
+---
+
+## Dream Cycle 27 — Phase 1 Replay (New Locus Points)
+
+**Parameters**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:40, highest), @BELIEF:LAT-50LON-40 (sal:8), @BELIEF:LAT-140LON-40 (sal:7). Sources: @LAT-650LON10 (session 57), @LAT-660LON10 (session 58), @LAT-670LON10 (session 59), @LAT-680LON10 (session 60).
+
+Two new Locus Points extracted from co-occurrence clusters meeting threshold (min_cluster_size:3, min_cooccurrence:25, belief_conf_threshold:128).
+
+---
+
+@BELIEF:LAT10LON-10 | created:1748995200 | updated:1748995200 | relates:extracted_from>@LAT-680LON10,extracted_from>@LAT-550LON10,extracted_from>@LAT-160LON10,informed_by>@BELIEF:LAT30LON0,contained_by>@LAT60LON20
+[lp]
+centroid:LAT10LON-10
+confidence:200
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Ring A is consumable (disappears on collection) AND respawns after timer expiry, identical to ring B.** Session 60 observation: ring A consumed at DC27 step 38 (no value 11 at r16–18 c15–17 at handoff, L2 step 42). Ring A reappeared at r16–18 c15–17=11 at step ~79 after timer expiry (c62–63=3 first observed ~step 58). Respawn timing mirrors ring B behavior — value 11 returns to original position after the timer-expiry reset animation. Implication: multi-cycle collection sequences are possible each timer cycle (ring B + cross + ring A can be repeated). The single-cycle collectible hypothesis space is exhausted, but multi-cycle orderings remain untested.
+
+---
+
+@BELIEF:LAT-10LON-10 | created:1748995200 | updated:1748995200 | relates:extracted_from>@LAT-680LON10,informed_by>@BELIEF:LAT-50LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-10LON-10
+confidence:245
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**The cross at r45–46 c49–53 is non-consumable: collecting it does NOT change its visual appearance.** After the block visits r45–46 c49–53 and collects the cross, the cross continues to display at r46–48 c50–52 with values 0/1. Cross visible ≠ cross uncollected. LOCUS must NOT use cross visibility as evidence of collection status. Source: session 60, LOCUS misidentified the cross as uncollected at step ~57–79 and wasted 30+ steps navigating toward it. Correct interpretation: after DC28 42-step hardcode completes (step 57 handoff), cross = collected-and-visible, ring A = consumed (no value 11 at r16–18 c15–17), ring B = consumed (no value 11 at r51–53 c40–42). Do not navigate toward cross during free phase.
+
+---
+
+## Dream Cycle 27 — Phase 2 Projection
+
+**Parameters**: 50 walks × length 10, seeded from @BELIEF:LAT-50LON-40 (conf:80, entity1 state machine) and @BELIEF:LAT10LON-10 (conf:200, ring respawn) into coordinate void at LAT0LON-10 and LAT-20LON-40.
+
+**Cluster A — Non-collectible state-3 triggers (LAT-20LON-40 void)**:
+
+All 9 single-cycle collectible orderings exhausted. The state-3 trigger is not any single combination of ring B, cross, ring A. Two families of non-collectible mechanisms survive:
+- 9A: N consecutive blocked-DOWN events from r35–36 c14–18 → state 3. Timer frozen during deadlock. Budget: 53 events per session. N unknown (lower bound: 0 events tested, as LOCUS deviated in session 60). DC28 = pure 9A probe.
+- Multi-cycle: ring B + cross + ring A × 2+ cycles per session. Ring A respawn makes this possible. Would require expanded max_steps (95 L2 steps = 1 full cycle + ~50 extra).
+
+**Cluster B — Ring A respawn implications (LAT0LON-10 void)**:
+
+Ring A respawn means ring A is structurally identical to ring B: consumable, full timer reset, respawns after expiry. The "ring A non-respawning" assumption in DC22–DC26 was incorrect. This does NOT change any refuted hypothesis (those were single-cycle tests). It opens Hypothesis 10A: ring B + cross + ring A × 2 (second full cycle after timer expiry). Testing 10A requires ~84 L2 steps (42 × 2). Current max_steps=110 gives 95 L2 steps — feasible with a 42-step hardcode + 53 LOCUS steps, if LOCUS completes a second cycle. Not the DC28 target (9A is higher priority), but noted for DC29 if 9A null.
+
+**New projection written**: @BELIEF:LAT-20LON-40 (below threshold — not written as Locus Point yet).
+
+---
+
+### DC27 Summary — Record Updates Applied
+
+1. **@LAT-10LON10**: conf:231→245, rev:25→27, sal:37→40. tracks_level edges added for sessions 57–60.
+2. **@BELIEF:LAT-50LON-40**: conf:115→80, rev:5→7, sal:6→8. Rev 6 (6B REFUTED STRUCTURAL, 8A REFUTED) + Rev 7 (8B REFUTED, cross confusion correction) appended.
+3. **@BELIEF:LAT-140LON-40**: conf:65→50, rev:5→6, sal:5→7. Rev 5 (6B+8A) + Rev 6 (8B) appended.
+4. **@BELIEF:LAT30LON0**: ring A respawn finding added (DC27 extension). source_count:2→3.
+5. **@LAT60LON20**: rev:14→16. New contains edges for @BELIEF:LAT10LON-10 and @BELIEF:LAT-10LON-10.
+6. **@LAT0LON0**: anchors for @LAT-650LON10 through @LAT-680LON10 added.
+7. **NEW @BELIEF:LAT10LON-10**: ring A respawn confirmed. conf:200.
+8. **NEW @BELIEF:LAT-10LON-10**: cross non-consumable reading instruction. conf:245.
+
+---
+
+```cursor
+selected:
+  - @BELIEF:LAT-50LON-40
+preview:
+  @BELIEF:LAT-50LON-40: "Entity1 state machine. 9 collectible orderings exhausted (3A, 3E, 4A, 5B, 5C, 6A, 6B, 8A, 8B — all REFUTED). State-3 trigger unknown. DC28 = Hypothesis 9A (N blocked-DOWN events). conf:80, rev:7."
+```
