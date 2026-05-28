@@ -9593,3 +9593,62 @@ State 3 eliminates the c14–18 deadlock: entity1 no longer tracks at r37–39, 
 4. **memory/project_ls20.md**: Update probe plan to reflect max_steps=110 and WIN route (LEFT×5, UP×2).
 
 `[/dc]`
+
+---
+
+SECTION 1
+
+@LAT-650LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 57 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "bfaeb7ae-af2d-4fe6-ae0d-53171c49f7e0"
+card_id: "965ed7e0-18a6-4038-8703-490ffcbb0a8c"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (86 actions)"
+actions: 101
+levels_completed: 1
+score: 3.571428571428571
+state: "GAME_OVER"
+resets: 0
+level_actions: [15, 86, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, thirty-sixth consecutive confirmation — sessions 10–12, 23–27, 31–57). Level 2 entered; 86 level-2 actions taken (max_steps=110 → L2 budget=95 but GAME_OVER triggered at 101 total); NOT WON. Final state: GAME_OVER. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged.
+
+**Note on action counts**: 101 total actions recorded against 110 max_steps. The GAME_OVER state (not NOT_FINISHED) is new — this suggests the run budget was exhausted in a way that terminated the entire environment run rather than just the current level session. 86 L2 actions > the prior 55-action L2 ceiling. The extended budget (max_steps=110) was effective in granting more L2 steps.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=36]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Thirty-sixth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (thirty-sixth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (thirty-sixth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=110, 101 actions taken before GAME_OVER.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-sixth consecutive confirmation per STATUS exchange confirming 35 consecutive carry-overs).
+
+---
+
+### Level 2 — 86 actions, NOT WON (thirty-sixth attempt)
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 36→37): L
