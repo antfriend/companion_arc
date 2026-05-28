@@ -10218,4 +10218,99 @@ Thirty-ninth confirmation. Route stable. Block entered entity2 interior at r10�
 
 **Key session exchanges**:
 
-1. **FOCUS @LAT-10LON10** (sal: 38→39): LOCUS confirmed Game State fully current. 38 consecutive L1 wins, 38
+1. **FOCUS @LAT-10LON10** (sal: 38→39): LOCUS confirmed Game State fully current. 38 consecutive L1 wins, 38 failed L2 attempts. Session 60 standing order confirmed: Hypothesis 8B — DC27 42-step hardcoded probe (ring B first → cross second → ring A third) to test whether entity1 deactivates.
+
+2. **STATUS**: LOCUS confirmed EPS scan. Hypothesis 8B PENDING. @BELIEF:LAT-50LON-40 EPS highest (nine collectible hypotheses exhausted if 8B null). DC27 42-step probe acknowledged.
+
+---
+
+### DC27 Route Execution (L2 steps 1–42)
+
+DC27 executed correctly. Frame at handoff (total step 57, L2 step 42):
+
+- **Block**: r35–36 c14–18 ✓
+- **Entity1 tracker**: r37–39 c14–18 = **STATE 2 ACTIVE** ✓
+- **Ring B**: r51–53 c39–58=3, no value 11 → **COLLECTED** ✓
+- **Ring A**: r15–19 c9–23=3, no value 11 → **COLLECTED** ✓ (consumable)
+- **Cross**: r46–48 c50–52 visible (non-consumable, expected to remain after collection)
+- **Timer**: c21–54=11 = 34 cols remaining = **17 steps** ✓
+- **Timer expiry marker**: c62–63=8 (no expiry yet at handoff)
+
+### Hypothesis 8B — REFUTED
+
+Entity1 tracker PRESENT at r37–39 c14–18 at deadlock position after collecting ring B → cross → ring A. STATE 2 ACTIVE. Entity2 entry still blocked.
+
+**All 9 collectible hypotheses exhausted**: 3A, 3E, 4A, 5B, 5C, 6A, 6B, 8A, 8B — all REFUTED.
+
+### LOCUS Free Phase (L2 steps 43–95) — Navigation Failure
+
+LOCUS **misidentified the cross as uncollected** (cross is non-consumable — it displays at r46–48 c50–52 regardless of whether it has been collected). At step 57 LOCUS reasoned "cross present, uncollected → navigate to collect cross." This caused LOCUS to exit the deadlock and waste 30+ steps navigating toward the cross zone.
+
+LOCUS did NOT test Hypothesis 9A (N blocked-DOWN events). Session ended NOT_FINISHED.
+
+### NEW FINDING: Ring A Respawns After Timer Expiry
+
+Ring A (previously classified "consumable, no respawn") reappeared at r16–18 c15–17=11 at step ~79 after timer expired (c62–63=3 first observed ~step 58). Ring A is **consumable** (disappears on collection) but **respawns after timer expiry**, identical to ring B. Multi-cycle collection is now possible.
+
+---
+
+### Hypothesis Tally — Post Session 60
+
+| # | Hypothesis | Status | Session |
+|---|---|---|---|
+| 3A | Collision ×13 → state 3 | REFUTED | 52 |
+| 3E | State-1 geometric approach | REFUTED — ring A invariant | 53 |
+| 4A | Cross at state 2 | REFUTED | 54 |
+| 5B | Ring A → ring B (skip cross) | REFUTED ×2 | 55 |
+| 5C | Ring B first | REFUTED | 56 |
+| 6A | Timer expiry at state 2 | REFUTED | 56 |
+| 6B | Ring B ×2 after timer reset | REFUTED STRUCTURAL | 58 |
+| 8A | Ring B + ring A | REFUTED | 59 |
+| **8B** | Ring B + cross + ring A | **REFUTED** | **60** |
+
+**All single-cycle collectible orderings exhausted.**
+
+---
+
+## Dream Cycle 27 (DC27) — Post Session 60
+
+### Replay
+
+Session 60 (DC27): DC27 42-step route executed correctly. Entity1 tracker at r37–39 c14–18 at handoff = STATE 2. Hypothesis 8B REFUTED. LOCUS navigation failure: exited deadlock due to non-consumable cross misread. Ring A respawn confirmed.
+
+### Record Updates
+
+1. **@BELIEF:LAT-50LON-40** (entity1 state machine): Add Rev 7 — 8B REFUTED (ring B + cross + ring A; session 60). All 9 collectible hypotheses exhausted. DC28 = non-collectible mechanism probe. Priority: 9A (N deadlock events). conf: 115→90. sal: 6→7.
+
+2. **@LAT-10LON10** (Game State): sal: 39→40. Session 60 = 39th L1 win, 39th L2 failure. 8B REFUTED. DC28 = Hypothesis 9A primary target. conf: 240→243.
+
+3. **NEW RECORD — Ring A respawn**: Ring A is consumable (disappears on collection) AND respawns after timer expiry (confirmed session 60, step ~79). Identical behavior to ring B. Multi-cycle collection sequences now possible. Write as @BELIEF node near @LAT30LON0 (timer/ring mechanics zone).
+
+4. **Cross non-consumable instruction (LOCUS error correction)**: Cross at r45–46 c49–53 (collected as second collectible in DC27) continues to display at r46–48 c50–52 with values 0/1 after collection. Cross visible ≠ cross uncollected. After DC28 42-step hardcode, cross status = collected-and-visible; ring A status = consumed (no value 11 until timer expiry); ring B status = consumed (no value 11 until timer expiry). **LOCUS must not navigate toward cross during free phase.** Add to session 61 standing orders.
+
+---
+
+## ls20 — Level 2 — DC28 Design (session 61)
+
+### Objective
+
+Hypothesis 9A: N consecutive blocked-DOWN events from deadlock position r35–36 c14–18 trigger entity1 state 3.
+
+All single-cycle collectible orderings refuted. Ring A respawns after timer expiry (session 60 new finding). DC28 tests whether brute-force deadlock accumulation triggers state 3 within LOCUS budget.
+
+### Standing Orders for Session 61
+
+**CRITICAL LOCUS INSTRUCTION (cross confusion fix)**: After the 42-step hardcode completes, the cross continues to be visible at r46–48 c50–52 (values 0/1). **This does NOT mean the cross is uncollected.** The cross is non-consumable. Its visual state does not change after collection. Do not navigate toward the cross.
+
+**Hypothesis 9A protocol**: After DC28 handoff at r35–36 c14–18 (deadlock), issue DOWN (action 1) repeatedly. Each DOWN is blocked by entity1 deadlock and freezes the timer (timer does not tick). Count blocked-DOWN events. If entity1 tracker disappears from r37–39 → state 3 achieved → proceed DOWN to entity2. Budget: 53 LOCUS steps = 53 blocked-DOWN events possible per session.
+
+**If entity1 tracker absent at handoff** (state 3 already achieved by DC28 route): proceed immediately DOWN from r35–36 → r40–41 c14–18 → enter entity2 ring interior → WIN.
+
+### DC28 Route
+
+Identical to DC27 (42 steps): ring B → cross → ring A → deadlock. No changes needed to `_LEVEL2_ROUTE` in `kaggle_agent.py`.
+
+**Parameters**: offline_levels=2, max_steps=110 (unchanged).
+
+Handoff: L2 step 43, r35–36 c14–18, entity1 tracker at r37–39, timer 17 steps remaining.
+LOCUS task (53 L2 steps): issue DOWN ×53 to probe 9A. Report tracker presence at each attempt.
