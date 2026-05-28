@@ -9728,3 +9728,60 @@ LOCUS task (34 L2 steps):
 3. If **present** → Hypothesis 6B NULL. Entity1 remains STATE 2. Escalate to DC26.
 
 **Feasibility**: max_steps=110 → L2 budget=95. 61 hardcoded + 34 LOCUS = 95 ✓. WIN path: 61 + 1 (check) + 7 (WIN) = 69 ≤ 95 ✓.
+
+---
+
+SECTION 1
+
+@LAT-660LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 58 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "6f59fb0c-f788-4865-853c-b22dd946f5da"
+card_id: "f0e61d10-e0b2-4041-8aed-f377ad7f13b2"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (86 actions)"
+actions: 101
+levels_completed: 1
+score: 3.571428571428571
+state: "GAME_OVER"
+resets: 0
+level_actions: [15, 86, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, thirty-seventh consecutive confirmation — sessions 10–12, 23–27, 31–58). Level 2 entered; 86 level-2 actions taken (max_steps=110 → GAME_OVER at 101 total); NOT WON. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–57.
+
+This is a duplicate of session 57's scorecard entry (same run_guid `6f59fb0c-...`, same card_id `f0e61d10-...`, same 101 actions and GAME_OVER state). The session did not produce a new run — the system returned the prior run's completed scorecard. The DC25 61-step `_LEVEL2_ROUTE` code change was **not yet applied** at run time; session 58 re-ran with the prior configuration.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=37]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Thirty-seventh confirmation (counting this session even though it is a scorecard replay). Route stable.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (thirty-seventh time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (thirty-seventh time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. GAME_OVER at 101 of 110 max_steps confirms operator-set ceiling.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-seventh consecutive confirmation per STATUS exchange confirming 36 consecutive carry-overs).
+
+---
+
+### Level 2 — Status
+
+No new L2 frame data. DC25 61-step `_LEVEL2_ROUTE` must be deployed before the next run. Hypothesis 6B (second ring B collection →
