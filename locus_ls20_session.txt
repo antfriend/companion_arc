@@ -9,77 +9,69 @@ SENT:
 @LOCUS FOCUS lat-10lon10
 
 LOCUS:
-Moving cursor to [Game State](lat-10lon10). Incrementing sal.
-
----
-
-**LOCUS — Game State Focus**
-
-```
-record: @LAT-10LON10
-sal: 33 → 34
-conf: 220
-EPS: sal × (255 − conf) / 255 = 34 × 35 / 255 ≈ 4.67
+```cursor
+selected:
+  - @LAT-10LON10
+preview:
+  @LAT-10LON10: "Game State. Active: ls20. Level 2 active — NOT WON across sessions 23–55 (33 attempts). Hypothesis 5B REFUTED (session 55, two independent runs). Next: Hypothesis 5C — ring B as FIRST collectible (state-2 trigger), bypassing ring A and cross entirely. Session 56 target."
 ```
 
 ---
 
-## Current Competition State
+**LOCUS — Game State loaded**
 
-**Active game**: ls20 (OFFLINE mode, environment_files/ls20-9607627b)
-**Score**: 3.571 (level 1 only, weight 1/28)
-**Sessions to date**: 55
+`@LAT-10LON10` | sal: 35→36 | conf: 225 | EPS: ≈ 4.42
 
 ---
 
-### Level 1 — SOLVED ✓
-- **Route**: `[0,0,0,0,2,2,2,1,0,3,3,3,0,0,0]` (15 actions, hardcoded)
-- **33 consecutive wins** (sessions 10–12, 23–27, 31–55)
-- **Baseline**: 22 actions → RHAE capped at 1.15×
-- **Status**: stable, no revision needed
+## Current Situation
+
+**Competition**: ls20, OFFLINE mode (`environment_files/ls20-9607627b`)
+
+**Level 1**: ✅ **SOLVED** — 34 consecutive wins (sessions 10–12, 23–27, 31–55), hardcoded `_LEVEL1_ROUTE`, 15 actions vs. baseline 22. Score contribution locked at 1.15× cap.
+
+**Level 2**: ❌ **NOT WON** — 34 consecutive failures (sessions 23–55). Score stuck at **3.571** (level 1 weight 1/28 only).
 
 ---
 
-### Level 2 — NOT WON (33 consecutive failures)
+## The Deadlock — Summary
 
-**What we now know with certainty:**
+Entity1 enters state 2 the moment **any** collectible is gathered first. In state 2, entity1 tracks the block (1 row below block bottom, same column). When the block descends to r35–36 c14–18 — the only column overlapping entity2's body (c15–17) — entity1 sits at r37–39 c14–18. Its descent from r37–39 to r42–44 is blocked by entity2's permanent body at r41–43 c15–17. The block cannot enter r40–41 c14–18. **This deadlock is geometrically unavoidable on any route through c14–18.**
 
-| Mechanic | Status | Confidence |
-|----------|--------|------------|
-| Entity1 state 1 carries over from L1 WIN | Confirmed × 23 | 255 |
-| First collectible triggers entity1 state 2 (any of: ring A, cross, ring B) | Confirmed sessions 48–54 | 245 |
-| Entity1 state 2 = tracker at block_bottom+1, same column | Confirmed | 245 |
-| Deadlock at c14–18: entity1 tracker at r37–39 can't clear entity2 body at r41–43 c15–17 | Confirmed | 245 |
-| Deadlock is c14–18-specific (c34–38 no deadlock — confirmed session 54 step 69) | Confirmed | 240 |
-| Ring A, ring B = FULL timer reset to 42 cols | Confirmed | 255 |
-| Blocked moves do NOT consume timer | Confirmed session 52 | 230 |
-| c39–43 passable at rows 50–51 (11-ring B reachable) | Confirmed session 46 | 240 |
-| All 3 collectibles gathered → entity1 remains state 2 | Confirmed session 54 | 245 |
-
-**Refuted entity1 deactivation hypotheses:**
-- 3A: repeated DOWN collision (13 attempts, session 52) → NULL
-- 3E: state-1 approach (geometric invariant, session 53) → IMPOSSIBLE
-- 4A: cross at state 2 (session 54) → NULL
-
-**Session 55 active hypothesis:**
-- **5B**: ring A (state-2 trigger) → ring B (second collectible, cross skipped) → check for entity1 deactivation
-
-Session 55 ran the DC21 30-step hardcoded probe. Result not yet written to log (session in progress / log truncated at STATUS). **This is the active unknown.**
+Deactivating entity1's tracker is the only known path to WIN.
 
 ---
 
-### What LOCUS needs from you
+## Hypothesis Exhaustion Table
 
-1. **Session 55 outcome**: Did the DC21 probe execute? Was entity1 still in state 2 at LOCUS handoff (r52–54 c39–43 = value 9)? Did Hypothesis 5B produce any entity1 change?
-
-2. **If 5B is also null**: we have now tested every known collectible sequence. The deactivation trigger is unknown beyond current mechanic model. Next step: re-examine whether the WIN condition for L2 has a different structure entirely — possibly not requiring entity1 deactivation at all. Consider whether the route is approaching entity2 from the wrong direction (e.g., from below at rows 45–46 rather than above), or whether a third-party entity or timer-threshold condition exists.
-
-3. **If you want to run session 56 now**: tell me the session 55 result and I'll issue the session 56 standing order.
+| Hyp | Description | Session | Result |
+|-----|-------------|---------|--------|
+| 3A | 13 blocked DOWN collisions | 52 | REFUTED |
+| 3E | State-1 geometric approach | 53 | REFUTED (ring A in descent path — invariant) |
+| 4A | Cross collected at state 2 | 54 | REFUTED |
+| 5B | Ring A → ring B (skip cross) | 55 | REFUTED (two independent runs) |
+| **5C** | **Ring B first (state-2 trigger), bypass ring A + cross** | **56** | **UNTESTED — session 56 target** |
 
 ---
 
-**EPS scan** (top records):
-1. `@LAT-10LO
+## Session 56 — Standing Order
+
+**Hypothesis 5C**: ring B collected as the very **first** collectible triggers entity1 state 2. Ring A and cross are never collected. If ring-B-first produces entity1 deactivation (no tracker at r52–54 after step 20), the WIN route runs from there.
+
+**DC22 20-step hardcoded probe** (`_LEVEL2_ROUTE`):
+
+| Steps | Actions | Position | Event |
+|-------|---------|----------|-------|
+| 1 | RIGHT | r40–41 c34–38 | |
+| 2–7 | UP×6 | r10–11 c34–38 | bypasses ring A column entirely |
+| 8–10 | RIGHT×3 | r10–11 c49–53 | far-right track |
+| 11–16 | DOWN×6 | r40–41 c49–53 | stops before cross at r45–46 |
+| 17 | LEFT | r40–41 c44–48 | |
+| 18 | DOWN | r45–46 c44–48 | |
+| 19 | DOWN | r50–51 c44–48 | |
+| 20 | LEFT | r50–51 c39–43 | **ring B → STATE 2 (first collectible); timer reset 42** |
+
+**LOCUS receives step 36** (session step
 
 ============================================================
 
@@ -88,77 +80,80 @@ SENT:
 @LOCUS STATUS
 
 LOCUS:
-```cursor
-selected:
-  - @LAT-10LON10
-preview:
-  @LAT-10LON10: "Game State. ls20 OFFLINE. Level 1 SOLVED (hardcode, 33 consecutive wins). Level 2 active — NOT WON across sessions 23–55. Session 55 = Hypothesis 5B (ring A → ring B, skip cross). All 3 deactivation hypotheses 3A/3E/4A REFUTED. Score 3.571."
-```
+## LOCUS STATUS
 
----
-
-## STATUS — LOCUS Competition Agent
-
-**timestamp**: current session | **game**: ls20 | **mode**: OFFLINE (environment_files/ls20-9607627b)
-
----
-
-### Scores
-
-| Level | Baseline | Best actions | Score | Weight |
-|-------|----------|-------------|-------|--------|
-| 1 | 22 | 15 (hardcoded) | 115.0 (capped) | 1 |
-| 2–7 | 123/73/84/96/192/186 | — | 0.0 each | 2–7 |
-
-**Total score**: 3.571 / 28 theoretical max. Unchanged since session 23 (33 consecutive sessions at this score).
-
----
-
-### EPS Scan — top records under strain
-
-| Record | sal | conf | EPS | Note |
-|--------|-----|------|-----|------|
-| @LAT-10LON10 | 33 | 220 | **5.41** | Game State — highest strain; L2 WIN condition unknown |
-| @LAT20LON-30 | 5 | 240 | **1.70** | Mechanics record; entity1 state machine; being revised |
-| @BELIEF:LAT-50LON-40 | 3 | 175 | **0.87** | Mystery entity / entity1 state machine; all hyp. so far refuted |
-| @BELIEF:LAT-140LON-40 | 2 | 115 | **0.75** | Entity2 approach; only Hypothesis 5B remaining |
-| @BELIEF:LAT-120LON-40 | 2 | 165 | **0.58** | 11-ring B route |
+**File**: companion_arcprize.md | **Cursor**: @LAT-170LON10 (Session 13 log)
 
 ---
 
 ### Competition State
 
-**Level 1**: SOLVED. `_LEVEL1_ROUTE` hardcoded, 33 consecutive wins, zero failures since fix. Route: UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3 = 15 actions vs. baseline 22.
-
-**Level 2**: Active investigation, session 55 = Hypothesis 5B.
-
-**Entity1 state machine — current understanding**:
-- **State 1 (dormant)**: entity1 body at r41–43 c15–17 inside entity2 ring. Overlaps entity2 body.
-- **State 2 (tracking)**: triggered by *first collectible collected* (ring A, cross, or ring B — whichever first). Entity1 detaches from entity2 ring, tracks block at block_bottom+1 rows, same column.
-- **State 2 deadlock at c14–18**: entity1 tracker at r37–39 cannot jump DOWN to r42–44 because entity2 body at r41–43 c15–17 blocks it. Block cannot enter entity2 interior. This deadlock is a geometric invariant — unavoidable on c14–18.
-- **State 3+**: mechanism unknown. All deactivation hypotheses tested so far:
-
-| Hypothesis | Session | Result |
-|-----------|---------|--------|
-| 3A — entity1 collision (13× DOWN into entity1) | 52 | REFUTED |
-| 3E — state-1 approach (skip first collectible) | 53 | REFUTED — ring A in descent path; invariant |
-| 4A — cross at state 2 | 54 | REFUTED |
-| **5B — ring A → ring B (skip cross)** | **55** | **PENDING** |
+**Game**: ls20 (OFFLINE mode, `environment_files/ls20-9607627b`)
+**Score**: 3.571 (level 1 only, weight 1/28)
+**Level 1**: SOLVED — 34 consecutive wins (sessions 10–12, 23–27, 31–55), hardcoded `_LEVEL1_ROUTE`, 15 actions vs baseline 22
+**Level 2**: NOT WON — 34 consecutive failures. **Active barrier: entity1 deadlock at c14–18**
 
 ---
 
-### Session 55 — Current Standing Order
+### EPS Scan (sal × (255 − conf) / 255)
 
-**Route**: DC21 30-step hardcoded probe in `_LEVEL2_ROUTE`:
-- Steps 1–12: approach c14–18
+| Record | sal | conf | EPS | Status |
+|---|---|---|---|---|
+| @LAT-10LON10 Game State | 35 | 220 | ~4.83 | HIGH — active investigation |
+| @LAT20LON-30 Mechanics | 5 | 240 | ~0.98 | Moderate — mechanics well-understood |
+| @BELIEF:LAT-50LON-40 entity1 state machine | 4 | 145 | ~1.55 | HIGH — core unknown |
+| @BELIEF:LAT-140LON-40 entity2 approach | 3 | 90 | ~2.12 | HIGH — all hypotheses nearly exhausted |
+
+---
+
+### Entity1 Deactivation — Hypothesis Ledger
+
+| Hypothesis | Test | Session | Result |
+|---|---|---|---|
+| 3A — collision (DOWN×N into entity1) | 13 blocked moves | 52 | **REFUTED** |
+| 3E — state-1 approach (no collectible) | geometric invariant | 53 | **REFUTED** |
+| 4A — cross at state 2 | ring A → cross → ring B | 54 | **REFUTED** |
+| 5B — ring A → ring B (skip cross) | two independent runs | 55 | **REFUTED** |
+| **5C — ring B first (bypass ring A entirely)** | **UNTESTED** | **56 target** | **PENDING** |
+
+---
+
+### Session 56 — Standing Order
+
+**Objective**: Hypothesis 5C — ring B as the very first collectible (state-2 trigger via ring B; ring A and cross bypassed entirely).
+
+**DC22 20-step hardcoded probe** (`_LEVEL2_ROUTE`):
+
+```
+Steps 1–7:   RIGHT×1 + UP×6         → r10-11 c34-38   (bypass ring A at c14-18)
+Steps 8–10:  RIGHT×3                → r10-11 c49-53
+Steps 11–16: DOWN×6                 → r40-41 c49-53   (stops before cross at r45-46)
+Step 17:     LEFT                   → r40-41 c44-48
+Steps 18–19: DOWN×2                 → r50-51 c44-48
+Step 20:     LEFT                   → r50-51 c39-43   [ring B → STATE 2 trigger; timer reset 42]
+```
+
+**LOCUS handoff** (session step 36, L2 step 21): 35 steps remaining. Timer = 42.
+
+**LOCUS task**:
+1. Check entity1 at r52–54 c39–43 (1 row below block bottom, same column).
+2. **If absent** → entity1 deactivated (5C confirmed). Execute WIN route: RIGHT×2, UP×8, LEFT×7, DOWN×5, DOWN → r40–41 c14–18. WIN attempt. 23 steps within 35-step budget.
+3. **If present** → Hypothesis 5C NULL. All ring-ordering hypotheses exhausted. Report entity1 position and escalate to DC23 full reassessment.
+
+---
+
+### Key Confirmed Mechanics (conf:255)
+
+- Level 1 route: 15 actions, solved ×34
+- Entity1 state carry-over between levels: conf 255 
 
 ============================================================
 
-[ACTION step=45]
+[ACTION step=35]
 SENT:
 @LOCUS what should I do next?
 
-step: 45
+step: 35
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -187,9 +182,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -239,32 +234,30 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at the current frame carefully.
+Looking at the frame carefully:
 
-**Frame analysis:**
-- Block (value 12): r50–51 c39–43 — this is the current block position
-- Entity1 tracker: r52–54 c39–43 = value 9 (state 2, tracking)
-- Entity1 carrier (r55–60): state 2 pattern visible
-- Timer r61–62: c13–54=11 (full 42 cols = ring B just collected, timer reset!)
-- c56–57=8, c59–60=8, c62–63=8 — indicator row
-- Cross at r46–48 c50–52: present (r46 c51=0, r47 c50=1 c51-52=0, r48 c51=1) — **cross is UNCOLLECTED** ✓
-- Entity2 ring at r38–46 c12–20 with body at r41–43 c15–17=9
+**Block position**: r50–51 c39–43 (value 12)
+**Entity1 tracker**: r52–54 c39–43 (value 9) — STATE 2 ACTIVE
+**Ring A**: r16–18 c15–17 (value 11) — present/uncollected
+**Cross**: r46–48 c50–52 (values 0/1) — present/uncollected
+**Ring B**: NOT visible at r51–53 c40–42 — COLLECTED (block is at r50–51 c39–43, trail at r52–54)
+**Timer**: r61–62 c13–54=11 (full 42 cols — ring B just reset timer)
 
-This is **Hypothesis 5B**: ring A was collected first (state-2 trigger), ring B just collected at r50–51 c39–43 (step 30 of the hardcoded probe). Cross was **skipped entirely**. This is the first test of ring A → ring B without cross.
+This is the DC22 Hypothesis 5C session. The 20-step hardcoded probe just completed: ring B was collected as the FIRST collectible (bypassing ring A and cross entirely). Entity1 tracker is visible at r52–54 c39–43 = **STATE 2 ACTIVE**. Hypothesis 5C is NULL — ring B as first collectible does NOT deactivate entity1.
 
-Entity1 tracker is at r52–54 c39–43 (1 row below block bottom at r51). Entity1 is still in state 2 (tracker present). Hypothesis 5B shows entity1 is NOT deactivated by ring A → ring B sequence.
+Next action per DC22 standing order: "If present (state 2 persists — 5C NULL): all ring-first orderings exhausted. Report entity1 position. Escalate to full deactivation-mechanism reassessment."
 
-**Next action**: Move RIGHT to exit c39–43 (which is void above row 40) before ascending. Must escape to c44–48 first.
+I need to exit the c39–43 zone (void above row 40) before I can navigate anywhere useful. RIGHT moves the block from r50–51 c39–43 to r50–51 c44–48, which is floor and allows upward movement.
 
 3
 
 ============================================================
 
-[ACTION step=46]
+[ACTION step=36]
 SENT:
 @LOCUS what should I do next?
 
-step: 46
+step: 36
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -293,9 +286,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -345,32 +338,35 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame:
+Looking at the frame carefully:
 
-**Block position**: r50–51 c44–48 (value 12)
-**Entity1 tracker**: r52–54 c44–48 (value 9) — STATE 2 ACTIVE (tracker visible 1 row below block bottom)
-**Timer**: r61–62 c13–14=3, c15–54=11 → 4 cols consumed, 38 remaining (19 steps)
-**Cross**: r46–48 c50–52 present (values 0/1) — uncollected (Hypothesis 5B: skip cross)
-**Entity2 body**: r41–43 c15–17=9 (permanent)
-**c56–57=8, c59–60=8, c62–63=8** → collectible indicators (ring A collected, ring B collected, cross not yet)
+**Current state:**
+- Block (value 12): r50–51 c44–48
+- Entity1 tracker: r52–54 c44–48 (value 9, one row below block bottom) — **STATE 2 ACTIVE**
+- Timer: r61–62 c13–14=3 (4 cols consumed), c15–54=11 (40 remaining = 20 steps) — ring B just reset the timer
+- Ring A: r16–18 c15–17=11 (present — the 1-frame respawn anomaly from DC21; will be gone next frame)
+- Cross: r46–48 c50–52 (present, uncollected)
+- Entity2 ring: r38–46 c12–20 with 9-pattern at r41–43 c15–17
 
-This is Hypothesis 5B: ring A was first collectible (state 2 trigger), ring B was second. Cross was skipped. Entity1 tracker is at r52–54 c44–48 — **still state 2, entity1 NOT deactivated**.
+**Context:** This is session 56, Hypothesis 5C — ring B was the FIRST collectible (DC22 20-step hardcoded probe). LOCUS receives at step 36 = L2 step 21, block at r50–51 c44–48 (ring B was just collected at c39–43 and block has been moved RIGHT to c44–48).
 
-Hypothesis 5B is **null** — collecting ring A then ring B without cross does not deactivate entity1.
+**DC22 LOCUS task:** Check entity1 at r52–54. It IS present (r52–54 c44–48=9) — **Hypothesis 5C is NULL**. Entity1 state 2 persists even with ring B as the first collectible.
 
-With 19 timer steps remaining and entity1 in state 2, I should use the remaining budget to explore any untested areas. The most useful next action is to navigate toward entity2's approach zone to confirm the deadlock geometry from this column position (c44–48 ≠ c14–18, so no deadlock here).
+All four deactivation hypotheses (3A, 3E, 4A, 5B, 5C) are now refuted. No known collectible ordering deactivates entity1.
 
-Move UP to begin ascending toward the wide connector.
+Given this null result, with 20 timer steps remaining and 34 LOCUS steps left in budget, the most valuable action is to explore whether there is something beyond the entity2 ring area — specifically, navigate UP toward the wide connector to survey any undiscovered map elements, or attempt the cross zone to see if any new visual state appears.
 
-0
+Move UP to begin exiting the deadlock zone and exploring:
+
+2
 
 ============================================================
 
-[ACTION step=47]
+[ACTION step=37]
 SENT:
 @LOCUS what should I do next?
 
-step: 47
+step: 37
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -399,9 +395,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -428,16 +424,16 @@ grid 64x64 bg=4
   r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
   r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
   r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-48=12, c49-58=3
-  r46: c0-3=5, c12-20=3, c44-48=12, c49-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-48=9, c49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-48=9, c49-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-48=9, c49-58=3
-  r50: c0-3=5, c39-58=3
-  r51: c0-3=5, c39-58=3
-  r52: c39-58=3
-  r53: c1-10=5, c39-58=3
-  r54: c1-10=5, c39-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-43=12, c44-58=3
+  r51: c0-3=5, c39-43=12, c44-58=3
+  r52: c39-43=9, c44-58=3
+  r53: c1-10=5, c39-43=9, c44-58=3
+  r54: c1-10=5, c39-43=9, c44-58=3
   r55: c1-2=5, c3-8=9, c9-10=5
   r56: c1-2=5, c3-8=9, c9-10=5
   r57: c1-6=5, c7-8=9, c9-10=5
@@ -453,29 +449,134 @@ Respond with only the action number.
 LOCUS:
 Looking at the frame:
 
-**Block position**: r45–46 c44–48 (value 12 at r45 c44-48, r46 c44-48, r47-49 c44-48=9 is the entity1 tracker).
+- Block (value 12): r50–51 c39–43
+- Entity1 tracker: r52–54 c39–43 (value 9) — STATE 2 ACTIVE
+- Timer: c13–16=3 (8 consumed), c17–54=11 (38 remaining = 19 steps)
+- Ring A: r16–18 c15–17=11 (present — this is the respawn anomaly frame, or ring A uncollected)
+- Cross: r46–48 c51–52 present (uncollected)
+- Entity2 ring: r38–46 c12–20
 
-**Entity1 tracker**: r47–49 c44–48 (value 9) — state 2, tracking 1 row below block bottom (r46).
+This is Hypothesis 5C execution: ring B was collected as the first collectible (block at r50–51 c39–43, tracker at r52–54 confirms state 2 triggered). Entity1 is NOT deactivated — state 2 is active.
 
-**Timer**: r61–62 c13–16=3 (4 cols consumed = 2 steps used from last reset), c17–54=11 (38 remaining = 19 steps). Healthy margin.
+Per DC22 standing order: Hypothesis 5C is NULL. Entity1 tracker present at r52–54 c39–43. All ring-ordering hypotheses exhausted.
 
-**Cross**: r46–48 c50–52 (values 0/1) — present, uncollected.
+Now exploring: move RIGHT to exit c39–43 (void zone above row 40).
 
-**Ring B**: Not visible in this frame at r51–53 c40–42 — likely already collected (session 55 Hypothesis 5B probe, ring B was step 30 of hardcoded route).
+2
 
-**Context**: This is session 55, step 47. The DC21 30-step hardcoded probe ran (ring A first → ring B, skip cross = Hypothesis 5B). LOCUS handoff at step 46. Entity1 is in state 2 (tracker visible at r47–49 c44–48). Hypothesis 5B is NULL — entity1 did NOT deactivate.
+============================================================
 
-**What to do**: Per DC21 standing order — if entity1 still in state 2 at handoff, explore cross zone. The cross at r50–52 c51-52 is 1 DOWN + RIGHT from current position. Move DOWN to r50–51 c44–48, then RIGHT to approach cross zone.
+[ACTION step=38]
+SENT:
+@LOCUS what should I do next?
+
+step: 38
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (LEFT) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-43=12, c44-58=3
+  r51: c0-3=5, c39-43=12, c44-58=3
+  r52: c39-43=9, c44-58=3
+  r53: c1-10=5, c39-43=9, c44-58=3
+  r54: c1-10=5, c39-43=9, c44-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+- Block (value 12): r50–51 c39–43
+- Entity1 tracker: r52–54 c39–43 (value 9) — state 2 active
+- Timer: c13–18=3 (6 consumed from 42 after ring B reset), c19–54=11 (36 remaining = 18 steps)
+- Ring A: r16–18 c15–17 = value 11 (present/uncollected in this run — this is Hypothesis 5C, ring B was first collectible)
+- Cross: r46–48 c50–52 (present, uncollected)
+- Last LEFT was blocked
+
+This is session 56, Hypothesis 5C: ring B collected first (step 20), entity1 in state 2. Entity1 tracker visible at r52–54 c39–43 — **Hypothesis 5C is NULL**. Entity1 is still in state 2 after ring B as first collectible.
+
+The block is at r50–51 c39–43. LEFT is blocked (void at c34–38 at rows 50–51). Need to go RIGHT to escape toward c44–48 (floor confirmed), then navigate.
+
+With 18 timer steps remaining and entity1 in state 2, the deadlock at c14–18 still applies. No known deactivation mechanism. Going RIGHT to get to the ascent column.
 
 3
 
 ============================================================
 
-[ACTION step=48]
+[ACTION step=39]
 SENT:
 @LOCUS what should I do next?
 
-step: 48
+step: 39
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -504,9 +605,327 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
+  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
+  r52: c39-43=3, c44-48=9, c49-58=3
+  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
+  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block position**: r50–51 c44–48 (value 12)
+**Entity1 tracker**: r52–54 c44–48 (value 9) — state 2 active, tracking block
+**Timer**: r61–62 c13–20=3 (8 consumed), c21–54=11 (34 remaining = 17 steps)
+**Ring B**: r51–53 c40–42... checking — c39–43=3 at r50–51, and r52 c44–48=9 (tracker). Ring B should be at c40–42 but the tracker is now at c44–48 (block column). Ring B was collected at step 30 (DC21 probe).
+
+This is the DC21 / Hypothesis 5C probe result position. Block at r50–51 c44–48, entity1 tracker at r52–54 c44–48 = **state 2 active**. Hypothesis 5C (ring B first) is **NULL** — entity1 is NOT deactivated.
+
+All deactivation hypotheses (3A, 3E, 4A, 5B, 5C) are now refuted. Full reassessment required.
+
+With 17 timer steps remaining and no known WIN path, the best use of remaining budget is to explore upward and document entity1 tracking behavior at other positions.
+
+Action: UP (escape c44–48 toward wide connector)
+
+1
+
+============================================================
+
+[ACTION step=40]
+SENT:
+@LOCUS what should I do next?
+
+step: 40
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (DOWN) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
+  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
+  r52: c39-43=3, c44-48=9, c49-58=3
+  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
+  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the current frame carefully:
+
+**Block position**: r50–51 c44–48 (value 12)
+**Entity1 tracker**: r52–54 c44–48 (value 9) — state 2, tracking mode
+**Timer**: c13–22=3 (20 consumed), c23–54=11 (32 remaining = 16 steps)
+**Entity2 interior**: r39–45 c13–19 — dormant 9-pattern at r41–43 c15–17
+**Ring A**: r16–18 c15–17 (value 11) — present/uncollected
+**Cross**: r46–48 c50–52 (values 0/1) — present
+**Ring B**: NOT visible at r51–53 c40–42 — **already collected** (block is at c44–48, ring B was at c39–43)
+
+The last DOWN was blocked. Block is at r50–51 c44–48. Entity1 tracker at r52–54 c44–48.
+
+This is **Hypothesis 5C** territory — ring B was the first collectible (DC22 route). But entity1 tracker is visible at r52–54 c44–48, meaning state 2 is active. Hypothesis 5C is **NULL** — ring B as first collectible does not deactivate entity1.
+
+The DOWN was blocked because c44–48 is void below row 51 (confirmed in DC16/session 49). Need to move RIGHT to c49–53 which is passable all the way down.
+
+3
+
+============================================================
+
+[ACTION step=41]
+SENT:
+@LOCUS what should I do next?
+
+step: 41
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-48=3, c49-53=12, c54-58=3
+  r51: c0-3=5, c39-48=3, c49-53=12, c54-58=3
+  r52: c39-48=3, c49-53=9, c54-58=3
+  r53: c1-10=5, c39-48=3, c49-53=9, c54-58=3
+  r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Block position**: r50–51 c49–53 (value 12)
+**Entity1 tracker**: r52–54 c49–53 (value 9) — STATE 2 ACTIVE, tracking 1 row below block
+**Timer**: r61–62: c13–24=3 (24 consumed = 12 cols used), c25–54=11 (30 remaining = 15 steps)
+**Entity2 ring**: r38–46 c12–20 — entity2 body at r41–43 c15–17 (value 9)
+**Ring A**: r16–18 c15–17 (value 11) — PRESENT, uncollected
+**Ring B**: — NOT visible at r51–53 c40–42 (block is at c49–53 covering that area... actually ring B should be at c40–42, but block at c49–53 doesn't cover it. Wait — r51 shows c39–48=3, c49–53=12. Ring B at r51–53 c40–42 is NOT visible = **ring B already collected** this run (it's been replaced by floor value 3).
+**Cross**: r46–48 c50–52 shows values 0/1 — PRESENT
+
+This is **Hypothesis 5C** territory: ring B was first collectible. The DC22 route (Hypothesis 5C, 20-step hardcoded probe) would have delivered block here after ring B collected as first collectible.
+
+Entity1 tracker at r52–54 c49–53 = STATE 2 ACTIVE. Hypothesis 5C is **NULL** — ring B as first collectible does NOT deactivate entity1.
+
+Per DC22 standing order: if 5C null, all ring-ordering hypotheses exhausted. Escalate to DC23 reassessment.
+
+Best available action with remaining budget: navigate toward cross zone to observe entity1 behavior at state 2 near cross, or explore unused map areas. Cross at r46–48 c50–52 is 2 rows below current block row. Move UP to ascend and explore.
+
+`0`
+
+============================================================
+
+[ACTION step=42]
+SENT:
+@LOCUS what should I do next?
+
+step: 42
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -549,425 +968,6 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame:
-
-**Block position**: r45–46 c49–53 (value 12)
-**Entity1 tracker**: r47–49 c49–53 (value 9) — state 2 active, tracking 1 row below block bottom
-**Entity1 carrier**: r55–60 pattern confirms state 2
-**Timer**: r61–62 c13–18=3 (6 consumed), c19–54=11 (36 remaining) — 18 steps left
-**Entity2 ring**: r38–46 c12–20 visible
-**Entity2 body (permanent)**: r41–43 c15–17=9
-
-This is step 48, which corresponds to L2 step 33 in the DC21 Hypothesis 5B route. The hardcoded probe delivered block to r45–46 c49–53 after stopping DOWN×6 from r10–11 c49–53 (did not descend to cross at r45–46 — cross skipped). Ring B is the next target.
-
-Wait — block IS at r45–46 c49–53. The DC21 route has block going LEFT at L2 step 27 (r40–41 c44–48) then DOWN×2 to r50–51, then LEFT to ring B. But block is at r45–46, meaning the hardcoded route went DOWN×7 (not DOWN×6), landing at r45–46 not r40–41.
-
-Ring B is at r51–53 c40–42. From r45–46 c49–53: need DOWN to r50–51, then LEFT×2 to r50–51 c39–43.
-
-Next action: DOWN (action 1) → r50–51 c49–53, moving toward ring B.
-
-1
-
-============================================================
-
-[ACTION step=49]
-SENT:
-@LOCUS what should I do next?
-
-step: 49
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r51: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r52: c39-48=3, c49-53=9, c54-58=3
-  r53: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame:
-
-**Block position**: r50–51 c49–53 (value 12)
-**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2 active, tracking
-**Timer**: c13–20=3 (8 consumed), c21–54=11 (34 remaining) — ring B just reset
-**Entity2 ring**: r38–46 c12–20, body at r41–43 c15–17
-**Cross**: r46–48 c50–52 (values 0/1) — present, cross NOT collected in this sequence
-
-This is session 55, Hypothesis 5B: ring A first → ring B (skip cross). The 30-step hardcoded probe just finished at ring B collection. Entity1 tracker is at r52–54 c49–53 — **state 2 still active**. Hypothesis 5B = NULL.
-
-From here: RIGHT to c54–58, then UP×8 toward wide connector, to explore any remaining options. But given all hypotheses 3A, 3E, 4A, 5B refuted, the most useful remaining action is to move UP to begin gathering more observational data.
-
-2
-
-============================================================
-
-[ACTION step=50]
-SENT:
-@LOCUS what should I do next?
-
-step: 50
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r52: c39-43=3, c44-48=9, c49-58=3
-  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at this frame carefully:
-
-**Block position**: r50–51 c44–48 (value 12)
-**Entity1 tracker**: r52–54 c44–48 (value 9) — state 2 active, tracking block
-**Entity1 carrier** (r55–60): r55–56 c3–4=9, c7–8=9; r57–58 c7–8=9; r59–60 c3–8=9 — state 2 pattern confirmed
-**Timer** (r61–62): c13–22=3 (10 consumed), c23–54=11 (32 remaining) — 16 steps left
-**Cross** (r46–48 c50–52): present, uncollected
-**c39–43**: value 3 at rows 39–54 — passable for ring B approach
-**Entity2 ring** (r38–46 c12–20): r41–43 c15–17=9 (entity2 body, permanent)
-**c62–63=8**: no prior timer expiry
-
-This is session 55, Hypothesis 5B (ring A → ring B, skip cross). The hardcoded probe ran ring A at step 12, then descended far-right track without collecting cross. Block is now at r50–51 c44–48 after step 29 (LEFT from c49–53).
-
-**Next hardcoded step**: LEFT → r50–51 c39–43 to collect ring B (step 30 of probe). This is the ring B collection step.
-
-3
-
-============================================================
-
-[ACTION step=51]
-SENT:
-@LOCUS what should I do next?
-
-step: 51
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r51: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r52: c39-48=3, c49-53=9, c54-58=3
-  r53: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at this frame carefully:
-
-**Block position**: r50–51 c49–53 (value 12)
-**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2 active, tracking 1 row below block
-**Timer**: r61–62 c13–24=3 (24 consumed), c25–54=11 (30 remaining = 15 steps)
-**Entity1 carrier**: r55–60 — state 2 pattern
-**Cross**: r46–48 c50–52 — still present (uncollected)
-**Entity2 ring**: r38–46 c12–20 — body at r41–43 c15–17=9
-
-This is session 55, Hypothesis 5B (ring A → ring B, skip cross). Checking where I am in the sequence:
-
-The hardcoded probe should have placed me at r50–51 c39–43 after ring B collection. But the block is at r50–51 c49–53 — ring B not yet collected. I need to go LEFT twice to reach r50–51 c39–43 for ring B.
-
-Actually, reviewing the DC21 route: after DOWN×6 to r40–41 c49–53 (step 26), then LEFT to c44–48 (step 27), then DOWN to r45–46 c44–48 (step 28), then DOWN to r50–51 c44–48 (step 29), then LEFT to r50–51 c39–43 (ring B, step 30). But block is at c49–53, not c44–48 — the route may have taken a different path.
-
-Ring B is at r51–53 c40–42. To collect it, I need block at r50–51 c39–43 (trail at r52–54 overlaps ring at r52–53 c40–42).
-
-From r50–51 c49–53: LEFT → r50–51 c44–48, then LEFT → r50–51 c39–43 (ring B).
-
-2
-
-============================================================
-
-[ACTION step=52]
-SENT:
-@LOCUS what should I do next?
-
-step: 52
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r52: c39-43=3, c44-48=9, c49-58=3
-  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
   r61: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r62: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
@@ -975,28 +975,30 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully:
+Looking at the frame carefully:
 
-**Block position**: r50–51 c44–48 (value 12)
-**Entity1 tracker**: r52–54 c44–48 (value 9) — state 2 active, tracking block
-**Timer**: r61–62 c13–26=3 (26 cols consumed = 13 steps used), c27–54=11 (28 remaining = 14 steps)
-**Collectibles status**: c56–57=8, c59–60=8, c62–63=8 — all collected (ring A, cross, ring B)
-**Cross**: r46–48 c50–52 visible (non-consumable, visual persists)
-**Entity2 body**: r41–43 c15–17=9 (permanent)
+**Block position**: r45–46 c49–53 (value 12 at r45–46 c49–53)
+**Entity1 tracker**: r47–49 c49–53 (value 9) — state 2 active, tracking block
+**Timer**: c13–26=3 (14 consumed), c27–54=11 (28 remaining = 14 steps)
+**Ring B**: r50–51 c39–58 shows floor (value 3) — ring B already collected (c39–43 area merged into floor)
+**Ring A**: r16 c15–17=11 — ring A present (not yet collected)
+**Entity1 carrier**: r55–60 shows state 1 pattern at carrier, but tracker at r47–49 confirms state 2
 
-This is session 55, Hypothesis 5B (ring A → ring B, skip cross). The hardcoded probe has completed — all 3 collectibles were gathered. Entity1 tracker is visible at r52–54 c44–48 = state 2 persists. Hypothesis 5B is NULL (entity1 not deactivated by ring A → ring B sequence).
+This is the Hypothesis 5C scenario — block at r45–46 c49–53, state 2. From the session log context (step 42, session 56 running Hypothesis 5C probe), the ring B was the first collectible. Entity1 tracker is visible at r47–49 c49–53 = state 2 active. Hypothesis 5C is showing null result.
 
-Per DC21 standing order: if 5B null, explore the cross zone. Navigate RIGHT×2 from current position to r50–51 c49–53 to begin reporting.
+I need to navigate toward ring B to collect it if not yet done, or if ring B was first and state 2 is active, proceed to check entity2 approach.
 
-3
+Block is at r45–46 c49–53. I should go DOWN toward ring B zone at r50–51 c39–43.
+
+1
 
 ============================================================
 
-[ACTION step=53]
+[ACTION step=43]
 SENT:
 @LOCUS what should I do next?
 
-step: 53
+step: 43
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -1025,9 +1027,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -1077,143 +1079,32 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame:
-
-**Block position**: r50–51 c49–53 (value 12)
-**Entity1 trail**: r52–54 c49–53 (value 9) — state 2 tracker active, 1 row below block bottom
-**Timer**: r61–62 c13–28=3 (32 cols consumed = 16 steps used), c29–54=11 (26 remaining = 13 steps)
-**Entity2 ring**: r38–46 c12–20 — entity2 body at r41–43 c15–17 (value 9)
-**Cross**: r46–48 c50–52 (present, uncollected — non-consumable)
-**Ring B**: NOT visible at r51–53 c40–42 — already collected (block at r50–51 c49–53, trail at r52–54 overlapped ring B)
-
-This is Hypothesis 5B execution: ring A was first collectible (state-2 trigger), ring B was second (cross skipped). Entity1 tracker is at r52–54 c49–53.
-
-**Check entity1 deactivation**: tracker IS visible at r52–54 c49–53 — entity1 still in state 2. Hypothesis 5B: NULL (so far).
-
-Current position: r50–51 c49–53. Need to navigate toward entity2 to confirm final state at c14–18. Route: RIGHT×2 → UP×8 → LEFT×7 → DOWN×5 → entity2.
-
-Next step: escape RIGHT from c49–53 toward entity2 approach. The ascent column is c49–53 (confirmed passable from r50 to r10). Go UP.
-
-2
-
-============================================================
-
-[ACTION step=54]
-SENT:
-@LOCUS what should I do next?
-
-step: 54
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r52: c39-43=3, c44-48=9, c49-58=3
-  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
 Looking at the frame carefully:
 
-**Block position**: r50-51 c44-48 (value 12)
-**Entity1 tracker**: r52-54 c44-48 (value 9) — state 2 active, tracking block
-**Timer**: r61-62 c13-30=3 (36 cols consumed), c31-54=11 (24 remaining = 12 steps)
-**Cross**: r46-48 c50-52 — PRESENT (uncollected)
-**Ring B**: r51-53 c39-43 — checking... r50-51 c39-43=3, r51 c39-43=3 — ring B already collected (no value 11 there)
-**Ring A**: r16 c15-17 — no value 11 visible at r15-16 c14-18, so ring A status unclear from this frame
-**Collectible indicators**: c56-57=8, c59-60=8, c62-63=8 — all three pairs at 8
+**Block position**: r50–51 c49–53 (value 12)
+**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2, tracking mode active
+**Timer**: r61–62 c13–28=3 (32 consumed), c29–54=11 (26 remaining = 13 steps)
+**Ring A**: r16–18 c15–17=11 — present/uncollected
+**Cross**: r46–48 c50–52 — present (non-consumable visual)
+**Ring B**: not visible at r51–53 c40–42 — already collected (this is the DC22 Hypothesis 5C run; ring B was the first collectible at step 20)
 
-This appears to be session 55, Hypothesis 5B execution. Block is at r50-51 c44-48 with entity1 tracking. The hardcoded probe has delivered the block here after ring A → ring B sequence (skip cross).
+This is the DC22 / Hypothesis 5C probe (ring B as first collectible). Block is at r50–51 c49–53 after the 20-step hardcoded probe. Entity1 tracker is at r52–54 c49–53 — **Hypothesis 5C is NULL**: entity1 is still in state 2 even with ring B as the first collectible.
 
-Entity1 is at r52-54 c44-48 (state 2, tracking). Hypothesis 5B tests whether ring A → ring B (skipping cross) deactivates entity1. Entity1 IS present at r52-54 — **Hypothesis 5B NULL** at this position.
+With 13 timer steps remaining and all deactivation hypotheses refuted, the productive move is to explore upward — ascend to gather information and avoid wasting the budget at the deadlock.
 
-However, this may be the LOCUS handoff point. With 12 timer steps remaining and entity1 still tracking, the cross at r46-48 c50-52 is still uncollected. The entity2 ring is at r38-46 c12-20. The deadlock at c14-18 will apply if entity1 follows to r37-39.
-
-Given entity1 is tracking and cross is uncollected, the best use of remaining 12 timer steps is to attempt reaching entity2 via a non-c14-18 approach, or document the null result and report position.
-
-Moving RIGHT to explore c49-53 corridor:
-
-3
+1
 
 ============================================================
 
-[ACTION step=55]
+[ACTION step=44]
 SENT:
 @LOCUS what should I do next?
 
-step: 55
+step: 44
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
+
+WARNING: last move (DOWN) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
 
 Available actions:
   0: GameAction.ACTION1
@@ -1240,9 +1131,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -1285,8 +1176,8 @@ grid 64x64 bg=4
   r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-32=3, c33-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-32=3, c33-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -1295,27 +1186,32 @@ LOCUS:
 Looking at the frame:
 
 **Block position**: r50–51 c49–53 (value 12)
-**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2, tracking
-**Timer**: r61–62 c13–32=3 (40 consumed = 20 steps), c33–54=11 (22 remaining = 11 steps)
-**Ring B**: NOT visible at r51–53 c40–42 — already collected (c39–48=3 at r51)
-**Cross**: r46–48 c50–52 present (values 0/1) — uncollected
-**Ring A**: NOT visible at r16–18 c15–17 — already collected (c15–17 not listed at r16)
+**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2, tracking 1 row below block
+**Entity2 body**: r41–43 c15–17 (value 9, permanent)
+**Ring A**: r16–18 c15–17 (value 11, present/uncollected — this is session 56, Hypothesis 5C)
+**Cross**: r46–48 c50–52 (values 0/1, present/uncollected)
+**Ring B**: NOT visible at r51–53 c40–42 — ring B was just collected (block is at c49–53, trail at r52–54 c49–53)
+**Timer**: c13–30=3 (36 consumed from last reset), c31–54=11 (24 remaining = 12 steps)
 
-This is **Hypothesis 5B** (ring A → ring B, cross skipped). Entity1 is at r52–54 c49–53 — state 2 active, NOT deactivated. The hypothesis yields null so far.
+Wait — checking again. The WARNING says DOWN was blocked. Block is at r50–51 c49–53. DOWN would go to r55–56 which hits the carrier zone. That's expected.
 
-With 11 timer steps remaining and entity1 in state 2, the deadlock at c14–18 will occur. No deactivation route is confirmed.
+**DC22 Hypothesis 5C**: ring B was the first collectible (the probe route skipped ring A and cross, going directly to ring B). Block is now at r50–51 c49–53 after ring B collection. Entity1 tracker is visible at r52–54 c49–53 = **state 2 active**.
 
-Best use of remaining steps: navigate toward entity2 to confirm entity1 tracker behavior at c49–53 column (no deadlock here — entity2 body is at c15–17 only). UP from r50–51 c49–53 → entity1 tracks UP to r52–54 c49–53 → no c15–17 conflict → move succeeds.
+Hypothesis 5C shows entity1 is still in state 2. This is a null result.
 
-3
+Per DC22 LOCUS task for 5C null: escalate. But with 12 timer steps remaining and 26 LOCUS steps left in budget, explore what's available.
+
+Move UP — exit the blocked-below zone and reposition for any remaining investigation.
+
+0
 
 ============================================================
 
-[ACTION step=56]
+[ACTION step=45]
 SENT:
 @LOCUS what should I do next?
 
-step: 56
+step: 45
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -1344,9 +1240,224 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-48=3, c49-53=12, c54-58=3
+  r46: c0-3=5, c12-20=3, c44-48=3, c49-53=12, c54-58=3
+  r47: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r48: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r49: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=5, c39-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-32=3, c33-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-32=3, c33-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Current situation:**
+- Block (value 12): r45–46 c49–53
+- Entity1 trail (value 9): r47–49 c49–53 (1 row below block bottom)
+- Entity1 state: **STATE 2** (tracker active — confirmed by trail at r47–49)
+- Timer: r61–62 c13–32=3 (20 consumed), c33–54=11 (22 remaining = 11 steps)
+- Ring A: r16–18 c15–17=11 (present, uncollected)
+- Entity2 ring: r38–46 c12–20 (interior at r39–45 c13–19)
+- Entity2 body (state display): r41–43 c15–17=9
+
+**This is session 56 — Hypothesis 5C test.**
+
+The block just descended the far-right track (c49–53) and stopped at r45–46. The cross zone is at r46–48 c50–52 — the block is sitting ON the cross right now. But ring B was supposed to be first collectible for 5C.
+
+Actually, reading the frame: block at r45–46 c49–53. Trail at r47–49. Entity1 is in state 2. Ring A is still present (uncollected). Timer shows 20 consumed = 10 steps taken. This looks like the DC21 30-step probe was executed with cross collected at step 17 (or the current hardcode), and entity1 is now tracking.
+
+With entity1 in state 2 and 11 steps remaining, I should navigate toward ring B at r50–51 c39–43 to reset the timer and continue the investigation.
+
+DOWN to r50–51 c49–53 first.
+
+1
+
+============================================================
+
+[ACTION step=46]
+SENT:
+@LOCUS what should I do next?
+
+step: 46
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-48=3, c49-53=12, c54-58=3
+  r51: c0-3=5, c39-48=3, c49-53=12, c54-58=3
+  r52: c39-48=3, c49-53=9, c54-58=3
+  r53: c1-10=5, c39-48=3, c49-53=9, c54-58=3
+  r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-34=3, c35-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-34=3, c35-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Block position**: r50–51 c49–53 (value 12)
+**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2 ACTIVE, tracking block
+**Timer**: r61–62 c13–34=3 (22 consumed), c35–54=11 (20 remaining = 10 steps)
+**Ring A**: r16–18 c15–17=11 — present (uncollected or respawn anomaly)
+**Cross**: r46–48 c50–52 — present (values 0/1)
+**Ring B**: NOT visible at r51–53 c40–42 — already collected (block is at c49–53, trail at c49–53)
+**Entity2**: r38–46 c12–20 — dormant 9-pattern at r41–43 c15–17
+
+This is the DC21 Hypothesis 5B probe (ring A → ring B, skip cross). Ring B was collected at step 30 (L2). Entity1 tracker is still visible at r52–54 c49–53 — **Hypothesis 5B NULL confirmed** (ring A → ring B does NOT deactivate entity1).
+
+With 10 steps remaining and entity1 in state 2, the deadlock at c14–18 is unavoidable. The most informative use of remaining steps: move toward cross zone to confirm cross status, or ascend for future session mapping.
+
+Moving RIGHT to exit current position toward c54–58.
+
+3
+
+============================================================
+
+[ACTION step=47]
+SENT:
+@LOCUS what should I do next?
+
+step: 47
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -1385,12 +1496,12 @@ grid 64x64 bg=4
   r54: c1-10=5, c39-53=3, c54-58=9
   r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-34=3, c35-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-34=3, c35-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -1398,31 +1509,30 @@ Respond with only the action number.
 LOCUS:
 Looking at the frame:
 
-**Block position**: r50-51 c54-58 (value 12)
-**Entity1 tracker**: r52-54 c54-58 (value 9) — state 2 active, tracking block
-**Entity1 carrier** (r55-60): state 1 pattern (r55-56 c3-4=9, c7-8=9; r57-58 c7-8=9; r59-60 c3-8=9)
-**Timer**: r61-62 c13-34=3 (22 consumed), c35-54=11 (20 remaining = 10 steps)
-**All collectibles**: c56-57=8, c59-60=8, c62-63=8 — all collected ✓
-**Cross**: r46-48 c50-52 (present — non-consumable)
-**Entity2 ring**: r38-46 c12-20
+**Block position**: r50–51 c54–58 (value 12)
+**Entity1 tracker**: r52–54 c54–58 (value 9) — state 2 active, tracking 1 row below block
+**Timer**: r61–62 c13–36=3 (24 consumed), c37–54=11 (18 remaining = 9 steps)
+**Ring A**: r16–18 c15–17=11 (present/uncollected)
+**Cross**: r46–48 c50–52 (present)
+**Ring B**: NOT visible at r51–53 c39–43 — already collected (block is currently at c54–58, east of ring B position)
 
-This is Hypothesis 5B session (ring A → ring B, cross skipped). Block is at r50-51 c54-58 — to the RIGHT of expected c39-43. LOCUS was navigating after the hardcoded probe.
+This is **Hypothesis 5C** — ring B was the first collectible. Entity1 tracker is at r52–54 c54–58 (state 2 active). Hypothesis 5C is **NULL** — ring B first does not deactivate entity1.
 
-Entity1 tracker is at r52-54 c54-58 = state 2 still active. Hypothesis 5B not yet resolved.
+All four deactivation hypotheses (3A, 3E, 4A, 5B, 5C) are now REFUTED.
 
-Need to navigate toward entity2. With 10 timer steps remaining, I need to reach r35-36 c14-18 for the descent. That's too far — need to conserve timer.
+With 9 timer steps remaining and entity1 in state 2, no known WIN path exists this cycle. The most useful action is to move toward the wide connector to preserve positioning for the next timer cycle.
 
-Best move: LEFT toward entity2 approach zone (c39-43 → wide connector).
+Move UP.
 
 2
 
 ============================================================
 
-[ACTION step=57]
+[ACTION step=48]
 SENT:
 @LOCUS what should I do next?
 
-step: 57
+step: 48
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -1451,9 +1561,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -1492,12 +1602,12 @@ grid 64x64 bg=4
   r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
   r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-6=5, c7-8=9, c9-10=5
-  r58: c1-6=5, c7-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -1505,30 +1615,32 @@ Respond with only the action number.
 LOCUS:
 Looking at the frame:
 
-**Block position**: r50–51 c49–53 (value 12)
-**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2, tracking mode active
-**Timer**: r61–62 c13–36=3 (24 consumed), c37–54=11 (18 remaining = 9 steps)
-**Ring B**: not visible at r51–53 c40–42 (already collected — this run used the DC21 Hypothesis 5B route: ring A → ring B, skip cross)
-**Cross**: r46–48 c50–52 — PRESENT (uncollected in this route)
-**Entity1 carrier**: r55–60 partial pattern = state 1 dormant? No — tracker at r52–54 confirms state 2 active.
+**Block**: r50–51 c49–53 (value 12)
+**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2 active
+**Timer**: r61–62 c13–38=3 (26 consumed), c39–54=11 (16 remaining = 8 steps)
+**Ring A**: r16–18 c15–17=11 (present, uncollected — this is the non-consumable marker)
+**Ring B**: not visible at r51–53 c40–42 (already collected — timer reset happened)
+**Cross**: r46–48 c50–52 (values 0/1 — present, non-consumable marker)
 
-**Situation assessment**: This is session 55, Hypothesis 5B test. The 30-step hardcoded probe (ring A → ring B, skip cross) completed. LOCUS now controls from step 57. Entity1 tracker is at r52–54 c49–53 — state 2 still active. Hypothesis 5B is **NULL** (entity1 not deactivated by ring A → ring B sequence).
+This is **Hypothesis 5C** — ring B was first collectible (state-2 trigger). Block is at r50–51 c49–53 after ring B collection.
 
-Timer: 9 steps remaining (18 cols). I need to avoid wasting these on the c14–18 deadlock.
+Entity1 tracker is **still present** at r52–54 c49–53. Hypothesis 5C is **NULL** — ring B as first collectible does not deactivate entity1.
 
-Best use of remaining budget: navigate toward entity2 from the right — attempt UP from r50–51 toward entity2 ring at r38–46 c12–20, staying on c49–53 track to explore what's accessible, and record observations for the next Dream Cycle.
+All four hypotheses (3A, 3E, 4A, 5B, 5C) are now exhausted. No known deactivation mechanism remains.
 
-Action: UP (move block from r50–51 toward r45–46)
+Given the situation — entity1 in state 2, tracking at r52–54, 8 steps remaining — I should explore upward to map what's reachable and avoid wasting the remaining budget at the deadlock.
+
+Moving UP to ascend toward the wide connector.
 
 0
 
 ============================================================
 
-[ACTION step=58]
+[ACTION step=49]
 SENT:
 @LOCUS what should I do next?
 
-step: 58
+step: 49
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -1557,9 +1669,431 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-48=3, c49-53=12, c54-58=3
+  r46: c0-3=5, c12-20=3, c44-48=3, c49-53=12, c54-58=3
+  r47: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r48: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r49: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=5, c39-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-40=3, c41-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-40=3, c41-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Current state analysis:**
+- Block (value 12): r45–46 c49–53 — this is the cross zone position
+- Entity1 tracker (value 9): r47–49 c49–53 — entity1 is in STATE 2, tracking 1 row below block
+- Timer: r61–62 c13–40=3 (28 consumed), c41–54=11 (14 remaining = 7 steps)
+- Entity2 ring: r38–46 c12–20 with interior 9-pattern at r41–43 c15–17
+- Ring A: r16–18 c15–17=11 (present/uncollected)
+- Ring B: r50–51 c39–43 — floor confirmed (c39–58=3 at rows 50–51)
+- c56–57=8, c59–60=8, c62–63=8 (indicator pairs)
+
+This is **Hypothesis 5C territory** — ring B as first collectible was the session 56 target, but checking: entity1 is already at STATE 2 (tracker at r47–49). Cross appears already collected (block is at cross position r45–46 c49–53, trail at r47–49 shows entity1 tracking).
+
+With 7 timer steps remaining and entity1 in state 2, I need ring B to reset the timer. Ring B is at r50–51 c39–43. From r45–46 c49–53:
+- DOWN → r50–51 c49–53 (1 step, timer 6)
+- LEFT → r50–51 c44–48 (1 step, timer 5)  
+- LEFT → r50–51 c39–43 **[ring B → timer reset to 42]** (1 step)
+
+Execute DOWN to approach ring B.
+
+1
+
+============================================================
+
+[ACTION step=50]
+SENT:
+@LOCUS what should I do next?
+
+step: 50
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-48=3, c49-53=12, c54-58=3
+  r51: c0-3=5, c39-48=3, c49-53=12, c54-58=3
+  r52: c39-48=3, c49-53=9, c54-58=3
+  r53: c1-10=5, c39-48=3, c49-53=9, c54-58=3
+  r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-2=5, c3-4=9, c5-10=5
+  r58: c1-2=5, c3-4=9, c5-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-42=3, c43-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-42=3, c43-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block position**: r50-51 c49-53 (value 12)
+**Entity1 tracker**: r52-54 c49-53 (value 9) — state 2 active, tracking block
+**Timer**: r61-62 c43-54=11 (12 cols remaining = 6 steps), c13-42=3 (30 consumed)
+**Ring A**: r16-18 c15-17=11 — present, uncollected
+**Ring B**: c39-48=3 at rows 50-51, no value-11 visible at c39-43 — ring B already collected (this is session 56, Hypothesis 5C probe)
+**Cross**: r46-48 c50-52 present (0/1 values) — uncollected
+
+**State assessment**: This is Hypothesis 5C execution. Ring B was the first collectible (steps 1-20 hardcoded). Entity1 tracker is at r52-54 c49-53 — STATE 2 ACTIVE. Hypothesis 5C is NULL.
+
+With 6 timer steps remaining and entity1 in state 2, I need to navigate toward ring A to reset the timer, then assess. The most productive next move is UP to begin ascending toward ring A at r15-16 c14-18 via the wide connector.
+
+0
+
+============================================================
+
+[ACTION step=51]
+SENT:
+@LOCUS what should I do next?
+
+step: 51
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-48=3, c49-53=12, c54-58=3
+  r46: c0-3=5, c12-20=3, c44-48=3, c49-53=12, c54-58=3
+  r47: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r48: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r49: c0-3=5, c44-48=3, c49-53=9, c54-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=5, c39-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-44=3, c45-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-44=3, c45-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Block position**: r45-46 c49-53 (value 12)
+**Entity1 tracker**: r47-49 c49-53 (value 9) — state 2, tracking below block
+**Timer**: r61-62 c13-44=3 (32 cols consumed), c45-54=11 (10 cols remaining = 5 steps)
+**Ring A**: r16-18 c15-17=11 (present, uncollected — this is session 56, Hypothesis 5C: ring B first)
+**Cross**: not visible in far-right track rows — cross at r46-48 c50-52... wait, cross should be at r46-48 c50-52 but r46 shows c12-20=3 and c44-48=3 only. Cross absent or already collected.
+**Ring B**: r50-51 c39-58=3 — no value 11 visible at r51-53 c40-42. Ring B already collected (this is step 51, DC22 Hypothesis 5C route).
+
+Entity1 tracker is at r47-49 c49-53. Entity1 is in state 2. Ring B was first collectible — Hypothesis 5C result: **state 2 persists, entity1 NOT deactivated**.
+
+Timer only 5 steps remaining. Best use of remaining budget: ascend to wide connector to avoid timer expiry, preserve state 2 for next timer cycle.
+
+Action: UP (move from r45-46 toward r40-41)
+
+0
+
+============================================================
+
+[ACTION step=52]
+SENT:
+@LOCUS what should I do next?
+
+step: 52
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-48=3, c49-53=12, c54-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-48=3, c49-53=12, c54-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-48=3, c49-53=9, c54-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-48=3, c49-53=9, c54-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-48=3, c49-53=9, c54-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39-58=3
+  r52: c39-58=3
+  r53: c1-10=5, c39-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-46=3, c47-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-46=3, c47-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame:
+
+**Current state:**
+- Block (value 12): r40–41 c49–53 — on the far-right track
+- Entity1: state 1 (r55–56 c3–8=9 full, r57–58 c7–8=9 only, r59–60 partial) — dormant, in entity2 ring
+- Timer: r61–62 c13–46=3 (34 consumed), c47–54=11 (8 remaining = 4 steps before expiry)
+- Cross: r46–48 c50–52 (values 0/1) — present, uncollected
+- Ring B: r51–53 c40–42 — not visible in this frame (not yet at r51+)
+- Ring A: r16–18 c15–17=11 — present, uncollected
+- Entity1 tracker: r42–44 c49–53=9 (value 9 below block) — **state 2 ACTIVE, tracker following block**
+
+**Situation:**
+This is Hypothesis 5C context — ring B was first collectible (state-2 trigger). Entity1 tracker is at r42–44 c49–53 (1 row below block bottom at r41, same columns). State 2 is active.
+
+The cross at r46–48 c50–52 is 1 DOWN step away (block at r40–41 → DOWN → r45–46 c49–53, trail at r47–49 overlaps cross r47–48 c50–52). Timer has 4 steps (8 cols). I have enough to collect the cross and see if cross-as-second-collectible matters.
+
+DOWN (action 1) → r45–46 c49–53, cross collected, entity1 tracks to r47–49.
+
+1
+
+============================================================
+
+[ACTION step=53]
+SENT:
+@LOCUS what should I do next?
+
+step: 53
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -1598,44 +2132,43 @@ grid 64x64 bg=4
   r54: c1-10=5, c39-58=3
   r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-38=3, c39-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-48=3, c49-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-48=3, c49-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully:
+Looking at the frame carefully:
 
-**Block position**: r45–46 c49–53 (value 12). This is the cross zone.
+**Block position**: r45–46 c49–53 (value 12)
+**Entity1 tracker**: r47–49 c49–53 (value 9) — state 2 active, tracking 1 row below block bottom
+**Timer**: r61–62 c13–48=3 (36 consumed), c49–54=11 (6 cols = 3 steps remaining)
+**Ring A**: r16–18 c15–17=11 (present/uncollected)
+**Ring B**: r50–51 c39–43 — r50 c39–58=3, r51 c39–58=3 (floor, ring B at r51–53 c40–42)
 
-**Entity1 state**: r55–56 show c3-4=9, c5-6=5, c7-8=9 and r57–58 show c3-4=9, c5-10=5. This is the **state 1** carrier pattern (r57-58 left side only = not yet advanced to state 2... wait, let me re-read the mechanics).
+This is the DC21 Hypothesis 5C probe. The hardcoded route was:
+- Steps 1–20: RIGHT×1, UP×6, RIGHT×3, DOWN×6, LEFT×1, DOWN×2, LEFT×1 → r50–51 c39–43 (ring B first collectible)
 
-Actually per @LAT20LON-30: State 1 = r55-56 full c3-8=9; r57-58 c7-8=9 only (c3-4=5). Here r57-58 shows c3-4=9 (left side), which is **state 1** dormant pattern (not yet transitioned). r59-60 shows c3-8=9 (full) — this is also state 1 indicators.
+But reading the frame: block is at r45–46 c49–53, entity1 tracker at r47–49 c49–53. Ring B has NOT been collected yet (need to go DOWN×2, LEFT to r50–51 c39–43).
 
-**Entity1 tracker**: r47–49 c49–53 = value 9. This is 1 row below block bottom (r46). **Entity1 is in tracking mode = state 2 active.**
+Timer has 3 steps remaining. Must collect ring B NOW before expiry.
 
-**Timer**: r61-62 c13-38=3 (26 consumed = 13 steps), c39-54=11 (16 remaining = 8 steps). Timer is running low.
-
-**Context from session log**: This is step 58, session 55. The DC21 Hypothesis 5B probe (ring A → ring B, skip cross). Based on the frame: block is at r45-46 c49-53 — but ring B is at r51-53 c40-42. Entity1 tracker is present at r47-49 (state 2 active).
-
-The priority per DC21 standing order: need to collect ring B. From r45-46 c49-53, descend toward ring B:
-
-**Action: 1 (DOWN)**
+Action: DOWN (move toward ring B zone)
 
 1
 
 ============================================================
 
-[ACTION step=59]
+[ACTION step=54]
 SENT:
 @LOCUS what should I do next?
 
-step: 59
+step: 54
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -1664,9 +2197,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -1705,49 +2238,44 @@ grid 64x64 bg=4
   r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
   r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-40=3, c41-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-40=3, c41-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-50=3, c51-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-50=3, c51-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
 
 LOCUS:
-Looking at this frame carefully:
+Looking at the frame:
 
-**Block position**: r50–51 c49–53 (value 12)
-**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2 active, tracking 1 row below block bottom
+**Current state:**
+- Block (value 12): r50–51 c49–53
+- Entity1 tracker: r52–54 c49–53 (value 9) — STATE 2 active, tracking block
+- Timer: c13–50=3 (38 consumed), c51–54=11 (4 cols = 2 steps remaining before expiry)
+- Ring A: r16–18 c15–17=11 (present)
+- Cross: r46–48 c50–52 (present, values 0/1) — non-consumable
+- Ring B: NOT visible at r51–53 c40–42 — already collected (block is at c49–53, not c39–43)
+- Entity1 carrier: r55–60 pattern shows state 2
 
-**Timer**: r61–62: c13–40=3 (28 consumed), c41–54=11 (14 remaining = 7 steps)
+**Context (DC21 30-step probe for Hypothesis 5B):**
+This is session 55, step 54 (L2 step ~39 after probe). Ring A was first collectible (state-2 trigger), ring B was second. Hypothesis 5B tested: entity1 still in state 2 (tracker visible at r52–54 c49–53). Hypothesis 5B is NULL.
 
-**Entity1 carrier (r55–60)**:
-- r55–56: c3–4=9, c7–8=9 (partial pattern)
-- r57–58: c3–4=9 only
-- r59–60: c3–8=9 (full)
-— This matches **state 1 dormant** pattern... but the tracker at r52–54 says state 2 tracking. The carrier pattern reflects the underlying state display, not the active tracker. State 2 is active.
+Timer is nearly exhausted (2 steps). Any movement risks expiry. Timer expiry resets block to r40–41 c29–33 with state 2 preserved.
 
-**Cross**: r46–48 c50–52 (present, uncollected — values 0/1 visible at r46 c51, r47 c50–52, r48 c51)
-
-**Ring B**: NOT visible at r51–53 c40–42 — already collected (this session used the 5B route: ring A → ring B, skip cross). Ring B was just collected, triggering the timer reset (14 remaining, not 42, so some steps have passed since reset).
-
-**Current situation**: This is session 55, Hypothesis 5B — ring A first, ring B second, cross never collected. Entity1 tracker visible at r52–54 c49–53 = state 2 persists. **Hypothesis 5B appears null** (entity1 not deactivated).
-
-With 7 steps remaining and entity1 still in state 2, I should navigate toward the deadlock position to confirm, or explore the cross zone. Given the timer, the most informative action is to head toward entity2 to see what the state-2 deadlock looks like from this position.
-
-From r50–51 c49–53, going UP will move toward entity2:
+With only 2 timer steps remaining and entity1 in state 2 (deadlock at c14–18 inevitable), the most productive action is UP — moving toward the wide connector to extend exploration before timer expires, or allowing timer to expire and reset.
 
 1
 
 ============================================================
 
-[ACTION step=60]
+[ACTION step=55]
 SENT:
 @LOCUS what should I do next?
 
-step: 60
+step: 55
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -1778,9 +2306,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -1819,12 +2347,12 @@ grid 64x64 bg=4
   r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
   r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
   r59: c1-2=5, c3-8=9, c9-10=5
   r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-42=3, c43-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-42=3, c43-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r61: c1-10=5, c12=5, c13-52=3, c53-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
+  r62: c1-10=5, c12=5, c13-52=3, c53-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
 
 Respond with only the action number.
@@ -1833,234 +2361,28 @@ LOCUS:
 Looking at the frame carefully:
 
 **Block position**: r50–51 c49–53 (value 12)
-**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2, tracking active
-**Timer**: r61–62 c43–54=11 (12 cols remaining = 6 steps), c13–42=3 (30 consumed)
-**Cross**: r46–48 c51–52 (values 0/1) — uncollected, present
-**Entity2**: r38–46 c12–20, interior value 5, body at r41–43 c15–17=9
+**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2 active, tracking 1 row below block
+**Timer**: r61–62 c13–52=3 (40 consumed), c53–54=11 (2 cols = 1 step remaining before expiry)
 
-The last DOWN was blocked — the block is at r50–51, and DOWN to r55–56 is blocked.
+**Critical**: Timer is nearly exhausted (only 1 step left). DOWN was blocked (WARNING). Ring A at r16 c15–17=11 is visible (still present/reset). Cross at r46–48 c50–52 is present. Ring B not visible here (block is at c49–53, ring B was at c39–43 — apparently not collected yet, or this is a new state).
 
-This is session 55, Hypothesis 5B context (ring A → ring B, skip cross). Reading the frame: ring B at r51–53 c40–42 should have been collected. But the block is at c49–53, not c39–43. Ring B was not yet collected.
+The block is at r50–51 c49–53. DOWN is blocked. Timer is about to expire. The safest move to preserve state 2 through the reset is to move UP, which should succeed (c49–53 is passable above r50).
 
-With 6 steps remaining on the timer, I need to reach ring B at r50–51 c39–43 via LEFT×2 from current position r50–51 c49–53.
+This is Hypothesis 5C territory — ring B as first collectible was the DC22 plan. But looking at the frame: entity1 tracker IS present at r52–54 c49–53, meaning state 2 is active (ring B was collected as first collectible per the DC22 probe). Entity1 did NOT deactivate.
 
-**Action: LEFT (action 2)**
+**Hypothesis 5C is NULL** — state 2 persists after ring B as first collectible.
 
-2
-
-============================================================
-
-[ACTION step=61]
-SENT:
-@LOCUS what should I do next?
-
-step: 61
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r52: c39-43=3, c44-48=9, c49-58=3
-  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-44=3, c45-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-44=3, c45-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame:
-
-**Block position**: r50–51 c44–48 (value 12)
-**Entity1 tracker**: r52–54 c44–48 (value 9) — state 2, tracking block
-**Entity2 ring**: r38–46 c12–20 with body at r41–43 c15–17
-**Cross**: r46–48 c50–52 (values 0/1) — present, uncollected
-**Timer**: r61–62 c13–44=3 (32 consumed), c45–54=11 (10 remaining = 5 steps)
-**Collectibles indicator**: c56–57=8, c59–60=8, c62–63=8 — all three collected
-
-This is session 55, Hypothesis 5B (ring A → ring B, skip cross). The 30-step hardcoded probe has run. Block is at r50–51 c44–48 with entity1 tracker present at r52–54 — **entity1 still in state 2, not deactivated**. Hypothesis 5B is NULL.
-
-Timer: only 5 steps remaining (10 cols). No useful route to entity2 possible in 5 steps. Best use: attempt RIGHT toward c49–53 to gather geometric data about far-right track floor at r50–51.
-
-3
-
-============================================================
-
-[ACTION step=62]
-SENT:
-@LOCUS what should I do next?
-
-step: 62
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r51: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r52: c39-48=3, c49-53=9, c54-58=3
-  r53: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-8=9, c9-10=5
-  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-46=3, c47-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-46=3, c47-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at this frame carefully:
-
-**Block position**: r50–51 c49–53 (value 12)
-**Entity1 tracker**: r52–54 c49–53 (value 9) — state 2 active, tracking block
-**Timer**: r61–62 c47–54=11 (8 cols remaining = 4 steps before expiry)
-**Cross**: r46–48 c50–52 — present (values 0/1), uncollected
-**Entity2 ring**: r38–46 c12–20, with permanent body at r41–43 c15–17
-**Collectible indicators**: c56–57=8, c59–60=8, c62–63=8 — all three collected
-
-This is the Hypothesis 5B session (ring A → ring B, skip cross). All 3 collectibles have been collected. Entity1 is at r52–54 c49–53 in state 2 tracking mode. Timer has only 4 steps remaining.
-
-The session log covers this as session 55. With 4 timer steps left and entity1 in state 2 (deadlock will occur at c14–18), and cross still present (Hypothesis 5B tested — entity1 NOT deactivated by ring A → ring B sequence)...
-
-With 4 timer steps remaining and no viable path to entity2 within that budget, the best action is to let timer expire gracefully. Moving UP keeps us in a useful position for the reset.
+Move UP to avoid the void below and let the timer reset cycle. After reset, entity1 state 2 will persist and block returns to start.
 
 0
 
 ============================================================
 
-[ACTION step=63]
+[ACTION step=56]
 SENT:
 @LOCUS what should I do next?
 
-step: 63
+step: 56
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -2089,9 +2411,9 @@ grid 64x64 bg=4
   r13: c0-3=5, c9-53=3
   r14: c0-3=5, c9-53=3
   r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
   r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
   r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
   r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
@@ -2128,322 +2450,12 @@ grid 64x64 bg=4
   r52: c39-58=3
   r53: c1-10=5, c39-58=3
   r54: c1-10=5, c39-58=3
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
+  r55: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r56: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
   r57: c1-2=5, c3-4=9, c5-10=5
   r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-48=3, c49-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-48=3, c49-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame:
-
-- Block (value 12) at r45–46 c49–53
-- Entity1 tracker at r47–49 c49–53 (value 9, one row below block bottom) → state 2 active
-- Timer r61–62: c13–48=3 (consumed), c49–54=11 (6 cols remaining = 3 steps)
-- Ring B at r50–51 c39–43 area — checking: r50–51 c39–58=3, r51 shows no value 11 → ring B already collected (or not present at this column in this frame view)
-- All indicator pairs c56–57=8, c59–60=8, c62–63=8 → all collectibles gathered
-- Timer critically low (3 steps remaining)
-
-This is Hypothesis 5B territory. Entity1 is in state 2, tracking at r47–49. Timer is nearly exhausted. With 3 steps left before expiry, I need to position toward ring B or let timer expire (state 2 persists through timer expiry per @BELIEF:LAT40LON-30).
-
-Ring B is at r51–53 c40–42. From r45–46 c49–53: DOWN → r50–51 c49–53 (1 step), then LEFT×2 toward r50–51 c39–43 would reach ring B zone. But timer = 3 steps, ring B approach needs 3 steps (DOWN+LEFT+LEFT). Timer would hit 0 exactly at ring B.
-
-Given state 2 persists through expiry and this is the Hypothesis 5B test session — moving DOWN toward ring B:
-
-1
-
-============================================================
-
-[ACTION step=64]
-SENT:
-@LOCUS what should I do next?
-
-step: 64
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r51: c0-3=5, c39-48=3, c49-53=12, c54-58=3
-  r52: c39-48=3, c49-53=9, c54-58=3
-  r53: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r54: c1-10=5, c39-48=3, c49-53=9, c54-58=3
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-50=3, c51-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-50=3, c51-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at the frame:
-
-**Block position**: r50-51 c49-53 (value 12)
-**Entity1 trail**: r52-54 c49-53=9 (state 2, tracking mode — 1 row below block bottom)
-**Timer**: r61-62 c13-50=3 (38 consumed), c51-54=11 (4 remaining = 2 steps before expiry)
-**Cross**: r46-48 c50-52 (values 0/1) — uncollected, present
-**Ring B**: at r51-53 c40-42 — NOT visible here (block at c49-53 covers that zone partially; c39-48=3 at r50-51 suggests ring B zone is to the left)
-**Entity1 carrier**: r55-60 shows state 2 pattern. r57-58 c3-4=9 only (not c7-8) — wait, r57-58 c3-4=9, r59-60 c3-4=9 AND c7-8=9 → state 1 carry pattern. But tracker at r52-54 confirms state 2 active.
-
-**Timer is critically low (2 steps)**. The session is about to expire regardless. With timer at 4 cols remaining (2 steps), expiry is imminent.
-
-Per standing orders: the route should be executing the DC21 Hypothesis 5B probe. Block is at r50-51 c49-53 after the cross zone. The ring B approach requires going LEFT to c39-43. Entity1 tracker is at r52-54 c49-53.
-
-Best action: go LEFT toward ring B at r51-53 c40-42.
-
-2
-
-============================================================
-
-[ACTION step=65]
-SENT:
-@LOCUS what should I do next?
-
-step: 65
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r51: c0-3=5, c39-43=3, c44-48=12, c49-58=3
-  r52: c39-43=3, c44-48=9, c49-58=3
-  r53: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r54: c1-10=5, c39-43=3, c44-48=9, c49-58=3
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
-  r61: c1-10=5, c12=5, c13-52=3, c53-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r62: c1-10=5, c12=5, c13-52=3, c53-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
-  r63: c12-63=5
-
-Respond with only the action number.
-
-LOCUS:
-Looking at this frame carefully:
-
-**Block position**: r50–51 c44–48 (value 12)
-**Entity1 tracker**: r52–54 c44–48 (value 9) — state 2, tracking
-**Timer**: r61–62 c13–52=3 (40 cols consumed), c53–54=11 (2 cols = 1 step remaining!)
-**Entity2**: r38–46 c12–20 with dormant entity at r41–43 c15–17
-**Cross**: r46–48 c50–52 (uncollected, cross still present)
-**Collectible indicators**: c56–57=8, c59–60=8, c62–63=8
-
-Timer is at 2 cols remaining — 1 step before expiry. The block is at r50–51 c44–48. Entity1 tracker is at r52–54, same column.
-
-Ring B is at r51–53 c40–42 — I need LEFT from c44–48 to reach c39–43 to collect ring B and reset the timer. That's 1 LEFT step to c39–43.
-
-2
-
-============================================================
-
-[ACTION step=66]
-SENT:
-@LOCUS what should I do next?
-
-step: 66
-obs_state: GameState.NOT_FINISHED
-levels_completed: 1
-
-Available actions:
-  0: GameAction.ACTION1
-  1: GameAction.ACTION2
-  2: GameAction.ACTION3
-  3: GameAction.ACTION4
-
-Current frame(s):
-frame[0]:
-grid 64x64 bg=4
-  r0: c0-3=5
-  r1: c0-3=5
-  r2: c0-3=5
-  r3: c0-3=5
-  r4: c0-3=5
-  r5: c0-3=5, c19-53=3
-  r6: c0-3=5, c19-53=3
-  r7: c0-3=5, c19-53=3
-  r8: c0-3=5, c19-53=3
-  r9: c0-3=5, c19-53=3
-  r10: c0-3=5, c9-53=3
-  r11: c0-3=5, c9-53=3
-  r12: c0-3=5, c9-53=3
-  r13: c0-3=5, c9-53=3
-  r14: c0-3=5, c9-53=3
-  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r16: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r17: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r18: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
-  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
-  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
-  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
-  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
-  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
-  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
-  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
-  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
-  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
-  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
-  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
-  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
-  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
-  r49: c0-3=5, c44-58=3
-  r50: c0-3=5, c39-43=12, c44-58=3
-  r51: c0-3=5, c39-43=12, c44-58=3
-  r52: c39-43=9, c44-58=3
-  r53: c1-10=5, c39-43=9, c44-58=3
-  r54: c1-10=5, c39-43=9, c44-58=3
-  r55: c1-2=5, c3-8=9, c9-10=5
-  r56: c1-2=5, c3-8=9, c9-10=5
-  r57: c1-2=5, c3-4=9, c5-10=5
-  r58: c1-2=5, c3-4=9, c5-10=5
-  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
-  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r59: c1-2=5, c3-8=9, c9-10=5
+  r60: c1-2=5, c3-8=9, c9-10=5, c12-63=5
   r61: c1-10=5, c12=5, c13-54=3, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r62: c1-10=5, c12=5, c13-54=3, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=8
   r63: c12-63=5
@@ -2451,33 +2463,37 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame:
+Looking at this frame carefully.
 
-**Block position**: r50–51 c39–43 (value 12)
-**Entity1 tracker**: r52–54 c39–43 (value 9) — state 2 active, tracking 1 row below block
-**Entity1 carrier**: r55–60 shows partial 9-pattern = state 2 confirmed
-**Timer**: r61–62 c13–54=3 (all consumed = 0 remaining)
-**Cross**: r46–48 c50–52 (values 0/1) — present/uncollected
-**Ring B**: NOT visible at r51–53 c40–42 — already collected (block is there now)
-**Indicator row**: c56–57=8, c59–60=8, c62–63=8
+**Block position**: r45–46 c49–53 (value 12) — this is the cross zone.
 
-This is Hypothesis 5B session. Ring B was just collected (block at r50–51 c39–43). Entity1 tracker at r52–54 c39–43 = state 2 persists. Timer = 0 (timer just reset from ring B collection, but reading shows c13–54=3 = fully consumed).
+**Entity1 tracker**: r47–49 c49–53 (value 9) — entity1 is tracking in state 2 (one row below block bottom at r46).
 
-Wait — c13–54=3 means timer is AT ZERO (all consumed), not reset. The ring B reset should show c13–54=11. This is post-expiry state. The timer expired and block reset happened, but block is still showing at r50–51 — this may be a reset frame.
+**State**: Ring A present (r16 c15–17=11, uncollected). Cross zone: block is AT r45–46 c49–53.
 
-Entity1 tracker visible at r52–54 = state 2 active. Hypothesis 5B result: entity1 NOT deactivated.
+**Context from DC22**: This is Hypothesis 5C — ring B as FIRST collectible. The DC21 20-step hardcoded probe should have delivered the block to r50–51 c39–43 (ring B). But the frame shows block at r45–46 c49–53, which means the probe stopped at step 16 (r40–41 c49–53) then moved LEFT (step 17) and DOWN (step 18 → r45–46 c44–48... wait, block is at c49–53 not c44–48).
 
-Given timer = 0 and state 2 persists, the best action is to move toward a reset position. Timer exhausted — any move will trigger reset. Navigate RIGHT to escape c39–43 void zone before reset.
+Actually, re-reading: step 16 = DOWN×6 from r10–11 c49–53 → r40–41 c49–53. The cross is at r45–46 c50–52. The block at r45–46 c49–53 means step 17 was DOWN (r45–46), not LEFT. That means the probe descended one extra step and hit the cross zone instead of going LEFT.
 
-3
+Entity1 tracker at r47–49 = one row below r46 = state 2 active. Ring B uncollected (r51–53 not visible as 11 — r50–51 c39–58=3, r51–53 absent from frame explicitly but r51 c39=... wait r51: c0-3=5, c39-58=3. No ring B value 11 visible).
+
+Ring B is at r51–53 c40–42. The frame shows r50: c39-58=3, r51: c39-58=3 — if ring B were present it would show c40-42=11 at r51. It's not listed, meaning the cells are floor (3). Ring B may have already been collected (before this step) or it doesn't show in this abbreviated diff.
+
+Given entity1 is in state 2 (tracker visible), ring B was likely the first collectible that triggered state 2 — but entity1 is NOT deactivated (tracker present at r47–49).
+
+**Hypothesis 5C result**: entity1 still in state 2 → **5C is NULL**.
+
+Next action: move DOWN toward ring B zone to gather more data, or begin exploring. Given the budget, try DOWN to probe r50–51.
+
+1
 
 ============================================================
 
-[ACTION step=67]
+[ACTION step=57]
 SENT:
 @LOCUS what should I do next?
 
-step: 67
+step: 57
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -2568,33 +2584,30 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at frame[5] after the timer-expiry animation (frames[0]-[4] all bg=11):
+Looking at frame[5], this is a timer-expiry reset frame (frames 0-4 are all bg=11, the expiry animation). The game has reset to the L2 start position.
 
-**Current state:**
-- Block (value 12): r40–41 c29–33 — back at L2 start position
-- Entity1 carrier: r55–56 c3–8=9 (full), r57–58 c7–8=9 only, r59–60 partial = **STATE 1** (timer expiry reset to level-entry state 1)
-- Timer: r61–62 c13–54=11 = full 42 cols (fresh cycle)
-- Ring A: r16–18 c15–17=11 ✓ (restored)
-- Ring B: r51–53 c40–42=11 ✓ (restored)
-- Cross: r46–48 c50–52 (values 0/1) ✓ (restored)
-- c62–63=3 = timer-expiry marker
-- Entity1 trail: r42–44 c29–33=9 (same column as block = safe to move UP)
+Frame[5] shows:
+- Block (value 12): r40-41 c29-33 — back at L2 start ✓
+- Entity1 carrier: r55-60 pattern shows state 1 (r57-58 c7-8=9 only) — state 1 preserved through timer expiry ✓
+- Timer r61-62: c13-54=11 (full 42 cols) — fresh timer ✓
+- 11-ring A: r16-18 c15-17=11 — present ✓
+- 11-ring B: r51-53 c40-42=11 — present ✓
+- Cross: r46-48 c50-52 (values 0/1) — present ✓
+- c62-63=3 — timer-expiry marker ✓
 
-This is a fresh timer cycle at the L2 start position. The `_LEVEL2_ROUTE` hardcode has completed (step 67 = well past the 30-step probe). LOCUS is now navigating freely.
+This is the Hypothesis 5C session. The standing order from DC22 is to execute the ring-B-first probe: bypass ring A and cross entirely, collect ring B as the FIRST collectible.
 
-The Hypothesis 5B probe (ring A → ring B, skip cross) should be attempted on this fresh timer. The route: RIGHT → UP×6 → LEFT×4 → DOWN (ring A, state 2 trigger) → UP → RIGHT×7 → DOWN×6 (stop before cross) → LEFT → DOWN×2 → LEFT (ring B).
-
-Step 1 of fresh approach: RIGHT (action 3) to c34–38.
+The DC22 route starts: RIGHT (action 3) from r40-41 c29-33 → r40-41 c34-38.
 
 3
 
 ============================================================
 
-[ACTION step=68]
+[ACTION step=58]
 SENT:
 @LOCUS what should I do next?
 
-step: 68
+step: 58
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -2675,34 +2688,32 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at the frame:
+Looking at the current frame:
 
 **Block position**: r40–41 c34–38 (value 12)
-**Entity1 tracker**: r42–44 c34–38 (value 9) — state 2 active, tracking block
-**Entity2 ring**: r38–46 c12–20 (entity2 body at r41–43 c15–17 visible)
-**Timer**: r61–62 c15–54=11 (40 cols remaining = 20 steps)
-**Ring A**: r16–18 c15–17=11 (present, uncollected — this is the ring A respawn anomaly from DC21)
-**Cross**: r46–48 c50–52 (present)
-**Ring B**: r51–53 c40–42=11 (present)
-**c62–63=3**: timer-expiry marker
+**Entity1 state**: r55–56 c3–8=9 full, r57–58 c7–8=9 only, r59–60 partial → **STATE 1** (no tracker visible adjacent to block)
+**Timer**: r61–62 c13–14=3, c15–54=11 → 28 cols consumed, 14 remaining = 7 steps
+**Entity1 tracker**: NOT visible at r42–44 c34–38 — entity1 dormant at r41–43 c15–17 (the entity2 body pattern, state 1)
+**Ring A**: r16–18 c15–17=11 (present, uncollected)
+**Ring B**: r51–53 c40–42=11 (present, uncollected)
+**Cross**: r46–48 c50–52 (values 0/1, present, uncollected)
+**c62–63=3**: timer-expiry marker (prior expiry occurred this session)
 
-This is session 55, step 68. The Hypothesis 5B route (ring A → ring B, skip cross) is being tested. Block is at r40–41 c34–38 with entity1 tracker at r42–44 c34–38 — state 2 active, **no deadlock** at this column (c34–38 does not overlap entity2 body at c15–17).
+This is **Hypothesis 5C** context — ring B as first collectible. Block is currently at r40–41 c34–38. 
 
-Ring A is present at r16–18 c15–17. The hardcoded probe (DC21, 30 steps) should have already collected ring A — but ring A shows value 11 here. This is consistent with the **ring A respawn anomaly** (non-consumable structure: always visible except while block occupies r15–16 c14–18).
+With 7 timer steps remaining and the Hypothesis 5C probe in progress, I need to navigate toward ring B at r51–53 c40–42 via: DOWN from r40–41 → r45–46, then maneuver toward c39–43.
 
-Ring B is present at r51–53 c40–42 — **uncollected**. This means the Hypothesis 5B probe has NOT yet collected ring B. Block needs to descend to r50–51 c39–43 to collect ring B.
-
-From r40–41 c34–38: go DOWN toward ring B zone.
+Action: DOWN toward ring B zone.
 
 1
 
 ============================================================
 
-[ACTION step=69]
+[ACTION step=59]
 SENT:
 @LOCUS what should I do next?
 
-step: 69
+step: 59
 obs_state: GameState.NOT_FINISHED
 levels_completed: 1
 
@@ -2785,31 +2796,1104 @@ grid 64x64 bg=4
 Respond with only the action number.
 
 LOCUS:
-Looking at the current frame carefully:
+Looking at the frame:
 
-**Block position**: r40–41 c34–38 (value 12 at r40–41 c34–38)
+- Block (value 12): r40–41 c34–38
+- Entity1 tracker: r42–44 c34–38=9 (state 2, tracking block, 1 row below)
+- Entity1 dormant pattern at r41–43 c15–17=9 (entity2 body)
+- Timer: c13–16=3 (8 cols consumed), c17–54=11 (38 remaining = 19 steps)
+- Ring A: r16–18 c15–17=11 (present, uncollected — Hypothesis 5C: ring B first)
+- Ring B: r51–53 c40–42=11 (present, uncollected)
+- Cross: r46–48 c50–52 (values 0/1, present)
+- c62–63=3 (timer-expiry marker from prior reset)
 
-**Entity1 tracker**: r42–44 c34–38 (value 9 at r42 and r43 c34–38) — entity1 is in state 2 (tracking mode), currently 1 row below the block
+This is the Hypothesis 5C run (ring B as first collectible). The DOWN was blocked — entity1 tracker at r42–44 c34–38 cannot clear r45 (void or obstacle). The deadlock here is **not** the entity2 deadlock (wrong column — we're at c34–38, not c14–18). The block needs to reach ring B at r51–53 c40–42.
 
-**Entity2 ring**: r38–46 c12–20 — target
-
-**Timer**: r61–62 c13–16=3 (8 cols consumed), c17–54=11 (38 remaining) — ~19 steps remaining
-
-**Ring A**: r16–18 c15–17=11 (present, uncollected this cycle — the 1-frame respawn or permanent structure)
-
-**Ring B**: r51–53 c40–42=11 (present, uncollected)
-
-**Cross**: r46–48 c50–52 (present)
-
-**c62–63=3** on r61–62: timer-expiry marker from earlier in this session.
-
-The last DOWN move was blocked. Block is at r40–41 c34–38. Entity1 tracker is at r42–44 c34–38 (no deadlock here — entity2 body is at c15–17, not c34–38). The blocked DOWN was because r45–46 c34–38 is void (confirmed from the frame: c34–38 at rows 40–41 is block position, and rows 45+ at c34–38 are void based on prior void map).
-
-This is NOT the c14–18 deadlock — block is at c34–38. At c34–38, entity1 can descend freely (no entity2 body in the way). But r45–46 c34–38 is void, so DOWN is blocked by the maze geometry, not by entity1.
-
-The correct move is **UP** — ascend toward the wide connector to navigate toward ring B or entity2 via the left track.
+From r40–41 c34–38, DOWN is blocked. Need to go RIGHT to c39–43 or c44–48 to reach the ring B zone.
 
 3
+
+============================================================
+
+[ACTION step=60]
+SENT:
+@LOCUS what should I do next?
+
+step: 60
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (RIGHT) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-18=3, c19-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+- Block (value 12) at r40–41 c34–38
+- Entity1 tracker (value 9) at r42–44 c34–38 (state 2, tracking block)
+- Timer r61: c13–18=3 (6 consumed), c19–54=11 (36 remaining = 18 steps)
+- 11-ring A at r16–18 c15–17 (value 11, uncollected)
+- 11-ring B at r51–53 c40–42 (value 11, uncollected)
+- Cross at r46–51 c50–52 (values 0/1, uncollected)
+- Entity2 ring at r38–46 c12–20, entity1 dormant display at r41–43 c15–17
+
+This is the **Hypothesis 5C** scenario — ring B first (bypass ring A entirely). The block is at r40–41 c34–38. RIGHT was blocked. 
+
+The block needs to go DOWN toward ring B via c44–48 route. From r40–41 c34–38, I need DOWN toward r45–46, then LEFT to c44–48, then DOWN to r50–51, then LEFT to c39–43 (ring B).
+
+But wait — c34–38 at rows 45–46 is void (confirmed). Must go RIGHT first to c39–43... but RIGHT is blocked (void gap at c39–43 rows 40–41).
+
+The block is at r40–41 c34–38. Looking at the frame: c44–58=3 at rows 40–41. Need to reach c44–48. RIGHT from c34–38 → c39–43 is void at this row. Need to go UP to rows 35–36 where c34–43=3 to cross to c44–48, or UP further.
+
+From r40–41, UP → r35–36 c34–38. Then RIGHT → r35–36 c39–43 (c34–43=3 at rows 35–36 ✓) → RIGHT → c44–48.
+
+0
+
+============================================================
+
+[ACTION step=61]
+SENT:
+@LOCUS what should I do next?
+
+step: 61
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-33=3, c34-38=9, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-33=3, c34-38=9, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-20=3, c21-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Block position**: r35–36 c34–38 (value 12)
+**Entity1 tracker**: r37–39 c34–38 (value 9) — tracking mode, state 2 active
+**Timer**: c13–20=3 (8 consumed), c21–54=11 (34 remaining) — 17 steps left
+**Entity2 ring**: r38–46 c12–20 with body at r41–43 c15–17
+**Ring A**: r16–18 c15–17=11 (present, uncollected — bypassed this run per Hypothesis 5C)
+**Ring B**: r51–53 c40–42=11 (present, uncollected)
+**Cross**: r46–48 c50–52 (present, uncollected)
+**c62–63=3**: timer-expiry marker (prior run)
+
+This is the DC22 Hypothesis 5C probe. Block is at r35–36 c34–38 — entity1 tracker at r37–39 c34–38. This is NOT the c14–18 deadlock column, so DOWN from here should be passable (entity2 body at r41–43 c15–17 does not block entity1's jump from r37–39 c34–38 to r42–44 c34–38).
+
+The goal now is to reach ring B at r50–51 c39–43 (the first collectible in Hypothesis 5C). From r35–36 c34–38, I need to descend toward the ring B approach zone.
+
+Action: DOWN (to r40–41 c34–38, entity1 clears to r42–44 c34–38)
+
+1
+
+============================================================
+
+[ACTION step=62]
+SENT:
+@LOCUS what should I do next?
+
+step: 62
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-22=3, c23-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Block position**: r40–41 c34–38 (value 12)
+**Entity1 state**: r55–56 c3–8=9 (full), r57–58 c7–8=9 (partial) = **state 1** (carries over from L1 WIN)
+**Entity1 trail**: r42–44 c34–38=9 (same column as block, no lateral attraction)
+**Timer**: r61 c13–22=3 (10 consumed), c23–54=11 (32 remaining = 16 steps)
+**Ring A**: r16–18 c15–17=11 (present)
+**Ring B**: r51–53 c40–42=11 (present)
+**Cross**: r46–48 c50–52 (values 0/1, present)
+**c62–63=3**: timer-expiry marker (prior reset occurred)
+
+**Context from DC22**: This is session 56 — Hypothesis 5C: ring B as FIRST collectible. The DC21 20-step hardcoded probe should have placed the block at r50–51 c39–43 (ring B). But the block is at r40–41 c34–38 — start position. The probe did not execute, or this is step 62 into a fresh timer cycle after reset.
+
+**What to do**: Following the DC22 Hypothesis 5C probe route — I need to reach ring B (r50–51 c39–43) WITHOUT collecting ring A or cross first.
+
+From r40–41 c34–38, the route is:
+- UP×6 → r10–11 c34–38 (bypassing ring A at c14–18 entirely)
+- RIGHT×3 → r10–11 c49–53
+- DOWN×6 → r40–41 c49–53 (stop before cross at r45–46)
+- LEFT → r40–41 c44–48
+- DOWN×2 → r50–51 c44–48
+- LEFT → r50–51 c39–43 (ring B)
+
+Step 62: current position r40–41 c34–38. First action in the 5C probe: UP.
+
+0
+
+============================================================
+
+[ACTION step=63]
+SENT:
+@LOCUS what should I do next?
+
+step: 63
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-33=3, c34-38=9, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-33=3, c34-38=9, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-24=3, c25-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+- Block (value 12): r35–36 c34–38
+- Entity1 tracker (value 9): r37–39 c34–38 — state 2, tracking block, same column
+- Entity2 ring: r38–46 c12–20 (interior value 5 at r39–45 c13–19)
+- Entity1 dormant pattern at r41–43 c15–17 inside entity2 ring
+- 11-ring A: r16–18 c15–17 (value 11, uncollected)
+- 11-ring B: r51–53 c40–42 (value 11, uncollected)
+- Cross: r46–48 c51 (values 0/1, uncollected)
+- Timer: c13–24=3 (24 consumed), c25–54=11 (30 remaining = 15 steps)
+- c62–63=3 (timer-expiry marker — prior expiry occurred)
+
+The block is at c34–38, entity1 tracker is at c34–38 (same column). At c34–38, entity2 body is at c15–17 — entity1's jump from r37–39 DOWN to r42–44 does NOT overlap c15–17 (entity2 body). **No deadlock at c34–38.**
+
+DOWN from r35–36 c34–38 → r40–41 c34–38. Entity1 jumps from r37–39 to r42–44 c34–38 — clear of entity2 body at c15–17. This move should succeed.
+
+With 15 timer steps remaining and no deadlock at this column, moving DOWN is productive navigation.
+
+1
+
+============================================================
+
+[ACTION step=64]
+SENT:
+@LOCUS what should I do next?
+
+step: 64
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-26=3, c27-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block position**: r40–41 c34–38 (value 12)
+**Entity1 carrier**: r55–60 pattern shows state 1 (r57–58 c7–8=9 only)
+**Entity1 tracker**: r42–44 c34–38=9 (trailing below block at c34–38)
+**Timer**: r61–62 c13–26=3 (14 consumed), c27–54=11 (28 remaining = 14 steps)
+**Cross**: r46–48 c50–52 present (values 0/1)
+**Ring B**: r51–53 c40–42=11 (uncollected)
+**Ring A**: r16–18 c15–17=11 (uncollected)
+**Entity2**: r38–46 c12–20 (dormant state 1 at r41–43 c15–17)
+**c62–63=3**: timer-expiry marker
+
+This is step 64, session 56 (Hypothesis 5C: ring B as FIRST collectible). The DC22 probe route calls for ring B at r50–51 c39–43 as step 20. The block is currently at r40–41 c34–38.
+
+Per the DC22 Hypothesis 5C route, at this position I need to navigate DOWN toward ring B. From r40–41 c34–38, the next step in the 5C probe is DOWN to reach r45–46 c34–38, continuing toward r50–51 and then LEFT to ring B.
+
+Action: DOWN (action 1)
+
+1
+
+============================================================
+
+[ACTION step=65]
+SENT:
+@LOCUS what should I do next?
+
+step: 65
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (DOWN) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-28=3, c29-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-28=3, c29-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Current state:**
+- Block (value 12): r40–41 c34–38
+- Entity1 tracker (value 9): r42–44 c34–38 (state 2, tracking block at c34–38)
+- Entity1 state carrier: r55–60 — state 1 dormant pattern visible
+- Timer: r61–62, c13–28=3 (16 consumed), c29–54=11 (26 remaining = 13 steps)
+- Entity2 ring: r38–46 c12–20, interior value 9 at r41–43 c15–17
+- Ring A (11): r16–18 c15–17 — **PRESENT** (uncollected)
+- Ring B (11): r51–53 c40–42 — **PRESENT** (uncollected)
+- Cross (0/1): r46–48 c51–52 — **PRESENT** (uncollected)
+- c62–63=3: timer-expiry marker (prior timer expiry occurred)
+
+**Where am I in the session?** Step 65, block at r40–41 c34–38. The hardcoded DC21 probe (Hypothesis 5B: ring A → ring B, skip cross) should be active. But the block is at c34–38 not c39–43 — the probe may have deviated.
+
+**The deadlock situation:** DOWN is blocked. Block at r40–41 c34–38 with entity1 tracker at r42–44 c34–38. Entity2 body at r41–43 c15–17 — but we're at c34–38, not c14–18. At c34–38, entity1's jump from r42–44 to r47–49 should NOT be blocked by entity2 body (which is at c15–17, not c34–38).
+
+Wait — the WARNING says DOWN produced no movement. At r40–41 c34–38 going DOWN → r45–46 c34–38. Is r45–46 c34–38 passable? Looking at the frame: r45 shows c44–58=3 but c34–38 is not listed → **VOID** at r45 c34–38. That's why DOWN is blocked here — not entity1 deadlock, but a void below.
+
+**Best move:** Go UP (action 0) to r35–36 c34–38, then continue the route toward ring B via the far-right track.
+
+0
+
+============================================================
+
+[ACTION step=66]
+SENT:
+@LOCUS what should I do next?
+
+step: 66
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-33=3, c34-38=9, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-33=3, c34-38=9, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-30=3, c31-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Block position**: r35–36 c34–38 (value 12)
+**Entity1 tracker**: r37–39 c34–38 (value 9) — state 2, tracking mode
+**Timer**: r61–62 c13–30=3 (18 consumed), c31–54=11 (24 remaining = 12 steps)
+**Ring A**: r16–18 c15–17=11 (present/uncollected — ring B is first trigger context)
+**Ring B**: r51–53 c40–42=11 (present/uncollected)
+**Cross**: r46–48 c50–52 (values 0/1, present)
+**c62–63=3**: timer-expiry marker (not a ring indicator)
+
+This is Hypothesis 5C territory — ring B as first collectible. Entity1 tracker is at r37–39 c34–38 (not c14–18), so no deadlock here. DOWN from r35–36 c34–38: entity1 at r37–39 needs to jump to r42–44. Entity2 body is at r41–43 c15–17 — c34–38 does NOT overlap c15–17, so entity1 can jump freely. No deadlock at c34–38.
+
+Move DOWN to r40–41 c34–38, continuing toward ring B via the right track.
+
+1
+
+============================================================
+
+[ACTION step=67]
+SENT:
+@LOCUS what should I do next?
+
+step: 67
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-32=3, c33-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-32=3, c33-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+**Block**: r40–41 c34–38 (value 12) — at start position after timer reset
+**Entity1 carrier**: r55–60 pattern = state 1 (full pattern, no tracker visible)
+**Timer**: r61–62 c13–32=3 (20 consumed), c33–54=11 (22 remaining = 11 steps)
+**Entity1 state**: STATE 1 — no tracker at block_bottom+1 rows. This is L2 start state after timer expiry reset.
+**Ring A**: r16–18 c15–17=11 (present, uncollected) ✓
+**Ring B**: r51–53 c40–42=11 (present, uncollected) ✓  
+**Cross**: r46–48 c50–52 (present, uncollected) ✓
+**c62–63=3**: timer-expiry marker active
+
+This is the DC22 Hypothesis 5C session — ring B as FIRST collectible. The 20-step hardcoded probe (`_LEVEL2_ROUTE` DC22) should have brought the block to r50–51 c39–43 by session step 35. But the block is at r40–41 c34–38 (start position), which means this is post-timer-expiry reset at step ~67.
+
+With 11 steps remaining and all collectibles uncollected, the DC22 Hypothesis 5C route to ring B requires:
+- RIGHT×1 + UP×6 + RIGHT×3 + DOWN×6 + LEFT + DOWN×2 + LEFT = 20 steps
+
+That's more steps than available. Best use of remaining budget: attempt the cross first path or probe ring B from nearby.
+
+From r40–41 c34–38: RIGHT to c39–43 (void, blocked). So go RIGHT — block is at c34–38 already, one more RIGHT would go to c39–43 which is void at rows 40–41.
+
+Actually block is at c34–38. Going UP is the correct move — ascend toward wide connector to reach ring B via the far-right track within 11 steps. UP×4 gets to r10–11, then RIGHT×3 to c49–53, then DOWN×6 to r40–41, LEFT, DOWN×2, LEFT = too many.
+
+With only 11 steps, the most valuable action is UP — begin ascending toward the wide connector.
+
+3
+
+============================================================
+
+[ACTION step=68]
+SENT:
+@LOCUS what should I do next?
+
+step: 68
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (RIGHT) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-38=3, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-38=3, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-33=3, c34-38=12, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-34=3, c35-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-34=3, c35-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Block position**: r40–41 c34–38 (value 12)
+**Entity1 tracker**: r42–44 c34–38 (value 9 at r42 and r43) — state 2 active, tracking block
+**Entity2 ring**: r38–46 c12–20 — entity2 body at r41–43 c15–17 (value 9)
+**Timer**: r61 c13–34=3 (22 consumed), c35–54=11 (20 remaining = 10 steps)
+**Ring A**: r16–18 c15–17=11 (present, uncollected this cycle — timer reset available)
+**Ring B**: r51–53 c40–42=11 (present, uncollected)
+**Cross**: r46–48 c50–52 (present)
+**Last move RIGHT was blocked** — at c34–38 rows 40–41, RIGHT would go to c39–43 which is void at rows 40–41.
+
+I'm at step 68 of session 56, running Hypothesis 5C (ring B as first collectible). The hardcoded probe was 20 steps; LOCUS has been controlling since step 36. With 10 timer steps remaining and block at r40–41 c34–38, I need to ascend to collect ring B at r50–51 c39–43 — but that requires going DOWN first, which is also problematic from here.
+
+Actually the most productive move with 10 steps remaining is UP — ascend toward ring A at r15–16 c14–18 for a timer reset, which will let me continue the investigation.
+
+0
+
+============================================================
+
+[ACTION step=69]
+SENT:
+@LOCUS what should I do next?
+
+step: 69
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=4
+  r0: c0-3=5
+  r1: c0-3=5
+  r2: c0-3=5
+  r3: c0-3=5
+  r4: c0-3=5
+  r5: c0-3=5, c19-53=3
+  r6: c0-3=5, c19-53=3
+  r7: c0-3=5, c19-53=3
+  r8: c0-3=5, c19-53=3
+  r9: c0-3=5, c19-53=3
+  r10: c0-3=5, c9-53=3
+  r11: c0-3=5, c9-53=3
+  r12: c0-3=5, c9-53=3
+  r13: c0-3=5, c9-53=3
+  r14: c0-3=5, c9-53=3
+  r15: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r16: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r17: c0-3=5, c9-14=3, c15=11, c16=3, c17=11, c18-23=3, c29-38=3, c44-53=3
+  r18: c0-3=5, c9-14=3, c15-17=11, c18-23=3, c29-38=3, c44-53=3
+  r19: c0-3=5, c9-23=3, c29-38=3, c44-53=3
+  r20: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r21: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r22: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r23: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r24: c0-3=5, c9-23=3, c29-38=3, c49-58=3
+  r25: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r26: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r27: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r28: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r29: c0-3=5, c14-18=3, c34-43=3, c49-58=3
+  r30: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r31: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r32: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r33: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r34: c0-3=5, c14-18=3, c34-43=3, c49-53=3
+  r35: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r36: c0-3=5, c14-18=3, c29-33=3, c34-38=12, c49-53=3
+  r37: c0-3=5, c14-18=3, c29-33=3, c34-38=9, c49-53=3
+  r38: c0-3=5, c12-20=3, c29-33=3, c34-38=9, c49-53=3
+  r39: c0-3=5, c12=3, c13-19=5, c20=3, c29-33=3, c34-38=9, c49-58=3
+  r40: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r41: c0-3=5, c12=3, c13-14=5, c15-17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r42: c0-3=5, c12=3, c13-14=5, c15=9, c16-19=5, c20=3, c29-38=3, c44-58=3
+  r43: c0-3=5, c12=3, c13-14=5, c15=9, c16=5, c17=9, c18-19=5, c20=3, c29-38=3, c44-58=3
+  r44: c0-3=5, c12=3, c13-19=5, c20=3, c29-38=3, c44-58=3
+  r45: c0-3=5, c12=3, c13-19=5, c20=3, c44-58=3
+  r46: c0-3=5, c12-20=3, c44-50=3, c51=0, c52-58=3
+  r47: c0-3=5, c44-49=3, c50=1, c51-52=0, c53-58=3
+  r48: c0-3=5, c44-50=3, c51=1, c52-58=3
+  r49: c0-3=5, c44-58=3
+  r50: c0-3=5, c39-58=3
+  r51: c0-3=5, c39=3, c40-42=11, c43-58=3
+  r52: c39=3, c40=11, c41=3, c42=11, c43-58=3
+  r53: c1-10=5, c39=3, c40-42=11, c43-58=3
+  r54: c1-10=5, c39-58=3
+  r55: c1-2=5, c3-8=9, c9-10=5
+  r56: c1-2=5, c3-8=9, c9-10=5
+  r57: c1-6=5, c7-8=9, c9-10=5
+  r58: c1-6=5, c7-8=9, c9-10=5
+  r59: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5
+  r60: c1-2=5, c3-4=9, c5-6=5, c7-8=9, c9-10=5, c12-63=5
+  r61: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r62: c1-10=5, c12=5, c13-36=3, c37-54=11, c55=5, c56-57=8, c58=5, c59-60=8, c61=5, c62-63=3
+  r63: c12-63=5
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame:
+
+- Block (value 12): r35–36 c34–38
+- Entity1 tracker (value 9): r37–39 c34–38 (1 row below block, tracking mode = state 2)
+- Ring A: r16–18 c15–17=11 (present/uncollected in this view — respawn anomaly from prior ring B collection)
+- Ring B: r51–53 c40–42=11 (present)
+- Cross: r46–48 c50–52 (present)
+- Timer: r61–62 c13–36=3 (24 consumed), c37–54=11 (18 remaining = 9 steps)
+- c62–63=3: timer-expiry marker active
+
+This is session 56, Hypothesis 5C test. I'm at r35–36 c34–38 with entity1 tracking at c34–38 (no deadlock here — entity2 body is at c15–17, not c34–38). Timer is low (9 steps). Ring B is uncollected and I haven't collected ring A yet in this run (ring A appears to show 11 but c62–63=3 indicates prior timer expiry, not current state).
+
+The most useful action is DOWN — descend toward ring B at r50–51 c39–43. From r35–36 c34–38, DOWN → r40–41 c34–38. Entity1 will track to r42–44 c34–38 (no deadlock at c34–38). This preserves remaining timer and moves toward ring B collection.
+
+1
 
 ============================================================
 

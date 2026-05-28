@@ -9307,3 +9307,61 @@ LOCUS receives 35 steps (session step 36 = L2 step 21; budget: 70 − 15 − 20 
 
 [/dc]
 
+
+---
+
+SECTION 1
+
+@LAT-640LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 56 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "8d5bce0c-03cd-4fe6-a54d-2ceb4eb5227b"
+card_id: "f0c217a0-7a7d-49bc-a27a-8c2e71beed40"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (55 actions)"
+actions: 70
+levels_completed: 1
+score: 3.571428571428571
+resets: 0
+level_actions: [15, 55, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, thirty-fifth consecutive confirmation — sessions 10–12, 23–27, 31–56). Level 2 entered; 55 level-2 actions taken (max_steps=70); NOT WON. Total 70 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–55.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=35]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Thirty-fifth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (thirty-fifth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (thirty-fifth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=70, 70 actions available.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-fifth consecutive confirmation per STATUS exchange).
+
+---
+
+### Level 2 — 55 actions, NOT WON (thirty-fifth attempt)
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 35→36): LOCUS confirmed Game State fully current. 34 consecutive L1 wins, 34 failed L2 attempts. Score 3.571 unchanged since session 23. Session 56 standing order confirmed: Hypothesis 5C — ring B as the very first collectible (state-2 trigger via ring B; ring A and cross bypassed entirely). DC22 20-step hardcoded probe active in `_LEVEL2_ROUTE`.
+
+2. **STATUS**: LOCUS confirmed EPS scan (Game State EPS ~4.42 highest; @BELIEF:LAT-140LON-40 EPS ~2.12 second; @BELIEF:LAT-50LON-40
