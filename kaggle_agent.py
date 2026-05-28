@@ -61,13 +61,13 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
-# Session 55 result: Hypothesis 5B REFUTED — ring A → ring B (cross skipped) does NOT deactivate
-# entity1. Two independent runs confirmed. Entity1 tracker at r52-54 c39-43 = STATE 2 after probe.
-# All four deactivation hypotheses (3A, 3E, 4A, 5B) exhausted. Ring A respawn anomaly confirmed
-# (value 11 at r16 c15-17 appears 1 frame after ring B collection — likely non-consumable marker).
-# DC22: Hypothesis 5C — ring B as FIRST collectible (bypass ring A at c14-18 entirely). Route goes
-# RIGHT→UP×6→RIGHT×3 to c49-53 (skips ring A), then DOWN×6→LEFT→DOWN×2→LEFT to ring B at r50-51
-# c39-43. Ring B triggers STATE 2 as first collectible. LOCUS gets 35 steps (max_steps=70).
+# Session 56 result: Hypothesis 5C REFUTED — ring B as FIRST collectible does NOT deactivate
+# entity1. Entity1 tracker at r52-54 c39-43 = STATE 2 active at handoff. All five deactivation
+# hypotheses (3A, 3E, 4A, 5B, 5C) exhausted. Ring A non-consumable confirmed (persisted entire
+# session when never collected — timer-reset display artifact ruled out).
+# DC23: Hypothesis 6B — collect ring B TWICE (ring B → let timer expire ~42 steps → ring B again).
+# Same 20-step ring-B-first probe. Timer expiry resets block to r40-41 c29-33; ring B respawns.
+# LOCUS gets 65 L2 steps (max_steps=100) to navigate post-reset and execute second ring B collection.
 _LEVEL2_ROUTE = [
     3,                          # step 1:  RIGHT → r40-41 c34-38
     0, 0, 0, 0, 0, 0,           # steps 2-7:  UP×6 → r10-11 c34-38
@@ -77,7 +77,7 @@ _LEVEL2_ROUTE = [
     1,                          # step 18:  DOWN → r45-46 c44-48  [floor; void only rows 25-39]
     1,                          # step 19:  DOWN → r50-51 c44-48
     2,                          # step 20:  LEFT → r50-51 c39-43  [ring B → STATE 2; FIRST collectible; timer reset 42]
-]  # 20-step Hypothesis-5C probe (DC22 session 56); LOCUS checks entity1 at r52-54 c39-43 (step 36)
+]  # 20-step Hypothesis-6B probe (DC23 session 57); LOCUS gets 65 L2 steps (max_steps=100)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
