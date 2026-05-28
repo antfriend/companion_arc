@@ -10673,4 +10673,184 @@ Forty-first confirmation. Route stable. Block entered entity2 interior at r10–
 
 **Key session exchanges**:
 
-1. **FOCUS @LAT-10LON10** (sal: 42→43): LOCUS confirmed Game State current. 40 consecutive L1 wins, 40 failed L2 attempts. All 9 collectible deactiv
+1. **FOCUS @LAT-10LON10** (sal: 42→43): LOCUS confirmed Game State current. 40 consecutive L1 wins, 40 failed L2 attempts. All 9 collectible deactivation hypotheses exhausted. 9A INCONCLUSIVE at N=53. DC29 standing order: Hypothesis 10A — ring A ×2 via timer-expiry multi-cycle. Code updated: `_LEVEL2_ROUTE` 42→64 steps.
+
+2. **STATUS**: EPS scan. @BELIEF:LAT-140LON-40 (entity2 approach) EPS 3.51 — critical. @BELIEF:LAT-50LON-40 (entity1 state machine) EPS 1.71. Hypothesis 10A pending. DC29 64-step route confirmed in system prompt.
+
+---
+
+### DC29 Route Execution (L2 steps 1–64)
+
+DC29 64-step route executed. Frame at handoff (total step 79, L2 step 64 complete):
+
+- **Block**: r40–41 c29–33 ⚠ **UNEXPECTED** (expected r35–36 c14–18)
+- **Entity1 tracker**: r42–44 c29–33 = **STATE 2 ACTIVE** (tracking block at c29–33)
+- **Ring B**: r51–53 c40–42=11 → **RESPAWNED** ✓
+- **Ring A**: r16–18 c15–17=11 → **RESPAWNED** ✓
+- **Timer**: c21–54=11 = 34 cols = **17 steps** ✓
+- **Timer expiry marker**: c62–63=3 (timer expired at least once during route) ✓
+- **Last action (step 64, DOWN)**: void-blocked — block did not move
+
+### DC29 Route Failure
+
+Block ended at r40–41 c29–33 (the L2 start position), NOT the expected r35–36 c14–18. Root cause: the DC29 wide connector oscillation (RIGHT×6 + LEFT×6, steps 48–59) did not successfully return the block to c14–18. Block appears to have entered the c29–33 column's lower floor section (rows 35–44) via c34–38 LEFT. The c29–33 column has a void gap at rows 25–34 (confirmed: LOCUS observed "LEFT blocked — c29–33 void at rows 25–26" during free phase at r25–26 c34–38).
+
+Timer evidence: timer=17 and c62–63=3 (expiry marker) ARE consistent with the route having burned the timer correctly. The route likely expired the timer and possibly collected ring A ×2, but the block did not arrive at c14–18 for the deadlock check.
+
+### Hypothesis 10A — INCONCLUSIVE (route failure)
+
+Entity1 was in STATE 2 at handoff (tracker at r42–44 c29–33). However, because the block was at c29–33 rather than c14–18, the test condition was not met: we cannot confirm whether ring A ×2 was collected or whether entity1 deactivation was properly evaluated. The handoff position is not the intended test position.
+
+**10A status**: INCONCLUSIVE — route failure precluded clean test. Requires DC30 with corrected route.
+
+### LOCUS Free Phase (L2 steps 65–95, total steps 79–109)
+
+LOCUS misidentified the block at r40–41 c29–33 as the "L2 start position" and began navigating toward ring A via RIGHT → UP → LEFT → DOWN approach. Block navigated through c34–38 corridor (r40-41 → r25-26) across 31 steps but never reached c14–18 deadlock. Timer expired again during free phase (ring A and ring B respawned a second time). Entity1 remained in STATE 2 throughout.
+
+Session ended NOT_FINISHED at total step 109. 9A additional blocked-DOWN events accumulated: 0 (LOCUS never reached c14–18 deadlock).
+
+---
+
+### New Geometry Finding: c29–33 Void Gap
+
+**c29–33 column structure** (confirmed session 62):
+- Rows 10–24: passable (wide connector + upper floor, c9-23=3 or c9-53=3)
+- Rows 25–34: **VOID** (gap — block cannot traverse)
+- Rows 35–44: floor (c29-38=3)
+- Rows 45+: void
+
+Wide connector RIGHT×6 + LEFT×6 traversal passed through c29–33 (rows 10–11, wide connector). The specific failure mechanism is unclear — the block ended at the c29–33 lower section (rows 35–44) despite the route specifying only horizontal movement in the wide connector. Hypothesis: entity1 tracking at r12–14 c29–33 during LEFT traversal combined with the c29–33 lower section accessibility caused an unexpected descent.
+
+### DC29 Post-Mortem — Route Correction for DC30
+
+DC29 route flaw: RIGHT×6 + LEFT×6 traversal in wide connector is unreliable because it passes through c29–33 which has a lower section reachable from c34–38. Fix: use a **LEFT/RIGHT micro-oscillation at the wide connector junction** that stays within c9–18 (no dangerous intermediate columns):
+
+- At r10–11 c14–18 (after UP×5 from deadlock): oscillate LEFT×1 (→c9–13) + RIGHT×1 (→c14–18) ×6 cycles to burn 12 timer steps
+- c9–13 in wide connector: passable; below (rows 15+) c4–8 is void → LEFT from c9–13 is blocked, block cannot fall further left
+- This oscillation stays within 5 cols of c14–18 — no corridor-drop risk
+
+---
+
+### Hypothesis Tally — Post Session 62
+
+| # | Hypothesis | Status | Session |
+|---|---|---|---|
+| 3A | Collision ×13 → state 3 | REFUTED | 52 |
+| 3E | State-1 geometric approach | REFUTED | 53 |
+| 4A | Cross at state 2 | REFUTED | 54 |
+| 5B | Ring A → ring B | REFUTED | 55 |
+| 5C | Ring B first | REFUTED | 56 |
+| 6A | Timer expiry | REFUTED | 56 |
+| 6B | Ring B ×2 | REFUTED STRUCTURAL | 58 |
+| 8A | Ring B + ring A | REFUTED | 59 |
+| 8B | Ring B + cross + ring A | REFUTED | 60 |
+| 9A | N blocked-DOWN events (N=53) | INCONCLUSIVE | 61 |
+| **10A** | Ring A ×2 via multi-cycle | **INCONCLUSIVE — route failure** | **62** |
+
+---
+
+## Dream Cycle 29 (DC29) — Post Session 62
+
+### Replay
+
+Session 62 (DC29): DC29 64-step route failed — block at r40–41 c29–33 at handoff instead of r35–36 c14–18. Timer=17 and c62-63=3 indicate timer DID expire during route. Entity1 STATE 2 ACTIVE at handoff (tracker at r42–44 c29–33). Hypothesis 10A inconclusive. LOCUS free phase (31 steps): navigated in c34–38 column, never reached c14–18 deadlock. 9A lower bound unchanged (N>53).
+
+New geometry finding: c29–33 column has void gap at rows 25–34, lower floor section at rows 35–44. Wide connector traversal through c29–33 is unreliable.
+
+### Record Updates
+
+1. **@BELIEF:LAT-50LON-40** (entity1 state machine): Rev 9 — 10A INCONCLUSIVE (route failure, DC29). DC30 = corrected 64-step route using LEFT/RIGHT micro-oscillation at c9–13/c14–18 junction. conf: 75→72. sal: 9→10.
+
+2. **@LAT-10LON10** (Game State): sal: 43→44. Session 62 = 41st L1 win, 41st L2 failure. DC29 route failure. 10A INCONCLUSIVE. DC30 = corrected route. conf: 248→250. rev: 28→29.
+
+3. **@BELIEF:LAT-140LON-40** (entity2 approach): Rev 8 — 10A inconclusive (route failure). DC30 = corrected route. conf: 45→42. sal: 8→9.
+
+4. **NEW RECORD — c29–33 void gap**: c29–33 column has void gap at rows 25–34 (lower section rows 35–44 reachable from c34–38 only). Wide connector traversal through c29–33 unreliable. Write near @LAT-20LON-30.
+
+---
+
+### Phase 1 Replay — No New Locus Points
+
+No new belief clusters met threshold. Session 62 confirmed geometry constraint (c29–33 void gap) but no new co-occurrence pattern extracted.
+
+---
+
+## ls20 — Level 2 — DC30 Design (session 63)
+
+### Objective
+
+Hypothesis 10A (corrected probe): ring B → cross → ring A → ring A ×2 via timer-expiry multi-cycle → entity1 state 3. Route corrected to avoid c29–33 wide connector issue.
+
+### Timer Burn Fix: LEFT/RIGHT Micro-Oscillation at c9–13/c14–18
+
+Instead of lateral traversal through c29–33 in the wide connector, burn the 17-step handoff timer by oscillating LEFT×1 + RIGHT×1 at the c9–13/c14–18 junction:
+
+- **c9–13** (LEFT of c14–18): wide connector passable (c9–53=3 at rows 10–14); LEFT from c9–13 → c4–8 = void (blocked); block confined to c9–13 ↔ c14–18 oscillation
+- Each LEFT+RIGHT cycle = 2 timer steps, 6 cycles = 12 timer steps
+- No corridor-drop risk (c4–8 below c9–13 in wide connector is void, blocking accidental leftward slide)
+
+### DC30 Route — 64-Step Corrected Extension
+
+`_LEVEL2_ROUTE` in `kaggle_agent.py` (64 steps; same length as DC29, corrected timer-burn):
+
+```python
+_LEVEL2_ROUTE = [
+    # DC28 route (42 steps): ring B → cross → ring A → deadlock
+    3,                              # L2 step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,               # L2 steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 11-16: DOWN×6 → r40-41 c49-53
+    2, 1, 1, 2,                     # L2 steps 17-20: L,D,D,L → r50-51 c39-43 [ring B; STATE 2; timer reset]
+    3, 3,                           # L2 steps 21-22: RIGHT×2 → r50-51 c49-53
+    0,                              # L2 step 23: UP → r45-46 c49-53 [cross]
+    0, 0, 0, 0, 0, 0, 0,            # L2 steps 24-30: UP×7 → r10-11 c49-53
+    2, 2, 2, 2, 2, 2, 2,            # L2 steps 31-37: LEFT×7 → r10-11 c14-18
+    1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset 21]
+    1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock; timer=17]
+    # Ring A second cycle: UP×5 + LEFT/RIGHT micro-oscillation ×6 + DOWN + DOWN×4 (22 steps)
+    0, 0, 0, 0,                     # L2 steps 43-46: UP×4 → r15-16 c14-18 (timer: 17→13)
+    0,                              # L2 step 47: UP×1 → r10-11 c14-18 (timer: 13→12; wide connector)
+    2, 3, 2, 3, 2, 3,               # L2 steps 48-53: LEFT-RIGHT×3 oscillate c9-13↔c14-18 (timer: 12→6)
+    2, 3, 2, 3, 2, 3,               # L2 steps 54-59: LEFT-RIGHT×3 oscillate c9-13↔c14-18 (timer: 6→0; ring A+B RESPAWN)
+    1,                              # L2 step 60: DOWN → r15-16 c14-18 [ring A ×2; timer reset 21]
+    1, 1, 1, 1,                     # L2 steps 61-64: DOWN×4 → r35-36 c14-18 [deadlock; timer=17; 10A check]
+]  # 64-step DC30 probe (session 63); LOCUS gets 31 L2 steps (max_steps=110; 64+31=95)
+```
+
+**Timer tracking**:
+- L2 step 42 handoff: timer=17 steps, block r35–36 c14–18
+- UP×4 (steps 43–46): timer 17→13, block r15–16 c14–18 (ring A absent — consumed)
+- UP×1 (step 47): timer 13→12, block r10–11 c14–18 (wide connector)
+- LEFT-RIGHT×6 cycles (steps 48–59): timer 12→0, block oscillates c9–13 ↔ c14–18, ring A+B RESPAWN at step 59
+- DOWN×1 (step 60): block r10–11 → r15–16 c14–18, ring A COLLECTED ×2, timer reset 21
+- DOWN×4 (steps 61–64): block r15–16 → r35–36 c14–18, timer 21→17, entity1 deadlock
+
+**Handoff**: L2 step 65 (total step 80), r35–36 c14–18, timer=17 steps. Entity1: ABSENT (state 3 if 10A triggered) or PRESENT at r37–39 (state 2).
+
+**LOCUS task (31 L2 steps)**:
+1. Check entity1 at r37–39 c14–18.
+2. If ABSENT → state 3 → DOWN → WIN.
+3. If PRESENT → 10A REFUTED → DOWN ×31 (9A lower bound extends to N>84).
+
+### Standing Orders for Session 63
+
+After DC30 hardcode completes (L2 step 64, total step 79):
+- Block at r35–36 c14–18. Timer=17 steps.
+- Check r37–39 c14–18 for entity1 (value 9).
+- If ABSENT → state 3 → DOWN → WIN.
+- If PRESENT → 10A REFUTED → DOWN ×31 (deadlock events, timer frozen).
+
+Cross visible at r46–48 c50–52 (non-consumable, collected). Do NOT navigate toward cross.
+
+**Parameters**: offline_levels=2, max_steps=110 (unchanged). Only `_LEVEL2_ROUTE` changes (steps 48–59: replace RIGHT×6+LEFT×6 with LEFT-RIGHT×6 micro-oscillation).
+
+---
+
+```cursor
+selected:
+  - @LAT-10LON10
+preview:
+  @LAT-10LON10: "Game State. sal:44, conf:250. ls20 OFFLINE mode. L1 solved (41 consecutive wins). L2: 41 attempts, NOT WON. 10A INCONCLUSIVE (DC29 route failure — c29-33 void gap). DC30 = corrected 64-step route, LEFT/RIGHT micro-oscillation c9-13/c14-18. LOCUS gets 31 steps."
+```
+
+---
