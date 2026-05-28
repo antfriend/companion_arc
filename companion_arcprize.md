@@ -10460,4 +10460,156 @@ Fortieth confirmation. Route stable. Block entered entity2 interior at r10–11 
 
 **Key session exchanges**:
 
-1. **FOCUS @LAT-10LON10** (sal: 40→41): LOCUS confirmed Game State fully current. 39 consecutive L1 wins, 39 failed L2 attempts. All 9
+1. **FOCUS @LAT-10LON10** (sal: 40→41): LOCUS confirmed Game State fully current. 39 consecutive L1 wins, 39 failed L2 attempts. All 9 collectible deactivation hypotheses exhausted. DC28 standing order confirmed: issue DOWN (action 1) repeatedly from deadlock position r35–36 c14–18 to probe Hypothesis 9A (N blocked-DOWN events → entity1 state 3).
+
+2. **STATUS**: EPS scan complete. @BELIEF:LAT-140LON-40 (entity2 approach) EPS 5.71 — highest. @BELIEF:LAT-50LON-40 (entity1 state machine) EPS 5.53. Both high-strain records reflect the unsolved entity1 deactivation problem after 9 refuted collectible hypotheses. Competition score 3.571 unchanged 37 sessions.
+
+---
+
+### DC28 Route Execution (L2 steps 1–42)
+
+DC28 route identical to DC27. Frame at handoff (total step 57, L2 step 42 complete):
+
+- **Block**: r35–36 c14–18 ✓ (value 12)
+- **Entity1 tracker**: r37–39 c14–18 = **STATE 2 ACTIVE** ✓ (value 9)
+- **Ring B**: r50–51 c39–43 — no value 11 → **COLLECTED** ✓
+- **Ring A**: r15–19 c9–23 — no value 11 → **COLLECTED** ✓
+- **Cross**: r46–48 c50–52 visible (values 0/1, non-consumable — expected)
+- **Timer**: c21–54=11 = 34 cols remaining = **17 steps** ✓
+
+All 3 collectibles collected. Entity1 STATE 2 ACTIVE at handoff. Route executed correctly.
+
+### Hypothesis 9A — LOCUS Free Phase (L2 steps 43–95, total steps 57–109)
+
+LOCUS immediately identified DC28 protocol at the first free-phase step (total step 57) and issued DOWN (action 1). Each blocked DOWN produced the entity1-deadlock WARNING ("last move (DOWN) produced NO movement — blocked by a void"). Timer remained FROZEN throughout all 53 LOCUS steps (c21–54=11 constant = 17 steps at every observation). No LOCUS deviation.
+
+**Entity1 tracker PRESENT at r37–39 c14–18 for all 53 blocked-DOWN events.**
+
+### Hypothesis 9A — INCONCLUSIVE at N = 53
+
+Entity1 did not deactivate after 53 consecutive blocked-DOWN events from r35–36 c14–18. Timer freeze confirmed across large N. State-3 trigger not located at N ≤ 53.
+
+**Lower bound established**: if Hypothesis 9A is valid, N > 53.
+
+---
+
+### Hypothesis Tally — Post Session 61
+
+| # | Hypothesis | Status | Session |
+|---|---|---|---|
+| 3A | Collision ×13 → state 3 | REFUTED | 52 |
+| 3E | State-1 geometric approach | REFUTED — ring A invariant | 53 |
+| 4A | Cross at state 2 | REFUTED | 54 |
+| 5B | Ring A → ring B (skip cross) | REFUTED ×2 | 55 |
+| 5C | Ring B first | REFUTED | 56 |
+| 6A | Timer expiry at state 2 | REFUTED | 56 |
+| 6B | Ring B ×2 after timer reset | REFUTED STRUCTURAL | 58 |
+| 8A | Ring B + ring A | REFUTED | 59 |
+| 8B | Ring B + cross + ring A | REFUTED | 60 |
+| **9A** | N blocked-DOWN events (N=53) | **INCONCLUSIVE** | **61** |
+
+---
+
+## Dream Cycle 28 (DC28) — Post Session 61
+
+### Replay
+
+Session 61 (DC28): DC28 42-step route executed correctly. Entity1 tracker at r37–39 c14–18 at handoff = STATE 2. LOCUS issued DOWN ×53 for all 53 free-phase steps — no deviation. Entity1 PRESENT throughout all 53 events. Timer FROZEN for all 53 deadlock events (confirmed timer-freeze-on-deadlock across large N). Hypothesis 9A NOT triggered at N=53.
+
+### Record Updates
+
+1. **@BELIEF:LAT-50LON-40** (entity1 state machine): Rev 8 — 9A INCONCLUSIVE at N=53 (not triggered at 53 consecutive deadlock events). Timer freeze confirmed across large N. DC29 = Hypothesis 10A (ring A second collection via multi-cycle after timer expiry). conf: 80→75. sal: 8→9.
+
+2. **@LAT-10LON10** (Game State): sal: 41→42. Session 61 = 40th L1 win, 40th L2 failure. Hypothesis 9A INCONCLUSIVE (N=53). DC29 = Hypothesis 10A. conf: 245→248. rev: 27→28.
+
+3. **@BELIEF:LAT-140LON-40** (entity2 approach): Rev 7 — 9A inconclusive at N=53. DC29 = 10A probe. conf: 50→45. sal: 7→8.
+
+4. **@BELIEF:LAT30LON0** (timer mechanics): Addendum — entity1-deadlock timer freeze confirmed across 53 consecutive events (session 61). Freeze is consistent and does not expire regardless of N. sal: increment.
+
+---
+
+### Phase 1 Replay — No New Locus Points
+
+No belief clusters met threshold (min_cluster_size:3, min_cooccurrence:25, belief_conf_threshold:128). Session 61 confirmed existing records; no new co-occurrence patterns extracted. Locus Point set unchanged from DC27.
+
+---
+
+## ls20 — Level 2 — DC29 Design (session 62)
+
+### Objective
+
+Hypothesis 10A: ring B (first collectible, state-2 trigger) → cross (second) → ring A (third) → **ring A again** (fourth collectible, second cycle after timer expiry) → entity1 state 3.
+
+Ring A confirmed to respawn after timer expiry (session 60). DC29 extends the DC28 hardcode by 22 steps to collect ring A a second time via timer expiry in the wide connector, then gives LOCUS 31 steps to check entity1 and continue 9A probing.
+
+### Timer Mechanics for DC29 Extension
+
+At DC28 handoff (L2 step 42): timer = 17 steps, block at r35–36 c14–18.
+
+- **L2 steps 43–46** (UP×4): r35–36 → r15–16 c14–18. Timer: 17→13.
+- **L2 step 47** (UP×1): r15–16 → r10–11 c14–18 (enters wide connector). Timer: 13→12.
+- **L2 steps 48–53** (RIGHT×6): r10–11 c14–18 → c44–48. Timer: 12→6. (5 cols/step, wide connector fully passable)
+- **L2 steps 54–59** (LEFT×6): r10–11 c44–48 → c14–18. Timer: 6→0. **Ring A respawns at r15–16 c14–18; ring B respawns at r50–51 c39–43** at step 59.
+- **L2 step 60** (DOWN×1): r10–11 c14–18 → r15–16 c14–18. **Ring A COLLECTED (2nd time). Timer resets to 21 steps.**
+- **L2 steps 61–64** (DOWN×4): r15–16 → r35–36 c14–18. Timer: 21→17. Entity1 at r37–39 = deadlock.
+
+Entity1 tracking note: entity1 tracks block through wide connector steps 47–59 at block_bottom+1 (r12–14) — wide connector cells passable. DOWN from r10–11 to r15–16 (step 60) unblocked: entity1 can reposition to r17–19 (no obstacle below, unlike the c14–18 deadlock where entity2 body at r41–43 prevents entity1 movement).
+
+### DC29 Route — 64-Step Extension
+
+`_LEVEL2_ROUTE` extended from 42 to 64 steps in `kaggle_agent.py`:
+
+```python
+_LEVEL2_ROUTE = [
+    # DC28 route (42 steps): ring B → cross → ring A → deadlock
+    3,                              # L2 step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,               # L2 steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 11-16: DOWN×6 → r40-41 c49-53
+    2, 1, 1, 2,                     # L2 steps 17-20: L,D,D,L → r50-51 c39-43 [ring B; STATE 2; timer reset 21]
+    3, 3,                           # L2 steps 21-22: RIGHT×2 → r50-51 c49-53
+    0,                              # L2 step 23: UP → r45-46 c49-53 [cross; no timer reset]
+    0, 0, 0, 0, 0, 0, 0,            # L2 steps 24-30: UP×7 → r10-11 c49-53
+    2, 2, 2, 2, 2, 2, 2,            # L2 steps 31-37: LEFT×7 → r10-11 c14-18
+    1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset 21]
+    1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock; timer=17]
+    # Ring A second cycle: UP×5 + RIGHT×6 + LEFT×6 (timer expires step 59) + DOWN×5 (22 steps)
+    0, 0, 0, 0,                     # L2 steps 43-46: UP×4 → r15-16 c14-18 (timer: 17→13)
+    0,                              # L2 step 47: UP×1 → r10-11 c14-18 (timer: 13→12; wide connector)
+    3, 3, 3, 3, 3, 3,               # L2 steps 48-53: RIGHT×6 → r10-11 c44-48 (timer: 12→6)
+    2, 2, 2, 2, 2, 2,               # L2 steps 54-59: LEFT×6 → r10-11 c14-18 (timer: 6→0; ring A+B RESPAWN)
+    1,                              # L2 step 60: DOWN → r15-16 c14-18 [ring A ×2; timer reset 21]
+    1, 1, 1, 1,                     # L2 steps 61-64: DOWN×4 → r35-36 c14-18 [deadlock; timer=17; 10A check]
+]  # 64-step DC29 probe (session 62); LOCUS gets 31 L2 steps (max_steps=110; 64+31=95)
+```
+
+**Handoff**: L2 step 65 (total step 80), r35–36 c14–18, timer=17 steps. Entity1: ABSENT (state 3 if 10A triggered) or PRESENT at r37–39 (state 2 if not).
+
+**LOCUS task (31 L2 steps)**:
+1. Check entity1 at r37–39 c14–18.
+2. If ABSENT → state 3 achieved → issue DOWN → enter entity2 ring interior → WIN.
+3. If PRESENT → 10A REFUTED → issue DOWN ×31 (blocked-DOWN events, 9A continuation). **9A lower bound extends from N>53 to N>84 (53+31).**
+
+### Standing Orders for Session 62
+
+**After DC29 hardcode completes (L2 step 64, total step 79), block at r35–36 c14–18**:
+- Check r37–39 c14–18 for entity1 tracker (value 9).
+- If ABSENT → state 3 → issue DOWN → WIN.
+- If PRESENT → 10A REFUTED → issue DOWN ×31 (deadlock events, timer frozen, 9A continuation).
+
+**Cross visibility**: Cross visible at r46–48 c50–52 (non-consumable, already collected). Do NOT navigate toward cross.
+
+**Ring visibility**: After step 59, ring A and ring B are respawned. Ring A was collected at step 60 (consumed again). Ring B at r50–51 c39–43 may be visible at handoff — do NOT navigate toward ring B (state 2 blocks LEFT approach from c44–48).
+
+**Parameters**: offline_levels=2, max_steps=110 (unchanged). Only `_LEVEL2_ROUTE` changes (42→64 steps).
+
+---
+
+```cursor
+selected:
+  - @LAT-10LON10
+preview:
+  @LAT-10LON10: "Game State. sal:42, conf:248. ls20 OFFLINE mode. L1 solved (40 consecutive wins, hardcoded). L2: 40 attempts, NOT WON. 9A INCONCLUSIVE (N=53). DC29 = Hypothesis 10A (ring A×2 via timer-expiry multi-cycle). Code change: _LEVEL2_ROUTE 42→64 steps. LOCUS gets 31 steps; also extends 9A lower bound to N>84."
+```
+
+---
