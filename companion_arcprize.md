@@ -9762,7 +9762,7 @@ level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
 
 **Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, thirty-seventh consecutive confirmation — sessions 10–12, 23–27, 31–58). Level 2 entered; 86 level-2 actions taken (max_steps=110 → GAME_OVER at 101 total); NOT WON. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–57.
 
-This is a duplicate of session 57's scorecard entry (same run_guid `6f59fb0c-...`, same card_id `f0e61d10-...`, same 101 actions and GAME_OVER state). The session did not produce a new run — the system returned the prior run's completed scorecard. The DC25 61-step `_LEVEL2_ROUTE` code change was **not yet applied** at run time; session 58 re-ran with the prior configuration.
+**Correction**: LOCUS auto-record mistakenly flagged this as a "scorecard replay" (same run_guid/card_id as session 57). The session DID execute new code — session log confirms 34 LOCUS queries post-handoff (global steps 76–109). Kaggle offline scoring returned the same scorecard metadata; that is a scoring-system artefact, not a repeated run.
 
 ---
 
@@ -9772,16 +9772,76 @@ This is a duplicate of session 57's scorecard entry (same run_guid `6f59fb0c-...
 UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
 [/route]
 
-Thirty-seventh confirmation (counting this session even though it is a scorecard replay). Route stable.
-
-**Phase 4 validations**:
-- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (thirty-seventh time).
-- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (thirty-seventh time).
-- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. GAME_OVER at 101 of 110 max_steps confirms operator-set ceiling.
-- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-seventh consecutive confirmation per STATUS exchange confirming 36 consecutive carry-overs).
+Thirty-seventh confirmation. Route stable.
 
 ---
 
-### Level 2 — Status
+### Level 2 — DC25 Execution Results
 
-No new L2 frame data. DC25 61-step `_LEVEL2_ROUTE` must be deployed before the next run. Hypothesis 6B (second ring B collection →
+**DC25 61-step `_LEVEL2_ROUTE` ran correctly. Key findings:**
+
+**1. Ring B #1 collected at L2 step 20 — entity1 → STATE 2 confirmed ✓**
+Block descended via c49-53 to r50-51 c44-48, LEFT to r50-51 c39-43 (ring B). Timer reset to 21 steps. Entity1 tracker appeared at r42-44 c29-33 (state 2 active) after timer expiry reset at handoff.
+
+**2. Oscillation (L2 steps 21–41, 21 steps) — timer exhausted correctly ✓**
+c62-63=3 marker confirmed at all LOCUS queries (timer-expiry marker set during route). Timer expired during route as designed. Block reset to r40-41 c29-33.
+
+**3. Ring B #2 LEFT (L2 step 61) — BLOCKED ✗**
+WARNING at global step 76: "last move (LEFT) produced NO movement — block position unchanged." Frame at handoff: block at r40-41 c29-33, entity1 tracker at r42-44 c29-33 (state 2 active), ring B at r51-53 c40-42=11 (uncollected). Timer: 4 cols remaining = 2 steps.
+
+**4. NEW FINDING — Hypothesis 6B STRUCTURALLY REFUTED:**
+The LEFT from r50-51 c44-48 → c39-43 (ring B #2) is **blocked in state 2** because entity1 tracker (at r52-54 c44-48) cannot follow block to r52-54 c39-43 — ring B display cells (value 11) at r51-53 c40-42 are **solid for entity1 tracker movement**. The tracker physically cannot enter ring B cells, which prevents the block from moving to c39-43. Ring B is only collectible in state 1 (entity1 dormant = no tracker). Second ring B collection is architecturally impossible in state 2. Hypothesis 6B is not merely inconclusive — it is structurally REFUTED.
+
+**5. LOCUS phase (global steps 76–109, 34 queries):**
+LOCUS received handoff with timer 2 steps remaining. LOCUS misread entity1 state as "STATE 1" throughout (carrier pattern misidentified; tracker at r42-44 correctly indicated state 2). LOCUS burned remaining 2 timer steps at steps 76–77, triggering timer expiry #3 at step 79 (5 frames bg=11 + reset frame confirmed). After reset, LOCUS correctly recognized STATE 2 at step 80 and began navigating toward ring B. Budget exhausted before second ring B attempt. GAME_OVER at global step 101. Score unchanged at 3.571.
+
+**LOCUS entity1 misread (persistent bug):** LOCUS uses carrier pattern (r55-60) to determine entity1 state. This is incorrect — carrier is always visible in both states. State is determined by tracker presence at block_bottom+1 rows, same col. LOCUS consistently output "STATE 1" when tracker was visible at r42-44 c34-38 (steps 77, 79, 80 initially). Updated DC25/DC26 standing orders must explicitly remind LOCUS to check r(block_bottom+1) through r(block_bottom+3) for tracker value 9.
+
+---
+
+### Session 58 DC26 Design
+
+**Hypothesis 8A: Ring B (first) → Ring A (second, at c14-18) → entity2 accessible**
+
+Rationale: All six prior deactivation hypotheses exhausted (3A, 3E, 4A, 5B, 5C) plus 6B now structurally refuted. Ring B → ring A sequence (ring B as first collectible, ring A as second) is the one untested combination. Ring A at r15-16 c14-18 (same column as entity2 approach) — collecting ring A as second collectible with entity1 already in state 2 may trigger state 3 or provide entity2 access. Timer: ring A also resets timer to 21 steps.
+
+**DC26 — 42-step hardcoded route (session 59):**
+
+Steps 1–20: First ring B probe (state 2 trigger, timer reset 21):
+- RIGHT, UP×6, RIGHT×3, DOWN×6, LEFT, DOWN, DOWN, LEFT → r50-51 c39-43 [ring B; STATE 2]
+
+Steps 21–22: RIGHT×2 → r50-51 c49-53 (avoid void at c39-43/c44-48 above r50)
+
+Steps 23–30: UP×8 → r10-11 c49-53 (ascend via right column, timer 21→3 steps consumed so far = 38 remaining)
+
+Steps 31–37: LEFT×7 → r10-11 c14-18 (wide connector traverse, timer 38-14=24 cols = 12 steps remaining)
+
+Step 38: DOWN → r15-16 c14-18 [ring A; SECOND collectible; timer reset to 21 = 42 cols]
+
+Steps 39–42: DOWN×4 → r20-21 → r25-26 → r30-31 → r35-36 c14-18 [deadlock position; entity1 tracker at r37-39 blocks DOWN; timer: 42-8=34 cols = 17 steps remaining]
+
+```python
+_LEVEL2_ROUTE = [
+    # First ring B probe (20 steps) — state 2 trigger + timer reset
+    3,                              # L2 step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,               # L2 steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 11-16: DOWN×6 → r40-41 c49-53
+    2, 1, 1, 2,                     # L2 steps 17-20: L,D,D,L → r50-51 c39-43 [ring B; STATE 2; timer reset 21]
+    # Navigate from ring B to c49-53 ascent column (10 steps; c39-43/c44-48 void above r50)
+    3, 3,                           # L2 steps 21-22: RIGHT×2 → r50-51 c49-53
+    0, 0, 0, 0, 0, 0, 0, 0,         # L2 steps 23-30: UP×8 → r10-11 c49-53 [timer: 42-20=22 cols=11 steps]
+    # Traverse wide connector to c14-18 (7 steps)
+    2, 2, 2, 2, 2, 2, 2,            # L2 steps 31-37: LEFT×7 → r10-11 c14-18 [timer: 22-14=8 cols=4 steps]
+    # Collect ring A (second collectible; timer reset 21; no state 2 trigger since already state 2)
+    1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset 21=42 cols]
+    # Descend to deadlock position (4 steps; timer: 42-8=34 cols=17 steps remaining at handoff)
+    1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock; entity1 r37-39 blocks DOWN]
+]  # 42 steps (DC26 session 59); LOCUS gets 53 L2 steps (max_steps=110; 42+53=95 ✓)
+```
+
+**LOCUS task at handoff (L2 step 43, r35-36 c14-18):**
+1. Check entity1 tracker at r37-39 c14-18 (value 9). **If ABSENT** (state 3 — deactivated by ring B + ring A sequence) → try DOWN from r35-36; navigate to entity2; WIN.
+2. **If PRESENT** → Hypothesis 8A REFUTED. Report tracker position, timer state, and ring A/B display values for DC27 design.
+
+Timer at handoff: 17 steps = 34 cols remaining. Deadlock freezes timer (entity1-deadlock blocks timer). LOCUS has budget to oscillate and probe.
