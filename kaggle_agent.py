@@ -61,12 +61,12 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
-# Session 59: DC26 ran correctly. Ring B #1 (state 2 ✓), ring A (second collectible ✓). Handoff
-# at r35-36 c14-18 with entity1 tracker at r37-39 PRESENT. Hypothesis 8A REFUTED: ring B + ring A
-# sequence does NOT deactivate entity1. Ring A collection via lateral (LEFT) approach confirmed.
-# DC27 (session 60): Hypothesis 8B — ring B (first) → cross (second, r45-46 c49-53) → ring A
-# (third, timer reset) → deadlock check. 42-step route; LOCUS checks entity1 at r37-39 c14-18.
-# max_steps=110 → L2 budget=95; 42+53=95 ✓
+# DC29 (session 62): Hypothesis 10A — ring A second collection via timer-expiry multi-cycle.
+# After DC28 42-step route (ring B → cross → ring A → deadlock, timer=17), navigate UP from
+# deadlock to wide connector, burn timer via RIGHT×6+LEFT×6 (expires at step 59), collect
+# ring A a second time at step 60, return to deadlock at step 64. LOCUS gets 31 steps to check
+# entity1: ABSENT→state 3→WIN; PRESENT→10A REFUTED + DOWN×31 (9A lower bound N>84).
+# max_steps=110 → L2 budget=95; 64+31=95 ✓
 _LEVEL2_ROUTE = [
     # First ring B probe (20 steps) — state 2 trigger + timer reset
     3,                              # L2 step 1:  RIGHT → r40-41 c34-38
@@ -84,8 +84,15 @@ _LEVEL2_ROUTE = [
     # Collect ring A (third collectible; timer reset 21=42 cols)
     1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset]
     # Descend to deadlock (timer: 42-8=34 cols=17 steps at handoff)
-    1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock; entity1 r37-39]
-]  # 42-step DC27 probe (session 60); LOCUS gets 53 L2 steps (max_steps=110)
+    1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock; timer=17]
+    # Ring A second cycle: burn timer in wide connector, collect ring A ×2 (22 steps)
+    0, 0, 0, 0,                     # L2 steps 43-46: UP×4 → r15-16 c14-18 (timer: 17→13)
+    0,                              # L2 step 47: UP×1 → r10-11 c14-18 (timer: 13→12; wide connector)
+    3, 3, 3, 3, 3, 3,               # L2 steps 48-53: RIGHT×6 → r10-11 c44-48 (timer: 12→6)
+    2, 2, 2, 2, 2, 2,               # L2 steps 54-59: LEFT×6 → r10-11 c14-18 (timer: 6→0; ring A+B RESPAWN)
+    1,                              # L2 step 60: DOWN → r15-16 c14-18 [ring A ×2; timer reset 21]
+    1, 1, 1, 1,                     # L2 steps 61-64: DOWN×4 → r35-36 c14-18 [deadlock; timer=17; 10A check]
+]  # 64-step DC29 probe (session 62); LOCUS gets 31 L2 steps (max_steps=110; 64+31=95)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
