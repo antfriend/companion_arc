@@ -303,9 +303,9 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 @LAT-10LON10 | created:1747180800 | updated:1748995200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,tracks_level>@LAT-460LON10,tracks_level>@LAT-610LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:228
-rev:24
-sal:36
+conf:231
+rev:25
+sal:37
 touched:1748995200
 [/ew]
 
@@ -3902,8 +3902,8 @@ source_count:8
 [/lp]
 [ew]
 conf:115
-rev:4
-sal:5
+rev:5
+sal:6
 touched:1748995200
 [/ew]
 
@@ -3934,6 +3934,8 @@ Corrected route to cross at r46–48 c50–52 via wide connector: RIGHT (to c34�
 *(Rev 3 — DC22: Hypothesis 5B REFUTED (session 55, two independent runs). Ring A → ring B without cross does NOT deactivate entity1. All four deactivation hypotheses (3A, 3E, 4A, 5B) refuted. Only untested ordering: ring B as FIRST collectible (bypass ring A and cross entirely) = Hypothesis 5C. Session 56 target. conf: 175→145.)*
 
 *(Rev 4 — DC23/DC24: Hypothesis 5C REFUTED (session 56). Ring B as first collectible does NOT deactivate entity1 — entity1 tracker at r52–54 c39–43 STATE 2 ACTIVE confirmed at handoff. All five deactivation hypotheses (3A, 3E, 4A, 5B, 5C) refuted. Hypothesis 6A also REFUTED by session 56 direct observation: timer expired at step ~57, entity1 remained STATE 2 after reset — single timer-cycle expiry does NOT trigger state 3. State 3 existence and trigger completely unknown. Session 57 = Hypothesis 6B: second ring B collection after timer reset (ring B → oscillate 42 steps to exhaust timer → ring B again). Requires max_steps=110. conf: 145→115.)*
+
+*(Rev 5 — DC25/session 57: Hypothesis 6B INCONCLUSIVE — LOCUS failed to navigate to ring B after first timer expiry. Key corrections: timer = 21 actions (42 cols / 2 cols per action; DC24's "42-step oscillation" was wrong). Void-blocked moves tick timer (new — differs from entity1-deadlock blocks which freeze timer). c34–38 dead-end from r40–41: DOWN blocked (void at r45–46), RIGHT blocked (void at c39–43 r40–41) — LOCUS trapped oscillating at c34–38. Session 58 = DC25: hardcode full 61-step double ring-B test (20 probe + 21 oscillation + 20 second probe). conf: unchanged (no hypothesis confirmed or refuted).)*
 
 ---
 
@@ -5206,8 +5208,8 @@ source_count:4
 [/lp]
 [ew]
 conf:65
-rev:4
-sal:4
+rev:5
+sal:5
 touched:1748995200
 [/ew]
 
@@ -9651,4 +9653,78 @@ Thirty-sixth confirmation. Route stable. Block entered entity2 interior at r10�
 
 **Key session exchanges**:
 
-1. **FOCUS @LAT-10LON10** (sal: 36→37): L
+1. **FOCUS @LAT-10LON10** (sal: 36→37): LOCUS confirmed Hypothesis 6B standing order — second ring B collection after timer reset → entity1 deactivation test. max_steps=110 confirmed active.
+
+2. **STATUS**: Entity1 state machine, deadlock geometry, and Hypothesis 6B route reviewed. Session 57 objective confirmed: execute DC22 20-step ring-B-first probe, oscillate to exhaust timer, re-collect ring B, check entity1.
+
+3. **ACTION step=35** (L2 step 20): Hardcoded probe complete. Block at r50–51 c39–43. Ring B collected. Entity1 tracker at r52–54 c39–43 = **STATE 2 ACTIVE**. Timer full (42 cols). Probe confirmed correct — 5C NULL (ring B first → state 2, no deactivation).
+
+4. **ACTION steps 36–56** (L2 steps 21–41): LOCUS oscillation phase. Step 36: RIGHT to c44–48 (correct). Steps 37–41: UP/DOWN alternation. Steps 42–56: LOCUS correctly alternated UP/DOWN at c44–48. Timer consumed 2 cols/step. Timer reached 0 at L2 step 41 (global step 56). LOCUS correctly identified "timer at 2 cols = 1 step remaining" and issued DOWN to exhaust timer.
+
+5. **ACTION step=57** (L2 step 42): Timer expiry animation — frames [0]–[4] all bg=11. Frame [5]: block reset to r40–41 c29–33, ring B respawned at r51–53 c40–42, timer full. LOCUS correctly identified reset state and issued RIGHT = first step of second ring B route. ✓
+
+6. **ACTION step=58** (L2 step 43): **LOCUS DEVIATION.** Block at r40–41 c34–38 (RIGHT from reset succeeded). LOCUS attempted RIGHT again → blocked (c39–43 void at rows 40–41). Block unchanged. Timer consumed by blocked move — **NEW FINDING: void-blocked moves tick the timer** (unlike entity1-deadlock blocks which freeze it).
+
+7. **ACTION steps 59–101** (L2 steps 44–86): LOCUS trapped at c34–38. From r40–41 c34–38, DOWN is blocked (c34–38 void at r45–46 — new geometry finding). RIGHT is blocked (c39–43 void at r40–41). LOCUS could only oscillate UP/DOWN between r35–36 and r40–41 at c34–38. Ring B was never reached. Two more timer cycles expired without collecting ring B. Budget exhausted at global step 101.
+
+---
+
+### Session 57 Findings
+
+**Hypothesis 6B: INCONCLUSIVE.** LOCUS failed to navigate to ring B after first timer expiry. Probe route (second ring B) was not executed. Hypothesis 6B remains untested.
+
+**Finding 1 — Timer = 21 actions** (correction to DC24): Timer bar = 42 cols. Each action consumes 2 cols. Timer = 21 steps from full to expiry. DC24 said "42-step oscillation" — wrong. Correct oscillation = 21 steps: RIGHT(1) + (UP,DOWN)×10.
+
+**Finding 2 — Void-blocked moves tick timer**: At step 58, LOCUS tried RIGHT from r40–41 c34–38 → c39–43 (void). Move was blocked. Timer still consumed 2 cols (1 step). **Void-blocked moves advance the timer.** This distinguishes them from entity1-deadlock blocks (which freeze the timer — session 52 finding). Two different block types; two different timer behaviors.
+
+**Finding 3 — c34–38 column dead-end from r40–41**: From r40–41 c34–38 (one RIGHT from L2 reset position):
+- RIGHT → c39–43 at rows 40–41 = VOID. **Blocked.**
+- DOWN → c34–38 at rows 45–46 = VOID. **Blocked.**
+- Only valid moves: UP → r35–36 c34–38, or LEFT → c29–33.
+LOCUS was trapped oscillating r35–36 ↔ r40–41 at c34–38.
+
+**Finding 4 — LOCUS second-probe navigation failure**: LOCUS did not execute the correct second ring B route after timer expiry. Correct route requires UP×6 from r40–41 c34–38 to reach wide connector (rows 10–14), then RIGHT×3 to c49–53, then DOWN×6 and LEFT moves to ring B at c39–43 r50–51. LOCUS got stuck at c34–38 without ascending to the wide connector.
+
+**Root cause**: DC24 LOCUS standing orders described the oscillation correctly but did NOT encode the second ring B route as explicit hardcoded actions. LOCUS was expected to navigate autonomously after timer expiry — it failed.
+
+---
+
+### Session 57 DC25 Design
+
+**DC25 — Full Hypothesis 6B Hardcode**
+
+Solution: extend `_LEVEL2_ROUTE` to 61 steps covering the complete double ring-B test. LOCUS gets 34 L2 steps (95 total budget − 61 hardcoded) to check entity1 and WIN.
+
+```python
+_LEVEL2_ROUTE = [
+    # First ring B probe (DC22/DC23 20-step route)
+    3,                              # L2 step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,               # L2 steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 11-16: DOWN×6 → r40-41 c49-53
+    2,                              # L2 step 17: LEFT → r40-41 c44-48
+    1,                              # L2 step 18: DOWN → r45-46 c44-48
+    1,                              # L2 step 19: DOWN → r50-51 c44-48
+    2,                              # L2 step 20: LEFT → r50-51 c39-43 [ring B #1; STATE 2; timer reset 21 steps]
+    # Oscillation: 21 steps to exhaust timer (2 cols/step × 21 = 42 cols)
+    3,                              # L2 step 21: RIGHT → r50-51 c44-48
+    0, 1, 0, 1, 0, 1, 0, 1, 0, 1,  # L2 steps 22-31: (UP,DOWN)×5
+    0, 1, 0, 1, 0, 1, 0, 1, 0, 1,  # L2 steps 32-41: (UP,DOWN)×5 → timer=0; expiry at query 42
+    # Second ring B probe (same 20 steps; LOCUS sees expiry+reset frame at step 42)
+    3,                              # L2 step 42: RIGHT → r40-41 c34-38 (post-reset r40-41 c29-33)
+    0, 0, 0, 0, 0, 0,               # L2 steps 43-48: UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 49-51: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 52-57: DOWN×6 → r40-41 c49-53
+    2,                              # L2 step 58: LEFT → r40-41 c44-48
+    1,                              # L2 step 59: DOWN → r45-46 c44-48
+    1,                              # L2 step 60: DOWN → r50-51 c44-48
+    2,                              # L2 step 61: LEFT → r50-51 c39-43 [ring B #2; timer reset]
+]  # 61 steps (DC25 session 58); LOCUS gets 34 L2 steps to check entity1 at r52-54 c39-43 and WIN if absent
+```
+
+LOCUS task (34 L2 steps):
+1. Check entity1 at r52–54 c39–43 immediately after handoff (L2 step 62).
+2. If **absent** → entity1 deactivated (state 3). WIN route: 2,2,2,2,2,0,0 (LEFT×5, UP×2) → r40–41 c14–18 (entity2 body). 7 steps.
+3. If **present** → Hypothesis 6B NULL. Entity1 remains STATE 2. Escalate to DC26.
+
+**Feasibility**: max_steps=110 → L2 budget=95. 61 hardcoded + 34 LOCUS = 95 ✓. WIN path: 61 + 1 (check) + 7 (WIN) = 69 ≤ 95 ✓.

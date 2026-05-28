@@ -61,23 +61,37 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
-# Session 56 result: Hypothesis 5C REFUTED — ring B as FIRST collectible does NOT deactivate
-# entity1. Entity1 tracker at r52-54 c39-43 = STATE 2 active at handoff. All five deactivation
-# hypotheses (3A, 3E, 4A, 5B, 5C) exhausted. Ring A non-consumable confirmed (persisted entire
-# session when never collected — timer-reset display artifact ruled out).
-# DC23: Hypothesis 6B — collect ring B TWICE (ring B → let timer expire ~42 steps → ring B again).
-# Same 20-step ring-B-first probe. Timer expiry resets block to r40-41 c29-33; ring B respawns.
-# LOCUS gets 65 L2 steps (max_steps=100) to navigate post-reset and execute second ring B collection.
+# Session 57: Hypothesis 6B INCONCLUSIVE — LOCUS failed to navigate to ring B after first timer
+# expiry (got stuck at c34-38: DOWN void-blocked, RIGHT void-blocked). Key correction: timer =
+# 21 actions (42 bar-cols / 2 cols-per-action), NOT 42 steps as DC24 stated. Void-blocked moves
+# tick timer (unlike entity1-deadlock blocks which freeze it).
+# DC25: Hardcode the full 61-step double ring-B test: 20-step first probe + 21-step oscillation
+# (RIGHT + 10×(UP,DOWN)) + 20-step second probe. LOCUS gets 34 L2 steps to check entity1 at
+# r52-54 c39-43 and WIN if absent (LEFT×5, UP×2). max_steps=110 → L2 budget=95; 61+34=95 ✓
 _LEVEL2_ROUTE = [
-    3,                          # step 1:  RIGHT → r40-41 c34-38
-    0, 0, 0, 0, 0, 0,           # steps 2-7:  UP×6 → r10-11 c34-38
-    3, 3, 3,                    # steps 8-10: RIGHT×3 → r10-11 c49-53  [bypasses ring A at c14-18]
-    1, 1, 1, 1, 1, 1,           # steps 11-16: DOWN×6 → r40-41 c49-53  [STOPS before cross at r45-46]
-    2,                          # step 17:  LEFT → r40-41 c44-48
-    1,                          # step 18:  DOWN → r45-46 c44-48  [floor; void only rows 25-39]
-    1,                          # step 19:  DOWN → r50-51 c44-48
-    2,                          # step 20:  LEFT → r50-51 c39-43  [ring B → STATE 2; FIRST collectible; timer reset 42]
-]  # 20-step Hypothesis-6B probe (DC23/DC24 session 57); LOCUS gets 75 L2 steps (max_steps=110)
+    # First ring B probe (DC22 20-step route)
+    3,                              # L2 step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,               # L2 steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 11-16: DOWN×6 → r40-41 c49-53
+    2,                              # L2 step 17: LEFT → r40-41 c44-48
+    1,                              # L2 step 18: DOWN → r45-46 c44-48
+    1,                              # L2 step 19: DOWN → r50-51 c44-48
+    2,                              # L2 step 20: LEFT → r50-51 c39-43 [ring B #1; STATE 2; timer 21 steps]
+    # Oscillation: 21 steps exhaust timer (RIGHT + 10×(UP,DOWN))
+    3,                              # L2 step 21: RIGHT → r50-51 c44-48
+    0, 1, 0, 1, 0, 1, 0, 1, 0, 1,  # L2 steps 22-31: (UP,DOWN)×5
+    0, 1, 0, 1, 0, 1, 0, 1, 0, 1,  # L2 steps 32-41: (UP,DOWN)×5 → timer=0
+    # Second ring B probe (query 42 sees expiry+reset; route sends RIGHT into post-reset state)
+    3,                              # L2 step 42: RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,               # L2 steps 43-48: UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 49-51: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 52-57: DOWN×6 → r40-41 c49-53
+    2,                              # L2 step 58: LEFT → r40-41 c44-48
+    1,                              # L2 step 59: DOWN → r45-46 c44-48
+    1,                              # L2 step 60: DOWN → r50-51 c44-48
+    2,                              # L2 step 61: LEFT → r50-51 c39-43 [ring B #2; timer reset]
+]  # 61-step DC25 probe (session 58); LOCUS gets 34 L2 steps (max_steps=110)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
