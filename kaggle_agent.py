@@ -61,25 +61,23 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
-# Session 54 result: Hypothesis 4A REFUTED — cross collected at state 2 (after ring A triggers
-# state 2) does NOT deactivate entity1. All 3 collectibles gathered; entity1 remained state 2.
-# Ring A 1-frame respawn anomaly at ring B collection (possible non-consumable structure like cross).
-# DC21: Hypothesis 5B — ring A first (state 2 trigger) → ring B as SECOND collectible (skip cross)
-# → check entity1 deactivation. Route stops at r40-41 c49-53 (before cross at r45-46), then
-# goes LEFT to c44-48 → DOWN×2 to r50-51 → LEFT to ring B. LOCUS gets 25 steps (max_steps=70).
+# Session 55 result: Hypothesis 5B REFUTED — ring A → ring B (cross skipped) does NOT deactivate
+# entity1. Two independent runs confirmed. Entity1 tracker at r52-54 c39-43 = STATE 2 after probe.
+# All four deactivation hypotheses (3A, 3E, 4A, 5B) exhausted. Ring A respawn anomaly confirmed
+# (value 11 at r16 c15-17 appears 1 frame after ring B collection — likely non-consumable marker).
+# DC22: Hypothesis 5C — ring B as FIRST collectible (bypass ring A at c14-18 entirely). Route goes
+# RIGHT→UP×6→RIGHT×3 to c49-53 (skips ring A), then DOWN×6→LEFT→DOWN×2→LEFT to ring B at r50-51
+# c39-43. Ring B triggers STATE 2 as first collectible. LOCUS gets 35 steps (max_steps=70).
 _LEVEL2_ROUTE = [
     3,                          # step 1:  RIGHT → r40-41 c34-38
     0, 0, 0, 0, 0, 0,           # steps 2-7:  UP×6 → r10-11 c34-38
-    2, 2, 2, 2,                 # steps 8-11: LEFT×4 → r10-11 c14-18
-    1,                          # step 12:  DOWN → r15-16 c14-18  [ring A → entity1 STATE 2; timer reset 42]
-    0,                          # step 13:  UP → r10-11 c14-18   [exit ring A]
-    3, 3, 3, 3, 3, 3, 3,        # steps 14-20: RIGHT×7 → r10-11 c49-53
-    1, 1, 1, 1, 1, 1,           # steps 21-26: DOWN×6 → r40-41 c49-53  [STOPS before cross at r45-46]
-    2,                          # step 27:  LEFT → r40-41 c44-48
-    1,                          # step 28:  DOWN → r45-46 c44-48  [floor; void only at rows 25-39]
-    1,                          # step 29:  DOWN → r50-51 c44-48
-    2,                          # step 30:  LEFT → r50-51 c39-43  [ring B → timer reset 42; SECOND collectible; cross uncollected]
-]  # 30-step Hypothesis-5B probe (DC21 session 55); LOCUS checks entity1 at r52-54 c39-43
+    3, 3, 3,                    # steps 8-10: RIGHT×3 → r10-11 c49-53  [bypasses ring A at c14-18]
+    1, 1, 1, 1, 1, 1,           # steps 11-16: DOWN×6 → r40-41 c49-53  [STOPS before cross at r45-46]
+    2,                          # step 17:  LEFT → r40-41 c44-48
+    1,                          # step 18:  DOWN → r45-46 c44-48  [floor; void only rows 25-39]
+    1,                          # step 19:  DOWN → r50-51 c44-48
+    2,                          # step 20:  LEFT → r50-51 c39-43  [ring B → STATE 2; FIRST collectible; timer reset 42]
+]  # 20-step Hypothesis-5C probe (DC22 session 56); LOCUS checks entity1 at r52-54 c39-43 (step 36)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 

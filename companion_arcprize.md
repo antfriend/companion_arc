@@ -303,9 +303,9 @@ What LOCUS does between sessions — background activity that keeps the competit
 
 @LAT-10LON10 | created:1747180800 | updated:1748995200 | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-50LON10,tracks_level>@LAT-60LON10,tracks_level>@LAT-70LON10,tracks_level>@LAT-80LON10,tracks_level>@LAT-90LON10,tracks_level>@LAT-100LON10,tracks_level>@LAT-110LON10,tracks_level>@LAT-120LON10,tracks_level>@LAT-130LON10,tracks_level>@LAT-150LON10,tracks_level>@LAT-160LON10,tracks_level>@LAT-170LON10,tracks_level>@LAT-180LON10,tracks_level>@LAT-190LON10,tracks_level>@LAT-200LON10,tracks_level>@LAT-210LON10,tracks_level>@LAT-220LON10,tracks_level>@LAT-270LON10,tracks_level>@LAT-300LON10,tracks_level>@LAT-310LON10,tracks_level>@LAT-450LON10,tracks_level>@LAT-460LON10,tracks_level>@LAT-610LON10,informs_strategy>@LAT20LON-30
 [ew]
-conf:220
-rev:22
-sal:33
+conf:225
+rev:23
+sal:35
 touched:1748995200
 [/ew]
 
@@ -3901,9 +3901,9 @@ contradiction_flag:true
 source_count:8
 [/lp]
 [ew]
-conf:175
-rev:2
-sal:3
+conf:145
+rev:3
+sal:4
 touched:1748995200
 [/ew]
 
@@ -3930,6 +3930,8 @@ Corrected route to cross at r46–48 c50–52 via wide connector: RIGHT (to c34�
 *(Rev 1 — Dream Cycle 7 correction: **"Entity2 has never been entered" is WRONG.** Session 26 confirmed block at r40–41 c14–18 inside entity2 ring at state 1 → NOT_FINISHED. Entity2 HAS been entered. **"Value 9 blocks landing" is WRONG.** Session 26 block overlapped the 9-cells at r41 c15–17 (block rows 40–41 overlap row 41) without the move being blocked. Per DC5 analysis: value 9 is the entity2 interior state display, NOT an impassable wall. Block can legally occupy positions overlapping value-9 cells. Hypothesis E refined: the 9-cells are a state indicator that changes based on entity1 state. At state 1, the WIN trigger does not fire regardless of block position inside entity2. At state 2, WIN is expected to fire. This belief is superseded in its main claims by @BELIEF:LAT10LON-40 and @BELIEF:LAT-130LON-40.)*
 
 *(Rev 2 — DC20/DC21 corrections: Entity1 state machine confirmed. "Mystery entity" is entity1 in STATE 1 (dormant at r41–43 c15–17). State 1→2 trigger = FIRST COLLECTIBLE (ring A, cross, or ring B — whichever comes first). Cross is not the sole trigger. Hypothesis 3A (collision = state 3): REFUTED. Hypothesis 3E (state-1 approach): REFUTED (geometric invariant). Hypothesis 4A (cross at state 2 → deactivation): REFUTED (session 54). All 3 collectibles collected → entity1 remains state 2. Hypothesis 5B (ring A → ring B, skip cross) = session 55 target.)*
+
+*(Rev 3 — DC22: Hypothesis 5B REFUTED (session 55, two independent runs). Ring A → ring B without cross does NOT deactivate entity1. All four deactivation hypotheses (3A, 3E, 4A, 5B) refuted. Only untested ordering: ring B as FIRST collectible (bypass ring A and cross entirely) = Hypothesis 5C. Session 56 target. conf: 175→145.)*
 
 ---
 
@@ -5201,9 +5203,9 @@ contradiction_flag:true
 source_count:4
 [/lp]
 [ew]
-conf:115
-rev:2
-sal:2
+conf:90
+rev:3
+sal:3
 touched:1748995200
 [/ew]
 
@@ -5229,6 +5231,8 @@ If state 2 → NOT_FINISHED, the WIN condition hypothesis requires full revision
 *(proj:true — entity2 interior geometry analysis; state-3 unreachability is a logical consequence of single cross + no regeneration.)*
 
 *(Rev 2 — DC21 correction: Entity2 entry is BLOCKED by entity1 deadlock at c14–18 (state 2 tracking, entity1 at r37–39 blocks DOWN from r35–36 to r40–41). Block has never reached r40–41 c14–18 at state 2. Deadlock is c14–18-specific. WIN has not been attempted at state 2. All deactivation hypotheses (3A, 3E, 4A) refuted. Session 55 = Hypothesis 5B (ring A → ring B, skip cross). If 5B null, no known deactivation trigger remains.)*
+
+*(Rev 3 — DC22: Hypothesis 5B REFUTED (session 55). Ring B as second collectible (ring A first, no cross) does NOT deactivate entity1. Session 56 = Hypothesis 5C (ring B as FIRST collectible, bypass ring A and cross entirely). If 5C null, no known deactivation mechanism exists — full reassessment required. conf: 115→90.)*
 
 ---
 
@@ -9179,6 +9183,10 @@ Thirty-third confirmation. Route stable. Block entered entity2 interior at r10�
 
 2. **STATUS**: EPS rankings reviewed. @LAT-10LON10 (Game State) EPS ~8.
 
+3. **Probe result (L2 step 30 / LOCUS handoff)**: DC21 30-step hardcoded probe executed. Block landed at r50–51 c39–43 (ring B collected; first run, run_guid bed0b05c). Entity1 tracker visible at r52–54 c39–43 = **STATE 2 ACTIVE**. Ring A → ring B without cross does NOT deactivate entity1. Hypothesis 5B NULL (run 1 of 2).
+
+**Session outcome**: NOT WON. Score 3.571 unchanged. Hypothesis 5B NULL confirmed; second run scheduled.
+
 ---
 
 SECTION 1
@@ -9237,4 +9245,65 @@ Thirty-fourth confirmation. Route stable. Block entered entity2 interior at r10�
 
 2. **STATUS**: LOCUS confirmed EPS scan (Game State EPS ~5.41 highest; @LAT20LON-30 EPS ~1.70 second). All three refuted hypotheses (3A, 3E, 4A) correctly summarised. DC21 30-step probe acknowledged as the session 55 action.
 
-**
+3. **Probe result (L2 step 30 / LOCUS handoff)**: DC21 30-step hardcoded probe executed. Block at r50–51 c39–43 (ring B, second run_guid 72df139f). Entity1 tracker at r52–54 c39–43 = **STATE 2 ACTIVE**. LOCUS (step 45): "Entity1 tracker is at r52–54 c39–43 (1 row below block bottom at r51). Entity1 is still in state 2 (tracker present). Hypothesis 5B shows entity1 is NOT deactivated by ring A → ring B sequence." LOCUS (step 46): "Hypothesis 5B is null — collecting ring A then ring B without cross does not deactivate entity1."
+
+**Session outcome**: NOT WON. Hypothesis 5B REFUTED (confirmed across both session-55 runs). Score 3.571 unchanged. Thirty-fourth consecutive L2 failure.
+
+---
+
+### Hypothesis 5B — REFUTED (session 55, two runs)
+
+| Hypothesis | Test | Result | Session |
+|-----------|------|--------|---------|
+| 3A | Entity1 collision = state 3 | REFUTED — 13 blocked moves, no change | 52 |
+| 3E | State-1 geometric approach | REFUTED — ring A in descent path, invariant | 53 |
+| 4A | Cross at state 2 = deactivation | REFUTED — all 3 collectibles, state 2 unchanged | 54 |
+| 5B | Ring A → ring B, skip cross | REFUTED — state 2 unchanged, two independent runs | 55 |
+| 5C | Ring B first (bypass ring A) | **UNTESTED — session 56 target** | — |
+
+---
+
+[dc]
+
+## Dream Cycle 22 (DC22) — Post Session 55
+
+### Phase 1 — Replay
+
+Session 55 (two runs, both Hypothesis 5B): DC21 30-step hardcoded probe executed correctly in both runs. Entity1 state 2 confirmed active at r52–54 c39–43 after ring A → ring B collection (cross skipped). Hypothesis 5B REFUTED with high confidence across two independent executions.
+
+**Observation**: Four entity1 deactivation hypotheses refuted. All tested orderings that include ring A as first trigger have failed. The only untested configuration is ring B as the very first collectible (bypassing ring A and cross entirely). If entity1's deactivation requires ring B to be the initial state-2 trigger rather than ring A, Hypothesis 5C would show it. If 5C is also null, no known collectible-ordering mechanism produces deactivation — full reassessment required.
+
+**Ring A respawn anomaly** (confirmed sessions 54 and 55): Ring A value 11 appears for exactly 1 frame at r16 c15–17 after ring B collection/timer events, then vanishes. Consistent across two independent probe runs. Consistent with ring A being a non-consumable structural marker (analogous to cross). No actionable consequence identified yet.
+
+### Phase 2 — Projection
+
+**Hypothesis 5C** — ring B as FIRST collectible (state-2 trigger via ring B; ring A and cross bypassed entirely):
+
+| Step | Action | Position | Notes |
+|------|--------|----------|-------|
+| 1 | RIGHT | r40–41 c34–38 | initial move from start |
+| 2–7 | UP×6 | r10–11 c34–38 | ascend left column |
+| 8–10 | RIGHT×3 | r10–11 c49–53 | bypasses ring A at c14–18 entirely |
+| 11–16 | DOWN×6 | r40–41 c49–53 | stops before cross at r45–46 c49–53 |
+| 17 | LEFT | r40–41 c44–48 | |
+| 18 | DOWN | r45–46 c44–48 | floor confirmed (void only rows 25–39) |
+| 19 | DOWN | r50–51 c44–48 | |
+| 20 | LEFT | r50–51 c39–43 | **ring B → STATE 2; FIRST collectible; timer reset 42** |
+
+LOCUS receives 35 steps (session step 36 = L2 step 21; budget: 70 − 15 − 20 = 35). Timer = 42 at handoff.
+
+**LOCUS task (session step 36)**:
+1. Read entity1 at r52–54 c39–43 (1 row below block bottom r51, same columns).
+2. **If absent** (entity1 deactivated — 5C confirmed): execute WIN route — RIGHT×2 → r50–51 c49–53; UP×8 → r10–11 c49–53; LEFT×7 → r10–11 c14–18; DOWN×5 → r35–36 c14–18; DOWN → r40–41 c14–18 **[WIN attempt]**. 23 steps, within 35-step budget.
+3. **If present** (state 2 persists — 5C NULL): all ring-first orderings exhausted. Report entity1 position. Escalate to full deactivation-mechanism reassessment in DC23.
+
+### Phase 3 — Record Updates Required
+
+1. **@LAT-10LON10 (Game State)**: sal: 33→35 (two session-55 runs). Session 56 = Hypothesis 5C. conf: 220→225. rev: 22→23.
+
+2. **@BELIEF:LAT-50LON-40 (entity1 state machine)**: Hypothesis 5B REFUTED. Rev 3: all four deactivation hypotheses (3A, 3E, 4A, 5B) refuted. Session 56 = Hypothesis 5C (ring B first). conf: 175→145. rev: 2→3. sal: 3→4.
+
+3. **@BELIEF:LAT-140LON-40 (entity2 approach)**: Hypothesis 5B REFUTED. Session 56 = final ring-ordering probe (5C). If 5C null, no known deactivation mechanism remains. conf: 115→90. rev: 2→3. sal: 2→3.
+
+[/dc]
+
