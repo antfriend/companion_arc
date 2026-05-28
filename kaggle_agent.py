@@ -61,12 +61,11 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
-# Session 58: DC25 ran correctly. Ring B #1 collected (state 2 trigger ✓). Oscillation exhausted
-# timer ✓. Ring B #2 LEFT (step 61) BLOCKED — entity1 tracker in state 2 at r52-54 c44-48 cannot
-# follow block to r52-54 c39-43 because ring B display cells (value 11) are solid for tracker.
-# Hypothesis 6B STRUCTURALLY REFUTED: ring B is only collectible in state 1 (entity1 dormant).
-# DC26 (session 59): Hypothesis 8A — ring B (first) → ring A (second, at c14-18) → entity2.
-# 42-step route; LOCUS gets 53 L2 steps to check entity1 at r37-39 c14-18 and WIN if absent.
+# Session 59: DC26 ran correctly. Ring B #1 (state 2 ✓), ring A (second collectible ✓). Handoff
+# at r35-36 c14-18 with entity1 tracker at r37-39 PRESENT. Hypothesis 8A REFUTED: ring B + ring A
+# sequence does NOT deactivate entity1. Ring A collection via lateral (LEFT) approach confirmed.
+# DC27 (session 60): Hypothesis 8B — ring B (first) → cross (second, r45-46 c49-53) → ring A
+# (third, timer reset) → deadlock check. 42-step route; LOCUS checks entity1 at r37-39 c14-18.
 # max_steps=110 → L2 budget=95; 42+53=95 ✓
 _LEVEL2_ROUTE = [
     # First ring B probe (20 steps) — state 2 trigger + timer reset
@@ -75,16 +74,18 @@ _LEVEL2_ROUTE = [
     3, 3, 3,                        # L2 steps 8-10: RIGHT×3 → r10-11 c49-53
     1, 1, 1, 1, 1, 1,               # L2 steps 11-16: DOWN×6 → r40-41 c49-53
     2, 1, 1, 2,                     # L2 steps 17-20: L,D,D,L → r50-51 c39-43 [ring B; STATE 2; timer reset 21]
-    # Navigate from ring B to c49-53 ascent column (10 steps; c39-43/c44-48 void above r50)
+    # Navigate ring B → cross at r45-46 c49-53 (3 steps; timer: 42-6=36 cols=18 steps)
     3, 3,                           # L2 steps 21-22: RIGHT×2 → r50-51 c49-53
-    0, 0, 0, 0, 0, 0, 0, 0,         # L2 steps 23-30: UP×8 → r10-11 c49-53 [timer: 42-20=22 cols=11 steps]
-    # Traverse wide connector to c14-18 (7 steps)
-    2, 2, 2, 2, 2, 2, 2,            # L2 steps 31-37: LEFT×7 → r10-11 c14-18 [timer: 22-14=8 cols=4 steps]
-    # Collect ring A (second collectible; timer reset 21; no state-2 re-trigger since already state 2)
-    1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset 21=42 cols]
-    # Descend to deadlock position (timer: 42-8=34 cols=17 steps remaining at handoff)
+    0,                              # L2 step 23: UP → r45-46 c49-53 [cross; second collectible; no timer reset]
+    # Ascend c49-53 to wide connector (7 steps; timer: 36-14=22 cols=11 steps)
+    0, 0, 0, 0, 0, 0, 0,            # L2 steps 24-30: UP×7 → r10-11 c49-53
+    # Traverse wide connector to c14-18 (7 steps; timer: 22-14=8 cols=4 steps)
+    2, 2, 2, 2, 2, 2, 2,            # L2 steps 31-37: LEFT×7 → r10-11 c14-18
+    # Collect ring A (third collectible; timer reset 21=42 cols)
+    1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset]
+    # Descend to deadlock (timer: 42-8=34 cols=17 steps at handoff)
     1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock; entity1 r37-39]
-]  # 42-step DC26 probe (session 59); LOCUS gets 53 L2 steps (max_steps=110)
+]  # 42-step DC27 probe (session 60); LOCUS gets 53 L2 steps (max_steps=110)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 

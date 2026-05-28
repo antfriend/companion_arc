@@ -9903,4 +9903,89 @@ Thirty-eighth confirmation. Route stable. Block entered entity2 interior at r10�
 
 **Key session exchanges**:
 
-1. **FOCUS @LAT-10LON10** (sal: 37→38): LOCUS confirmed Game State fully current. sal incremented to 38. All seven refuted hypotheses (3A, 3E, 4A, 5B, 5C, 6A, 6B) correctly enumerated. Session 59 standing order confirmed: Hypothesis 8
+1. **FOCUS @LAT-10LON10** (sal: 37→38): LOCUS confirmed Game State fully current. sal incremented to 38. All seven refuted hypotheses (3A, 3E, 4A, 5B, 5C, 6A, 6B) correctly enumerated. Session 59 standing order confirmed: Hypothesis 8A.
+
+---
+
+### Level 2 — DC26 Execution Results
+
+**DC26 42-step `_LEVEL2_ROUTE` ran correctly. Key findings:**
+
+**1. Ring B collected at L2 step 20 — entity1 → STATE 2 confirmed ✓**
+Block descended to r50-51 c39-43 (ring B position). Ring B consumed (no value 11 at r50-54 c39-58 in step 57 frame). State 2 activated. Timer reset to 21 steps = 42 cols.
+
+**2. Ring A collected at L2 step 38 — second collectible ✓**
+Block arrived at r15-16 c14-18 via LEFT from c19-23 at wide connector row. Ring A consumed (no value 11 at r15-18 c15-17 in step 57 frame). Timer reset to 21 steps = 42 cols. Ring A collection via lateral (LEFT) approach confirmed — not required to be via DOWN.
+
+**3. Handoff at L2 step 43 (global step 57): r35-36 c14-18, timer 34 cols (17 steps) ✓**
+Block exactly at deadlock position. Timer consumption consistent with design (ring B reset 42 → 20 steps → 2 remaining → ring A reset 42 → 4 more steps → 34 remaining).
+
+**4. Hypothesis 8A REFUTED — entity1 tracker PRESENT at r37-39 c14-18**
+From step 57 frame: r35-36 c14-18=12 (block), r37-39 c14-18=9 (entity1 tracker). Entity1 NOT deactivated by ring B (first) + ring A (second) sequence. Tracker extends into entity2 ring boundary: r38 c14-18=9 (tracker in entity2 ring's top row, normally c12-20=3). r39 c14-18=9 (tracker in entity2 ring interior, normally c13-19=5). Entity1 tracker CAN occupy void-like interior cells.
+
+**5. LOCUS phase (global steps 57–109, 53 queries):**
+Step 57: LOCUS correctly identified entity1 tracker at r37-39 — STATE 2. Correctly noted 8A probe condition: "tracker PRESENT = Hypothesis 8A not yet confirmed as refuted." However, LOCUS then sent DOWN (action 1) — entity1-deadlock blocked. WARNING: "blocked by void" (system message; timer NOT consumed, confirming entity1-deadlock, not void-blocked).
+
+Steps 58-109: LOCUS oscillated UP/DOWN at c14-18 (r30-31 ↔ r35-36), attempting to probe the deadlock. Timer eventually expired (c62-63=3 at step 109; ring B respawned). Budget exhausted. Final state at step 109: block at r30-31 c14-18, tracker at r32-34 c14-18, timer 22 consumed/20 remaining (10 steps), ring B at r51-53 c40-42=11 (respawned). NOT_FINISHED.
+
+---
+
+### New Findings from Session 59
+
+**Ring A collection via lateral (LEFT) approach confirmed**: Block arrived at r15-16 c14-18 by moving LEFT from c19-23 (not by descending DOWN from c14-18). Ring A was consumed. This means ring A is collected whenever block OCCUPIES r15-16 c14-18, regardless of approach direction.
+
+**Entity1 tracker in entity2 ring boundary**: At deadlock, tracker occupies r37-39 c14-18. r38 is the entity2 ring top (c12-20=3 normally), r39 is ring interior (c13-19=5 normally). Tracker value 9 overwrites these cells — tracker CAN occupy cells that are normally void/interior.
+
+**Deadlock bottom = r35-36 c14-18**: This is the deepest the block can reach at c14-18 in state 2. From r35-36, DOWN is blocked (entity1 tracker at r37-39 in the 5-row DOWN path r37-41). The DOWN path passes through r37-41; tracker at r37-39 ⊂ r37-41 → blocked. Timer FROZEN (entity1-deadlock blocks timer per session 52).
+
+**8 collectible hypotheses now exhausted**: 3A, 3E, 4A, 5B, 5C (first 5 — prior sessions); 6B structural (session 58); 8A (session 59). No collectible combination tested so far deactivates entity1.
+
+---
+
+### Session 59 DC27 Design
+
+**Hypothesis 8B: Ring B (first) → cross (second, at r45-46 c49-53) → ring A (third) → entity2 accessible**
+
+Rationale: Cross as SECOND collectible (after ring B triggers state 2) is the one remaining near-term collectible combination. Cross at r45-46 c49-53 (block bottom at r46 collects; non-consumable). No timer reset expected from cross. Ring A as third (timer reset). Entity1 check at r37-39 c14-18.
+
+**DC27 — 42-step hardcoded route (session 60):**
+
+Steps 1–20: ring B first probe (identical to DC26; state 2 trigger, timer reset 21).
+
+Steps 21–22: RIGHT×2 → r50-51 c49-53 (reach ascent column after ring B).
+
+Step 23: UP → r45-46 c49-53 [cross; second collectible; no timer reset].
+
+Steps 24–30: UP×7 → r10-11 c49-53 [ascend; timer after ring B: 42-6(21-23)-14(24-30) = 22 cols = 11 steps].
+
+Steps 31–37: LEFT×7 → r10-11 c14-18 [timer: 22-14 = 8 cols = 4 steps].
+
+Step 38: DOWN → r15-16 c14-18 [ring A; third collectible; timer reset to 21 = 42 cols].
+
+Steps 39–42: DOWN×4 → r35-36 c14-18 [deadlock; timer: 42-8 = 34 cols = 17 steps at handoff].
+
+```python
+_LEVEL2_ROUTE = [
+    # First ring B probe (20 steps) — state 2 trigger + timer reset
+    3,                              # L2 step 1:  RIGHT → r40-41 c34-38
+    0, 0, 0, 0, 0, 0,               # L2 steps 2-7:  UP×6 → r10-11 c34-38
+    3, 3, 3,                        # L2 steps 8-10: RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # L2 steps 11-16: DOWN×6 → r40-41 c49-53
+    2, 1, 1, 2,                     # L2 steps 17-20: L,D,D,L → r50-51 c39-43 [ring B; STATE 2; timer reset 21]
+    # Navigate ring B → cross at r45-46 c49-53 (3 steps)
+    3, 3,                           # L2 steps 21-22: RIGHT×2 → r50-51 c49-53
+    0,                              # L2 step 23: UP → r45-46 c49-53 [cross; second collectible; no timer reset]
+    # Ascend c49-53 to wide connector (7 steps; timer: 42-6-14=22 cols=11 steps)
+    0, 0, 0, 0, 0, 0, 0,            # L2 steps 24-30: UP×7 → r10-11 c49-53
+    # Traverse wide connector to c14-18 (7 steps; timer: 22-14=8 cols=4 steps)
+    2, 2, 2, 2, 2, 2, 2,            # L2 steps 31-37: LEFT×7 → r10-11 c14-18
+    # Collect ring A (third collectible; timer reset 21=42 cols)
+    1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset]
+    # Descend to deadlock (timer: 42-8=34=17 steps at handoff)
+    1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock]
+]  # 42 steps (DC27 session 60); LOCUS gets 53 L2 steps (max_steps=110; 42+53=95 ✓)
+```
+
+**LOCUS task at handoff (L2 step 43, r35-36 c14-18, timer 17 steps):**
+1. Check entity1 tracker at r37-39 c14-18 (value 9). If ABSENT → state 3 → DOWN from r35-36 → entity2 → WIN.
+2. If PRESENT → 8B REFUTED. Report and escalate to DC28. Note: all 8 collectible hypotheses will then be exhausted; DC28 must test non-collectible mechanism (temporal, deadlock-N, or structural).
