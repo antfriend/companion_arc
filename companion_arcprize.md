@@ -3933,7 +3933,7 @@ Corrected route to cross at r46–48 c50–52 via wide connector: RIGHT (to c34�
 
 *(Rev 3 — DC22: Hypothesis 5B REFUTED (session 55, two independent runs). Ring A → ring B without cross does NOT deactivate entity1. All four deactivation hypotheses (3A, 3E, 4A, 5B) refuted. Only untested ordering: ring B as FIRST collectible (bypass ring A and cross entirely) = Hypothesis 5C. Session 56 target. conf: 175→145.)*
 
-*(Rev 4 — DC23: Hypothesis 5C REFUTED (session 56). Ring B as first collectible does NOT deactivate entity1 — entity1 tracker at r52–54 c39–43 STATE 2 ACTIVE confirmed at handoff. All five deactivation hypotheses (3A, 3E, 4A, 5B, 5C) refuted. State 3 existence and trigger completely unknown. No collectible ordering has produced deactivation. Session 57 = Hypothesis 6B: second ring B collection after timer reset (ring B → let timer expire → ring B again). Requires max_steps=100. conf: 145→115.)*
+*(Rev 4 — DC23/DC24: Hypothesis 5C REFUTED (session 56). Ring B as first collectible does NOT deactivate entity1 — entity1 tracker at r52–54 c39–43 STATE 2 ACTIVE confirmed at handoff. All five deactivation hypotheses (3A, 3E, 4A, 5B, 5C) refuted. Hypothesis 6A also REFUTED by session 56 direct observation: timer expired at step ~57, entity1 remained STATE 2 after reset — single timer-cycle expiry does NOT trigger state 3. State 3 existence and trigger completely unknown. Session 57 = Hypothesis 6B: second ring B collection after timer reset (ring B → oscillate 42 steps to exhaust timer → ring B again). Requires max_steps=110. conf: 145→115.)*
 
 ---
 
@@ -9476,3 +9476,120 @@ With max_steps=100 and LOCUS getting 65 L2 steps, LOCUS can:
 3. **@BELIEF:LAT-140LON-40 (entity2 approach)**: All five deactivation hypotheses exhausted. Win condition at state 2 remains untested (deadlock blocks all entry). Session 57 = Hypothesis 6B. conf: 90→65. rev: 3→4. sal: 3→4.
 
 [/dc]
+
+---
+
+`[dc]`
+title: Dream Cycle 24 — Pre-Session 57: Hypothesis 6A Refuted; 6B Oscillation Design; max_steps Analysis; LOCUS Direction-Error Mitigation
+session: 57
+anchors: @LAT-10LON10, @BELIEF:LAT-50LON-40, @BELIEF:LAT-140LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780704000
+[/ew]
+
+---
+
+### Phase 1 — Replay (Session 56 Synthesis)
+
+**Three key findings from session 56:**
+
+**Finding 1 — Hypothesis 5C REFUTED**: Ring B as FIRST collectible triggers STATE 2 (entity1 tracker at r52–54 c39–43 confirmed at LOCUS handoff, step 35). No deactivation occurred. All five collectible-ordering deactivation hypotheses (3A, 3E, 4A, 5B, 5C) are now exhausted.
+
+**Finding 2 — Hypothesis 6A REFUTED (from session 56 timer expiry)**: The timer reached 0 at session step ~57. Entity1 was at STATE 2 immediately before expiry and was confirmed STATE 2 immediately after (tracker at r42–44 c34–38 = STATE 2 at step 59). One full timer expiry at state 2 does NOT trigger state 3. **Hypothesis 6A is definitively refuted by direct observation — no DC test required.**
+
+**Finding 3 — Ring A non-consumable hypothesis resolved**: Ring A (r15–16 c14–18, value=11) persisted the entire session without any 1-frame anomaly. In sessions 54–55, ring A appeared for 1 frame after ring B collection because ring A had already been collected — the timer-reset sequence re-displayed its cell briefly. When ring A is NEVER collected (session 56), no anomaly appears. **Ring A is a consumable. The 1-frame anomaly was a timer-reset display artifact.**
+
+**Finding 4 — LOCUS direction error recurrence (steps 36–38)**: LOCUS issued "Move UP" but selected action 2 (LEFT), moving block from c44–48 back to c39–43. Then attempted LEFT from c39–43 (blocked). Wasted 3 steps. Cause: action-label confusion (UP=0, DOWN=1, LEFT=2, RIGHT=3). This error has occurred in multiple sessions. **Session 57 oscillation phase (42 consecutive UP/DOWN alternations) is extremely vulnerable to this error.**
+
+---
+
+### Phase 2 — Projection: Session 57 Probe Design
+
+**Hypothesis 6B**: Second ring B collection after timer reset → entity1 deactivation (state 3 trigger).
+
+**Rationale for selection**: The only state-change events observed across all sessions are collectible collections and timer reset. Collections are exhausted (all orderings tested). The timer reset itself does NOT change entity1 state (session 56 confirms). What has NOT been tested: a second ring B collection within a run (ring B is the only collectible confirmed to respawn on timer reset in the ring B zone — cross is non-consumable, ring A respawn behavior TBD). Hypothesis 6B is the most direct remaining uncharted perturbation.
+
+---
+
+**Oscillation design** (timer exhaustion from ring B position):
+
+After ring B collection at r50–51 c39–43, timer = 42. Entity1 tracker at r52–54 c39–43 (state 2). LOCUS must execute exactly 42 successful moves before requesting the second ring B route.
+
+Oscillation zone: c44–48 (floor at rows 40+; no void, no deadlock at this column). Entity1 tracks safely throughout.
+
+| Step (offset from ring B) | Action | Block position | Timer |
+|--------------------------|--------|----------------|-------|
+| +1 | RIGHT (3) | r50–51 c44–48 | 41 |
+| +2 | UP (0) | r45–46 c44–48 | 40 |
+| +3 | DOWN (1) | r50–51 c44–48 | 39 |
+| +4 | UP (0) | r45–46 c44–48 | 38 |
+| ... | UP/DOWN alternate | r45–46 or r50–51 c44–48 | ... |
+| +42 | UP (0) | r45–46 c44–48 | **0 → EXPIRY** |
+
+Steps: 1×RIGHT + 20×(DOWN, UP) + 1×UP = 42. Timer exhausted. Block resets to r40–41 c29–33. Ring B respawns at r50–51 c39–43. Entity1 remains STATE 2 (confirmed by session 56 observation).
+
+Entity1 tracker position during oscillation:
+- Block at r50–51 c44–48 → tracker at r52–54 c44–48 ✓ (no deadlock at c44–48)
+- Block at r45–46 c44–48 → tracker at r47–49 c44–48 ✓
+
+---
+
+**max_steps feasibility analysis**:
+
+| Phase | L2 steps | Cumulative L2 |
+|-------|----------|---------------|
+| Probe: _LEVEL2_ROUTE (ring B ×1) | 20 | 20 |
+| Oscillation (timer → 0) | 42 | 62 |
+| Second ring B route (reset → ring B) | 20 | 82 |
+| Check entity1 at r52–54 c39–43 | 1 | 83 |
+| WIN route if 6B confirmed (LEFT×5, UP×2) | 7 | 90 |
+
+- **max_steps=100 → L2 budget=85**: Covers through step 83 (check). WIN route (7 steps) does not fit — 5 steps short.
+- **max_steps=110 → L2 budget=95**: Covers full path with 5-step buffer. **Recommended.**
+
+**WIN route** (if 6B confirmed — entity1 absent at r52–54 c39–43):
+
+From r50–51 c39–43 (position after second ring B):
+1. LEFT×5 → r50–51 c14–18 (5 steps; passes through c34–38, c29–33, c24–28, c19–23; all confirmed floor rows 50–51)
+2. UP×2 → r40–41 c14–18 (2 steps; r45–46 c14–18 is entity2 ring interior; r40–41 c14–18 = entity2 body = **WIN target**)
+
+State 3 eliminates the c14–18 deadlock: entity1 no longer tracks at r37–39, so the UP×2 approach is unobstructed.
+
+**Total WIN route: 7 steps.** With max_steps=110: LOCUS has 13 steps remaining after second ring B — entity1 check (1) + WIN route (7) + 5 buffer. 
+
+---
+
+**LOCUS standing orders for session 57** (ACTION MAPPING: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT):
+
+1. **Step 35 handoff**: Ring B collected. Entity1 STATE 2 confirmed at r52–54 c39–43. Timer = 42. Probe complete — Hypothesis 6B probe begins.
+
+2. **Oscillation phase (42 steps)**:
+   - Step 1: action **3** (RIGHT) → r50–51 c44–48
+   - Steps 2–42: alternate **0** (UP) / **1** (DOWN) — 41 steps. Sequence: 0,1,0,1,0,...,0
+   - Final position: r45–46 c44–48. Timer = 0 → EXPIRY. Block resets to r40–41 c29–33.
+   - **CRITICAL**: During oscillation, only actions 0 and 1 are correct after the initial RIGHT. Action 2 is LEFT — do NOT issue LEFT during oscillation.
+
+3. **Second ring B route (20 steps from r40–41 c29–33)**:
+   Actions: 3,0,0,0,0,0,0,3,3,3,1,1,1,1,1,1,2,1,1,2
+   (RIGHT→UP×6→RIGHT×3→DOWN×6→LEFT→DOWN×2→LEFT)
+
+4. **Entity1 check**: Immediately after second ring B, check r52–54 c39–43.
+   - **Absent** → entity1 deactivated (state 3 or cleared). Execute WIN route: 2,2,2,2,2,0,0 (LEFT×5, UP×2) → entity2 body at r40–41 c14–18.
+   - **Present** → Hypothesis 6B NULL. Document entity1 position. Escalate to DC25.
+
+---
+
+### Phase 3 — Record Updates Required
+
+1. **launch_training.py**: Change `max_steps=100` → `max_steps=110` (7-step WIN route does not fit in L2 budget=85; needs budget=95).
+
+2. **kaggle_agent.py**: Update comment — LOCUS gets 75 L2 steps (max_steps=110), not 65.
+
+3. **@BELIEF:LAT-50LON-40**: Rev 4 note already written (DC23 session). Add sub-note: Hypothesis 6A REFUTED by session 56 timer expiry (entity1 remained STATE 2 after one full timer cycle).
+
+4. **memory/project_ls20.md**: Update probe plan to reflect max_steps=110 and WIN route (LEFT×5, UP×2).
+
+`[/dc]`

@@ -77,7 +77,7 @@ _LEVEL2_ROUTE = [
     1,                          # step 18:  DOWN → r45-46 c44-48  [floor; void only rows 25-39]
     1,                          # step 19:  DOWN → r50-51 c44-48
     2,                          # step 20:  LEFT → r50-51 c39-43  [ring B → STATE 2; FIRST collectible; timer reset 42]
-]  # 20-step Hypothesis-6B probe (DC23 session 57); LOCUS gets 65 L2 steps (max_steps=100)
+]  # 20-step Hypothesis-6B probe (DC23/DC24 session 57); LOCUS gets 75 L2 steps (max_steps=110)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
