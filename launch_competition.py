@@ -109,7 +109,7 @@ def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
         step += 1
         if verbose:
             _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
-            print(f"  step={step} {action_idx}({_name}) state={obs.state} levels={obs.levels_completed}")
+            print(f"  step={step} {action_idx}({_name}) state={obs.state} levels={obs.levels_completed}", flush=True)
         if is_done([], obs):
             break
     scorecard = None
@@ -160,25 +160,27 @@ def _write_dummy_submission(output_dir: Path) -> None:
     }])
     path = output_dir / "submission.parquet"
     df.to_parquet(path, index=False)
-    print(f"[submission] Dummy written to {path} (overwritten on success)")
+    print(f"[submission] Dummy written to {path} (overwritten on success)", flush=True)
 
 
 def main() -> None:
-    print(f"[launch] OPERATION_MODE env={os.environ.get('OPERATION_MODE', 'not-set')}")
+    print(f"[launch] OPERATION_MODE env={os.environ.get('OPERATION_MODE', 'not-set')}", flush=True)
     _write_dummy_submission(_WORKING)  # safety net — always written before game logic
 
     try:
+        print("[launch] step-A: loading route", flush=True)
         route = _load_route(GAME_ID)
-        print(f"\n[launch] '{GAME_ID}' — L1 offline route ({len(route)} steps)\n")
+        print(f"[launch] step-B: route loaded ({len(route)} steps)", flush=True)
         result = run_level1(GAME_ID, route)
-        print(f"\n  levels_completed: {result['levels_completed']}")
-        print(f"  final_state:      {result['final_state']}")
+        print(f"[launch] step-C: game done", flush=True)
+        print(f"  levels_completed: {result['levels_completed']}", flush=True)
+        print(f"  final_state:      {result['final_state']}", flush=True)
         if result["scorecard"]:
-            print(f"  scorecard:        {result['scorecard']}")
+            print(f"  scorecard:        {result['scorecard']}", flush=True)
         write_submission(result, _WORKING)  # overwrites dummy on success
-    except Exception as exc:
-        print(f"[launch] EXCEPTION: {exc}")
-        print("[launch] Dummy submission retained — will score 0.0")
+    except BaseException as exc:
+        print(f"[launch] FATAL {type(exc).__name__}: {exc}", flush=True)
+        print("[launch] Dummy submission retained — will score 0.0", flush=True)
 
 
 if __name__ == "__main__":
