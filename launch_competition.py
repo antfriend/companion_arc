@@ -136,15 +136,35 @@ def write_submission(result: dict, output_dir: Path) -> None:
     print(f"[submission] Written to {path}")
 
 
+def _write_dummy_submission(output_dir: Path) -> None:
+    """Write a zero-score fallback immediately on startup.
+    If the solver crashes, this file ensures Kaggle returns 0.0 instead of 'Kaggle Error'."""
+    df = pd.DataFrame([{
+        "row_id": "1_0",
+        "game_id": GAME_ID,
+        "end_of_game": False,
+        "score": 0,
+    }])
+    path = output_dir / "submission.parquet"
+    df.to_parquet(path, index=False)
+    print(f"[submission] Dummy written to {path} (overwritten on success)")
+
+
 def main() -> None:
-    route = _load_route(GAME_ID)
-    print(f"\n[launch] '{GAME_ID}' — L1 offline route ({len(route)} steps)\n")
-    result = run_level1(GAME_ID, route)
-    print(f"\n  levels_completed: {result['levels_completed']}")
-    print(f"  final_state:      {result['final_state']}")
-    if result["scorecard"]:
-        print(f"  scorecard:        {result['scorecard']}")
-    write_submission(result, _WORKING)
+    _write_dummy_submission(_WORKING)  # safety net — always written before game logic
+
+    try:
+        route = _load_route(GAME_ID)
+        print(f"\n[launch] '{GAME_ID}' — L1 offline route ({len(route)} steps)\n")
+        result = run_level1(GAME_ID, route)
+        print(f"\n  levels_completed: {result['levels_completed']}")
+        print(f"  final_state:      {result['final_state']}")
+        if result["scorecard"]:
+            print(f"  scorecard:        {result['scorecard']}")
+        write_submission(result, _WORKING)  # overwrites dummy on success
+    except Exception as exc:
+        print(f"[launch] EXCEPTION: {exc}")
+        print("[launch] Dummy submission retained — will score 0.0")
 
 
 if __name__ == "__main__":
