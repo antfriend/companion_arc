@@ -20,6 +20,8 @@ script) by looking for a [route] block written by LOCUS:
 Falls back to a hardcoded default if the block is absent.
 """
 
+import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -124,16 +126,27 @@ def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
     }
 
 
+def _extract_scorecard_score(scorecard_str: str | None) -> float:
+    """Extract the top-level percentage score from the arc_agi scorecard JSON string."""
+    if not scorecard_str:
+        return 0.0
+    try:
+        return float(json.loads(scorecard_str).get("score", 0.0))
+    except Exception:
+        return 0.0
+
+
 def write_submission(result: dict, output_dir: Path) -> None:
+    score = _extract_scorecard_score(result.get("scorecard"))
     df = pd.DataFrame([{
         "row_id": "1_0",
         "game_id": result["game_id"],
         "end_of_game": result["final_state"] in ("win", "game_over"),
-        "score": int(result["levels_completed"]),
+        "score": score,
     }])
     path = output_dir / "submission.parquet"
     df.to_parquet(path, index=False)
-    print(f"[submission] Written to {path}")
+    print(f"[submission] Written to {path} (score={score:.4f})")
 
 
 def _write_dummy_submission(output_dir: Path) -> None:
@@ -143,7 +156,7 @@ def _write_dummy_submission(output_dir: Path) -> None:
         "row_id": "1_0",
         "game_id": GAME_ID,
         "end_of_game": False,
-        "score": 0,
+        "score": 0.0,
     }])
     path = output_dir / "submission.parquet"
     df.to_parquet(path, index=False)
@@ -151,6 +164,7 @@ def _write_dummy_submission(output_dir: Path) -> None:
 
 
 def main() -> None:
+    print(f"[launch] OPERATION_MODE env={os.environ.get('OPERATION_MODE', 'not-set')}")
     _write_dummy_submission(_WORKING)  # safety net — always written before game logic
 
     try:
