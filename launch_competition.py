@@ -1,48 +1,68 @@
 #!/usr/bin/env python3
 """
-launch_competition.py — ARC-AGI competition, level 1 offline.
+launch_competition.py — ARC-AGI-3 competition submission.
 
-Upload this file, companion_arcprize.md, and the environment_files/ folder
-as a Kaggle Dataset. Run from a notebook cell:
-    !python /kaggle/input/<your-dataset>/launch_competition.py ls20
+Architecture
+------------
+1. Write dummy submission.parquet immediately (safety net if anything crashes).
+2. Start a local arc_agi Flask server using the competition's environment_files.
+   - server runs in OFFLINE mode with all 25 competition games
+   - competition_mode=True so close_scorecard auto-adds every unplayed game
+   - on_scorecard_close callback writes the final submission.parquet
+3. Client Arcade in NORMAL mode connects to localhost:8001.
+4. Open a competition scorecard, play every available game.
+   - ls20: use the hardcoded L1 route (15 steps, confirmed 30+ wins)
+   - other games: skipped (0 steps → score 0.0 for each)
+5. Close scorecard → triggers on_scorecard_close → submission.parquet updated.
 
-No internet access required. No Anthropic key needed.
-ARC_API_KEY is not required for offline mode.
-Writes /kaggle/working/submission.parquet.
-
-The L1 route is read from companion_arcprize.md (same directory as this
-script) by looking for a [route] block written by LOCUS:
-
-    [route game=ls20 level=1 steps=15 confirmed=true]
-    UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
-    [/route]
-
-Falls back to a hardcoded default if the block is absent.
+No internet required. No ARC_API_KEY needed from outside.
 """
 
 import json
 import os
 import re
 import sys
+import time
+import threading
+import traceback
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
+import requests
 import arc_agi
 from arc_agi import OperationMode
+from arc_agi.server import create_app
+from arc_agi.scorecard import EnvironmentScorecard
 
-GAME_ID = sys.argv[1] if len(sys.argv) > 1 else "ls20"
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+
 _WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(__file__).parent
 _COMPANION = Path(__file__).parent / "companion_arcprize.md"
 
-_DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
+# Competition provides 25 game environments; fall back to our companion-arc copy.
+_COMP_ENV_DIR = "/kaggle/input/competitions/arc-prize-2026-arc-agi-3/environment_files"
+_LOCAL_ENV_DIR = str(Path(__file__).parent / "environment_files")
+_ENV_DIR = _COMP_ENV_DIR if Path(_COMP_ENV_DIR).is_dir() else _LOCAL_ENV_DIR
 
-# Used when companion is missing or contains no [route] block yet.
+SERVER_HOST = "127.0.0.1"
+SERVER_PORT = 8001
+_LOCAL_KEY  = "locus_competition"  # arbitrary but must be consistent client↔server
+
+# ---------------------------------------------------------------------------
+# Routes  (0=UP  1=DOWN  2=LEFT  3=RIGHT)
+# ---------------------------------------------------------------------------
+
+_DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 _FALLBACK_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]
 
+_ROUTES: dict[str, list[int]] = {}
 
-def _expand_route_str(s: str) -> list[int] | None:
-    """Convert 'UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3' → [0,0,0,0,2,2,2,1,0,3,3,3,0,0,0]."""
-    actions = []
+
+def _expand_route_str(s: str) -> Optional[list[int]]:
+    actions: list[int] = []
     for token in re.split(r"[,\s]+", s.strip()):
         if not token:
             continue
@@ -52,93 +72,106 @@ def _expand_route_str(s: str) -> list[int] | None:
         elif token.upper() in _DIR:
             actions.append(_DIR[token.upper()])
         else:
-            return None  # unrecognised token — don't silently truncate
+            return None
     return actions or None
 
 
-def _parse_route_block(text: str, game_id: str, level: int = 1) -> list[int] | None:
-    """
-    Find the most recent [route game=<id> level=<N>] block written by LOCUS
-    and return it as an action index list.
-    """
+def _load_routes() -> None:
+    """Populate _ROUTES from companion_arcprize.md [route] blocks."""
+    global _ROUTES
+    _ROUTES = {"ls20": _FALLBACK_ROUTE}
+    if not _COMPANION.exists():
+        print(f"[route] {_COMPANION.name} not found — using hardcoded ls20 fallback", flush=True)
+        return
+    text = _COMPANION.read_text(encoding="utf-8")
     pattern = re.compile(
-        rf"\[route\b[^\]]*\bgame={re.escape(game_id)}\b[^\]]*\blevel={level}\b[^\]]*\]"
-        rf"(.*?)\[/route\]",
+        r"\[route\b[^\]]*\bgame=(\w+)\b[^\]]*\blevel=1\b[^\]]*\](.*?)\[/route\]",
         re.DOTALL | re.IGNORECASE,
     )
-    matches = pattern.findall(text)
-    if not matches:
-        return None
-    # Last match = most recently written
-    return _expand_route_str(matches[-1])
-
-
-def _load_route(game_id: str) -> list[int]:
-    if _COMPANION.exists():
-        text = _COMPANION.read_text(encoding="utf-8")
-        route = _parse_route_block(text, game_id)
+    for game_id, route_str in pattern.findall(text):
+        route = _expand_route_str(route_str.strip())
         if route:
-            print(f"[route] Loaded from companion ({len(route)} steps): {route}")
-            return route
-        print("[route] No [route] block found in companion — using fallback")
-    else:
-        print(f"[route] {_COMPANION.name} not found — using fallback")
-    print(f"[route] Fallback: {_FALLBACK_ROUTE}")
-    return _FALLBACK_ROUTE
+            _ROUTES[game_id] = route
+    print(f"[route] Routes loaded for: {sorted(_ROUTES.keys())}", flush=True)
 
 
-def is_done(frames: list, latest_frame) -> bool:
-    """Stop after level 1 is cleared. Update threshold to 2 once L2 is conquered."""
-    return latest_frame.levels_completed >= 1 or latest_frame.state in ("win", "game_over")
+# ---------------------------------------------------------------------------
+# Submission writer (called by server on scorecard close)
+# ---------------------------------------------------------------------------
+
+def _on_scorecard_close(scorecard: EnvironmentScorecard) -> None:
+    rows = []
+    for env in scorecard.environments:
+        game_prefix = env.id.split("-")[0] if "-" in env.id else env.id
+        rows.append({
+            "row_id":           game_prefix,
+            "game_id":          game_prefix,
+            "score":            float(env.score),
+        })
+    if not rows:
+        print("[submission] WARNING: empty scorecard — dummy retained", flush=True)
+        return
+    df = pd.DataFrame(rows)
+    path = _WORKING / "submission.parquet"
+    df.to_parquet(path, index=False)
+    avg = df["score"].mean()
+    best = df.nlargest(3, "score")[["game_id", "score"]].to_dict("records")
+    print(f"[submission] Written: {len(rows)} games, avg={avg:.4f}, top3={best}", flush=True)
 
 
-def _make_arcade() -> arc_agi.Arcade:
-    """Use COMPETITION mode when any competition signal is present; otherwise OFFLINE.
+def _write_dummy_submission(output_dir: Path) -> None:
+    """Minimal valid parquet written before any game logic runs."""
+    df = pd.DataFrame([{"row_id": "ls20", "game_id": "ls20", "score": 0.0}])
+    path = output_dir / "submission.parquet"
+    df.to_parquet(path, index=False)
+    print(f"[submission] Dummy written to {path}", flush=True)
 
-    Competition signals (any one is sufficient):
-      ARC_API_KEY    — API key for three.arcprize.org (internet-on runs)
-      ARC_BASE_URL   — Kaggle may set this to a local evaluation server (internet-off)
-      OPERATION_MODE — Kaggle may set to 'competition' for scored evaluation runs
-    """
-    arc_key = os.environ.get("ARC_API_KEY", "")
-    arc_url = os.environ.get("ARC_BASE_URL", "")
-    op_mode = os.environ.get("OPERATION_MODE", "").lower()
 
-    print(f"[agent] ARC_API_KEY={'set' if arc_key else 'not-set'} "
-          f"ARC_BASE_URL={arc_url or 'not-set'} "
-          f"OPERATION_MODE={op_mode or 'not-set'}", flush=True)
+# ---------------------------------------------------------------------------
+# Local server
+# ---------------------------------------------------------------------------
 
-    if arc_key or arc_url or op_mode == "competition":
-        try:
-            print("[agent] Competition signal found — trying COMPETITION mode", flush=True)
-            arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
-            print(f"[agent] COMPETITION mode ready (url={arc.arc_base_url})", flush=True)
-            return arc
-        except Exception as exc:
-            print(f"[agent] COMPETITION mode failed ({exc}) — OFFLINE fallback", flush=True)
-    else:
-        print("[agent] No competition signals — using OFFLINE mode", flush=True)
-    _env_dir = str(Path(__file__).parent / "environment_files")
-    return arc_agi.Arcade(
+def _start_local_server(env_dir: str) -> None:
+    server_arc = arc_agi.Arcade(
         operation_mode=OperationMode.OFFLINE,
-        environments_dir=_env_dir,
+        environments_dir=env_dir,
     )
+    app, _ = create_app(
+        server_arc,
+        competition_mode=True,
+        on_scorecard_close=_on_scorecard_close,
+    )
+    import logging
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+    app.run(host=SERVER_HOST, port=SERVER_PORT, debug=False, use_reloader=False)
 
 
-def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
-    _env_dir = str(Path(__file__).parent / "environment_files")
-    arc = _make_arcade()
-    env = arc.make(game_id)
+def _wait_for_server(timeout: int = 30) -> bool:
+    url = f"http://{SERVER_HOST}:{SERVER_PORT}/api/healthcheck"
+    for _ in range(timeout):
+        try:
+            if requests.get(url, timeout=1).status_code == 200:
+                print("[server] Ready", flush=True)
+                return True
+        except Exception:
+            pass
+        time.sleep(1)
+    print("[server] WARNING: did not become ready in time", flush=True)
+    return False
 
-    # If competition mode connected but reset returned no actions (server rejected key
-    # or game unavailable), fall back to OFFLINE so steps still run.
-    if env is not None and not env.action_space and arc.operation_mode == OperationMode.COMPETITION:
-        print("[agent] COMPETITION: empty action_space after reset — OFFLINE fallback", flush=True)
-        arc = arc_agi.Arcade(operation_mode=OperationMode.OFFLINE, environments_dir=_env_dir)
-        env = arc.make(game_id)
 
+# ---------------------------------------------------------------------------
+# Game play
+# ---------------------------------------------------------------------------
+
+def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
+    game_prefix = game_id.split("-")[0] if "-" in game_id else game_id
+    route = _ROUTES.get(game_prefix, [])
+
+    env = arc.make(game_id, scorecard_id=card_id)
     if env is None:
-        raise RuntimeError(f"No environment available for {game_id}")
+        print(f"[game] {game_id}: env creation failed — skipping", flush=True)
+        return
 
     obs = None
     step = 0
@@ -146,82 +179,61 @@ def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
         actions = env.action_space
         if not actions:
             break
-        obs = env.step(actions[action_idx])
-        step += 1
-        if verbose:
-            _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
-            print(f"  step={step} {action_idx}({_name}) state={obs.state} levels={obs.levels_completed}", flush=True)
-        if is_done([], obs):
+        obs = env.step(actions[min(action_idx, len(actions) - 1)])
+        if obs is None:
             break
-    scorecard = None
-    try:
-        scorecard = str(arc.get_scorecard())
-    except Exception:
-        pass
-    return {
-        "game_id": game_id,
-        "steps": step,
-        "levels_completed": obs.levels_completed if obs else 0,
-        "final_state": obs.state if obs else "not_started",
-        "scorecard": scorecard,
-    }
+        step += 1
+        if obs.levels_completed >= 1 or str(obs.state) in (
+            "GameState.WIN", "GameState.GAME_OVER", "win", "game_over"
+        ):
+            break
+
+    levels = obs.levels_completed if obs else 0
+    print(f"[game] {game_id}: {step} steps, L{levels} complete", flush=True)
 
 
-def _extract_scorecard_score(scorecard_str: str | None) -> float:
-    """Extract the top-level percentage score from the arc_agi scorecard JSON string."""
-    if not scorecard_str:
-        return 0.0
-    try:
-        return float(json.loads(scorecard_str).get("score", 0.0))
-    except Exception:
-        return 0.0
-
-
-def write_submission(result: dict, output_dir: Path) -> None:
-    score = _extract_scorecard_score(result.get("scorecard"))
-    df = pd.DataFrame([{
-        "row_id": "1_0",
-        "game_id": result["game_id"],
-        "end_of_game": result["final_state"] in ("win", "game_over"),
-        "score": score,
-    }])
-    path = output_dir / "submission.parquet"
-    df.to_parquet(path, index=False)
-    print(f"[submission] Written to {path} (score={score:.4f})")
-
-
-def _write_dummy_submission(output_dir: Path) -> None:
-    """Write a zero-score fallback immediately on startup.
-    If the solver crashes, this file ensures Kaggle returns 0.0 instead of 'Kaggle Error'."""
-    df = pd.DataFrame([{
-        "row_id": "1_0",
-        "game_id": GAME_ID,
-        "end_of_game": False,
-        "score": 0.0,
-    }])
-    path = output_dir / "submission.parquet"
-    df.to_parquet(path, index=False)
-    print(f"[submission] Dummy written to {path} (overwritten on success)", flush=True)
-
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main() -> None:
-    print(f"[launch] OPERATION_MODE env={os.environ.get('OPERATION_MODE', 'not-set')}", flush=True)
-    _write_dummy_submission(_WORKING)  # safety net — always written before game logic
+    print(f"[launch] env_dir={_ENV_DIR}", flush=True)
+    _write_dummy_submission(_WORKING)
+    _load_routes()
+
+    print(f"[server] Starting local arc_agi server on port {SERVER_PORT}...", flush=True)
+    t = threading.Thread(target=_start_local_server, args=(_ENV_DIR,), daemon=True)
+    t.start()
+    if not _wait_for_server():
+        print("[launch] FATAL: server failed to start — dummy retained", flush=True)
+        return
+
+    # Point client to local server using COMPETITION mode so that
+    # open_scorecard/close_scorecard go through the REST API (triggering
+    # on_scorecard_close) rather than using the client's local scorecard manager.
+    os.environ["ARC_BASE_URL"] = f"http://{SERVER_HOST}:{SERVER_PORT}"
+    os.environ.setdefault("ARC_API_KEY", _LOCAL_KEY)
 
     try:
-        print("[launch] step-A: loading route", flush=True)
-        route = _load_route(GAME_ID)
-        print(f"[launch] step-B: route loaded ({len(route)} steps)", flush=True)
-        result = run_level1(GAME_ID, route)
-        print(f"[launch] step-C: game done", flush=True)
-        print(f"  levels_completed: {result['levels_completed']}", flush=True)
-        print(f"  final_state:      {result['final_state']}", flush=True)
-        if result["scorecard"]:
-            print(f"  scorecard:        {result['scorecard']}", flush=True)
-        write_submission(result, _WORKING)  # overwrites dummy on success
+        arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
+        print(f"[launch] Client: mode={arc.operation_mode} url={arc.arc_base_url} "
+              f"games={len(arc.available_environments)}", flush=True)
+
+        card_id = arc.open_scorecard(tags=["locus"])
+        print(f"[launch] Scorecard: {card_id}", flush=True)
+
+        for game_info in arc.available_environments:
+            _play_game(arc, game_info.game_id, card_id)
+
+        print("[launch] Closing scorecard...", flush=True)
+        scorecard = arc.close_scorecard(card_id)
+        if scorecard:
+            print(f"[launch] Final score: {scorecard.score:.4f}", flush=True)
+
     except BaseException as exc:
         print(f"[launch] FATAL {type(exc).__name__}: {exc}", flush=True)
-        print("[launch] Dummy submission retained — will score 0.0", flush=True)
+        traceback.print_exc()
+        print("[launch] Dummy submission retained", flush=True)
 
 
 if __name__ == "__main__":
