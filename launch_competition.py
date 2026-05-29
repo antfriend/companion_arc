@@ -3,32 +3,34 @@
 launch_competition.py — ARC-AGI-3 competition submission.
 
 COMPETITION RERUN (KAGGLE_IS_COMPETITION_RERUN is set):
-  Kaggle starts a gateway server at http://gateway:8001 before running the
-  notebook. We wait for it, then play all games against it in ONLINE mode.
-  Kaggle reads the score from the gateway scorecard directly.
+  Kaggle runs a gateway at http://gateway:8001. We wait for it, then play
+  all available games in ONLINE mode. Kaggle reads the score from the
+  gateway scorecard.
 
-TEST RUN (KAGGLE_IS_COMPETITION_RERUN not set):
-  No gateway. Write dummy submission.parquet so the notebook produces the
-  required output file and the version can be submitted.
+BATCH RUN (KAGGLE_IS_COMPETITION_RERUN not set):
+  No gateway. Play known games offline with our route, write real results
+  to submission.parquet. Falls back to dummy if offline play fails.
 """
 
 import os
 import re
+import sys
 import time
+import zipfile
 from pathlib import Path
 
 import pandas as pd
 import requests
 import arc_agi
 from arc_agi import OperationMode
+from arc_agi.scorecard import EnvironmentScorecard
 
 # ---------------------------------------------------------------------------
-# Paths and configuration
+# Paths
 # ---------------------------------------------------------------------------
 
 _WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(__file__).parent
 _COMPANION = Path(__file__).parent / "companion_arcprize.md"
-
 GATEWAY_URL = "http://gateway:8001"
 IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN"))
 
@@ -38,7 +40,6 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN"))
 
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 _FALLBACK_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]
-
 _ROUTES: dict[str, list[int]] = {}
 
 
@@ -69,7 +70,7 @@ def _load_routes() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Gateway wait
+# Gateway
 # ---------------------------------------------------------------------------
 
 def _wait_for_gateway(timeout_s: int = 600) -> bool:
@@ -91,7 +92,7 @@ def _wait_for_gateway(timeout_s: int = 600) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Game play
+# Game play (shared by online + offline paths)
 # ---------------------------------------------------------------------------
 
 def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
@@ -123,12 +124,73 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Competition rerun path
+# Submission writer
+# ---------------------------------------------------------------------------
+
+def _scorecard_to_parquet(scorecard: EnvironmentScorecard) -> None:
+    rows = []
+    for i, env in enumerate(scorecard.environments):
+        for j, run in enumerate(env.runs):
+            rows.append({
+                "row_id": f"{i}_{j}",
+                "game_id": env.id,
+                "end_of_game": bool(run.completed),
+                "score": float(run.score),
+            })
+    if not rows:
+        rows = [{"row_id": "0_0", "game_id": "none", "end_of_game": False, "score": 0.0}]
+    df = pd.DataFrame(rows)
+    path = _WORKING / "submission.parquet"
+    df.to_parquet(path, index=False)
+    print(f"[submission] Written {len(rows)} rows, overall={scorecard.score:.4f}", flush=True)
+
+
+def _write_dummy() -> None:
+    df = pd.DataFrame(
+        [{"row_id": "0_0", "game_id": "none", "end_of_game": False, "score": 0.0}]
+    )
+    (_WORKING / "submission.parquet").unlink(missing_ok=True)
+    df.to_parquet(_WORKING / "submission.parquet", index=False)
+    print("[submission] Dummy written", flush=True)
+
+
+# ---------------------------------------------------------------------------
+# Offline environment resolution
+# ---------------------------------------------------------------------------
+
+def _resolve_env_dir() -> str | None:
+    """Return path to a usable environment_files directory, extracting zip if needed."""
+    # Direct directory from dataset or competition
+    candidates = [
+        Path("/kaggle/input/competitions/arc-prize-2026-arc-agi-3/environment_files"),
+        Path(__file__).parent / "environment_files",
+    ]
+    for d in candidates:
+        if d.exists() and d.is_dir():
+            return str(d)
+
+    # dataset uploaded with --dir-mode zip: extract to /kaggle/working
+    zip_candidates = [
+        Path(__file__).parent / "environment_files.zip",
+    ]
+    for z in zip_candidates:
+        if z.exists():
+            dest = _WORKING / "environment_files"
+            dest.mkdir(exist_ok=True)
+            with zipfile.ZipFile(z, "r") as zf:
+                zf.extractall(dest)
+            print(f"[env] Extracted {z.name} to {dest}", flush=True)
+            return str(dest)
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Competition rerun path (gateway)
 # ---------------------------------------------------------------------------
 
 def run_competition() -> None:
-    print(f"[launch] COMPETITION RERUN — connecting to {GATEWAY_URL}", flush=True)
-
+    print(f"[launch] COMPETITION RERUN — waiting for {GATEWAY_URL}", flush=True)
     if not _wait_for_gateway():
         print("[launch] Cannot reach gateway — aborting", flush=True)
         return
@@ -141,16 +203,12 @@ def run_competition() -> None:
         print(f"[launch] ONLINE mode, {len(arc.available_environments)} games", flush=True)
 
         card_id = arc.open_scorecard(tags=["locus"])
-        print(f"[launch] Scorecard: {card_id}", flush=True)
-
         for game_info in arc.available_environments:
             _play_game(arc, game_info.game_id, card_id)
 
-        print("[launch] Closing scorecard...", flush=True)
         scorecard = arc.close_scorecard(card_id)
         if scorecard:
             print(f"[launch] Final score: {scorecard.score:.4f}", flush=True)
-
     except Exception as exc:
         import traceback
         print(f"[launch] FATAL: {exc}", flush=True)
@@ -158,17 +216,44 @@ def run_competition() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test run path
+# Batch run path (offline play → submission.parquet)
 # ---------------------------------------------------------------------------
 
-def write_dummy_submission() -> None:
-    df = pd.DataFrame(
-        data=[["1_0", "1", True, 1]],
-        columns=["row_id", "game_id", "end_of_game", "score"],
-    )
-    path = _WORKING / "submission.parquet"
-    df.to_parquet(path, index=False)
-    print(f"[submission] Dummy written to {path}", flush=True)
+def run_offline() -> None:
+    env_dir = _resolve_env_dir()
+    if env_dir is None:
+        print("[launch] No environment_files found — writing dummy", flush=True)
+        _write_dummy()
+        return
+
+    try:
+        arc = arc_agi.Arcade(
+            operation_mode=OperationMode.OFFLINE,
+            environments_dir=env_dir,
+        )
+        print(f"[launch] OFFLINE mode, {len(arc.available_environments)} games", flush=True)
+        for e in arc.available_environments:
+            print(f"[env]   {e.game_id}", flush=True)
+
+        if not arc.available_environments:
+            print("[launch] No environments loaded — writing dummy", flush=True)
+            _write_dummy()
+            return
+
+        card_id = arc.open_scorecard(tags=["locus"])
+        for game_info in arc.available_environments:
+            _play_game(arc, game_info.game_id, card_id)
+
+        scorecard = arc.close_scorecard(card_id)
+        if scorecard:
+            _scorecard_to_parquet(scorecard)
+        else:
+            _write_dummy()
+    except Exception as exc:
+        import traceback
+        print(f"[launch] offline error: {exc}", flush=True)
+        traceback.print_exc()
+        _write_dummy()
 
 
 # ---------------------------------------------------------------------------
@@ -182,7 +267,7 @@ def main() -> None:
     if IS_COMPETITION_RERUN:
         run_competition()
     else:
-        write_dummy_submission()
+        run_offline()
 
 
 if __name__ == "__main__":
