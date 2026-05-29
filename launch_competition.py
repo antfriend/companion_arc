@@ -201,12 +201,17 @@ def main() -> None:
     _write_dummy_submission(_WORKING)
     _load_routes()
 
-    print(f"[server] Starting local arc_agi server on port {SERVER_PORT}...", flush=True)
-    t = threading.Thread(target=_start_local_server, args=(_ENV_DIR,), daemon=True)
-    t.start()
-    if not _wait_for_server():
-        print("[launch] FATAL: server failed to start — dummy retained", flush=True)
-        return
+    # If a server is already running (Kaggle evaluation setup provides one),
+    # connect directly without starting our own.
+    if _wait_for_server(timeout=3):
+        print("[server] Pre-existing server detected — using it", flush=True)
+    else:
+        print(f"[server] Starting local arc_agi server on port {SERVER_PORT}...", flush=True)
+        t = threading.Thread(target=_start_local_server, args=(_ENV_DIR,), daemon=True)
+        t.start()
+        if not _wait_for_server():
+            print("[launch] FATAL: server failed to start — dummy retained", flush=True)
+            return
 
     # Point client to local server using COMPETITION mode so that
     # open_scorecard/close_scorecard go through the REST API (triggering
