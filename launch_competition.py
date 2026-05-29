@@ -92,13 +92,40 @@ def is_done(frames: list, latest_frame) -> bool:
     return latest_frame.levels_completed >= 1 or latest_frame.state in ("win", "game_over")
 
 
-def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
+def _make_arcade() -> arc_agi.Arcade:
+    """Use COMPETITION mode when ARC_API_KEY is available; otherwise OFFLINE."""
+    if os.environ.get("ARC_API_KEY") or os.environ.get("ARC_BASE_URL"):
+        try:
+            print("[agent] ARC_API_KEY found — trying COMPETITION mode", flush=True)
+            arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
+            print(f"[agent] COMPETITION mode ready (url={arc.arc_base_url})", flush=True)
+            return arc
+        except Exception as exc:
+            print(f"[agent] COMPETITION mode failed ({exc}) — falling back to OFFLINE", flush=True)
+    else:
+        print("[agent] No ARC_API_KEY — using OFFLINE mode", flush=True)
     _env_dir = str(Path(__file__).parent / "environment_files")
-    arc = arc_agi.Arcade(
+    return arc_agi.Arcade(
         operation_mode=OperationMode.OFFLINE,
         environments_dir=_env_dir,
     )
+
+
+def run_level1(game_id: str, route: list[int], verbose: bool = True) -> dict:
+    _env_dir = str(Path(__file__).parent / "environment_files")
+    arc = _make_arcade()
     env = arc.make(game_id)
+
+    # If competition mode connected but reset returned no actions (server rejected key
+    # or game unavailable), fall back to OFFLINE so steps still run.
+    if env is not None and not env.action_space and arc.operation_mode == OperationMode.COMPETITION:
+        print("[agent] COMPETITION: empty action_space after reset — OFFLINE fallback", flush=True)
+        arc = arc_agi.Arcade(operation_mode=OperationMode.OFFLINE, environments_dir=_env_dir)
+        env = arc.make(game_id)
+
+    if env is None:
+        raise RuntimeError(f"No environment available for {game_id}")
+
     obs = None
     step = 0
     for action_idx in route:
