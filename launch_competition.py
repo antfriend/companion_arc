@@ -93,17 +93,31 @@ def is_done(frames: list, latest_frame) -> bool:
 
 
 def _make_arcade() -> arc_agi.Arcade:
-    """Use COMPETITION mode when ARC_API_KEY is available; otherwise OFFLINE."""
-    if os.environ.get("ARC_API_KEY") or os.environ.get("ARC_BASE_URL"):
+    """Use COMPETITION mode when any competition signal is present; otherwise OFFLINE.
+
+    Competition signals (any one is sufficient):
+      ARC_API_KEY    — API key for three.arcprize.org (internet-on runs)
+      ARC_BASE_URL   — Kaggle may set this to a local evaluation server (internet-off)
+      OPERATION_MODE — Kaggle may set to 'competition' for scored evaluation runs
+    """
+    arc_key = os.environ.get("ARC_API_KEY", "")
+    arc_url = os.environ.get("ARC_BASE_URL", "")
+    op_mode = os.environ.get("OPERATION_MODE", "").lower()
+
+    print(f"[agent] ARC_API_KEY={'set' if arc_key else 'not-set'} "
+          f"ARC_BASE_URL={arc_url or 'not-set'} "
+          f"OPERATION_MODE={op_mode or 'not-set'}", flush=True)
+
+    if arc_key or arc_url or op_mode == "competition":
         try:
-            print("[agent] ARC_API_KEY found — trying COMPETITION mode", flush=True)
+            print("[agent] Competition signal found — trying COMPETITION mode", flush=True)
             arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
             print(f"[agent] COMPETITION mode ready (url={arc.arc_base_url})", flush=True)
             return arc
         except Exception as exc:
-            print(f"[agent] COMPETITION mode failed ({exc}) — falling back to OFFLINE", flush=True)
+            print(f"[agent] COMPETITION mode failed ({exc}) — OFFLINE fallback", flush=True)
     else:
-        print("[agent] No ARC_API_KEY — using OFFLINE mode", flush=True)
+        print("[agent] No competition signals — using OFFLINE mode", flush=True)
     _env_dir = str(Path(__file__).parent / "environment_files")
     return arc_agi.Arcade(
         operation_mode=OperationMode.OFFLINE,
