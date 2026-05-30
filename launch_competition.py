@@ -32,7 +32,19 @@ from arc_agi.scorecard import EnvironmentScorecard
 _WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(__file__).parent
 _COMPANION = Path(__file__).parent / "companion_arcprize.md"
 GATEWAY_URL = "http://gateway:8001"
-IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN"))
+
+
+def _gateway_is_available() -> bool:
+    try:
+        r = requests.get(f"{GATEWAY_URL}/api/games", timeout=3)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+# Kaggle may not set KAGGLE_IS_COMPETITION_RERUN even during competition reruns;
+# fall back to probing the gateway directly.
+IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN")) or _gateway_is_available()
 
 # ---------------------------------------------------------------------------
 # Routes  (0=UP  1=DOWN  2=LEFT  3=RIGHT)
@@ -276,7 +288,8 @@ def run_offline() -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    print(f"[launch] KAGGLE_IS_COMPETITION_RERUN={IS_COMPETITION_RERUN}", flush=True)
+    env_flag = os.getenv("KAGGLE_IS_COMPETITION_RERUN")
+    print(f"[launch] KAGGLE_IS_COMPETITION_RERUN={env_flag!r}  IS_COMPETITION_RERUN={IS_COMPETITION_RERUN}", flush=True)
     _load_routes()
 
     if IS_COMPETITION_RERUN:
