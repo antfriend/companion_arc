@@ -133,6 +133,8 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     if not actions:
         print(f"[game] {game_id}: no simple actions — skipping", flush=True)
         return
+    if route:  # only log action space for games we're actually routing
+        print(f"[actions] {game_id}: {[str(a) for a in actions]}", flush=True)
 
     obs = None
     step = 0
