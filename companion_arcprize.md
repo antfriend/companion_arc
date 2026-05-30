@@ -1279,12 +1279,12 @@ Confirmed candidates (confidence ≥ 128) are written as Locus Points to [Locus 
 
 ---
 
-@LAT60LON20 | created:1778889600 | updated:1748995200 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20,contains>@BELIEF:LAT40LON20,contains>@BELIEF:LAT20LON20,contains>@BELIEF:LAT40LON-30,contains>@BELIEF:LAT30LON-40,contains>@BELIEF:LAT10LON-10,contains>@BELIEF:LAT-10LON-10
+@LAT60LON20 | created:1778889600 | updated:1748649600 | relates:anchored_by>@LAT0LON0,written_by>@LAT50LON30,contains>@BELIEF:LAT80LON-20,contains>@BELIEF:LAT80LON-10,contains>@BELIEF:LAT70LON-20,contains>@BELIEF:LAT50LON-10,contains>@BELIEF:LAT30LON-20,contains>@BELIEF:LAT20LON-10,contains>@BELIEF:LAT90LON-20,contains>@BELIEF:LAT90LON-10,contains>@BELIEF:LAT90LON0,contains>@BELIEF:LAT80LON0,contains>@BELIEF:LAT70LON0,contains>@BELIEF:LAT60LON0,contains>@BELIEF:LAT50LON0,contains>@BELIEF:LAT40LON0,contains>@BELIEF:LAT40LON10,contains>@BELIEF:LAT30LON0,contains>@BELIEF:LAT30LON10,contains>@BELIEF:LAT20LON10,contains>@BELIEF:LAT10LON0,contains>@BELIEF:LAT10LON10,contains>@BELIEF:LAT90LON10,contains>@BELIEF:LAT80LON10,contains>@BELIEF:LAT70LON10,contains>@BELIEF:LAT50LON10,contains>@BELIEF:LAT60LON10,contains>@BELIEF:LAT30LON20,contains>@BELIEF:LAT20LON0,contains>@BELIEF:LAT50LON20,contains>@BELIEF:LAT10LON20,contains>@BELIEF:LAT80LON20,contains>@BELIEF:LAT70LON20,contains>@BELIEF:LAT40LON20,contains>@BELIEF:LAT20LON20,contains>@BELIEF:LAT40LON-30,contains>@BELIEF:LAT30LON-40,contains>@BELIEF:LAT10LON-10,contains>@BELIEF:LAT-10LON-10,contains>@BELIEF:LAT88LON40,contains>@BELIEF:LAT75LON-30
 [ew]
 conf:255
-rev:16
+rev:17
 sal:1
-touched:1748995200
+touched:1748649600
 [/ew]
 
 ## Locus Points
@@ -10822,6 +10822,52 @@ submission_status: pending_limit_expiry
 **Pending**: Submit v33 after 30-minute rate limit. Expect score ≈ 3/25 games × per-game RHAE. Exact value depends on human baselines for cd82 and sp80.
 
 **Next priority**: Extend search for the 22 unsolved games. Consider: longer routes (>25 steps), re-seeded random search, or manual play via LOCUS for games where mechanics can be inferred.
+
+---
+
+### Phase 1 Replay — confirmed clusters (2026-05-29)
+
+Walk parameters: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:40), @LAT88LON40 (high connectivity), @LAT-10LON40 (roster, high connectivity). Clusters extracted: min_cluster_size:3, min_cooccurrence:25, belief_conf_threshold:128.
+
+---
+
+@BELIEF:LAT88LON40 | created:1748649600 | updated:1748649600 | relates:extracted_from>@LAT88LON40,extracted_from>@LAT-710LON10,extracted_from>@LAT-10LON10,extracted_from>@LAT-10LON40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT88LON40
+confidence:250
+scope_lat:5.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**Competition scoring uses submission.parquet content directly.** `KAGGLE_IS_COMPETITION_RERUN` is never set in any run type. `KAGGLE_KERNEL_RUN_TYPE=Batch` always. The correct approach is `OperationMode.OFFLINE` loading 25 games from the competition environment_files, playing each with known routes, and writing scorecard results to submission.parquet. Confirmed empirically: score 0.00 (dummy parquet) → 0.1429 (real offline play). No gateway, no competition rerun, no env-var branching needed.
+
+---
+
+@BELIEF:LAT75LON-30 | created:1748649600 | updated:1748649600 | relates:extracted_from>@LAT75LON-50,extracted_from>@LAT70LON-50,extracted_from>@LAT-10LON40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT75LON-30
+confidence:210
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+
+**Most competition games use ACTION1–ACTION5 space, not directional (UP/DOWN/LEFT/RIGHT).** ls20 is the exception: it maps actions to cardinal directions. cd82 and sp80 both use ACTION1–ACTION5 as their simple action space (indices 0–4). Routes for non-directional games must be stored as raw integer indices, not direction names. The `is_simple()` filter on `env.action_space` is required before stepping — click-only games (e.g. bp35, using ACTION6+ with x/y data) will crash if non-simple actions are passed without coordinate payloads. Confidence 210 (not 255): only 2 non-ls20 games confirmed; more games needed to validate the generalization.
+
+---
+
+### Phase 2 Projection (2026-05-29)
+
+*Hypotheses generated from boundary nodes. `projection_flag:true` — not yet validated.*
+
+**Projection A** (from @LAT70LON-50, @LAT75LON-50 boundary): Random search at depth 25/500 trials found solutions at lengths 8 (sp80) and 19 (cd82). The 21 remaining unsolved simple-action games were not found. Projected belief: most unsolved games require either routes >25 steps or structured non-random sequences. Depth extension to 40–50 steps with 2000+ trials per game is the next search strategy. Validate by re-running search with higher limits.
+
+**Projection B** (from @LAT-10LON40 roster void): Game name structure (two-letter code + two-digit number, e.g. ls20, cd82, sp80, sk48, tu93...) may correlate with game class and action space type. Games sharing two-letter prefix might share mechanics. Needs cross-game comparison to validate. Cannot confirm without playing multiple games.
 
 ### Level 1 — WIN at step 15 ✓
 
