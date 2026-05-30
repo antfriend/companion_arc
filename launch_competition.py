@@ -147,7 +147,8 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             break
 
     levels = obs.levels_completed if obs else 0
-    print(f"[game] {game_id}: {step} steps, L{levels}", flush=True)
+    state = str(obs.state) if obs else "None"
+    print(f"[game] {game_id}: {step} steps, L{levels}, state={state}", flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -158,11 +159,14 @@ def _scorecard_to_parquet(scorecard: EnvironmentScorecard) -> None:
     rows = []
     for i, env in enumerate(scorecard.environments):
         for j, run in enumerate(env.runs):
+            completed = bool(run.completed)
+            score = float(run.score)
+            print(f"[row] {env.id}: completed={completed}, score={score:.4f}", flush=True)
             rows.append({
                 "row_id": f"{i}_{j}",
                 "game_id": env.id,
-                "end_of_game": bool(run.completed),
-                "score": float(run.score),
+                "end_of_game": completed,
+                "score": score,
             })
     if not rows:
         rows = [{"row_id": "0_0", "game_id": "none", "end_of_game": False, "score": 0.0}]
@@ -235,6 +239,9 @@ def run_competition() -> None:
 
         scorecard = arc.close_scorecard(card_id)
         if scorecard:
+            for env in scorecard.environments:
+                for run in env.runs:
+                    print(f"[online-row] {env.id}: completed={run.completed}, score={float(run.score):.4f}", flush=True)
             print(f"[launch] Final score: {scorecard.score:.4f}", flush=True)
     except Exception as exc:
         import traceback
