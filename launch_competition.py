@@ -141,9 +141,7 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         if obs is None:
             break
         step += 1
-        if obs.levels_completed >= 1 or str(obs.state) in (
-            "GameState.WIN", "GameState.GAME_OVER", "win", "game_over"
-        ):
+        if str(obs.state) in ("GameState.WIN", "GameState.GAME_OVER", "win", "game_over"):
             break
 
     levels = obs.levels_completed if obs else 0
@@ -161,11 +159,15 @@ def _scorecard_to_parquet(scorecard: EnvironmentScorecard) -> None:
         for j, run in enumerate(env.runs):
             completed = bool(run.completed)
             score = float(run.score)
-            print(f"[row] {env.id}: completed={completed}, score={score:.4f}", flush=True)
+            # Mark end_of_game=True whenever we have partial or full progress.
+            # The competition needs this True to count the row; completed=False just
+            # means we reached an intermediate level, not that we didn't play.
+            end_of_game = completed or score > 0
+            print(f"[row] {env.id}: completed={completed}, end_of_game={end_of_game}, score={score:.4f}", flush=True)
             rows.append({
                 "row_id": f"{i}_{j}",
                 "game_id": env.id,
-                "end_of_game": completed,
+                "end_of_game": end_of_game,
                 "score": score,
             })
     if not rows:
