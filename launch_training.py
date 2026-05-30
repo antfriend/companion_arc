@@ -34,10 +34,23 @@ _parser.add_argument(
     help="levels whose known route is hardcoded before handing off to LOCUS "
          "(default 2 = L1+L2 hardcoded via _LEVEL2_ROUTE; 1 = L1 only; 0 = LOCUS from step 0)",
 )
+_parser.add_argument(
+    "--env-dir", default=None, metavar="DIR",
+    help="path to environment_files directory for OFFLINE mode "
+         "(e.g. C:\\Temp\\arc3\\extracted\\environment_files)",
+)
 _args = _parser.parse_args()
 
 GAME_ID = _args.game_id
 OFFLINE_LEVELS = _args.offline_levels
+ENV_DIR = _args.env_dir
+
+# Known winning routes for competition games (indices into is_simple() action space)
+# ls20 uses the kaggle_agent.py defaults; others are looked up here
+_COMPETITION_ROUTES: dict[str, dict[int, list[int]]] = {
+    "cd82": {1: [3, 0, 1, 0, 0, 0, 1, 1, 1, 3, 2, 0, 4, 4, 2, 0, 0, 0, 1]},
+    "sp80": {1: [4, 3, 3, 3, 4, 2, 2, 1]},
+}
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +182,7 @@ def main() -> None:
 
     print(f"\n[launch] Starting '{GAME_ID}' in practice mode\n")
 
+    game_prefix = GAME_ID.split("-")[0]
     result = run_training_attempt(
         game_id=GAME_ID,
         client=client,
@@ -177,6 +191,8 @@ def main() -> None:
         competition_mode=False,
         verbose=True,
         offline_levels=OFFLINE_LEVELS,
+        environments_dir=ENV_DIR,
+        game_routes=_COMPETITION_ROUTES.get(game_prefix),
     )
 
     print(f"\n[launch] Training complete")

@@ -297,6 +297,8 @@ def run_training_attempt(
     verbose: bool = True,
     offline_levels: int = 1,
     stop_after_offline: bool = False,
+    environments_dir: str | None = None,
+    game_routes: dict[int, list[int]] | None = None,
 ) -> dict:
     """
     Run one training attempt on game_id using LOCUS to pick actions in the
@@ -312,7 +314,12 @@ def run_training_attempt(
     """
     from arc_agi import OperationMode
 
-    if competition_mode:
+    if environments_dir is not None:
+        arc = arc_agi.Arcade(
+            operation_mode=OperationMode.OFFLINE,
+            environments_dir=environments_dir,
+        )
+    elif competition_mode:
         arc = arc_agi.Arcade(operation_mode=OperationMode.COMPETITION)
     else:
         try:
@@ -348,17 +355,23 @@ def run_training_attempt(
     if verbose:
         print(f"[agent] '{game_id}' started ({mode_label} mode, offline_levels={offline_levels})")
 
+    # Use caller-supplied routes if provided, otherwise fall back to ls20 defaults
+    _routes = game_routes if game_routes is not None else _HARDCODED_ROUTES
+
     # -- Main loop -----------------------------------------------------------
     while step < max_steps:
-        actions = env.action_space
+        all_actions = env.action_space
+        # Filter to simple (non-click) actions only to avoid crashes on games
+        # that require x/y coordinate data (e.g. bp35)
+        actions = [a for a in (all_actions or []) if a.is_simple()]
         if not actions:
             if verbose:
-                print("[agent] No actions available — episode complete.")
+                print("[agent] No simple actions available — episode complete.")
             break
 
         current_level = (obs.levels_completed if obs is not None else 0) + 1
         level_step = step - level_start_step
-        route = _HARDCODED_ROUTES.get(current_level)
+        route = _routes.get(current_level)
         in_offline = offline_levels > 0 and (obs is None or obs.levels_completed < offline_levels)
 
         if in_offline and route is not None and level_step < len(route):

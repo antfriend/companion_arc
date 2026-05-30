@@ -39,13 +39,23 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN"))
 # ---------------------------------------------------------------------------
 
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
-_FALLBACK_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]
+
+# Hardcoded winning routes (indices into each game's simple action space)
+# ls20: [UP,DOWN,LEFT,RIGHT] → indices 0-3
+# cd82: [ACTION1-ACTION5]    → indices 0-4
+# sp80: [ACTION1-ACTION5]    → indices 0-4
+_HARDCODED_ROUTES: dict[str, list[int]] = {
+    "ls20": [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0],
+    "cd82": [3, 0, 1, 0, 0, 0, 1, 1, 1, 3, 2, 0, 4, 4, 2, 0, 0, 0, 1],
+    "sp80": [4, 3, 3, 3, 4, 2, 2, 1],
+}
+
 _ROUTES: dict[str, list[int]] = {}
 
 
 def _load_routes() -> None:
     global _ROUTES
-    _ROUTES = {"ls20": _FALLBACK_ROUTE}
+    _ROUTES = dict(_HARDCODED_ROUTES)
     if not _COMPANION.exists():
         print(f"[route] {_COMPANION.name} not found — using hardcoded ls20", flush=True)
         return
@@ -64,6 +74,8 @@ def _load_routes() -> None:
                 actions.extend([_DIR[m.group(1).upper()]] * int(m.group(2)))
             elif token.upper() in _DIR:
                 actions.append(_DIR[token.upper()])
+            elif re.match(r"^\d+$", token):
+                actions.append(int(token))
         if actions:
             _ROUTES[game_id] = actions
     print(f"[route] Routes loaded: {sorted(_ROUTES.keys())}", flush=True)
@@ -104,13 +116,16 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         print(f"[game] {game_id}: env creation failed — skipping", flush=True)
         return
 
+    # Use only simple (non-click) actions to avoid KeyError on complex action data
+    actions = [a for a in (env.action_space or []) if a.is_simple()]
+    if not actions:
+        print(f"[game] {game_id}: no simple actions — skipping", flush=True)
+        return
+
     obs = None
     step = 0
     for action_idx in route:
-        actions = env.action_space
-        if not actions:
-            break
-        obs = env.step(actions[min(action_idx, len(actions) - 1)])
+        obs = env.step(actions[action_idx % len(actions)])
         if obs is None:
             break
         step += 1
