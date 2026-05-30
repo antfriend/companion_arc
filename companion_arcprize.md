@@ -11028,3 +11028,56 @@ preview:
 ```
 
 ---
+
+---
+
+SECTION 1
+
+@LAT-710LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 63 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "44b0a3ce-8eda-43f6-ba60-00dcba134e43"
+card_id: "953f418d-7311-49d7-8883-cf5fa85573a9"
+level: "level 1 NOT WON (110 actions)"
+actions: 110
+levels_completed: 0
+score: 0.0
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [110]
+level_baseline_actions: [-1]
+```
+
+**Anomaly**: `levels_completed: 0` and `level_baseline_actions: [-1]`. Human baseline unavailable for this environment — this is the `ls20-9607627b` OFFLINE environment but in a mode that returns `number_of_environments: 0` and no baseline. This is a different scorecard structure from sessions 23–62 (which showed baseline 22 for L1). The run consumed all 110 actions on a single level (no level change recorded). Either (a) the hardcoded `_LEVEL1_ROUTE` did not fire and all 110 actions were consumed on level 1, or (b) the environment loaded in a different state (fresh start, different config).
+
+**Critical observation**: `level_baseline_actions: [-1]` has never appeared before across 62 sessions. All prior sessions showed `[22, 123, ...]`. This suggests the scorecard was generated from a different environment configuration or the environment was not loaded as the standard ls20-9607627b with known baselines.
+
+### Level 1 — NOT WON
+
+All 110 actions consumed on level 1 (single level entry in level_actions). No levels completed. Score 0.0.
+
+**Possible causes**:
+1. **Environment state change**: the ls20-9607627b environment may have been reset or reloaded in a configuration that no longer provides human baselines. The `number_of_environments: 0` field is new.
+2. **Hardcode not applied**: `_LEVEL1_ROUTE` did not fire; LOCUS queried at step 0 without frame, selected suboptimal action. Same failure mode as sessions 13–22 (pre-fix). If this is the case, the hardcode may have been overwritten or the kaggle_agent.py was not updated before this session.
+3. **DC30 route change introduced a regression**: modifying `_LEVEL2_ROUTE` from 42 to 64 steps may have accidentally altered the `_LEVEL1_ROUTE` or the routing logic in kaggle_agent.py.
+4. **Baseline unavailability is benign**: the `-1` baseline is a reporting artifact; the game was played correctly but the L1 hardcode misfired for unrelated reasons.
+
+**Root cause diagnosis priority**:
+- Check whether `_LEVEL1_ROUTE` is intact in kaggle_agent.py (not overwritten by DC30 changes).
+- Check whether `offline_levels` is still set to 2 (not accidentally set to 0 or 1 in a way that bypasses L1 hardcode).
+- Verify the environment file is loading correctly.
+
+### Level 2 — Not reached
+
+Level 2 was not entered. DC30 64-step `_LEVEL2_ROUTE` for Hypothesis 10A (ring A ×2 multi-cycle) was not tested. The DC30 probe remains pending.
