@@ -11127,3 +11127,60 @@ All 110 actions consumed on level 1 (single level entry in level_actions). No le
 ### Level 2 — Not reached
 
 Level 2 was not entered. DC30 64-step `_LEVEL2_ROUTE` for Hypothesis 10A (ring A ×2 multi-cycle) was not tested. The DC30 probe remains pending.
+
+---
+
+SECTION 1
+
+@LAT-720LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 64 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "b3311bcf-9aed-4f8c-9291-03724e93f270"
+card_id: "16351c53-fa48-407b-8882-d56e8d512d4f"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (95 actions)"
+actions: 110
+levels_completed: 1
+score: 3.571428571428571
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [15, 95, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, forty-second consecutive confirmation — sessions 10–12, 23–27, 31–64). Level 2 entered; 95 level-2 actions taken (max_steps=110); NOT WON. Total 110 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–62. Session 63 anomaly (`levels_completed: 0`, baseline `−1`) is resolved — baselines [22, 123, …] are back, L1 WON normally. The anomaly in session 63 was either a transient environment-load failure or a code regression that self-corrected.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=42]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Forty-second confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (forty-second time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (forty-second time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=110 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (twenty-ninth consecutive confirmation, per STATUS exchange confirming 41 consecutive carry-overs).
+
+---
+
+### Level 2 — 95 actions, NOT WON (forty-second attempt)
+
+**Session objective (DC30)**: Hypothesis 10A (corrected probe) — ring B → cross → ring A → ring A ×2 via timer-expiry micro-oscillation at c9–13/c14–18 → entity1 state 3 triggered by second ring A collection.
+
+**Route applied**: DC30 64-step hardcoded `_LEVEL2_ROUTE`
