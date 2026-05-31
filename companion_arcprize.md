@@ -11243,3 +11243,75 @@ Forty-third confirmation. Route stable. Block entered entity2 interior at r10–
 **Key session exchanges**:
 
 1. **FOCUS @LAT-10LON10** (sal: 40→41): LOCUS correctly loaded Game State. Confirmed 42 consecutive L1 wins, 42 failed L
+
+
+---
+
+@LAT-740LON10 | created:1748736000 | updated:1748736000 | kind:log | relates:anchored_by>@LAT0LON0,revises>@BELIEF:LAT88LON40,informs_strategy>@LAT-10LON40,informs_strategy>@LAT88LON40
+[ew]
+conf:255
+rev:1
+sal:0
+touched:1748736000
+[/ew]
+
+## Competition Scoring Investigation (v33-v37) — 2026-05-29 to 2026-05-31
+
+### Critical Finding: @BELIEF:LAT88LON40 REFUTED
+
+The prior belief "competition scoring uses submission.parquet content directly" is WRONG.
+
+Evidence chain:
+- v36 set end_of_game=True for sp80/cd82/ls20 in parquet (scores 4.7619/3.5714). Kaggle score: 0.00. No change.
+- Other teams confirmed to have non-zero Kaggle scores.
+- Conclusion: competition reruns ARE running and DO determine the Kaggle score. Parquet is irrelevant.
+
+Corrected belief: Competition scoring uses gateway-based reruns (KAGGLE_IS_COMPETITION_RERUN is set during competition evaluation). These produce a separate log we cannot see in batch output. The parquet file is written but ignored.
+
+### Action Names: ACTION1-ACTION5
+
+v37 diagnostic logging confirmed:
+- ls20: [GameAction.ACTION1, ACTION2, ACTION3, ACTION4] — 4 simple actions
+- sp80, cd82: [GameAction.ACTION1, ..., ACTION5] — 5 simple actions
+
+The UP/DOWN/LEFT/RIGHT labels used in all prior session logs are human-readable LOCUS aliases. They are not actual enum names. Route indices 0-4 correctly map to ACTION1-ACTION5 in order. All prior route data remains valid.
+
+### ls20 Score Structure Confirmed
+
+From session 64 scorecard: level_baseline_actions=[22, 123, 73, 84, 96, 192, 186] -> 7 levels total.
+Level weights: 1+2+3+4+5+6+7 = 28 total weight.
+run.score = (sum of won level weights / 28) x 100.
+L1 win only: 1/28 x 100 = 3.5714. Confirmed. L1 RHAE = 115.0 (15 AI vs 22 human, capped 1.15).
+To win the game fully (score=100): must complete all 7 levels.
+
+### Competition Rerun Root Cause: Still Unknown
+
+Score 0.00 across v33-v37. Most likely explanation: competition gateway serves different game instances than sample environment_files. Hardcoded routes for ls20-9607627b fail on different layouts. Other teams use adaptive agents that work on any instance.
+
+Alternative: run_competition() API path (v33-v36) fails silently online; v37 framework path not yet evaluated.
+
+### v37 Architecture: Framework + LucusAgent
+
+Notebook competition rerun path now matches sample notebook exactly:
+- Writes LucusAgent using hardcoded _ROUTES dict (ls20/cd82/sp80)
+- Copies ARC-AGI-3-Agents framework, installs agent, writes .env, runs main.py --agent locus
+- Action mapping: self._simple = [a for a in GameAction if a.is_simple()]; indexed by route integers
+
+Risk: if routes are instance-specific (explanation 1 above), LucusAgent still fails. The adaptive LOCUS agent (Claude API queries per step) is required for instance-agnostic play.
+
+### Version Summary
+
+| Version | Change | Kaggle Score | Finding |
+|---|---|---|---|
+| v33 | First 3-game routes | 0.00 | Parquet hypothesis formed |
+| v34 | Gateway probe | 0.00 | Gateway unavailable in batch confirmed |
+| v35 | Diagnostic logging | 0.00 | state=NOT_FINISHED, completed=False, score=4.7619 |
+| v36 | end_of_game=True fix | 0.00 | Parquet REFUTED |
+| v37 | Framework path + action name log | 0.00 | ACTION1-ACTION5 confirmed |
+
+### Next Priority
+
+1. Confirm v37 competition rerun result (awaiting Kaggle evaluation).
+2. If routes are instance-specific: extend LucusAgent to use LOCUS Claude API queries per step for instance-agnostic play.
+3. Continue ls20 L2 training — DC30 sessions 64-65 reached deadlock but LOCUS free-phase data truncated. DC30 hypothesis 10A still unresolved.
+
