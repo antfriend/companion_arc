@@ -168,7 +168,7 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             except Exception as exc:
                 route = [0] * 7
                 print(f"[route] {game_id}: detection failed ({exc}), using UP×7", flush=True)
-        route = route[1:]  # first UP already taken above
+        # Route is computed from the post-probe position — execute in full
     elif route:
         print(f"[actions] {game_id}: {[str(a) for a in actions]}", flush=True)
 
