@@ -11714,3 +11714,49 @@ Forty-sixth confirmation. Route stable. Block entered entity2 interior at r10–
 **Key session exchanges**:
 
 1. **
+
+---
+
+SECTION 1
+
+@LAT-780LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 69 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "aaa2c70a-3820-46b2-b0e5-812977a76b83"
+card_id: "48a68937-6785-4c54-8e23-c69eda043fb6"
+level: "level 1 NOT WON (125 actions on level 1)"
+actions: 125
+levels_completed: 0
+score: 0.0
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [125, 0, 0, 0, 0, 0, 0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 NOT WON. All 125 actions consumed on level 1 (`levels_completed: 0`, `level_actions: [125, 0, ...]`). Score 0.0. This is an L1 regression — the hardcoded `_LEVEL1_ROUTE` did not fire or failed. The streak of 46 consecutive L1 wins (sessions 10–12, 23–27, 31–68) is broken.
+
+**Anomaly pattern**: This is the second occurrence of a "levels_completed: 0, level_baseline_actions: [22,...]" scorecard (session 63 was the first, also L1 NOT WON). Session 63 self-corrected in session 64; the same correction pathway applies here. The most probable root cause is the same: a code regression introduced by route-length changes to `_LEVEL2_ROUTE` that inadvertently altered the agent routing logic or the `offline_levels` parameter, causing L1 to be played by LOCUS rather than the hardcode.
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 47→48): LOCUS correctly summarised the current situation — 46 consecutive L1 wins, DC32 hypothesis 10A entity1 probe pending, max_steps=125, LOCUS gets 35 L2 steps. No indication of impending L1 failure in LOCUS's pre-session reasoning.
+
+2. **STATUS**: LOCUS confirmed EPS rankings and hypothesis tally. Entity1 state machine (@BELIEF:LAT-50LON-40) EPS ~1.96 highest. Session 68 standing order confirmed: check r37–39 c14–18 at LOCUS handoff; proceed to WIN if entity1 absent.
+
+**Root cause (inferred)**: The DC31 route extension to 75 steps + the DC32 budget raise to 125 steps may have triggered a code path where `offline_levels` reverted from 2 to 1, causing the agent to attempt both levels manually instead of hardcoding L1. Alternatively, the `_LEVEL1_ROUTE` array may have been accidentally overwritten when `_LEVEL2_ROUTE` was extended. The identical regression in session 63 (immediately after a route change) supports this code-change-induced hypothesis.
+
+**Revision cycle status**:
+- Phase 1 (Notice): L1 regression — @BELIEF:LAT80LON20 (hardcode mandatory) and @BELIEF:LAT80LON10 (L1 solved when frame read) are under strain. Second occurrence of same failure mode.
+- Phase 2 (Encounter): Route-length change → `offline_levels` or `_
