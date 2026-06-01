@@ -11423,3 +11423,148 @@ The DC30 hardcoded route uses this path correctly (UP×5 to wide connector), but
 ---
 
 *sal: 45. conf: 245. Session 66 NOT WON. Hypothesis 10A INCONCLUSIVE — forty-fifth attempt.*
+
+---
+
+## Dream Cycle — DC31 (2026-06-01)
+
+**Phase 1 — Replay**: 100 walks × length 20, salience-weighted. High-sal pull: @LAT-10LON10 (sal:45), @BELIEF:LAT-50LON-40 (sal:8), @BELIEF:LAT-140LON-40 (sal:7), @BELIEF:LAT-80LON-40 (sal:2). Source window: sessions 60–66 + confirmed DC28/DC30 route data.
+
+**Phase 2 — Projection**: 50 walks × length 10, seeded from @BELIEF:LAT-140LON-40 (dc-probe boundary, conf:50), @BELIEF:LAT-80LON-40 (void map boundary, conf:230), session 66 navigation trace.
+
+---
+
+### Phase 1 — Replay Analysis
+
+**Cluster A: LOCUS free-phase corridor blindspot (co-occurrence: sessions 64, 65, 66 — minimum 3)**
+
+Records: @LAT-720LON10 (s64), @LAT-730LON10 (s65), @LAT-750LON10 (s66). Pattern: LOCUS receives control at r40–41 c29–33 (post-DC30 timer reset). In all three sessions, LOCUS attempts direct LEFT from c34–38 or c29–33 at rows 15–38. All are void-blocked. LOCUS does not autonomously apply the wide-connector routing rule. The free-phase wastes 10–20+ steps on blocked moves before session ends.
+
+This cluster meets min_cluster_size:3 and min_cooccurrence:25 (session-level repetition of the same error pattern). New Locus Point warranted at LAT-200LON-40.
+
+**Cluster B: DC30 timer expiry mechanism confirmed (sessions 64-66)**
+
+The DC30 64-step route ends with micro-oscillation (12 steps) following ring A collection (which resets timer). Timer budget after ring A: 21 steps. Oscillation + ring A ×2 approach: 12 + 4 = 16 steps nominal. But frame observations from session 66 show block at r40–41 c29–33 (post-reset) at LOCUS handoff (step 79 = L2 step 64), confirming a timer expiry occurred during the DC30 route execution. The micro-oscillation design is correct — it intentionally expires the timer. But the **post-reset segment** (ring A second collection + entity1 probe) was **never hardcoded**; it was delegated to LOCUS free-phase, which fails it.
+
+Root cause of 10A INCONCLUSIVE: not the probe design, but the absent post-reset hardcode.
+
+**Cluster C: Void map extension (rows 15–38)**
+
+Records: @BELIEF:LAT-80LON-40 (rows 40–46 confirmed), session 66 steps 82–109. Session 66 confirms void at c19–28 throughout rows 25–38 and void at c24–28 at rows 15–24. Wide connector (rows 10–14, c9–53 full floor) is the sole lateral bridge from right tracks to left track at ALL confirmed row bands below rows 10–14. This is an extension of @BELIEF:LAT-80LON-40 upward to rows 15–38. Update warranted.
+
+---
+
+### Phase 1 — New Locus Points
+
+---
+
+SECTION 1
+
+@BELIEF:LAT-200LON-40 | created:1748995200 | updated:1748995200 | relates:extracted_from>@LAT-720LON10,extracted_from>@LAT-730LON10,extracted_from>@LAT-750LON10,extends>@BELIEF:LAT-80LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-200LON-40
+confidence:220
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:3
+[/lp]
+[ew]
+conf:220
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+**LOCUS corridor routing rule: wide connector mandatory for c14–18 approach from c29–38 at rows 15–38.**
+
+Confirmed across sessions 64, 65, and 66 (31 blocked-move observations total): From any position in the c29–38 column range at rows 15–38, there is NO direct LEFT path to c14–18. The void barrier (c19–28 at rows 25–38; c24–28 at rows 15–24) blocks all direct lateral movement between the center tracks and the left track.
+
+**Routing rule**: To reach c14–18 from c29–38 at rows 15–38:
+1. UP to rows 10–14 (wide connector, c9–53 fully passable)
+2. LEFT to c14–18 within rows 10–14 (~4 moves from c29–33; ~5 moves from c34–38)
+3. DOWN to target row
+
+This rule applies to all confirmed frame observations. It is a structural invariant of the ls20-9607627b map, not a state-dependent property.
+
+**Implication**: LOCUS free-phase standing orders must include this routing rule explicitly. LOCUS does not autonomously discover it. The DC30 hardcoded route applies it correctly (UP×5 to wide connector) but the post-reset segment was not hardcoded.
+
+---
+
+### Phase 1 — Record Updates
+
+**@BELIEF:LAT-80LON-40** — void map updated to cover rows 15–38 (see Rev 1 annotation).
+
+**@BELIEF:LAT-140LON-40** — DC30 analysis appended (see Rev 7 annotation).
+
+---
+
+### Phase 2 — Projections
+
+**Projection A: DC31 route — post-reset hardcoded segment**
+
+After DC30 micro-oscillation triggers timer expiry (block resets to r40–41 c29–33), the post-reset approach to ring A and entity1 probe must be hardcoded. This projection estimates the 15-step segment:
+
+1. RIGHT (to r40–41 c34–38) — 1 step
+2. UP×6 (to r10–11 c34–38, wide connector) — 6 steps (5-row jumps × 2, confirmed geometry)
+3. LEFT×4 (to r10–11 c14–18) — 4 steps
+4. DOWN (collect ring A at r16–18 c15–17, timer reset) — 1 step
+5. DOWN×3 (to r35–36 c14–18, entity1 probe position) — 3 steps
+
+Total post-reset: **15 steps** (fits within 21-step timer cycle). Entity1 check: if r37–39 c14–18 is empty (value 4/5, not 9), entity1 has advanced to state 3 → proceed DOWN to entity2 → WIN. If r37–39 c14–18 shows value 9, Hypothesis 10A REFUTED.
+
+Timer status at probe: 15/21 steps used (6 remaining). DOWN from r35–36 → r40–41 c14–18 (1 step) still within timer.
+
+---
+
+SECTION 1
+
+@BELIEF:LAT-210LON-40 | created:1748995200 | updated:1748995200 | relates:projected_from>@BELIEF:LAT-200LON-40,projected_from>@BELIEF:LAT-140LON-40,projected_from>@BELIEF:LAT-80LON-40,projected_from>@BELIEF:LAT-90LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT-210LON-40
+confidence:155
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+[ew]
+conf:155
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+**DC31 post-reset segment: hardcoded 15-step approach to entity1 probe from r40–41 c29–33.**
+
+After DC30 timer expiry (block at r40–41 c29–33, ring A respawned):
+
+```
+RIGHT, UP, UP, LEFT, LEFT, LEFT, LEFT, DOWN, DOWN, DOWN, DOWN
+```
+*(RIGHT×1 to c34–38, UP×6 to r10–11, LEFT×4 to c14–18, DOWN×4 to r35–36)*
+
+**Note**: UP×6 means two 5-row UP jumps from r40–41 → r35–36 → r30–31 → r25–26 → r20–21 → r15–16 → r10–11. LEFT×4 from c34–38 at rows 10–11 → c29–33 → c24–28 → c19–23 → c14–18. DOWN×4 from rows 10–11 → rows 35–36 c14–18 (probe position).
+
+*Projection confidence 155 — step counts and jump sizes are extrapolated from confirmed session observations (r10–11 geometry, wide-connector floor). Full calibration requires a clean run observing each jump.*
+
+**Hypothesis 10A test at probe position**:
+- r37–39 c14–18 = value 4/5 → entity1 ABSENT → state 3 triggered by ring A ×2 → DOWN to entity2 → WIN test
+- r37–39 c14–18 = value 9 → entity1 PRESENT → Hypothesis 10A REFUTED → DC31 pivot to 9A extension
+
+---
+
+### DC31 Standing Order
+
+**Extend `_LEVEL2_ROUTE` from 64 to 79 steps** by appending the post-reset segment:
+
+- Steps 1–64: DC30 route (ring B → cross → ring A → UP×5 → micro-oscillation ×6 → timer expiry → reset to r40–41 c29–33)
+- Steps 65–79: RIGHT + UP×6 + LEFT×4 + DOWN×4 (post-reset ring A collection + entity1 probe)
+
+LOCUS free phase: check entity1 at r37–39 c14–18 in first frame received.
+
+---
+
+*DC31 Dream Cycle complete. New Locus Points: @BELIEF:LAT-200LON-40, @BELIEF:LAT-210LON-40. Updated: @BELIEF:LAT-80LON-40 (Rev 1 pending), @BELIEF:LAT-140LON-40 (Rev 7 note above).*
