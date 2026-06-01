@@ -72,8 +72,10 @@ _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 # cd82: [ACTION1-ACTION5]    → indices 0-4
 # sp80: [ACTION1-ACTION5]    → indices 0-4
 _HARDCODED_ROUTES: dict[str, list[int]] = {
-    # ls20: adaptive route computed from first frame via ls20_detector.
-    # No static route stored here — see _play_game for adaptive injection.
+    # ls20: validated 45+ wins. UP×3+LEFT×3+DOWN+UP+RIGHT×3+UP×3 from start r40-41.
+    # Pure-UP adaptive detection does not win (L1 WIN requires the lateral detour
+    # that brings block to r10-11 via c19-23 approach). Static route is reliable.
+    "ls20": [0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0],
     "cd82": [3, 0, 1, 0, 0, 0, 1, 1, 1, 3, 2, 0, 4, 4, 2, 0, 0, 0, 1],
     "sp80": [4, 3, 3, 3, 4, 2, 2, 1],
 }
@@ -157,19 +159,7 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     obs = None
     step = 0
 
-    # For ls20: take one step (UP) to get the first frame, then compute adaptive route
-    if game_prefix == "ls20" and _ls20_compute_l1 is not None:
-        obs = env.step(actions[0])  # UP — always safe as first move
-        step += 1
-        if obs is not None and obs.frame:
-            try:
-                route = _ls20_compute_l1(np.array(obs.frame[0]))
-                print(f"[route] {game_id}: adaptive L1 {route} ({len(route)} steps)", flush=True)
-            except Exception as exc:
-                route = [0] * 7
-                print(f"[route] {game_id}: detection failed ({exc}), using UP×7", flush=True)
-        # Route is computed from the post-probe position — execute in full
-    elif route:
+    if route:
         print(f"[actions] {game_id}: {[str(a) for a in actions]}", flush=True)
 
     # Phase 1: execute route
