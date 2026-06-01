@@ -21,10 +21,13 @@ LOCUS interaction points in run_training_attempt:
 import os
 import re
 import urllib.request
+from pathlib import Path
 
 import numpy as np
 import anthropic
 import arc_agi
+
+from ls20_detector import compute_l1_route, format_strategy_block, update_strategy_in_file
 
 COMPANION_URL = (
     "https://raw.githubusercontent.com/antfriend/companion_arc/main/companion_arcprize.md"
@@ -60,7 +63,8 @@ BLOCK_VAL = 12
 
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
-_LEVEL1_ROUTE = [0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×3,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — validated 45 wins with offset-corrected indexing
+# L1 is now computed adaptively from the first frame via ls20_detector.compute_l1_route.
+# A safe initial [0] seed is used for level_step 1 (UP is always valid from start).
 # DC31 (session 67): extends DC30 with post-reset ring A approach (steps 60-75).
 # DC30 sessions 64-66: micro-oscillation (steps 54-59) expires timer; block resets to
 # r40-41 c29-33. DC30 steps 60-64 (DOWN x5) were void-blocked at reset position.
@@ -98,7 +102,10 @@ _LEVEL2_ROUTE = [
     1,                              # L2 step 71: DOWN → r15-16 c14-18 [ring A x2; timer reset 21]
     1, 1, 1, 1,                     # L2 steps 72-75: DOWN×4 → r35-36 c14-18 [10A probe; timer=17]
 ]  # 75-step DC31 probe; LOCUS gets 20 L2 steps (max_steps=110; 75+20=95)
-_HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
+# L1 seed: a single UP so the loop has something to execute on step 1.
+# This is replaced by the adaptive route after the first frame is received.
+_L1_SEED = [0]
+_HARDCODED_ROUTES: dict[int, list[int]] = {1: _L1_SEED, 2: _LEVEL2_ROUTE}
 
 
 def _infer_bg(grid) -> int:
@@ -304,6 +311,7 @@ def run_training_attempt(
     stop_after_offline: bool = False,
     environments_dir: str | None = None,
     game_routes: dict[int, list[int]] | None = None,
+    companion_path: "str | None" = None,
 ) -> dict:
     """
     Run one training attempt on game_id using LOCUS to pick actions in the
@@ -361,7 +369,8 @@ def run_training_attempt(
         print(f"[agent] '{game_id}' started ({mode_label} mode, offline_levels={offline_levels})")
 
     # Use caller-supplied routes if provided, otherwise fall back to ls20 defaults
-    _routes = game_routes if game_routes is not None else _HARDCODED_ROUTES
+    _routes = dict(game_routes if game_routes is not None else _HARDCODED_ROUTES)
+    _l1_adaptive_done = False  # track whether adaptive L1 route has been computed
 
     # -- Main loop -----------------------------------------------------------
     while step < max_steps:
@@ -434,6 +443,17 @@ def run_training_attempt(
                 and cur_block_pos == prev_block_pos
             )
             prev_block_pos = cur_block_pos
+
+            # Adaptive L1 route: compute from first frame for ls20
+            if (not _l1_adaptive_done
+                    and obs.levels_completed == 0
+                    and game_id.startswith("ls20")
+                    and offline_levels >= 1):
+                adaptive = compute_l1_route(prev_frames[0])
+                _routes[1] = adaptive
+                _l1_adaptive_done = True
+                if verbose:
+                    print(f"[agent] adaptive L1 route: {adaptive} ({len(adaptive)} steps)")
         else:
             last_action_blocked = False
 
@@ -449,6 +469,21 @@ def run_training_attempt(
                         f"[agent] Level {obs.levels_completed} complete "
                         f"(offline, {level_steps} actions)"
                     )
+                # Auto-write strategy block after L1 win (ls20 adaptive route)
+                if (obs.levels_completed == 1
+                        and game_id.startswith("ls20")
+                        and prev_frames
+                        and companion_path):
+                    try:
+                        strategy = format_strategy_block(
+                            "ls20", 1, prev_frames[0], _routes.get(1, [])
+                        )
+                        update_strategy_in_file(companion_path, strategy)
+                        if verbose:
+                            print(f"[agent] strategy block written to {Path(companion_path).name}")
+                    except Exception as exc:
+                        if verbose:
+                            print(f"[agent] strategy write failed: {exc}")
             else:
                 _locus(
                     f"@LOCUS LOG level {obs.levels_completed} complete — "

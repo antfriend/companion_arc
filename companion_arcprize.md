@@ -3174,6 +3174,34 @@ Whenever a level N route is confirmed winning in a session log, write a `[route]
 
 ---
 
+## Adaptive Strategy Recording
+
+When a level is solved using first-frame element detection (rather than a hardcoded route),
+write a `[strategy]` block to this file. The competition agent reads these blocks to execute
+the same strategy fully offline. Written automatically by `kaggle_agent.py` after each L1 win.
+
+```
+[strategy game=<game_id> level=<N> type=adaptive algorithm=<name> version=1 confirmed=true created=<unix_ts>]
+block_start: rows=<R1>-<R2> cols=<C1>-<C2>
+entity2_bounds: rows=<R1>-<R2> cols=<C1>-<C2>
+cluster_detected: rows=<R1>-<R2> cols=<C1>-<C2>
+entity1_state_at_start: <0|1|2>
+ups_to_entity2: <N>
+route: <comma-separated action indices>
+notes: <human-readable description>
+[/strategy]
+```
+
+**`algorithm` values:**
+- `up_only` — navigate straight UP from block start into entity2 interior without collecting
+  the cluster. Works for any instance because block stays in its starting column (c34-38)
+  which never overlaps the cluster column range (c20-22). L1 WIN = entity1 STATE 0 at entry.
+
+**Parsing:** `ls20_detector.parse_strategy(companion_text, "ls20", 1)` returns the route as
+`list[int]`. The competition agent falls back to adaptive detection if no block is present.
+
+---
+
 @LAT-330LON10 | created:1780099200 | updated:1780099200 | kind:route_record | relates:anchored_by>@LAT0LON0,confirmed_in>@LAT-130LON10,also_confirmed_in>@LAT-150LON10,also_confirmed_in>@LAT-160LON10,also_confirmed_in>@LAT-270LON10,also_confirmed_in>@LAT-280LON10,also_confirmed_in>@LAT-290LON10,also_confirmed_in>@LAT-300LON10,also_confirmed_in>@LAT-310LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT-10LON10
 [ew]
 conf:255

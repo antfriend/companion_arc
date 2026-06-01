@@ -193,6 +193,7 @@ def main() -> None:
         offline_levels=OFFLINE_LEVELS,
         environments_dir=ENV_DIR,
         game_routes=_COMPETITION_ROUTES.get(game_prefix),
+        companion_path=str(COMPANION_PATH),
     )
 
     print(f"\n[launch] Training complete")
