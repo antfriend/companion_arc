@@ -137,11 +137,15 @@ def compute_l1_route(grid: np.ndarray) -> list:
     if e2 is None:
         return [0] * 7
 
-    interior_top = e2["interior_top"]
-    if block_row <= interior_top:
+    # Target the bottom interior row (ring_bot - 1).
+    # Entity1 dormant at r11-13 inside entity2 blocks landing at r10-11 (deep interior).
+    # Targeting ring_bot - 1 (r15 for the known instance) enters entity2 without
+    # colliding with entity1 dormant — this is the row that triggers L1 WIN.
+    target_row = e2["bot"] - 1
+    if block_row <= target_row:
         return [0] * 1  # already at or inside entity2
 
-    ups = max(1, (block_row - interior_top) // 5)
+    ups = max(1, (block_row - target_row) // 5)
     return [0] * ups
 
 
