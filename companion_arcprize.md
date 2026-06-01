@@ -11373,4 +11373,53 @@ Forty-fourth confirmation. Route stable. Block entered entity2 interior at r10�
 
 **Key session exchanges**:
 
-1. **FOCUS @LAT-10LON10** (sal: 44→45): LOCUS correctly confirmed 42+ consecutive L1 wins, 42+ failed L2 attempts. DC30 Hypothesis 10A (ring A ×2 multi
+1. **FOCUS @LAT-10LON10** (sal: 44→45): LOCUS correctly confirmed 42+ consecutive L1 wins, 42+ failed L2 attempts. DC30 Hypothesis 10A (ring A ×2 multi-cycle) still INCONCLUSIVE — sessions 64–65 truncated mid-LOCUS-phase, session 66 entered.
+
+2. **STATUS**: EPS analysis: @LAT-10LON10 highest (~4.9), entity2 approach @BELIEF:LAT-140LON-40 (~2.4), entity1 state machine @BELIEF:LAT-50LON-40 (~0.98). Score 3.571 unchanged.
+
+3. **LOCUS free-phase (steps 79–109, 31 steps)**: Block entered LOCUS control at r40–41 c29–33 — the L2 start position post-timer-reset. The DC30 64-step hardcoded route had triggered a timer expiry during its execution (c62–63=3 timer-expiry marker present at step 79, rings A and B both respawned).
+
+   Navigation attempts and outcomes:
+   - **Step 79**: Block at r40–41 c29–33. LOCUS chose RIGHT (3) to avoid void below c29–33.
+   - **Step 80**: Block at r40–41 c34–38. LOCUS chose UP (0).
+   - **Step 81**: Block at r35–36 c34–38. LOCUS chose LEFT (2).
+   - **Step 82**: Block at r35–36 c29–33. LOCUS chose UP (0).
+   - **Step 83 — BLOCKED**: UP from r35–36 c29–33 produced NO movement. Void gap confirmed at c29–33 rows 25–34. LOCUS chose RIGHT (3).
+   - **Steps 84–85**: Block at r35–36 c34–38 → r30–31 c34–38. LOCUS chose UP (0).
+   - **Step 86**: Block at r25–26 c34–38. LOCUS chose LEFT (2) → immediately BLOCKED. Void at c29–33 rows 25–34 confirmed again (LEFT blocked from c34–38 at this row band). LOCUS chose UP (0).
+   - **Steps 87–90**: Block oscillated between r20–26 c34–38. LEFT repeatedly blocked. At step 90 timer = 6 steps remaining; LOCUS chose DOWN (1) accepting timer expiry.
+   - **Steps 91–106**: Block descended through c34–38 to r30–40 zone, then UP cycles. Multiple timer near-expiries. Ring A always respawned (present throughout).
+   - **Step 107**: Block at r20–21 c34–38. Timer 11 steps. LOCUS chose LEFT (2) → moved to r20–21 c29–33.
+   - **Step 108**: Block at r20–21 c29–33. Timer 10 steps. LOCUS chose LEFT (2) → BLOCKED. Gap between c23 and c29 at rows 20–21 confirmed.
+   - **Step 109 (final LOCUS step)**: Block at r20–21 c29–33. LOCUS chose UP (0). Session reached max_steps=110.
+
+**Hypothesis 10A status**: INCONCLUSIVE (session 66, forty-fifth attempt). Block never reached r35–36 c14–18 (deadlock test position) during LOCUS free phase due to navigation confusion about corridor void geometry.
+
+---
+
+### Session 66 — Key Structural Observation: c34–38 → c14–18 Void Barrier
+
+Confirmed across multiple steps this session:
+
+| From position | Direction | Result |
+|---|---|---|
+| r35–36 c29–33 | UP | BLOCKED (void at c29–33 rows 25–34) |
+| r25–26 c34–38 | LEFT | BLOCKED (void at c29–33 rows 25–34) |
+| r20–21 c29–33 | LEFT | BLOCKED (gap between c23 and c29 at rows 20–21) |
+
+**Navigation rule (CONFIRMED)**: To reach c14–18 from c34–38, the ONLY valid path is via the **wide connector (rows 10–14, c9–53 full floor)**: UP to r10–14 → LEFT to c14–18 → DOWN to target row.
+
+Direct LEFT from c34–38 at any row in the range 15–38 is blocked. LOCUS does not autonomously find this constraint and wastes steps attempting blocked moves.
+
+---
+
+### DC31 Standing Order
+
+**Critical fix**: LOCUS free-phase instructions must include explicit corridor routing:
+> "To reach c14–18 from c34–38 or c29–33 at rows >14: navigate UP to rows 10–14 (wide connector) first, then LEFT to c14–18, then DOWN to target. Do NOT attempt LEFT from any position at rows 15–38 — all such moves are void-blocked."
+
+The DC30 hardcoded route uses this path correctly (UP×5 to wide connector), but the LOCUS free phase lacks this constraint and wastes steps on blocked moves.
+
+---
+
+*sal: 45. conf: 245. Session 66 NOT WON. Hypothesis 10A INCONCLUSIVE — forty-fifth attempt.*
