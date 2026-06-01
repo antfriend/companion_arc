@@ -3202,6 +3202,50 @@ notes: <human-readable description>
 
 ---
 
+## First-Frame Level Maps
+
+`[levelmap]` blocks record all entities and their positions/orientations from the first frame
+of a level. Written automatically by `ArcAgent.on_level_start` during training. Read back in
+all offline modes to detect layout differences and decide whether to use the stored route.
+
+```
+[levelmap game=ls20 level=1 session=2026-06-01T12:00:00 created=1748793600]
+grid_shape: 64x64
+block_pos: 40,34
+entity2_ring: top=8 bot=16 left=13 right=21
+entity2_notch_orientation: 180
+cluster: top_row=31 bot_row=33 col_min=20 col_max=22
+entity1_state: 0
+entity_signatures: 3:count=180,bbox=8-16x13-21 12:count=10,bbox=40-41x34-38
+[/levelmap]
+```
+
+**Fields:**
+- `game`: game prefix (ls20, cd82, sp80)
+- `level`: 1-based level number
+- `session`: ISO datetime when first captured
+- `created`: unix timestamp (newest block wins when multiple exist per game/level)
+- `grid_shape`: grid dimensions (rows × cols)
+- `block_pos`: top-left corner of the player block (row,col)
+- `entity2_ring`: entity2 ring boundaries `top/bot/left/right`
+- `entity2_notch_orientation`: ring-wall notch direction in degrees (0/90/180/270) or `none`
+- `cluster`: state-changer position (varies per fresh game instance)
+- `entity1_state`: entity1 state at level start (0/1/2)
+- `entity_signatures`: all non-background entities by value — count and bounding box
+
+**Match logic** (`level_scanner.diff_snapshots`): layouts match if block within ±3 cells,
+entity2 ring top within ±2 rows, and notch orientation identical. Cluster difference is
+informational only (route avoids cluster regardless of position). Match → use stored route.
+Mismatch → adaptive strategy (LOCUS in training; systematic sweep in offline).
+
+**Python API:**
+- `level_scanner.scan_level(grid, game_id, level_num)` → `LevelSnapshot`
+- `level_scanner.diff_snapshots(stored, current)` → `LevelDiff`
+- `level_scanner.parse_all_levelmaps(companion_text, game_id)` → `{level: LevelSnapshot}`
+- `level_scanner.update_levelmap_in_file(path, block, game_id, level_num)`
+
+---
+
 @LAT-330LON10 | created:1780099200 | updated:1780099200 | kind:route_record | relates:anchored_by>@LAT0LON0,confirmed_in>@LAT-130LON10,also_confirmed_in>@LAT-150LON10,also_confirmed_in>@LAT-160LON10,also_confirmed_in>@LAT-270LON10,also_confirmed_in>@LAT-280LON10,also_confirmed_in>@LAT-290LON10,also_confirmed_in>@LAT-300LON10,also_confirmed_in>@LAT-310LON10,informs_strategy>@LAT-140LON10,informs_strategy>@LAT-10LON10
 [ew]
 conf:255

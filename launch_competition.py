@@ -142,6 +142,8 @@ def _wait_for_gateway(timeout_s: int = 600) -> bool:
 # ---------------------------------------------------------------------------
 
 def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
+    from agent_framework import ArcAgent
+
     game_prefix = game_id.split("-")[0] if "-" in game_id else game_id
     route = list(_ROUTES.get(game_prefix, []))
 
@@ -156,40 +158,73 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         print(f"[game] {game_id}: no simple actions — skipping", flush=True)
         return
 
-    obs = None
-    step = 0
-
     if route:
         print(f"[actions] {game_id}: {[str(a) for a in actions]}", flush=True)
 
-    # Phase 1: execute route
-    for action_idx in route:
-        obs = env.step(actions[action_idx % len(actions)])
-        if obs is None:
-            break
-        step += 1
-        if str(obs.state) in ("GameState.WIN", "GameState.GAME_OVER", "win", "game_over"):
+    # Load companion text for levelmap comparison
+    companion_text = ""
+    try:
+        if _COMPANION.exists():
+            companion_text = _COMPANION.read_text(encoding="utf-8")
+    except Exception:
+        pass
+
+    agent = ArcAgent(
+        game_id=game_id,
+        mode="batch",
+        companion_text=companion_text,
+        routes={1: route} if route else {},
+        offline_levels=1,
+        verbose=True,
+    )
+
+    obs = None
+    step = 0
+    level_start_step = 0
+    level_scanned = False
+    route_steps = 0
+    random_steps = 0
+    _END_STATES = ("GameState.WIN", "GameState.GAME_OVER", "win", "game_over")
+
+    # Unified loop: ArcAgent decides each action (route → random fallback in batch)
+    while step < 600:
+        if obs is not None and str(obs.state) in _END_STATES:
             break
 
-    # Phase 2: random play until WIN or step budget exhausted
-    # Budget scales with game size; enough to complete most games randomly
-    rng = random.Random(hash(game_id) & 0xFFFFFFFF)
-    max_random_steps = 500
-    random_steps = 0
-    while random_steps < max_random_steps:
-        if obs is not None and str(obs.state) in (
-            "GameState.WIN", "GameState.GAME_OVER", "win", "game_over"
-        ):
-            break
-        obs = env.step(rng.choice(actions))
+        # First-frame capture at level start
+        if obs is not None and obs.frame and not level_scanned:
+            current_level = (obs.levels_completed or 0) + 1
+            agent.on_level_start(current_level, list(obs.frame)[0])
+            level_scanned = True
+
+        level_step = step - level_start_step
+        action_idx = agent.choose_action(obs, actions, step, level_step)
+        action_idx = action_idx % len(actions)
+
+        obs = env.step(actions[action_idx])
         if obs is None:
             break
         step += 1
-        random_steps += 1
+
+        # Track route vs random steps for logging
+        if level_step < len(route):
+            route_steps += 1
+        else:
+            random_steps += 1
+
+        # Level transition
+        if obs.levels_completed and obs.levels_completed > 0 and not level_scanned:
+            level_start_step = step
+            level_scanned = False
 
     levels = obs.levels_completed if obs else 0
     state = str(obs.state) if obs else "None"
-    print(f"[game] {game_id}: {step} steps (route={len(route)} rnd={random_steps}), L{levels}, state={state}", flush=True)
+    print(
+        f"[game] {game_id}: {step} steps "
+        f"(route={route_steps} rnd={random_steps}), "
+        f"L{levels}, state={state}",
+        flush=True,
+    )
 
 
 # ---------------------------------------------------------------------------

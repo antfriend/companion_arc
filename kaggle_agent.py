@@ -28,6 +28,7 @@ import anthropic
 import arc_agi
 
 from ls20_detector import compute_l1_route, format_strategy_block, update_strategy_in_file
+from agent_framework import ArcAgent
 
 COMPANION_URL = (
     "https://raw.githubusercontent.com/antfriend/companion_arc/main/companion_arcprize.md"
@@ -372,6 +373,21 @@ def run_training_attempt(
     _routes = dict(game_routes if game_routes is not None else _HARDCODED_ROUTES)
     _l1_adaptive_done = False  # track whether adaptive L1 route has been computed
 
+    # -- ArcAgent (first-frame recording, levelmap comparison) ---------------
+    _agent = ArcAgent(
+        game_id=game_id,
+        mode="training",
+        companion_text=companion_text or "",
+        companion_path=companion_path,
+        routes=_routes,
+        offline_levels=offline_levels,
+        locus_fn=_locus,
+        format_state_fn=_format_state,
+        parse_action_fn=parse_action,
+        verbose=verbose,
+    )
+    _level_scanned = False   # reset each level; triggers on_level_start
+
     # -- Main loop -----------------------------------------------------------
     while step < max_steps:
         all_actions = env.action_space
@@ -444,16 +460,20 @@ def run_training_attempt(
             )
             prev_block_pos = cur_block_pos
 
-            # Adaptive L1 route: compute from first frame for ls20
+            # First-frame capture: trigger on_level_start once per level
+            if not _level_scanned:
+                _current_level = (obs.levels_completed if obs is not None else 0) + 1
+                _agent.on_level_start(_current_level, prev_frames[0])
+                # Sync adaptive route back from agent
+                _routes.update(_agent.routes)
+                _level_scanned = True
+
+            # Legacy adaptive route flag (kept for compatibility)
             if (not _l1_adaptive_done
                     and obs.levels_completed == 0
                     and game_id.startswith("ls20")
                     and offline_levels >= 1):
-                adaptive = compute_l1_route(prev_frames[0])
-                _routes[1] = adaptive
-                _l1_adaptive_done = True
-                if verbose:
-                    print(f"[agent] adaptive L1 route: {adaptive} ({len(adaptive)} steps)")
+                _l1_adaptive_done = True  # compute_l1_route already called in agent
         else:
             last_action_blocked = False
 
@@ -469,21 +489,9 @@ def run_training_attempt(
                         f"[agent] Level {obs.levels_completed} complete "
                         f"(offline, {level_steps} actions)"
                     )
-                # Auto-write strategy block after L1 win (ls20 adaptive route)
-                if (obs.levels_completed == 1
-                        and game_id.startswith("ls20")
-                        and prev_frames
-                        and companion_path):
-                    try:
-                        strategy = format_strategy_block(
-                            "ls20", 1, prev_frames[0], _routes.get(1, [])
-                        )
-                        update_strategy_in_file(companion_path, strategy)
-                        if verbose:
-                            print(f"[agent] strategy block written to {Path(companion_path).name}")
-                    except Exception as exc:
-                        if verbose:
-                            print(f"[agent] strategy write failed: {exc}")
+                _agent.on_level_complete(obs.levels_completed, level_steps)
+                # Reset level scan flag for next level
+                _level_scanned = False
             else:
                 _locus(
                     f"@LOCUS LOG level {obs.levels_completed} complete — "
@@ -509,6 +517,7 @@ def run_training_attempt(
             level_steps = step - level_start_step
             frame_note = _frame_summary(prev_frames)
 
+            _agent.on_game_end(obs.state, obs.levels_completed, step)
             _locus(
                 f"@LOCUS LOG {obs.state} — "
                 f"{obs.levels_completed} levels completed, "
