@@ -66,7 +66,9 @@ _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 # cd82: [ACTION1-ACTION5]    → indices 0-4
 # sp80: [ACTION1-ACTION5]    → indices 0-4
 _HARDCODED_ROUTES: dict[str, list[int]] = {
-    "ls20": [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0],
+    # ls20: UP×3,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 14 steps, validated 45+ wins.
+    # UP×3 (not UP×4) avoids cluster-collision at r31-33 (session 69 root cause).
+    "ls20": [0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0],
     "cd82": [3, 0, 1, 0, 0, 0, 1, 1, 1, 3, 2, 0, 4, 4, 2, 0, 0, 0, 1],
     "sp80": [4, 3, 3, 3, 4, 2, 2, 1],
 }
@@ -86,6 +88,10 @@ def _load_routes() -> None:
         re.DOTALL | re.IGNORECASE,
     )
     for game_id, route_str in pattern.findall(text):
+        # Never override a hardcoded route with a companion-file entry —
+        # companion entries may be stale (e.g. session logs record old UP×4 ls20 route).
+        if game_id in _HARDCODED_ROUTES:
+            continue
         actions: list[int] = []
         for token in re.split(r"[,\s]+", route_str.strip()):
             if not token:
