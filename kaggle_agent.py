@@ -61,12 +61,13 @@ BLOCK_VAL = 12
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
-# DC30 (session 63): Hypothesis 10A corrected probe — ring A second collection via timer-expiry
-# multi-cycle. DC29 failed: RIGHT×6+LEFT×6 in wide connector put block at c29-33 void gap
-# (rows 25-34 void, lower section rows 35-44 only reachable from c34-38). Fix: LEFT/RIGHT
-# micro-oscillation at c9-13↔c14-18 junction (5-col step; c4-8 void blocks leftward escape).
-# No dangerous corridor traversal. Timer burns at r10-11 c14-18 wide connector junction.
-# max_steps=110 → L2 budget=95; 64+31=95 ✓
+# DC31 (session 67): extends DC30 with post-reset ring A approach (steps 60-75).
+# DC30 sessions 64-66: micro-oscillation (steps 54-59) expires timer; block resets to
+# r40-41 c29-33. DC30 steps 60-64 (DOWN x5) were void-blocked at reset position.
+# DC31 replaces them: RIGHT + UP×6 + LEFT×4 + DOWN (ring A x2) + DOWN×4 (probe).
+# Wide-connector rule: c14-18 unreachable from c29-38 at rows 15-38 by direct LEFT;
+# must go UP to rows 10-14 first (confirmed sessions 64-66, DC31 Dream Cycle).
+# max_steps=110 → L2 budget=95; 75+20=95
 _LEVEL2_ROUTE = [
     # First ring B probe (20 steps) — state 2 trigger + timer reset
     3,                              # L2 step 1:  RIGHT → r40-41 c34-38
@@ -85,14 +86,18 @@ _LEVEL2_ROUTE = [
     1,                              # L2 step 38: DOWN → r15-16 c14-18 [ring A; timer reset]
     # Descend to deadlock (timer: 42-8=34 cols=17 steps at handoff)
     1, 1, 1, 1,                     # L2 steps 39-42: DOWN×4 → r35-36 c14-18 [deadlock; timer=17]
-    # Ring A second cycle: UP×5 + LEFT/RIGHT micro-oscillation ×6 + DOWN + DOWN×4 (22 steps)
+    # Ring A second cycle: UP×5 + LEFT/RIGHT micro-oscillation ×6 (17 steps; timer expiry at step ~59)
     0, 0, 0, 0,                     # L2 steps 43-46: UP×4 → r15-16 c14-18 (timer: 17→13)
     0,                              # L2 step 47: UP×1 → r10-11 c14-18 (timer: 13→12; wide connector)
     2, 3, 2, 3, 2, 3,               # L2 steps 48-53: LEFT-RIGHT×3 oscillate c9-13↔c14-18 (timer: 12→6)
-    2, 3, 2, 3, 2, 3,               # L2 steps 54-59: LEFT-RIGHT×3 oscillate c9-13↔c14-18 (timer: 6→0; ring A+B RESPAWN)
-    1,                              # L2 step 60: DOWN → r15-16 c14-18 [ring A ×2; timer reset 21]
-    1, 1, 1, 1,                     # L2 steps 61-64: DOWN×4 → r35-36 c14-18 [deadlock; timer=17; 10A check]
-]  # 64-step DC30 probe (session 63); LOCUS gets 31 L2 steps (max_steps=110; 64+31=95)
+    2, 3, 2, 3, 2, 3,               # L2 steps 54-59: LEFT-RIGHT×3 oscillate c9-13↔c14-18 (timer: 6→0; ring A+B RESPAWN; block resets to r40-41 c29-33)
+    # DC31 post-reset: wide-connector approach to ring A second collection + entity1 probe (16 steps)
+    3,                              # L2 step 60: RIGHT → r40-41 c34-38 [post-reset; timer=21 fresh]
+    0, 0, 0, 0, 0, 0,               # L2 steps 61-66: UP×6 → r10-11 c34-38
+    2, 2, 2, 2,                     # L2 steps 67-70: LEFT×4 → r10-11 c14-18
+    1,                              # L2 step 71: DOWN → r15-16 c14-18 [ring A x2; timer reset 21]
+    1, 1, 1, 1,                     # L2 steps 72-75: DOWN×4 → r35-36 c14-18 [10A probe; timer=17]
+]  # 75-step DC31 probe; LOCUS gets 20 L2 steps (max_steps=110; 75+20=95)
 _HARDCODED_ROUTES: dict[int, list[int]] = {1: _LEVEL1_ROUTE, 2: _LEVEL2_ROUTE}
 
 
