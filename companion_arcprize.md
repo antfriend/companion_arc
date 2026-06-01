@@ -11315,3 +11315,62 @@ Risk: if routes are instance-specific (explanation 1 above), LucusAgent still fa
 2. If routes are instance-specific: extend LucusAgent to use LOCUS Claude API queries per step for instance-agnostic play.
 3. Continue ls20 L2 training — DC30 sessions 64-65 reached deadlock but LOCUS free-phase data truncated. DC30 hypothesis 10A still unresolved.
 
+
+---
+
+SECTION 1
+
+@LAT-750LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 66 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "51038c83-8aed-4bd1-afa8-ae7d17462e51"
+card_id: "a914253e-1389-47a8-9c79-b8555e6a8003"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (95 actions)"
+actions: 110
+levels_completed: 1
+score: 3.571428571428571
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [15, 95, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, forty-fourth consecutive confirmation — sessions 10–12, 23–27, 31–66). Level 2 entered; 95 level-2 actions taken (max_steps=110); NOT WON. Total 110 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–65.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=44]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Forty-fourth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (forty-fourth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (forty-fourth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=110 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (thirtieth consecutive confirmation per FOCUS/STATUS exchanges).
+
+---
+
+### Level 2 — 95 actions, NOT WON (forty-fourth attempt)
+
+**Route applied**: DC30 64-step hardcoded `_LEVEL2_ROUTE` (ring B → cross → ring A → UP×5 to wide connector → LEFT/RIGHT micro-oscillation ×6 cycles at c9–13↔c14–18 → ring A ×2 → deadlock at r35–36 c14–18). LOCUS received 31 L2 steps at handoff.
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 44→45): LOCUS correctly confirmed 42+ consecutive L1 wins, 42+ failed L2 attempts. DC30 Hypothesis 10A (ring A ×2 multi
