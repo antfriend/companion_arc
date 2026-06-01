@@ -11624,4 +11624,32 @@ Forty-fifth confirmation. Route stable. Block entered entity2 interior at r10–
 
 **Session objective (DC31)**: Hypothesis 10A (corrected probe with post-reset segment hardcoded) — ring A ×2 via timer-expiry multi-cycle triggers entity1 state 3.
 
-**Route status**: DC31 79-step `_LEVEL2_ROUTE` was **not yet deployed** at time of this session. LOCUS confirmed in FOCUS that DC31 requires `_LEVEL2_ROUTE` extension from 64 → 79 steps by appending RIGHT + UP×6 + LEFT×4 + DOWN×4. The code change was not in place; the session ran with the existing 64-step DC30 route.
+**Route status**: DC31 **was deployed** — `_LEVEL2_ROUTE` extended to 75 steps (DC30's 64 steps + 16-step post-reset segment). LOCUS handoff confirmed at global step 90 = L2 step 75. The pre-session FOCUS/STATUS notes reflect LOCUS's prior knowledge state; by session runtime the code was updated.
+
+**LOCUS free-phase result (steps 90–109, 20 steps)**:
+
+- **Step 90 (first LOCUS step)**: Block at r40–41 c29–33. Timer = 6 steps remaining. Ring A and B present (respawned). Entity1 tracker at r42–44 c29–33 (STATE 2). Last hardcoded DOWN was void-blocked. The DC31 post-reset ring A ×2 (hardcoded step 71 = route[70]) was **NOT collected** — only 6 timer steps remain (15 consumed since oscillation expiry), not the expected 17 (which would indicate ring A reset + 4 DOWN steps). Root cause unknown; most likely a step-offset or tracker-position issue during hardcoded phase.
+
+- **Steps 90–91**: LOCUS correctly applied @BELIEF:LAT-200LON-40 (wide connector rule): "I need to move RIGHT first to reach c34–38, then UP to the wide connector, then LEFT to c14–18." Chose RIGHT (3), then UP (0). Timer 6→5→4.
+
+- **Steps 92–105**: Multiple timer expiry cycles. LOCUS ascended through c34–38 corridor toward wide connector, timer running down and resetting. Navigation was slow but correctly oriented to wide connector.
+
+- **Step 106**: Block at r10–11 c24–28. Timer = 12 steps. Wide connector reached. LOCUS chose LEFT.
+
+- **Step 107**: Block at r10–11 c19–23. Timer = 11 steps. LOCUS chose LEFT.
+
+- **Step 108**: Block at r10–11 c14–18. Timer = 10 steps. Entity1 tracker at r12–14 c14–18 (STATE 2). LOCUS chose DOWN → ring A ×2.
+
+- **Step 109 (penultimate step)**: Block at r15–16 c14–18. **Timer = full 42 cols = 21 steps — RING A ×2 CONFIRMED COLLECTED.** Entity1 tracker at r17–19 c14–18 (STATE 2 tracker, expected position below block). Ring A not visible at r15–18 (collected). Ring B present at r51–53. LOCUS chose DOWN → r20–21 c14–18.
+
+- **Step 110 (final step, max_steps)**: Session ends.
+
+**Hypothesis 10A status**: **INCONCLUSIVE** (forty-fifth attempt). Ring A ×2 WAS successfully collected (timer reset confirmed at step 109), but the session ended 4 DOWN steps short of the entity1 probe position (r35–36 c14–18). Entity1 state could not be read at the deadlock position.
+
+**Entity1 observation at step 109**: Tracker at r17–19 c14–18, STATE 2. This is the expected tracker position immediately after ring A collection (tracker 1 row below block at r15–16). No state change visible yet in the entity1 carrier (rows 55–60). State 3, if triggered by ring A ×2, would only become observable when the block reaches r35–36 c14–18 and entity1 is checked at r37–39.
+
+**DC32 fix**: Increase max_steps from 110 to 125 to give LOCUS sufficient budget after ring A ×2 collection. At session 67 pacing, LOCUS collected ring A ×2 at step 109 and needed 4 more DOWN steps (to r35–36) + at minimum 1 CHECK step = 5 additional steps. 125 - 110 = 15 extra steps covers this margin.
+
+---
+
+*sal: 46. conf: 245. Session 67 NOT WON. Ring A ×2 confirmed collected step 109. Hypothesis 10A INCONCLUSIVE — forty-fifth attempt, 4 steps short of probe.*

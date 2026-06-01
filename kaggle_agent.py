@@ -67,7 +67,7 @@ _LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,D
 # DC31 replaces them: RIGHT + UP×6 + LEFT×4 + DOWN (ring A x2) + DOWN×4 (probe).
 # Wide-connector rule: c14-18 unreachable from c29-38 at rows 15-38 by direct LEFT;
 # must go UP to rows 10-14 first (confirmed sessions 64-66, DC31 Dream Cycle).
-# max_steps=110 → L2 budget=95; 75+20=95
+# max_steps=125 → L2 budget=110; 75+35=110
 _LEVEL2_ROUTE = [
     # First ring B probe (20 steps) — state 2 trigger + timer reset
     3,                              # L2 step 1:  RIGHT → r40-41 c34-38
