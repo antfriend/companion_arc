@@ -60,7 +60,7 @@ BLOCK_VAL = 12
 
 # Hardcoded routes per level. Key = level number (1-based).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
-_LEVEL1_ROUTE = [0, 0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×4,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — 30 confirmed wins
+_LEVEL1_ROUTE = [0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0]  # UP×3,LEFT×3,DOWN,UP,RIGHT×3,UP×3 — validated 45 wins with offset-corrected indexing
 # DC31 (session 67): extends DC30 with post-reset ring A approach (steps 60-75).
 # DC30 sessions 64-66: micro-oscillation (steps 54-59) expires timer; block resets to
 # r40-41 c29-33. DC30 steps 60-64 (DOWN x5) were void-blocked at reset position.

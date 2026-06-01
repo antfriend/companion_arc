@@ -11755,8 +11755,18 @@ level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
 
 2. **STATUS**: LOCUS confirmed EPS rankings and hypothesis tally. Entity1 state machine (@BELIEF:LAT-50LON-40) EPS ~1.96 highest. Session 68 standing order confirmed: check r37–39 c14–18 at LOCUS handoff; proceed to WIN if entity1 absent.
 
-**Root cause (inferred)**: The DC31 route extension to 75 steps + the DC32 budget raise to 125 steps may have triggered a code path where `offline_levels` reverted from 2 to 1, causing the agent to attempt both levels manually instead of hardcoding L1. Alternatively, the `_LEVEL1_ROUTE` array may have been accidentally overwritten when `_LEVEL2_ROUTE` was extended. The identical regression in session 63 (immediately after a route change) supports this code-change-induced hypothesis.
+**Root cause (confirmed)**: The route-index offset fix (`route[level_step - 1]`) caused `_LEVEL1_ROUTE` to execute one more step than before. Prior indexing (`route[level_step]`) effectively ran route[1..14] = UP×3 for L1. The corrected indexing runs route[0..13] = UP×4. The extra UP step brings the block to r30–31 c34–38 before LEFT×3 — the block trail at r32–34 c19–23 overlaps the cluster when it spawns at r31–33 c20–22 (confirmed in session 69 frame). This triggers entity1 STATE 2 before entity2 entry, blocking WIN. Session 68 won because its fresh-game cluster was at rows 47–49 (lower, not on the UP×4 path). Session 69's cluster was at rows 31–33.
+
+**Fix applied (session 70)**: `_LEVEL1_ROUTE` shortened from 15 to 14 elements (removed leading UP). With the corrected indexing, this restores the validated UP×3 effective path. Session 69 is the last expected L1 regression of this type.
+
+**Session 69 LOCUS behavior (steps 16–124)**: LOCUS received the game at r15–16 c34–38 inside entity2 ring (r8–16 c32–40) with entity1 STATE 1 (carrier pattern, but tracker visible at r17–19 = STATE 2). LOCUS believed entity1 was at STATE 1 and tried to enter entity2 interior at r10–11, but UP was void-blocked (entity1 dormant at r11–13 c35–37 physically obstructs from below). LOCUS navigated for 108 steps without resolving the deadlock. Score 0.0.
+
+**Structural observation (L1 version of L2 deadlock)**: In this game, L1 entity2 also has a value-9 cluster inside (r11–13 c35–37) that blocks block entry from below. When entity1 is at STATE 2 (triggered by accidental cluster collection), entity1 tracker at r17–19 blocks descent, and entity1 dormant at r11–13 blocks ascent. The L1 win path requires entering entity2 from ABOVE (r10–11) without triggering entity1 STATE 2. The standard route achieves this by reaching entity2 via the top corridor (rows 10–11 c34–38) BEFORE collecting the cluster.
 
 **Revision cycle status**:
-- Phase 1 (Notice): L1 regression — @BELIEF:LAT80LON20 (hardcode mandatory) and @BELIEF:LAT80LON10 (L1 solved when frame read) are under strain. Second occurrence of same failure mode.
-- Phase 2 (Encounter): Route-length change → `offline_levels` or `_
+- Phase 1 (Notice): L1 regression root cause identified as offset-fix + cluster collision at r31–33.
+- Phase 2 (Encounter): Confirmed empirically (session 69 frame, cluster position visible).
+- Phase 3 (Revise): `_LEVEL1_ROUTE` corrected to 14-element UP×3 path.
+- Phase 4 (Validate): Session 70 will confirm.
+
+*sal: 48. conf: 245. Session 69 NOT WON (L1 regression). Fix applied for session 70.*
