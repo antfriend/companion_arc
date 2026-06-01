@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 """
-launch_competition.py — ARC-AGI-3 competition submission.
+launch_competition.py — ARC-AGI-3 offline diagnostics (batch mode only).
 
-Kaggle always runs this as a single batch job (KAGGLE_IS_COMPETITION_RERUN
-is never set; there is no separate gateway rerun). The score comes from
-submission.parquet written by this script.
+EXECUTION MODEL:
+  Competition reruns (KAGGLE_IS_COMPETITION_RERUN=True) are handled entirely
+  by the notebook's inline LucusAgent + ARC-AGI-3-Agents framework path.
+  This file is only called in batch mode (KAGGLE_IS_COMPETITION_RERUN not set)
+  for offline diagnostics. Competition scores come from gateway reruns, not
+  from submission.parquet. submission.parquet is written by this file but is
+  not used by the competition scorer.
 
 Play strategy per game:
-  Phase 1 — execute hardcoded route (known-optimal actions from training)
+  Phase 1 — execute hardcoded route (known-optimal actions from offline training)
   Phase 2 — random play (500 steps) to attempt completing remaining levels
 
-Scoring: Kaggle computes mean(run.score)/100 across 25 games where
-run.score = (weighted levels completed / total level weight) * 100.
-Completing a game fully yields run.score ≈ 100-115 (RHAE bonus if faster
-than human). Partial completion (L1 only) yields ~3-5, showing as 0.00.
+Scoring (RHAE, from docs.arcprize.org/methodology):
+  level_score = (human_baseline / ai_actions)^2, capped at 1.15
+  game_score  = weighted average of level scores (weight = 1-indexed level number)
+  total_score = average of all 25 game scores
 """
 
 import os
