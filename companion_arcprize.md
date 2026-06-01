@@ -11568,3 +11568,60 @@ LOCUS free phase: check entity1 at r37–39 c14–18 in first frame received.
 ---
 
 *DC31 Dream Cycle complete. New Locus Points: @BELIEF:LAT-200LON-40, @BELIEF:LAT-210LON-40. Updated: @BELIEF:LAT-80LON-40 (Rev 1 pending), @BELIEF:LAT-140LON-40 (Rev 7 note above).*
+
+---
+
+SECTION 1
+
+@LAT-760LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT90LON-30,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 67 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "d4a19e1e-fdff-426c-8919-1768cbe87650"
+card_id: "ede2c1e5-afa6-4a6b-b19a-2b566e63987d"
+level: "level 1 WIN (15 actions) + level 2 NOT WON (95 actions)"
+actions: 110
+levels_completed: 1
+score: 3.571428571428571
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [15, 95, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 WON at step 15 (hardcoded `_LEVEL1_ROUTE`, forty-fifth consecutive confirmation — sessions 10–12, 23–27, 31–67). Level 2 entered; 95 level-2 actions taken (max_steps=110); NOT WON. Total 110 actions. Score 3.571 (level 1 weight 1/28 only). Scorecard unchanged from sessions 23–27, 31–66.
+
+---
+
+### Level 1 — WIN at step 15 ✓
+
+[route game=ls20 level=1 steps=15 confirmed=true hardcoded=true confirmed_count=45]
+UP×4, LEFT×3, DOWN, UP, RIGHT×3, UP×3
+[/route]
+
+Forty-fifth confirmation. Route stable. Block entered entity2 interior at r10–11 c34–38.
+
+**Phase 4 validations**:
+- @BELIEF:LAT80LON20 (step-0 hardcode mandatory) — VALIDATED (forty-fifth time).
+- @BELIEF:LAT80LON10 (level 1 solved when frame is read) — VALIDATED (forty-fifth time).
+- @BELIEF:LAT-30LON-40 (max_steps operator-controlled, no server limit) — VALIDATED. max_steps=110 confirmed.
+- @BELIEF:LAT90LON-30 (entity1 state 1 carries over from level WIN) — VALIDATED (thirty-first consecutive confirmation per FOCUS/STATUS exchanges confirming 44 consecutive carry-overs).
+
+---
+
+### Level 2 — 95 actions, NOT WON (forty-fifth attempt)
+
+**Session objective (DC31)**: Hypothesis 10A (corrected probe with post-reset segment hardcoded) — ring A ×2 via timer-expiry multi-cycle triggers entity1 state 3.
+
+**Route status**: DC31 79-step `_LEVEL2_ROUTE` was **not yet deployed** at time of this session. LOCUS confirmed in FOCUS that DC31 requires `_LEVEL2_ROUTE` extension from 64 → 79 steps by appending RIGHT + UP×6 + LEFT×4 + DOWN×4. The code change was not in place; the session ran with the existing 64-step DC30 route.
