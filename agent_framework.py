@@ -221,6 +221,9 @@ class ArcAgent:
                 state = detector.detect_state(grid)
                 adaptive = detector.compute_route(state)
                 self._routes[level_num] = adaptive
+                # Adaptive route is correct for this instance regardless of
+                # snapshot match — clear diff so choose_action uses it.
+                self._diff = None
                 if self._verbose:
                     print(f"[agent] adaptive L{level_num} route: "
                           f"{adaptive} ({len(adaptive)} steps)")
