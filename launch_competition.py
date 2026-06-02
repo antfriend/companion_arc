@@ -193,7 +193,6 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     level_start_step = 0
     level_scanned = False
     prev_levels = 0
-    pending_level_start = False   # True = take one probe action before scanning
     route_steps = 0
     random_steps = 0
     _END_STATES = ("GameState.WIN", "GameState.GAME_OVER", "win", "game_over")
@@ -203,15 +202,8 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         if obs is not None and str(obs.state) in _END_STATES:
             break
 
-        # First-frame capture: fires on the frame AFTER the first action of each level
-        # (deferred by one action via pending_level_start so we see the real level-start
-        # frame, not the previous level's completion frame).
-        if pending_level_start and obs is not None and obs.frame:
-            current_level = (obs.levels_completed or 0) + 1
-            agent.on_level_start(current_level, list(obs.frame)[0])
-            level_scanned = True
-            pending_level_start = False
-        elif obs is not None and obs.frame and not level_scanned:
+        # First-frame capture at level start
+        if obs is not None and obs.frame and not level_scanned:
             current_level = (obs.levels_completed or 0) + 1
             agent.on_level_start(current_level, list(obs.frame)[0])
             level_scanned = True
@@ -231,12 +223,11 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         else:
             random_steps += 1
 
-        # Level transition: one probe action fires first, then scan on the next frame
+        # Level transition: reset on levels_completed advancing
         if obs.levels_completed and obs.levels_completed > prev_levels:
             prev_levels = obs.levels_completed
             level_start_step = step
-            level_scanned = False
-            pending_level_start = True  # scan after one probe action
+            level_scanned = False  # trigger on_level_start for the next level
 
     levels = obs.levels_completed if obs else 0
     state = str(obs.state) if obs else "None"
