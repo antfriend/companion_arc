@@ -13,7 +13,7 @@ This repo contains the **LOCUS** competition agent and tools for training agains
 ## What you need
 
 - Python 3.12+
-- **Anthropic API key** — [console.anthropic.com](https://console.anthropic.com)
+- **Anthropic API key** — [console.anthropic.com](https://console.anthropic.com) *(not needed for offline practice)*
 - **ARC environment files** — the `environment_files/` directory extracted from the competition dataset (see Step 3 below)
 
 ---
@@ -34,7 +34,7 @@ pip install anthropic arc-agi python-dotenv
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your Anthropic key:
+Edit `.env` and fill in your keys:
 
 ```
 ANTHROPIC_API_KEY=sk-ant-...
@@ -43,19 +43,51 @@ ARC_API_KEY=your-arc-api-key-here
 
 `.env` is in `.gitignore` — never commit it.
 
-The `ARC_API_KEY` is only required for online/competition mode. Local training runs work with just `ANTHROPIC_API_KEY`.
+`ARC_API_KEY` is required for online/competition mode. `ANTHROPIC_API_KEY` is only required when LOCUS is active (training mode). Offline practice needs neither if the game engine accepts unauthenticated local runs.
 
 ---
 
 ## Step 3 — Get the environment files
 
-Training and offline competition runs require the ARC-AGI-3 game files. Download the competition dataset from Kaggle and extract it so you have a directory called `environment_files/` containing one subdirectory per game (e.g. `environment_files/ls20/9607627b/ls20.py`).
+Training and offline runs require the ARC-AGI-3 game files. Download the competition dataset from Kaggle and extract it so you have a directory called `environment_files/` containing one subdirectory per game (e.g. `environment_files/ls20/9607627b/ls20.py`).
 
-The default expected path in `search_routes.py` is `C:\Temp\arc3\extracted\environment_files`. You can pass any path at runtime with `--env-dir`.
+Place it inside the repo root (`companion_arc/environment_files/`) or pass any path at runtime with `--env-dir`.
 
 ---
 
-## Step 4 — Run a training session
+## Step 4 — Quick offline practice (no API key needed)
+
+The fastest way to test a game locally. No LOCUS calls, no Anthropic key required.
+
+```bash
+python practice_offline.py ls20
+```
+
+**What happens:**
+
+1. Opens the game in `OFFLINE` mode using local `environment_files/`
+2. Takes one probe step to capture the first frame
+3. Calls `detector.detect_state()` — prints block position, entity2 ring, cluster, entity1 state
+4. Calls `detector.compute_route()` — prints the adaptive action sequence
+5. Executes each route step and prints a verification line:
+
+```
+[OK  ] step=  3  route[1]=0 UP     block moved UP by 5 rows  (before=(35, 34) after=(30, 34))
+[OK  ] step=  4  route[2]=0 UP     block moved UP by 5 rows  (before=(30, 34) after=(25, 34))
+[FAIL] step=  5  route[3]=0 UP     block did not move UP — wall or boundary  (before=(25, 34) after=(25, 34))
+```
+
+Options:
+
+```bash
+python practice_offline.py ls20 --levels 2          # attempt L1 then L2
+python practice_offline.py ls20 --max-steps 100     # raise step cap
+python practice_offline.py ls20 --env-dir C:\path\to\environment_files
+```
+
+---
+
+## Step 5 — Run a LOCUS training session
 
 ```bash
 python launch_training.py <game_id>
@@ -72,12 +104,12 @@ python launch_training.py ls20 --env-dir C:\path\to\environment_files
 
 **What happens during a run:**
 
-1. `companion_arcprize.md` is loaded as LOCUS's knowledge base (cached system prompt)
+1. The per-game `companion.md` (e.g. `games/ls20/companion.md`) is loaded as LOCUS's system prompt — only that game's knowledge, keeping context tight
 2. LOCUS checks for any open revision cycles (`@LOCUS STATUS`)
-3. For each step, LOCUS receives the current game frame and picks an action
-4. Hardcoded routes (if any) play through the known levels automatically; LOCUS takes over after
-5. After each level win, LOCUS runs a revision cycle (3-phase LOG → REVISION → FOCUS)
-6. At the end, LOCUS writes a new session record to `companion_arcprize.md`
+3. Hardcoded routes play through the known levels automatically; LOCUS takes over after
+4. Every step is verified with `detector.verify_step()` — a `[FAIL]` triggers a recovery prompt to LOCUS
+5. After each level win, LOCUS runs a revision cycle (LOG → REVISION → FOCUS)
+6. At the end, LOCUS writes a new session record to the per-game companion file
 
 Session exchanges are also saved to `locus_<game-id>_session.txt` in the repo root.
 
@@ -88,19 +120,57 @@ Controls how many levels play automatically before LOCUS takes over:
 - `1` — hardcoded L1 route plays, then LOCUS explores L2+
 - `2` (default) — hardcoded L1 + L2 routes play, LOCUS explores L3+
 
-Use `0` when training on a game with no known routes yet. Use `2` when you have confirmed L1 and L2 routes and want LOCUS to push deeper.
-
 ---
 
-## Step 5 — Find routes for new games
+## Step 6 — Find routes for new games
 
-`search_routes.py` does random sampling to discover L1 routes for games that have no known route:
+`search_routes.py` does random sampling to discover L1 routes for games with no known route:
 
 ```bash
 python search_routes.py
 ```
 
 Edit `ENV_DIR` at the top of the file to point to your environment files. The script tries up to 500 random action sequences per game and prints any winning routes it finds. Add confirmed routes to `_HARDCODED_ROUTES` in `launch_competition.py` and to `_COMPETITION_ROUTES` in `launch_training.py`.
+
+---
+
+## Per-game architecture
+
+Each game lives under `games/<id>/`:
+
+```
+games/
+  ls20/
+    detector.py     ← detect_state, compute_route, verify_step, format_companion_block
+    companion.md    ← LOCUS knowledge for this game only
+  cd82/
+    detector.py
+    companion.md
+  ...
+```
+
+`core/game_registry.py` maps game IDs to their detector and companion file. All three run modes (practice / batch / competition) share the same `core/step_runner.py` loop — mode-specific behavior lives in a **Policy** object:
+
+| Policy | On verify fail | LOCUS? |
+|---|---|---|
+| `PracticePolicy` | Ask LOCUS for a recovery action | Yes |
+| `BatchPolicy` | Retry once, then random | No |
+| `CompetitionPolicy` | Retry once, then systematic sweep, then random | No |
+
+**Adding a new game:**
+
+1. Create `games/<id>/detector.py` implementing the four standard functions
+2. Create `games/<id>/companion.md` with TTDB header
+3. Add one `register()` call at the bottom of `core/game_registry.py`
+
+The detector interface:
+
+```python
+def detect_state(grid: np.ndarray) -> GameState          # extract all observable state
+def compute_route(state: GameState) -> list[int]          # compute winning action sequence
+def verify_step(before, after, action) -> StepResult      # did the frame change as expected?
+def format_companion_block(state, route) -> str           # serialize to companion.md format
+```
 
 ---
 
@@ -125,14 +195,22 @@ The Kaggle notebook (`kaggle_notebook.ipynb`) runs `launch_competition.py` on th
 
 ## Files
 
-| File | Purpose |
+| File / Directory | Purpose |
 |---|---|
-| `launch_training.py` | Run a local training session; writes session record to `companion_arcprize.md` |
-| `kaggle_agent.py` | LOCUS agent core — action loop, LOCUS query, grid encoder |
+| `practice_offline.py` | **Quick offline practice** — step verification, no API key needed |
+| `launch_training.py` | LOCUS-guided training session; writes session record to companion |
 | `launch_competition.py` | Kaggle submission runner — offline play + parquet writer |
+| `kaggle_agent.py` | LOCUS agent core — action loop, LOCUS query, grid encoder |
 | `kaggle_notebook.ipynb` | Kaggle notebook that calls `launch_competition.py` |
-| `companion_arcprize.md` | LOCUS knowledge graph and session log — the shared brain |
 | `search_routes.py` | Random-search route finder for games with no known route |
+| `agent_framework.py` | Shared `ArcAgent` class used by all run modes |
+| `level_scanner.py` | Generic first-frame entity capture and level map I/O |
+| `ls20_detector.py` | Re-export shim — all logic now lives in `games/ls20/detector.py` |
+| `companion_arcprize.md` | Cross-game LOCUS knowledge index and historical session log |
+| `games/ls20/detector.py` | ls20 detector: `detect_state`, `compute_route`, `verify_step` |
+| `games/ls20/companion.md` | ls20-specific LOCUS companion (loaded instead of the global file) |
+| `core/game_registry.py` | Maps `game_id` → detector module + companion path |
+| `core/step_runner.py` | Unified play loop + `PracticePolicy`, `BatchPolicy`, `CompetitionPolicy` |
 | `.env.example` | Template for local credentials |
 
 ---
@@ -141,10 +219,10 @@ The Kaggle notebook (`kaggle_notebook.ipynb`) runs `launch_competition.py` on th
 
 **Current workflow:**
 
-Each team member runs `launch_training.py` on their assigned game(s). After each session, `companion_arcprize.md` grows with a new session record and updated `[ew]` metadata. Commit and push after each session so teammates have your findings.
+Each team member runs `launch_training.py` on their assigned game(s). After each session, the per-game `companion.md` grows with a new session record and updated `[ew]` metadata. Commit and push after each session so teammates have your findings.
 
 ```bash
-git add companion_arcprize.md
+git add games/ls20/companion.md
 git commit -m "session: ls20 L2 probe DC31"
 git push
 ```
@@ -155,20 +233,13 @@ git push
 - Multiple members can train the same game simultaneously (e.g. one on L1 probes, one on L2)
 - Discovered routes go into `_HARDCODED_ROUTES` (in `launch_competition.py`) and `_COMPETITION_ROUTES` (in `launch_training.py`) — keep these in sync
 
-**Merging companion files (future):**
+**Merging companion files:**
 
-`companion_arcprize.md` is append-only: each session adds a new record block after the previous one. This means git merges are usually clean (both sides added records at the end with no overlap). Conflicts only arise if two people edited the same existing record's `[ew]` block simultaneously.
-
-Planned tooling to make this easier:
-- A merge script that extracts all `[route]` tags and deduplicates by `game=` + `level=`
-- A script to pull the latest confirmed routes from all branches and rebuild `_HARDCODED_ROUTES`
-- Per-game branches (e.g. `train/ls20`, `train/cd82`) that merge into `main` once a new level is confirmed
-
-For now: coordinate via Slack/Discord to avoid simultaneous edits to the same game's records.
+Each `games/<id>/companion.md` is append-only: sessions add new record blocks at the end. Git merges are usually clean. Conflicts only arise if two people edited the same record's `[ew]` block simultaneously.
 
 ---
 
-## Questions
+## Troubleshooting
 
 Check that both keys in `.env` are set and that:
 
@@ -176,4 +247,10 @@ Check that both keys in `.env` are set and that:
 python -c "import anthropic, arc_agi"
 ```
 
-runs without error. If training hangs, check that `environment_files/` contains the game you're targeting. Ask the team lead if something is unclear.
+runs without error. For offline practice only, neither key is strictly required — try:
+
+```bash
+python practice_offline.py ls20
+```
+
+and check the error message. If training hangs, check that `environment_files/` contains the game you're targeting.
