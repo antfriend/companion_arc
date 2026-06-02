@@ -342,9 +342,10 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
     if level_num == 2:
         return list(_L2_ROUTE)
 
-    DETOUR_ROW = 25
-    DETOUR_COL = 19   # block must reach c19 for L1 WIN (confirmed on local + Kaggle)
-    FINAL_ROW  = 10
+    DETOUR_ROW  = 25   # lateral waypoint row
+    DETOUR_COL  = 19   # must reach c19 for L1 WIN (entity2 approach corridor)
+    FINAL_COL   = 34   # always return to c34: block (5 wide) fits inside entity2 (cols 32-40)
+    FINAL_ROW   = 10   # deep interior row that triggers L1 WIN
 
     if state.block_pos is None:
         return [0,0,0, 2,2,2, 1,0, 3,3,3, 0,0,0]  # safe fallback (r40,c34)
@@ -352,16 +353,17 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
     block_row = state.block_pos[0]
     block_col = state.block_pos[1]
 
-    ups_1      = max(0, (block_row - DETOUR_ROW) // 5)
-    ups_2      = max(1, (DETOUR_ROW - FINAL_ROW)  // 5)
-    left_count = max(1, (block_col - DETOUR_COL)  // 5)
+    ups_1       = max(0, (block_row  - DETOUR_ROW) // 5)
+    ups_2       = max(1, (DETOUR_ROW - FINAL_ROW)  // 5)
+    left_count  = max(1, (block_col  - DETOUR_COL) // 5)
+    right_count = (FINAL_COL - DETOUR_COL) // 5   # always 3 — returns to c34
 
     return (
-        [UP]    * ups_1       +
-        [LEFT]  * left_count  +
-        [DOWN]  * 1           +
-        [UP]    * 1           +
-        [RIGHT] * left_count  +
+        [UP]    * ups_1        +
+        [LEFT]  * left_count   +   # go far enough left to pass through c19
+        [DOWN]  * 1            +
+        [UP]    * 1            +
+        [RIGHT] * right_count  +   # return only to c34 regardless of start column
         [UP]    * ups_2
     )
 
