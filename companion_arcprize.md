@@ -3209,14 +3209,14 @@ of a level. Written automatically by `ArcAgent.on_level_start` during training. 
 all offline modes to detect layout differences and decide whether to use the stored route.
 
 ```
-[levelmap game=ls20 level=1 session=2026-06-01T12:00:00 created=1748793600]
+[levelmap game=ls20 level=1 session=2026-06-01T23:57:17 created=1780358237]
 grid_shape: 64x64
 block_pos: 40,34
-entity2_ring: top=8 bot=16 left=13 right=21
-entity2_notch_orientation: 180
+entity2_ring: top=8 bot=16 left=32 right=40
+entity2_notch_orientation: none
 cluster: top_row=31 bot_row=33 col_min=20 col_max=22
 entity1_state: 0
-entity_signatures: 3:count=180,bbox=8-16x13-21 12:count=10,bbox=40-41x34-38
+entity_signatures: 0:count=3,bbox=31-32x21-22 1:count=2,bbox=32-33x20-21 3:count=894,bbox=8-62x13-53 5:count=439,bbox=0-63x0-63 8:count=12,bbox=61-62x56-63 9:count=45,bbox=11-60x3-38 11:count=82,bbox=61-62x14-54 12:count=10,bbox=40-41x34-38
 [/levelmap]
 ```
 
