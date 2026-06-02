@@ -30,6 +30,11 @@ import arc_agi
 from ls20_detector import compute_l1_route, format_strategy_block, update_strategy_in_file
 from agent_framework import ArcAgent
 
+try:
+    from core.game_registry import get_detector as _get_detector
+except ImportError:
+    _get_detector = None
+
 COMPANION_URL = (
     "https://raw.githubusercontent.com/antfriend/companion_arc/main/companion_arcprize.md"
 )
@@ -354,6 +359,8 @@ def run_training_attempt(
     last_action_blocked = False
     last_action_idx: int | None = None
     locus_initialized = stop_after_offline  # True = never initialize LOCUS
+    _prev_frame_for_verify: "np.ndarray | None" = None
+    _detector = _get_detector(game_id) if _get_detector else None
 
     def _locus(msg: str, label: str) -> str:
         """Send a LOCUS message, accumulate to session log, optionally print."""
@@ -452,18 +459,45 @@ def run_training_attempt(
 
         if obs.frame:
             prev_frames = list(obs.frame)
-            cur_block_pos = _find_block_pos(prev_frames[0])
-            last_action_blocked = (
-                prev_block_pos is not None
-                and cur_block_pos is not None
-                and cur_block_pos == prev_block_pos
-            )
-            prev_block_pos = cur_block_pos
+            cur_frame = prev_frames[0]
+
+            # Step verification — replaces the simple last_action_blocked check
+            if _prev_frame_for_verify is not None and _detector is not None:
+                try:
+                    _vr = _detector.verify_step(
+                        _prev_frame_for_verify, cur_frame, last_action_idx
+                        if last_action_idx is not None else 0
+                    )
+                    last_action_blocked = not _vr.success
+                    if verbose:
+                        _vs = "OK" if _vr.success else "FAIL"
+                        print(f"[verify] step={step} "
+                              f"{['UP','DOWN','LEFT','RIGHT'][last_action_idx] if last_action_idx is not None and last_action_idx < 4 else last_action_idx} "
+                              f"→ {_vs}: {_vr.reason}")
+                except Exception:
+                    # Fall back to legacy block-position comparison
+                    cur_block_pos = _find_block_pos(cur_frame)
+                    last_action_blocked = (
+                        prev_block_pos is not None
+                        and cur_block_pos is not None
+                        and cur_block_pos == prev_block_pos
+                    )
+                    prev_block_pos = cur_block_pos
+            else:
+                cur_block_pos = _find_block_pos(cur_frame)
+                last_action_blocked = (
+                    prev_block_pos is not None
+                    and cur_block_pos is not None
+                    and cur_block_pos == prev_block_pos
+                )
+                prev_block_pos = cur_block_pos
+
+            _prev_frame_for_verify = cur_frame
 
             # First-frame capture: trigger on_level_start once per level
             if not _level_scanned:
                 _current_level = (obs.levels_completed if obs is not None else 0) + 1
-                _agent.on_level_start(_current_level, prev_frames[0])
+                _agent.on_level_start(_current_level, cur_frame)
                 # Sync adaptive route back from agent
                 _routes.update(_agent.routes)
                 _level_scanned = True
@@ -476,6 +510,7 @@ def run_training_attempt(
                 _l1_adaptive_done = True  # compute_l1_route already called in agent
         else:
             last_action_blocked = False
+            _prev_frame_for_verify = None
 
         # -- Level transition ------------------------------------------------
         if obs.levels_completed > prev_levels:

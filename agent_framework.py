@@ -39,6 +39,11 @@ from ls20_detector import (
     update_strategy_in_file,
 )
 
+try:
+    from core.game_registry import get_detector as _get_detector
+except ImportError:
+    _get_detector = None
+
 
 class ArcAgent:
     """
@@ -209,13 +214,27 @@ class ArcAgent:
                 if self._verbose:
                     print(f"[agent] diff_snapshots failed: {exc}")
 
-        # Adaptive L1 route for ls20 (always recompute from first frame)
-        if self._game_prefix == "ls20" and level_num == 1:
+        # Adaptive route: use per-game detector if available, else ls20 legacy
+        detector = _get_detector(self._game_id) if _get_detector else None
+        if detector is not None and level_num == 1:
+            try:
+                state = detector.detect_state(grid)
+                adaptive = detector.compute_route(state)
+                self._routes[level_num] = adaptive
+                if self._verbose:
+                    print(f"[agent] adaptive L{level_num} route: "
+                          f"{adaptive} ({len(adaptive)} steps)")
+            except Exception as exc:
+                if self._verbose:
+                    print(f"[agent] adaptive route failed: {exc}")
+        elif self._game_prefix == "ls20" and level_num == 1:
+            # Legacy fallback if games/ package not importable
             try:
                 adaptive = compute_l1_route(grid)
                 self._routes[1] = adaptive
                 if self._verbose:
-                    print(f"[agent] adaptive L1 route: {adaptive} ({len(adaptive)} steps)")
+                    print(f"[agent] adaptive L1 route (legacy): "
+                          f"{adaptive} ({len(adaptive)} steps)")
             except Exception as exc:
                 if self._verbose:
                     print(f"[agent] adaptive route failed: {exc}")
