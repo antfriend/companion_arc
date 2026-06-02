@@ -3209,14 +3209,14 @@ of a level. Written automatically by `ArcAgent.on_level_start` during training. 
 all offline modes to detect layout differences and decide whether to use the stored route.
 
 ```
-[levelmap game=ls20 level=1 session=2026-06-02T00:09:59 created=1780358999]
+[levelmap game=<game_id> level=<N> session=<ISO-datetime> created=<unix_ts>]
 grid_shape: 64x64
-block_pos: 40,34
-entity2_ring: top=8 bot=16 left=32 right=40
-entity2_notch_orientation: none
-cluster: top_row=31 bot_row=33 col_min=20 col_max=22
-entity1_state: 0
-entity_signatures: 0:count=3,bbox=31-32x21-22 1:count=2,bbox=32-33x20-21 3:count=894,bbox=8-62x13-53 5:count=439,bbox=0-63x0-63 8:count=12,bbox=61-62x56-63 9:count=45,bbox=11-60x3-38 11:count=82,bbox=61-62x14-54 12:count=10,bbox=40-41x34-38
+block_pos: <row>,<col>
+entity2_ring: top=<N> bot=<N> left=<N> right=<N>
+entity2_notch_orientation: <0|90|180|270|none>
+cluster: top_row=<N> bot_row=<N> col_min=<N> col_max=<N>
+entity1_state: <0|1|2>
+entity_signatures: <val>:count=<N>,bbox=<r1>-<r2>x<c1>-<c2> ...
 [/levelmap]
 ```
 
@@ -3243,6 +3243,16 @@ Mismatch → adaptive strategy (LOCUS in training; systematic sweep in offline).
 - `level_scanner.diff_snapshots(stored, current)` → `LevelDiff`
 - `level_scanner.parse_all_levelmaps(companion_text, game_id)` → `{level: LevelSnapshot}`
 - `level_scanner.update_levelmap_in_file(path, block, game_id, level_num)`
+
+[levelmap game=ls20 level=1 session=2026-06-02T00:09:59 created=1780358999]
+grid_shape: 64x64
+block_pos: 40,34
+entity2_ring: top=8 bot=16 left=32 right=40
+entity2_notch_orientation: none
+cluster: top_row=31 bot_row=33 col_min=20 col_max=22
+entity1_state: 0
+entity_signatures: 0:count=3,bbox=31-32x21-22 1:count=2,bbox=32-33x20-21 3:count=894,bbox=8-62x13-53 5:count=439,bbox=0-63x0-63 8:count=12,bbox=61-62x56-63 9:count=45,bbox=11-60x3-38 11:count=82,bbox=61-62x14-54 12:count=10,bbox=40-41x34-38
+[/levelmap]
 
 ---
 
@@ -11891,8 +11901,29 @@ Session did not advance past level 1 (21 actions consumed). No level 2 frame dat
 
 ### Failure Analysis
 
-**21 actions on level 1, not won**: The 14-element `_LEVEL1_ROUTE` fix deployed in session 69 (restoring UP×3 effective path with corrected indexing) did not produce a L1 win in this session. Two candidate explanations:
+**Session 70 is a short diagnostic run** (`max_steps=21`, intentionally set). The goal was to observe L1 first-frame behavior with the new `ArcAgent` and `level_scanner` framework, not to probe L2.
 
-1. **Fix not deployed at runtime**: The 14-element route change was written but the Kaggle notebook had not yet been updated before this run. Session was launched against the old or still-broken configuration.
+**What actually happened** (from session log, step 6 frame):
+- **Block at r15–16 c34–38** at LOCUS handoff — inside entity2 ring boundary (r8–16 c32–40)
+- **Cluster at r31–33 c20–22** (HIGH cluster position — the problematic instance)
+- **Entity1 STATE 1** (carrier pattern confirmed: r55–56 full, r57–58 c3–4 only, r59–60 c3–4+c7–8)
+- **Entity1 tracker at r17–19 c34–38** following block (STATE 1 = tracking after cluster collection)
+- **Timer: 36 remaining** (6 steps consumed at LOCUS handoff)
 
-2. **Fix introduced a new failure mode**: The 14-element route (UP×3 instead of UP×4 effective path) may not reach the wide corridor at rows 25–29 from all possible block starting positions. If the block starts at rows 45–46 (
+The adaptive route (computed by `ArcAgent.on_level_start` from the first frame) ran 5 UPs, placing block at r15–16. This is inside entity2 but at the BOUNDARY row (r16 = ring bottom wall), not the WIN position (r10–11). LOCUS received the game at step 6 with ~15 steps remaining (max_steps=21) and navigated from r15–16 but could not WIN within budget.
+
+**Root cause confirmed**: Cluster spawned at rows 31–33 (high position). The route's LEFT×3 segment at rows 30–31 causes the entity1 tracker (at rows 32–34 c19–23) to overlap the cluster at rows 31–33 c20–22. Cluster collected → entity1 STATE 0→1. Block at r15–16 with entity1 STATE 1 + dormant at r11–13 → NOT_FINISHED. This is the same mechanism as session 69.
+
+**The UP×3 fix does NOT help with high-cluster instances** — both UP×3 and UP×4 effective paths pass through the LEFT×3 zone that overlaps cluster at rows 31–33. The fundamental issue is that the LEFT×3 always crosses cols 19–23 at rows ~30–31, and any cluster at rows 31–33 c20–22 will be collected during that traversal.
+
+**ArcAgent levelmap capture confirmed working**: `on_level_start` correctly scanned the first frame and wrote a `[levelmap]` block to companion_arcprize.md (see the levelmap in the First-Frame Level Maps section at ~line 3247). Captured data:
+- block_pos: (40, 34) — block at r40-41 c34-38 after seed UP from r45-46
+- entity2_ring: top=8 bot=16 left=32 right=40
+- cluster: rows 31–33 cols 20–22 (confirmed high position)
+- entity1_state: 0 (at detection time, before trigger)
+
+The adaptive route computed: `(40 - 15) // 5 = 5 UPs` → [0, 0, 0, 0, 0]. Block after 1 seed + 5 route UPs = 6 UPs from r45-46 → r15-16 (ring boundary).
+
+**Next step (session 71)**: Restore `max_steps=125` in `launch_training.py`. The L1 route will still fail when cluster is at rows 31–33. A more robust L1 strategy is needed that either: (a) avoids LEFT×3 entirely (UP-only route won't WIN — see batch tests), or (b) collects the cluster deliberately and then enters entity2 via a path not blocked by entity1 STATE 1.
+
+*sal: 49. conf: 245. Session 70 NOT WON (max_steps=21 diagnostic). ArcAgent levelmap first capture ✓. L1 cluster-position vulnerability persists.*
