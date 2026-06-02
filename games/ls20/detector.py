@@ -48,14 +48,20 @@ _ACTION_NAMES = {UP: "UP", DOWN: "DOWN", LEFT: "LEFT", RIGHT: "RIGHT"}
 # the RIGHT initial action from the c29-33 start position).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _L2_ROUTE = [
-    # First ring B probe (20 steps) — state 2 trigger + timer reset
-    0, 0, 0, 0, 0, 0,               # UP×6 → r10-11 c34-38
-    3, 3, 3,                        # RIGHT×3 → r10-11 c49-53
-    1, 1, 1, 1, 1, 1,               # DOWN×6 → r40-41 c49-53
-    2, 1, 1, 2,                     # L,D,D,L → r50-51 c39-43 [ring B; STATE 2; timer reset]
-    # Navigate ring B → cross (3 steps)
-    3, 3,                           # RIGHT×2 → r50-51 c49-53
-    0,                              # UP → r45-46 c49-53 [cross; second collectible]
+    # HYPOTHESIS TEST: cross first (entity1 STATE 0) → possible L2 WIN analog to L1
+    # L1 win = entity2 entry at STATE 0. L2 win may = cross/cluster entry at STATE 0.
+    # Direct route: UP×6 + RIGHT×3 + DOWN×7 = 16 steps to r45,c49 (cross location).
+    # Skip ring B entirely. If this wins, it's far under the 123-action baseline.
+    0, 0, 0, 0, 0, 0,               # UP×6 → r10,c34
+    3, 3, 3,                        # RIGHT×3 → r10,c49
+    1, 1, 1, 1, 1, 1, 1,            # DOWN×7 → r45,c49 [cross with entity1 STATE 0 → L2 WIN?]
+
+    # If cross-at-STATE0 doesn't win, navigate to ring B (from r45,c49):
+    1,                              # DOWN → r50,c49
+    2, 2,                           # LEFT×2 → r50,c39 [ring B; STATE 2; timer reset]
+    # Navigate ring B → cross again (3 steps)
+    3, 3,                           # RIGHT×2 → r50,c49
+    0,                              # UP → r45,c49 [cross again (ring B→cross order)]
     # Ascend to wide connector (7 steps)
     0, 0, 0, 0, 0, 0, 0,            # UP×7 → r10-11 c49-53
     # Traverse wide connector to c14-18 (7 steps)
@@ -114,17 +120,34 @@ _L2_ROUTE = [
     1, 1,                           # DOWN×2 → r50,c44
     2,                              # LEFT → r50,c39 [ring B x2! timer reset to 21]
 
-    # Ring B x2 (timer = 21). Entity1: ring B×2, cross×1, ring A×3.
-    # Explore r5 corridor: UP from r10,c39 → r5,c39 (new probe via different column).
-    # Then traverse r5 LEFT toward c14 and collect ring A x4 for safety.
+    # Ring B x2 confirmed: timer reset to 21, UP from r50,c39 is BLOCKED.
+    # Must go RIGHT×2 to r50,c49 first, then UP×8 to r10,c49 (proven DC31 path).
+    # Then probe r5 corridor at c49 and collect ring A x4 for timer safety.
 
-    0, 0, 0, 0, 0, 0, 0, 0,         # UP×8 → r10,c39 (step 8, timer=13)
-    0,                              # UP → r5,c39 [probe: r5 accessible at c39?] (step 9)
-    3, 3,                           # RIGHT×2 → r5,c49? (step 11, timer=10)
-    2, 2, 2,                        # LEFT×3 → r5,c34 (step 14, timer=7)
-    1,                              # DOWN → r10,c34 (step 15)
-    2, 2, 2, 2,                     # LEFT×4 → r10,c14 (step 19, timer=2)
+    3, 3,                           # RIGHT×2 → r50,c49 (step 2, timer=19)
+    0, 0, 0, 0, 0, 0, 0, 0,         # UP×8 → r10,c49 (step 10, timer=11)
+    0,                              # UP → r5,c49? [probe r5 corridor at c49] (step 11)
+    2, 2, 2,                        # LEFT×3 → r5,c34 (step 14, timer=8)
+    1,                              # DOWN → r10,c34 (step 15, timer=7)
+    2, 2, 2, 2,                     # LEFT×4 → r10,c14 (step 19, timer=3)
     1,                              # DOWN → r15,c14 [ring A x4! timer reset] (step 20)
+
+    # --- After ring A x4 (timer=21). Entity1: ring B×2, cross×1, ring A×4 ---
+    # Probe 1: r5 corridor again with post-ring-A-x4 entity1 state (6 steps)
+    0,                              # UP → r10,c14
+    3, 3, 3, 3,                     # RIGHT×4 → r10,c34
+    0,                              # UP → r5,c34 [r5 probe with new entity1 state]
+
+    # Probe 2: cross x2 via r5 corridor → c49 → r45 (12 more steps, timer=9)
+    3, 3, 3,                        # RIGHT×3 → r5,c49 (timer=12)
+    1,                              # DOWN → r10,c49 (timer=11)
+    1, 1, 1, 1, 1, 1, 1,            # DOWN×7 → r45,c49 [cross x2?] (timer=4)
+
+    # Timer at 4 after cross x2 attempt — navigate to ring B x3 if timer reset
+    0,                              # UP → r40,c49 (timer=3)
+    2,                              # LEFT → r40,c44 (timer=2)
+    1, 1,                           # DOWN×2 → r50,c44 (timer=0 → GAME OVER if no reset)
+    2,                              # LEFT → r50,c39 [ring B x3 if accessible, timer reset?]
 ]
 
 # ---------------------------------------------------------------------------
