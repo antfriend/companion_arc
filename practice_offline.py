@@ -144,6 +144,18 @@ def main() -> None:
             print(f"[detect]  cluster=rows={cl['top_row']}-{cl['bot_row']} "
                   f"cols={cl['col_min']}-{cl['col_max']}")
 
+        # For L2: scan for inner ring structures and print compact grid
+        if level_num == 2 and e2 is not None and prev_frame is not None:
+            from games.ls20.detector import detect_entity2_ring
+            from kaggle_agent import compact_grid_str
+            inner = detect_entity2_ring(prev_frame, search_rows=(e2['top']+2, e2['bot']))
+            if inner:
+                print(f"[detect]  INNER RING rows={inner['top']}-{inner['bot']} "
+                      f"cols={inner['left']}-{inner['right']}")
+            # Print non-background cells so we can see the full L2 map
+            print("[grid L2]")
+            print(compact_grid_str(prev_frame))
+
         try:
             route = detector.compute_route(state, level_num)
         except Exception as exc:
