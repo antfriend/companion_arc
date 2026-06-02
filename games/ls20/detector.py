@@ -95,26 +95,36 @@ _L2_ROUTE = [
     2,                              # LEFT (transition: timer expires → second reset r40,c29)
     0,                              # buffer: transition frame
 
-    # --- From second reset at r40,c29 ---
-    # Confirmed from DC32 run: DOWN from r40,c29 is blocked (c29-33 void gap).
-    # Confirmed: RIGHT to r40,c34 works. RIGHT from r40,c34 is blocked.
-    # Key untried: DOWN from r40,c34 into entity2 lower interior.
+    # --- From second reset r35,c29 (UP buffer moves block from r40 to r35) ---
+    # Timer = 21, every step (OK or FAIL) = 1 unit — confirmed.
+    # Ring A x3: must go via r10 (LEFT×4 at r15 is wall-blocked at c29).
+    # Path: RIGHT + UP×5 + LEFT×4 + DOWN = 12 steps.
 
-    3,                              # RIGHT → r40,c34
-    1, 1, 1,                        # DOWN×3 → r50,c34 [entity2 lower interior — never tried]
-    3,                              # RIGHT → r50,c39 [ring B x2 if r50,c34 corridor open]
+    3,                              # RIGHT → r35,c34 (step 1)
+    0, 0, 0, 0, 0,                  # UP×5 → r10,c34 (step 6) [35→30→25→20→15→10]
+    2, 2, 2, 2,                     # LEFT×4 → r10,c14 (step 10) [proven open at r10]
+    1,                              # DOWN → r15,c14 [ring A x3! timer reset] (step 11)
 
-    # From ring B x2 (or wherever the block lands): ascend right corridor
-    0, 0, 0, 0, 0, 0, 0, 0,         # UP×8 → r10,c39
-    3, 3,                           # RIGHT×2 → r10,c49
-
-    # Descend right column into entity2 — probe with post-ring-B×2 entity1 state
+    # Ring A x3 collected (timer = 21). Entity1: ring B×1, cross×1, ring A×3.
+    # Ring B x2 via proven 18-step path (timer resets at ring B too):
+    0,                              # UP → r10,c14
+    3, 3, 3, 3, 3, 3, 3,            # RIGHT×7 → r10,c49
     1, 1, 1, 1, 1, 1,               # DOWN×6 → r40,c49
-
-    # Navigate ring B approach corridor
     2,                              # LEFT → r40,c44
     1, 1,                           # DOWN×2 → r50,c44
-    2,                              # LEFT → r50,c39 [ring B area / entity2 floor]
+    2,                              # LEFT → r50,c39 [ring B x2! timer reset to 21]
+
+    # Ring B x2 (timer = 21). Entity1: ring B×2, cross×1, ring A×3.
+    # Explore r5 corridor: UP from r10,c39 → r5,c39 (new probe via different column).
+    # Then traverse r5 LEFT toward c14 and collect ring A x4 for safety.
+
+    0, 0, 0, 0, 0, 0, 0, 0,         # UP×8 → r10,c39 (step 8, timer=13)
+    0,                              # UP → r5,c39 [probe: r5 accessible at c39?] (step 9)
+    3, 3,                           # RIGHT×2 → r5,c49? (step 11, timer=10)
+    2, 2, 2,                        # LEFT×3 → r5,c34 (step 14, timer=7)
+    1,                              # DOWN → r10,c34 (step 15)
+    2, 2, 2, 2,                     # LEFT×4 → r10,c14 (step 19, timer=2)
+    1,                              # DOWN → r15,c14 [ring A x4! timer reset] (step 20)
 ]
 
 # ---------------------------------------------------------------------------
