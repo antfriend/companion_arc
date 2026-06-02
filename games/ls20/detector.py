@@ -329,31 +329,39 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
     """
     Compute the winning route from a GameState, starting AFTER the probe step.
 
-    Level 1 — adaptive detour route (UP×n1, LEFT×3, DOWN, UP, RIGHT×3, UP×n2).
-    Level 2 — known DC31 75-step route (_L2_ROUTE), which assumes the probe
-               RIGHT already moved the block to c34-38.
+    Level 1 — adaptive detour route. Both UP count and LEFT/RIGHT count are
+    derived from the detected block position so the route works regardless of
+    which column the block starts in:
+      - DETOUR_ROW=25: row to reach before the lateral pass
+      - DETOUR_COL=19: leftmost column the block must pass through for L1 WIN
+        (the path through c19-23 is required; passing only to c24 does not win)
+      - FINAL_ROW=10:  row inside entity2 that triggers the win
+
+    Level 2 — known DC31 75-step route (_L2_ROUTE).
     """
     if level_num == 2:
         return list(_L2_ROUTE)
 
-    # Level 1: adaptive detour
-    DETOUR_ROW = 25   # lateral waypoint before approaching entity2
-    FINAL_ROW  = 10   # deep interior row that triggers L1 WIN
+    DETOUR_ROW = 25
+    DETOUR_COL = 19   # block must reach c19 for L1 WIN (confirmed on local + Kaggle)
+    FINAL_ROW  = 10
 
-    if state.block_pos is None or state.entity2_ring is None:
-        return [0,0,0, 2,2,2, 1,0, 3,3,3, 0,0,0]  # safe fallback from r40
+    if state.block_pos is None:
+        return [0,0,0, 2,2,2, 1,0, 3,3,3, 0,0,0]  # safe fallback (r40,c34)
 
     block_row = state.block_pos[0]
+    block_col = state.block_pos[1]
 
-    ups_1 = max(0, (block_row - DETOUR_ROW) // 5)
-    ups_2 = max(1, (DETOUR_ROW - FINAL_ROW)  // 5)
+    ups_1      = max(0, (block_row - DETOUR_ROW) // 5)
+    ups_2      = max(1, (DETOUR_ROW - FINAL_ROW)  // 5)
+    left_count = max(1, (block_col - DETOUR_COL)  // 5)
 
     return (
-        [UP]    * ups_1 +
-        [LEFT]  * 3     +
-        [DOWN]  * 1     +
-        [UP]    * 1     +
-        [RIGHT] * 3     +
+        [UP]    * ups_1       +
+        [LEFT]  * left_count  +
+        [DOWN]  * 1           +
+        [UP]    * 1           +
+        [RIGHT] * left_count  +
         [UP]    * ups_2
     )
 
