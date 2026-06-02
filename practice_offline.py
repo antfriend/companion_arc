@@ -211,6 +211,7 @@ def main() -> None:
 
         if not level_done:
             print(f"\n[practice] Route exhausted — level {level_num} not completed")
+            break
 
     # --- Final report -------------------------------------------------------
     print(f"\n{'='*50}")
