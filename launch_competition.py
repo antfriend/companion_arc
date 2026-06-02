@@ -192,6 +192,7 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     step = 0
     level_start_step = 0
     level_scanned = False
+    prev_levels = 0
     route_steps = 0
     random_steps = 0
     _END_STATES = ("GameState.WIN", "GameState.GAME_OVER", "win", "game_over")
@@ -222,10 +223,11 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         else:
             random_steps += 1
 
-        # Level transition
-        if obs.levels_completed and obs.levels_completed > 0 and not level_scanned:
+        # Level transition: reset on levels_completed advancing
+        if obs.levels_completed and obs.levels_completed > prev_levels:
+            prev_levels = obs.levels_completed
             level_start_step = step
-            level_scanned = False
+            level_scanned = False  # trigger on_level_start for the next level
 
     levels = obs.levels_completed if obs else 0
     state = str(obs.state) if obs else "None"
