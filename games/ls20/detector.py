@@ -66,7 +66,24 @@ _L2_ROUTE = [
     2, 2, 2, 2, 2, 2, 2,            # LEFT×7 → r10,c14
     1,                              # DOWN → r15,c14 [ring A; timer reset]
     1, 1, 1, 1,                     # DOWN×4 → r35,c14 [deadlock — entity1 blocks at r41]
-    1,                              # DOWN → r40,c14 [KEY TEST: entity1 moved after ring B?]
+    1,                              # DOWN → r40,c14 [10A test: entity1 ABSENT after ring A ×2?]
+    # If blocked: extend with full oscillation → ring A ×2 path (DC30/DC31)
+
+    # --- 10A full sequence: ring A ×2 via oscillation (DC30 route) ---
+    # After ring A ×1 fails the DOWN test, oscillate to force timer=0 → respawn → ring A ×2
+    0, 0, 0, 0,                     # UP×4 → r15,c14 (timer: 17→13)
+    0,                              # UP×1 → r10,c14 (wide connector; timer: 13→12)
+    2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 12→6)
+    2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 6→0 → ring A+B RESPAWN; block resets to r40,c29)
+    # Post-oscillation-reset navigation (same pattern as DC32 survivor):
+    # Transition buffer → UP from r40,c29 → r35,c29 → RIGHT to r35,c34 → UP×5 → ring A ×2
+    # Post-oscillation reset: block appears at r40,c29, buffer RIGHT → r40,c34
+    3,                              # RIGHT → r40,c34 (fires when block reappears at r40,c29)
+    0, 0, 0, 0, 0, 0,               # UP×6 → r10,c34 (40→35→30→25→20→15→10)
+    2, 2, 2, 2,                     # LEFT×4 → r10,c14 (confirmed open at r10)
+    1,                              # DOWN → r15,c14 [ring A ×2! timer reset]
+    1, 1, 1, 1,                     # DOWN×4 → r35,c14 [10A probe position]
+    1,                              # DOWN → r40,c14 [10A TEST after ring A ×2!]
 ]
 
 _L2_ROUTE_DC31_CONTINUATION = [
