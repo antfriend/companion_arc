@@ -79,7 +79,35 @@ _L2_ROUTE = [
     0, 0, 0, 0, 0, 0,               # UP×6 → r10-11 c34-38
     2, 2, 2, 2,                     # LEFT×4 → r10-11 c14-18
     1,                              # DOWN → r15-16 c14-18 [ring A x2; timer reset]
-    1, 1, 1, 1,                     # DOWN×4 → r35-36 c14-18 [probe]
+    1, 1, 1, 1,                     # DOWN×4 → r35-36 c14-18 [DC31 probe end]
+
+    # --- DC32 exploration from r35,c14 ---
+    # Entity1 has been driven through: STATE0 → STATE2 (ring B) → ring A ×2
+    # → timer expiry → post-reset ring A ×2. Ring B has respawned.
+    # Ring B is at r50-51 c39-43. Try the direct descent at c14 to reach it
+    # (game allows jumping the entity2 wall at r38 — confirmed by UP×6 in
+    # post-reset phase which exits entity2 r40→r35 the same way).
+
+    # Descent: r35,c14 → r50,c14 (inside entity2, column 14)
+    1, 1, 1,                        # DOWN×3 → r50,c14
+
+    # Navigate right to ring B spawn position
+    3, 3, 3, 3, 3,                  # RIGHT×5 → r50,c39 [ring B x2; entity1 state advance?]
+
+    # Ascend back to wide connector to enable horizontal movement
+    0, 0, 0, 0, 0, 0, 0, 0,         # UP×8 → r10,c39
+
+    # Traverse wide connector left to ring A column
+    2, 2, 2, 2, 2,                  # LEFT×5 → r10,c14
+
+    # Descend to ring A for third collection
+    1,                              # DOWN → r15,c14 [ring A x3; timer reset]
+
+    # Descend through entity2 on c14 column — probing for win trigger
+    1, 1, 1, 1, 1, 1, 1,            # DOWN×7 → r50,c14 [entity2 bottom zone]
+
+    # Navigate to entity2 right boundary area
+    3, 3, 3, 3, 3, 3, 3, 3,         # RIGHT×8 → r50,c54? (probing right boundary)
 ]
 
 # ---------------------------------------------------------------------------
