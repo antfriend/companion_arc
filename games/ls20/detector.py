@@ -42,6 +42,42 @@ RIGHT = 3
 _ACTION_NAMES = {UP: "UP", DOWN: "DOWN", LEFT: "LEFT", RIGHT: "RIGHT"}
 
 # ---------------------------------------------------------------------------
+# Known multi-step routes (level 2)
+# ---------------------------------------------------------------------------
+# DC31 75-step L2 route. Assumes block starts at r40-41 c34-38 (i.e. after
+# the RIGHT initial action from the c29-33 start position).
+# 0=UP  1=DOWN  2=LEFT  3=RIGHT
+_L2_ROUTE = [
+    # First ring B probe (20 steps) — state 2 trigger + timer reset
+    0, 0, 0, 0, 0, 0,               # UP×6 → r10-11 c34-38
+    3, 3, 3,                        # RIGHT×3 → r10-11 c49-53
+    1, 1, 1, 1, 1, 1,               # DOWN×6 → r40-41 c49-53
+    2, 1, 1, 2,                     # L,D,D,L → r50-51 c39-43 [ring B; STATE 2; timer reset]
+    # Navigate ring B → cross (3 steps)
+    3, 3,                           # RIGHT×2 → r50-51 c49-53
+    0,                              # UP → r45-46 c49-53 [cross; second collectible]
+    # Ascend to wide connector (7 steps)
+    0, 0, 0, 0, 0, 0, 0,            # UP×7 → r10-11 c49-53
+    # Traverse wide connector to c14-18 (7 steps)
+    2, 2, 2, 2, 2, 2, 2,            # LEFT×7 → r10-11 c14-18
+    # Collect ring A (timer reset)
+    1,                              # DOWN → r15-16 c14-18 [ring A]
+    # Descend to deadlock
+    1, 1, 1, 1,                     # DOWN×4 → r35-36 c14-18
+    # Ring A second cycle: UP×5 + micro-oscillation ×12 (timer expiry)
+    0, 0, 0, 0,                     # UP×4 → r15-16 c14-18
+    0,                              # UP×1 → r10-11 c14-18 (wide connector)
+    2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 12→6)
+    2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 6→0; ring respawn; block resets to r40-41 c29-33)
+    # DC31 post-reset: approach ring A second collection
+    3,                              # RIGHT → r40-41 c34-38 [post-reset]
+    0, 0, 0, 0, 0, 0,               # UP×6 → r10-11 c34-38
+    2, 2, 2, 2,                     # LEFT×4 → r10-11 c14-18
+    1,                              # DOWN → r15-16 c14-18 [ring A x2; timer reset]
+    1, 1, 1, 1,                     # DOWN×4 → r35-36 c14-18 [probe]
+]
+
+# ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
@@ -226,36 +262,49 @@ def detect_state(grid: np.ndarray) -> GameState:
 # Standard interface: compute_route
 # ---------------------------------------------------------------------------
 
-def compute_route(state: GameState) -> list:
+def initial_action(level_num: int) -> int:
     """
-    Compute the L1 winning route from a GameState.
+    Return the correct probe action for each level.
 
-    Pure UP into entity2 does NOT win — L1 WIN requires a lateral detour
-    through c19-23 before the final ascent. Confirmed 45+ wins with:
-      UP×n1, LEFT×3, DOWN, UP, RIGHT×3, UP×n2
-    where n1 = UPs to reach the detour row (~r25) and n2 = UPs to reach
-    deep interior (~r10). Both counts scale with the detected block start row.
+    This action is taken first (before detect_state) to get the initial frame.
+    It doubles as route step 0, so compute_route returns the remainder.
+
+    L1: UP  — block starts at r45, probe moves it to r40 (start of detour).
+    L2: RIGHT — block starts at c29-33, probe moves it to c34-38 (start of L2 route).
     """
-    # Fixed detour geometry (confirmed for 9607627b instance)
+    return {1: UP, 2: RIGHT}.get(level_num, UP)
+
+
+def compute_route(state: GameState, level_num: int = 1) -> list:
+    """
+    Compute the winning route from a GameState, starting AFTER the probe step.
+
+    Level 1 — adaptive detour route (UP×n1, LEFT×3, DOWN, UP, RIGHT×3, UP×n2).
+    Level 2 — known DC31 75-step route (_L2_ROUTE), which assumes the probe
+               RIGHT already moved the block to c34-38.
+    """
+    if level_num == 2:
+        return list(_L2_ROUTE)
+
+    # Level 1: adaptive detour
     DETOUR_ROW = 25   # lateral waypoint before approaching entity2
     FINAL_ROW  = 10   # deep interior row that triggers L1 WIN
 
     if state.block_pos is None or state.entity2_ring is None:
-        # Safe fallback: known-good 14-step route from standard r40 start
-        return [0,0,0, 2,2,2, 1,0, 3,3,3, 0,0,0]
+        return [0,0,0, 2,2,2, 1,0, 3,3,3, 0,0,0]  # safe fallback from r40
 
     block_row = state.block_pos[0]
 
-    ups_1 = max(0, (block_row - DETOUR_ROW) // 5)   # first ascent to detour row
-    ups_2 = max(1, (DETOUR_ROW - FINAL_ROW)  // 5)  # second ascent into entity2
+    ups_1 = max(0, (block_row - DETOUR_ROW) // 5)
+    ups_2 = max(1, (DETOUR_ROW - FINAL_ROW)  // 5)
 
     return (
-        [UP]    * ups_1 +   # ascend to detour row
-        [LEFT]  * 3     +   # lateral: approach c19-23
-        [DOWN]  * 1     +   # step down into corridor
-        [UP]    * 1     +   # step back up
-        [RIGHT] * 3     +   # return to c34-38
-        [UP]    * ups_2     # final ascent deep into entity2
+        [UP]    * ups_1 +
+        [LEFT]  * 3     +
+        [DOWN]  * 1     +
+        [UP]    * 1     +
+        [RIGHT] * 3     +
+        [UP]    * ups_2
     )
 
 

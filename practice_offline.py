@@ -107,10 +107,13 @@ def main() -> None:
         n = len(actions)
 
         # --- Probe step: get initial frame ----------------------------------
-        # One UP (action 0) is always safe as a probe for ls20.
-        # compute_route() will see the post-probe block position and compute
-        # the remaining distance correctly.
-        obs = env.step(actions[0 % n])
+        # The probe IS route step 0 for this level. Using the correct first
+        # action (UP for L1, RIGHT for L2) keeps the block in the right
+        # corridor. compute_route() returns the remainder after the probe.
+        probe_idx = 0
+        if hasattr(detector, "initial_action"):
+            probe_idx = detector.initial_action(level_num) % n
+        obs = env.step(actions[probe_idx])
         step += 1
 
         if not obs.frame:
@@ -142,7 +145,7 @@ def main() -> None:
                   f"cols={cl['col_min']}-{cl['col_max']}")
 
         try:
-            route = detector.compute_route(state)
+            route = detector.compute_route(state, level_num)
         except Exception as exc:
             print(f"[practice] compute_route failed: {exc}")
             break
