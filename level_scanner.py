@@ -583,6 +583,28 @@ def compile_stored_maps_literal(companion_text: str, game_id: str) -> str:
             entry["route"] = stored_routes[level_num]
         level_data[level_num] = entry
 
+    # Inject multi-level routes from game detector (if available in the dataset).
+    # This allows the LucusAgent to load L2+ routes without notebook changes —
+    # only the dataset files need updating when new routes are discovered.
+    try:
+        import importlib
+        _det_mod = importlib.import_module(f"games.{prefix}.detector")
+        # Each level beyond L1 that has a known route: inject it.
+        for _lnum in range(2, 10):
+            _route_attr = f"_L{_lnum}_ROUTE"
+            if not hasattr(_det_mod, _route_attr):
+                break
+            _raw = getattr(_det_mod, _route_attr)
+            # Prepend the level's initial probe action so the LucusAgent
+            # executes it as route[0] without a separate probe step.
+            _probe = getattr(_det_mod, f"_L{_lnum}_PROBE", None)
+            if _probe is None and hasattr(_det_mod, "initial_action"):
+                _probe = _det_mod.initial_action(_lnum)
+            _full = ([_probe] + list(_raw)) if _probe is not None else list(_raw)
+            level_data.setdefault(_lnum, {})["route"] = _full
+    except Exception:
+        pass
+
     # Build Python literal — no json to keep strings/tuples correct
     inner_parts = []
     for lnum, data in sorted(level_data.items()):
