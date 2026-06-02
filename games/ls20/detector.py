@@ -400,7 +400,13 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
     Level 2 — known DC31 75-step route (_L2_ROUTE).
     """
     if level_num == 2:
-        return list(_L2_ROUTE)
+        # L2 route assumes block at r40,c34 (post-RIGHT probe).
+        # If block is west of c34 (still at c29 = L2 start), prepend RIGHT
+        # to move from c29→c34 before the main route executes.
+        l2 = list(_L2_ROUTE)
+        if state.block_pos and state.block_pos[1] < 34:
+            return [RIGHT] + l2
+        return l2
 
     DETOUR_ROW  = 25   # lateral waypoint row
     DETOUR_COL  = 19   # must reach c19 for L1 WIN (entity2 approach corridor)

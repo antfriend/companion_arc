@@ -169,12 +169,22 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     except Exception:
         pass
 
+    # Use offline_levels=2 for games where an L2 route exists in the detector.
+    # The detector's compute_route(state, level_num=2) will supply it on level start.
+    try:
+        from core.game_registry import get_detector as _gd
+        _det = _gd(game_id)
+        _has_l2 = _det is not None and hasattr(_det, "_L2_ROUTE")
+    except Exception:
+        _has_l2 = False
+    _offline = 2 if _has_l2 else 1
+
     agent = ArcAgent(
         game_id=game_id,
         mode="batch",
         companion_text=companion_text,
         routes={1: route} if route else {},
-        offline_levels=1,
+        offline_levels=_offline,
         verbose=True,
     )
 

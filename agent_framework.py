@@ -216,7 +216,7 @@ class ArcAgent:
 
         # Adaptive route: use per-game detector if available, else ls20 legacy
         detector = _get_detector(self._game_id) if _get_detector else None
-        if detector is not None and level_num == 1:
+        if detector is not None and level_num in (1, 2):
             try:
                 state = detector.detect_state(grid)
                 adaptive = detector.compute_route(state)
