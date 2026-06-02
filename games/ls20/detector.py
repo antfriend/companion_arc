@@ -48,20 +48,28 @@ _ACTION_NAMES = {UP: "UP", DOWN: "DOWN", LEFT: "LEFT", RIGHT: "RIGHT"}
 # the RIGHT initial action from the c29-33 start position).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _L2_ROUTE = [
-    # HYPOTHESIS TEST: cross first (entity1 STATE 0) → possible L2 WIN analog to L1
-    # L1 win = entity2 entry at STATE 0. L2 win may = cross/cluster entry at STATE 0.
-    # Direct route: UP×6 + RIGHT×3 + DOWN×7 = 16 steps to r45,c49 (cross location).
-    # Skip ring B entirely. If this wins, it's far under the 123-action baseline.
+    # HYPOTHESIS TEST: after ring B (entity1 STATE 2), entity1 may vacate its home
+    # at r41-43,c15-17 (inner ring), enabling DOWN from r35,c14 → r40,c14.
+    # Block at r40,c14-18 enters the inner ring (rows 38-46, c12-20) → L2 WIN?
+    #
+    # Route: DC31 core (ring B + cross + ring A + deadlock) + ONE EXTRA DOWN
+    # Total: 42 steps from post-probe position. Way under 123 baseline if win.
+
+    # Core DC31: ring B + cross + ring A (42 steps to r35,c14)
     0, 0, 0, 0, 0, 0,               # UP×6 → r10,c34
     3, 3, 3,                        # RIGHT×3 → r10,c49
-    1, 1, 1, 1, 1, 1, 1,            # DOWN×7 → r45,c49 [cross with entity1 STATE 0 → L2 WIN?]
-
-    # If cross-at-STATE0 doesn't win, navigate to ring B (from r45,c49):
-    1,                              # DOWN → r50,c49
-    2, 2,                           # LEFT×2 → r50,c39 [ring B; STATE 2; timer reset]
-    # Navigate ring B → cross again (3 steps)
+    1, 1, 1, 1, 1, 1,               # DOWN×6 → r40,c49
+    2, 1, 1, 2,                     # L,D,D,L → r50,c39 [ring B; STATE 2; timer reset]
     3, 3,                           # RIGHT×2 → r50,c49
-    0,                              # UP → r45,c49 [cross again (ring B→cross order)]
+    0,                              # UP → r45,c49 [cross; entity1 second collectible]
+    0, 0, 0, 0, 0, 0, 0,            # UP×7 → r10,c49
+    2, 2, 2, 2, 2, 2, 2,            # LEFT×7 → r10,c14
+    1,                              # DOWN → r15,c14 [ring A; timer reset]
+    1, 1, 1, 1,                     # DOWN×4 → r35,c14 [deadlock — entity1 blocks at r41]
+    1,                              # DOWN → r40,c14 [KEY TEST: entity1 moved after ring B?]
+]
+
+_L2_ROUTE_DC31_CONTINUATION = [
     # Ascend to wide connector (7 steps)
     0, 0, 0, 0, 0, 0, 0,            # UP×7 → r10-11 c49-53
     # Traverse wide connector to c14-18 (7 steps)
