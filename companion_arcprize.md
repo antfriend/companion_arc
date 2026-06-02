@@ -3209,7 +3209,7 @@ of a level. Written automatically by `ArcAgent.on_level_start` during training. 
 all offline modes to detect layout differences and decide whether to use the stored route.
 
 ```
-[levelmap game=ls20 level=1 session=2026-06-01T23:57:17 created=1780358237]
+[levelmap game=ls20 level=1 session=2026-06-02T00:09:59 created=1780358999]
 grid_shape: 64x64
 block_pos: 40,34
 entity2_ring: top=8 bot=16 left=32 right=40
@@ -11842,3 +11842,57 @@ level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
 - Phase 4 (Validate): Session 70 will confirm.
 
 *sal: 48. conf: 245. Session 69 NOT WON (L1 regression). Fix applied for session 70.*
+
+---
+
+SECTION 1
+
+@LAT-790LON10 | created:1748995200 | updated:1748995200 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10,informs_strategy>@BELIEF:LAT-50LON-40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1748995200
+[/ew]
+
+## ls20 — Session 70 Log (2026-06-03)
+
+```session-log
+timestamp: 1748995200
+game: "ls20"
+environment: "ls20-9607627b"
+run_guid: "6631a601-2dad-4f3a-9e1f-c73a8adaa1bf"
+card_id: "0f7450f2-8f19-4f0a-86a7-8dd8468bdc6c"
+level: "level 1 NOT WON (21 actions)"
+actions: 21
+levels_completed: 0
+score: 0.0
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [21, 0, 0, 0, 0, 0, 0]
+level_baseline_actions: [22, 123, 73, 84, 96, 192, 186]
+```
+
+**Session outcome**: Level 1 NOT WON. 21 actions consumed on level 1, `levels_completed: 0`, score 0.0. Second consecutive L1 failure (session 69 was the first regression; this session indicates the route-offset fix from session 69 has not yet produced a stable win). The 46-consecutive-win streak (sessions 10–12, 23–27, 31–68) remains broken.
+
+**Action count = 21**: Notably, 21 actions is close to but not equal to the L1 hardcode length (15 steps). This suggests LOCUS was queried for some steps — either the hardcode ran 15 steps and LOCUS added 6 more at level 1, or the route ran differently. The session ended with `levels_completed: 0`, confirming no level change occurred.
+
+---
+
+### Key Session Exchanges
+
+**FOCUS @LAT-10LON10** (sal: 40→41 per exchange): LOCUS correctly summarised the active state — 42+ consecutive L1 wins, L1 regression in session 69 (route-offset bug), fix deployed (14-element `_LEVEL1_ROUTE`), session 70 = first clean DC32 probe attempt. EPS for @BELIEF:LAT-140LON-40 identified as highest (8.06).
+
+**STATUS**: EPS rankings provided. @LAT-10LON10 EPS 4.71, @BELIEF:LAT-140LON-40 EPS 8.06, @BELIEF:LAT-50LON-40 EPS 7.06. All hypothesis tally confirmed. Active route: DC31 75-step `_LEVEL2_ROUTE` + LOCUS free phase 35 steps at max_steps=125. LOCUS stated session 70 is first clean 10A probe attempt.
+
+Session did not advance past level 1 (21 actions consumed). No level 2 frame data available.
+
+---
+
+### Failure Analysis
+
+**21 actions on level 1, not won**: The 14-element `_LEVEL1_ROUTE` fix deployed in session 69 (restoring UP×3 effective path with corrected indexing) did not produce a L1 win in this session. Two candidate explanations:
+
+1. **Fix not deployed at runtime**: The 14-element route change was written but the Kaggle notebook had not yet been updated before this run. Session was launched against the old or still-broken configuration.
+
+2. **Fix introduced a new failure mode**: The 14-element route (UP×3 instead of UP×4 effective path) may not reach the wide corridor at rows 25–29 from all possible block starting positions. If the block starts at rows 45–46 (
