@@ -338,11 +338,28 @@ def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResul
     before_pos = detect_block(before)
     after_pos  = detect_block(after)
 
-    if before_pos is None or after_pos is None:
+    if before_pos is None and after_pos is None:
         return StepResult(
             success=False,
-            reason="block not detected in before or after frame",
-            delta={"before_pos": before_pos, "after_pos": after_pos,
+            reason="transition: block not visible in before or after frame",
+            delta={"before_pos": None, "after_pos": None,
+                   "row_delta": None, "col_delta": None},
+        )
+
+    if before_pos is None:
+        # Block was invisible (reset/animation frame) and reappeared — not a real failure
+        return StepResult(
+            success=True,
+            reason=f"reset: block reappeared at {after_pos}",
+            delta={"before_pos": None, "after_pos": after_pos,
+                   "row_delta": None, "col_delta": None},
+        )
+
+    if after_pos is None:
+        return StepResult(
+            success=False,
+            reason="transition: block disappeared (reset animation frame)",
+            delta={"before_pos": before_pos, "after_pos": None,
                    "row_delta": None, "col_delta": None},
         )
 
