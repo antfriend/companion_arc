@@ -48,42 +48,54 @@ _ACTION_NAMES = {UP: "UP", DOWN: "DOWN", LEFT: "LEFT", RIGHT: "RIGHT"}
 # the RIGHT initial action from the c29-33 start position).
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _L2_ROUTE = [
-    # HYPOTHESIS TEST: after ring B (entity1 STATE 2), entity1 may vacate its home
-    # at r41-43,c15-17 (inner ring), enabling DOWN from r35,c14 → r40,c14.
-    # Block at r40,c14-18 enters the inner ring (rows 38-46, c12-20) → L2 WIN?
+    # HYPOTHESIS: cross collectible ("+" at r45,c49) ROTATES the inner ring entity1
+    # pattern on each landing. The DOWN from r35,c14 requires the correct rotation.
+    # cross ×1 (DC31 default): inner ring at 90°  → DOWN still blocked (confirmed)
+    # cross ×2: inner ring at 180° → try DOWN
+    # cross ×3: inner ring at 270° → try DOWN (needs oscillation cycle)
+    # cross ×4: inner ring back to start orientation
     #
-    # Route: DC31 core (ring B + cross + ring A + deadlock) + ONE EXTRA DOWN
-    # Total: 42 steps from post-probe position. Way under 123 baseline if win.
+    # Timer budget: ring B gives ~21 steps. DC31 ring B→ring A = 18 steps (timer=3 at ring A).
+    # Adding DOWN+UP (2 extra) for cross ×2: 18+2=20 steps (timer=1 at ring A). Safe!
 
-    # Core DC31: ring B + cross + ring A (42 steps to r35,c14)
+    # Phase 1: Ring B + cross ×1+×2 + ring A + first DOWN test (confirmed FAIL at ×2)
     0, 0, 0, 0, 0, 0,               # UP×6 → r10,c34
     3, 3, 3,                        # RIGHT×3 → r10,c49
     1, 1, 1, 1, 1, 1,               # DOWN×6 → r40,c49
     2, 1, 1, 2,                     # L,D,D,L → r50,c39 [ring B; STATE 2; timer reset]
     3, 3,                           # RIGHT×2 → r50,c49
-    0,                              # UP → r45,c49 [cross; entity1 second collectible]
+    0,                              # UP → r45,c49 [cross ×1]
+    1, 0,                           # DOWN + UP → cross ×2 (if immediate respawn)
     0, 0, 0, 0, 0, 0, 0,            # UP×7 → r10,c49
     2, 2, 2, 2, 2, 2, 2,            # LEFT×7 → r10,c14
     1,                              # DOWN → r15,c14 [ring A; timer reset]
-    1, 1, 1, 1,                     # DOWN×4 → r35,c14 [deadlock — entity1 blocks at r41]
-    1,                              # DOWN → r40,c14 [10A test: entity1 ABSENT after ring A ×2?]
-    # If blocked: extend with full oscillation → ring A ×2 path (DC30/DC31)
+    1, 1, 1, 1,                     # DOWN×4 → r35,c14 [deadlock]
+    1,                              # DOWN [10A test ×1: cross ×2 — FAIL expected]
 
-    # --- 10A full sequence: ring A ×2 via oscillation (DC30 route) ---
-    # After ring A ×1 fails the DOWN test, oscillate to force timer=0 → respawn → ring A ×2
-    0, 0, 0, 0,                     # UP×4 → r15,c14 (timer: 17→13)
-    0,                              # UP×1 → r10,c14 (wide connector; timer: 13→12)
+    # Phase 2: oscillation (timer=0 → ring A+B+cross respawn; block resets)
+    0, 0, 0, 0,                     # UP×4 → r15,c14 (timer: →13)
+    0,                              # UP → r10,c14 (wide connector; timer: →12)
     2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 12→6)
-    2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 6→0 → ring A+B RESPAWN; block resets to r40,c29)
-    # Post-oscillation-reset navigation (same pattern as DC32 survivor):
-    # Transition buffer → UP from r40,c29 → r35,c29 → RIGHT to r35,c34 → UP×5 → ring A ×2
-    # Post-oscillation reset: block appears at r40,c29, buffer RIGHT → r40,c34
-    3,                              # RIGHT → r40,c34 (fires when block reappears at r40,c29)
-    0, 0, 0, 0, 0, 0,               # UP×6 → r10,c34 (40→35→30→25→20→15→10)
-    2, 2, 2, 2,                     # LEFT×4 → r10,c14 (confirmed open at r10)
-    1,                              # DOWN → r15,c14 [ring A ×2! timer reset]
-    1, 1, 1, 1,                     # DOWN×4 → r35,c14 [10A probe position]
-    1,                              # DOWN → r40,c14 [10A TEST after ring A ×2!]
+    2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 6→0 → RESET; cross respawns)
+
+    # Phase 3: post-oscillation → cross ×3 → ring B ×2 → ring A ×2 → DOWN test
+    # Pattern: last-osc-RIGHT(timer=0) | UP-buffer(r40→r35,c29) | RIGHT(r35,c34) | UP×5(r10) | ...
+    3,                              # transition buffer (last oscillation fires timer=0)
+    0,                              # UP buffer: block appears at r40,c29 → moves to r35,c29
+    3,                              # RIGHT → r35,c34 (first real nav step)
+    0, 0, 0, 0, 0,                  # UP×5 → r10,c34
+    3, 3, 3,                        # RIGHT×3 → r10,c49
+    1, 1, 1, 1, 1, 1, 1,            # DOWN×7 → r45,c49 [cross ×3! timer=5 remaining]
+    1,                              # DOWN → r50,c49
+    2, 2,                           # LEFT×2 → r50,c39 [ring B ×2; timer reset=21]
+    3, 3,                           # RIGHT×2 → r50,c49
+    0,                              # UP → r45,c49 [cross ×4 — 360°, back to start?] (timer=18)
+    1,                              # DOWN → r50,c49 (timer=17)
+    0, 0, 0, 0, 0, 0, 0, 0,         # UP×8 → r10,c49 (timer=9)
+    2, 2, 2, 2, 2, 2, 2,            # LEFT×7 → r10,c14 (timer=2)
+    1,                              # DOWN → r15,c14 [ring A ×2; timer reset=17] (timer=1→reset)
+    1, 1, 1, 1,                     # DOWN×4 → r35,c14 (timer=13)
+    1,                              # DOWN [10A TEST: after cross ×4 (0°/360°)]
 ]
 
 _L2_ROUTE_DC31_CONTINUATION = [
