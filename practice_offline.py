@@ -42,8 +42,8 @@ _parser.add_argument("--env-dir", default=str(_DEFAULT_ENV_DIR), metavar="DIR",
                      help=f"environment_files directory (default: {_DEFAULT_ENV_DIR})")
 _parser.add_argument("--levels", type=int, default=1, metavar="N",
                      help="levels to attempt before stopping (default: 1)")
-_parser.add_argument("--max-steps", type=int, default=50, metavar="N",
-                     help="hard step cap for the whole run (default: 50)")
+_parser.add_argument("--max-steps", type=int, default=120, metavar="N",
+                     help="hard step cap for the whole run (default: 120)")
 _args = _parser.parse_args()
 
 

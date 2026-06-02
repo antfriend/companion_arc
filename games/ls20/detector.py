@@ -70,7 +70,12 @@ _L2_ROUTE = [
     2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 12→6)
     2, 3, 2, 3, 2, 3,               # LEFT-RIGHT×3 (timer: 6→0; ring respawn; block resets to r40-41 c29-33)
     # DC31 post-reset: approach ring A second collection
-    3,                              # RIGHT → r40-41 c34-38 [post-reset]
+    # Timer expires at end of the 6th oscillation pair (route[57]=RIGHT).
+    # The very next frame is a reset-animation frame: the block is temporarily
+    # invisible (BLOCK=12 absent). Any action on that frame is a no-op.
+    # Buffer step absorbs the transition; RIGHT fires when block reappears.
+    0,                              # buffer: UP no-op on reset-animation frame
+    3,                              # RIGHT → r40-41 c34-38 [block visible at r40,c29]
     0, 0, 0, 0, 0, 0,               # UP×6 → r10-11 c34-38
     2, 2, 2, 2,                     # LEFT×4 → r10-11 c14-18
     1,                              # DOWN → r15-16 c14-18 [ring A x2; timer reset]
