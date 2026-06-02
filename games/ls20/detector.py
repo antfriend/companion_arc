@@ -81,33 +81,40 @@ _L2_ROUTE = [
     1,                              # DOWN → r15-16 c14-18 [ring A x2; timer reset]
     1, 1, 1, 1,                     # DOWN×4 → r35-36 c14-18 [DC31 probe end]
 
-    # --- DC32 exploration from r35,c14 ---
-    # Entity1 has been driven through: STATE0 → STATE2 (ring B) → ring A ×2
-    # → timer expiry → post-reset ring A ×2. Ring B has respawned.
-    # Ring B is at r50-51 c39-43. Try the direct descent at c14 to reach it
-    # (game allows jumping the entity2 wall at r38 — confirmed by UP×6 in
-    # post-reset phase which exits entity2 r40→r35 the same way).
+    # --- DC32 revised ---
+    # From r35,c14: confirmed dead end (DOWN + RIGHT both wall-blocked).
+    # Burn remaining timer via UP to r10 + LEFT fails at c9 boundary.
+    # Same confirmed sequence as the previous run → second reset at r40,c29.
 
-    # Descent: r35,c14 → r50,c14 (inside entity2, column 14)
-    1, 1, 1,                        # DOWN×3 → r50,c14
+    1, 1, 1,                        # DOWN×3 FAIL (confirmed dead end — burns timer)
+    3, 3, 3, 3, 3,                  # RIGHT×5 FAIL (confirmed dead end — burns timer)
+    0, 0, 0, 0, 0,                  # UP×5 → r10,c14
+    0, 0, 0,                        # UP×3 FAIL (r10 ceiling)
+    2,                              # LEFT → r10,c9
+    2, 2, 2,                        # LEFT×3 FAIL at c9 boundary (burns timer)
+    2,                              # LEFT (transition: timer expires → second reset r40,c29)
+    0,                              # buffer: transition frame
 
-    # Navigate right to ring B spawn position
-    3, 3, 3, 3, 3,                  # RIGHT×5 → r50,c39 [ring B x2; entity1 state advance?]
+    # --- From second reset at r40,c29 ---
+    # Confirmed from DC32 run: DOWN from r40,c29 is blocked (c29-33 void gap).
+    # Confirmed: RIGHT to r40,c34 works. RIGHT from r40,c34 is blocked.
+    # Key untried: DOWN from r40,c34 into entity2 lower interior.
 
-    # Ascend back to wide connector to enable horizontal movement
+    3,                              # RIGHT → r40,c34
+    1, 1, 1,                        # DOWN×3 → r50,c34 [entity2 lower interior — never tried]
+    3,                              # RIGHT → r50,c39 [ring B x2 if r50,c34 corridor open]
+
+    # From ring B x2 (or wherever the block lands): ascend right corridor
     0, 0, 0, 0, 0, 0, 0, 0,         # UP×8 → r10,c39
+    3, 3,                           # RIGHT×2 → r10,c49
 
-    # Traverse wide connector left to ring A column
-    2, 2, 2, 2, 2,                  # LEFT×5 → r10,c14
+    # Descend right column into entity2 — probe with post-ring-B×2 entity1 state
+    1, 1, 1, 1, 1, 1,               # DOWN×6 → r40,c49
 
-    # Descend to ring A for third collection
-    1,                              # DOWN → r15,c14 [ring A x3; timer reset]
-
-    # Descend through entity2 on c14 column — probing for win trigger
-    1, 1, 1, 1, 1, 1, 1,            # DOWN×7 → r50,c14 [entity2 bottom zone]
-
-    # Navigate to entity2 right boundary area
-    3, 3, 3, 3, 3, 3, 3, 3,         # RIGHT×8 → r50,c54? (probing right boundary)
+    # Navigate ring B approach corridor
+    2,                              # LEFT → r40,c44
+    1, 1,                           # DOWN×2 → r50,c44
+    2,                              # LEFT → r50,c39 [ring B area / entity2 floor]
 ]
 
 # ---------------------------------------------------------------------------
