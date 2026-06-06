@@ -53,3 +53,9 @@ try:
     register("ls20", _ls20, _ROOT / "games" / "ls20" / "companion.md")
 except ImportError:
     pass
+
+try:
+    from games.sp80 import detector as _sp80
+    register("sp80", _sp80, _ROOT / "games" / "sp80" / "companion.md")
+except ImportError:
+    pass

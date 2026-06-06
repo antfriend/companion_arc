@@ -167,6 +167,18 @@ class ArcAgent:
             self._current_snapshot = None
             return
 
+        # Log compact frame for games without a dedicated detector (frame archaeology)
+        if self._verbose and self._game_prefix != "ls20":
+            sigs = snap.entity_signatures
+            sig_str = " ".join(
+                f"v{v}:n={d['count']},r{d['bbox'][0]}-{d['bbox'][1]}c{d['bbox'][2]}-{d['bbox'][3]}"
+                for v, d in sorted(sigs.items())
+            )
+            print(f"[frame] {self._game_prefix} L{level_num} grid={snap.grid_shape[0]}x{snap.grid_shape[1]} {sig_str}", flush=True)
+            if snap.raw_compact:
+                for line in snap.raw_compact.splitlines():
+                    print(f"[frame]   {line}", flush=True)
+
         stored = self._stored_snapshots.get(level_num)
 
         if stored is None:

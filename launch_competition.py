@@ -78,6 +78,9 @@ _HARDCODED_ROUTES: dict[str, list[int]] = {
     # executing UP+LEFT×3+DOWN+UP+RIGHT×3+UP to the goal at (x=34,y=10).
     "ls20": [0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0],
     "cd82": [3, 0, 1, 0, 0, 0, 1, 1, 1, 3, 2, 0, 4, 4, 2, 0, 0, 0, 1],
+    # sp80: fallback placeholder — on_level_start replaces with compute_route()
+    # from games/sp80/detector.py (currently returns same fallback until
+    # frame archaeology identifies which entity position varies per instance).
     "sp80": [4, 3, 3, 3, 4, 2, 2, 1],
 }
 
