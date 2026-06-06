@@ -387,17 +387,16 @@ def initial_action(level_num: int) -> int:
 
 def compute_route(state: GameState, level_num: int = 1) -> list:
     """
-    Compute the winning route from a GameState, starting AFTER the probe step.
+    Compute the winning route from a GameState.
 
-    Level 1 — adaptive detour route. Both UP count and LEFT/RIGHT count are
-    derived from the detected block position so the route works regardless of
-    which column the block starts in:
-      - DETOUR_ROW=25: row to reach before the lateral pass
-      - DETOUR_COL=19: leftmost column the block must pass through for L1 WIN
-        (the path through c19-23 is required; passing only to c24 does not win)
-      - FINAL_ROW=10:  row inside entity2 that triggers the win
+    Level 1 — maze-aware route. The game is a cursor puzzle: sfqyzhzkij (cursor)
+    must navigate fixed corridors to reach the rotation changer at game (x=19,y=30)
+    and then the goal cell at game (x=34,y=10). The maze has walls at x=29 that
+    block every UP move from that column, so the cursor must first normalize to
+    x=34 (the clear vertical corridor) before going UP. The horizontal corridor
+    at y=25 is always clear for LEFT×3 and RIGHT×3.
 
-    Level 2 — known DC31 75-step route (_L2_ROUTE).
+    Level 2 — known DC31 route (_L2_ROUTE).
     """
     if level_num == 2:
         # Append RIGHT at the end so route[-1]=RIGHT, which the batch runner
@@ -407,29 +406,37 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
         # at route[104]) so it has no effect on that path.
         return list(_L2_ROUTE) + [RIGHT]
 
-    DETOUR_ROW  = 25   # lateral waypoint row
-    DETOUR_COL  = 19   # must reach c19 for L1 WIN (entity2 approach corridor)
-    FINAL_COL   = 34   # always return to c34: block (5 wide) fits inside entity2 (cols 32-40)
-    FINAL_ROW   = 10   # deep interior row that triggers L1 WIN
+    STANDARD_COL = 34   # game x of the clear vertical corridor
+    DETOUR_ROW   = 25   # game y of the clear horizontal corridor (y=25)
+    FINAL_ROW    = 10   # game y of the goal (rjlbuycveu)
 
     if state.block_pos is None:
         return [0,0,0, 2,2,2, 1,0, 3,3,3, 0,0,0]  # safe fallback (r40,c34)
 
-    block_row = state.block_pos[0]
-    block_col = state.block_pos[1]
+    block_row = state.block_pos[0]  # frame row = game y
+    block_col = state.block_pos[1]  # frame col = game x
 
-    ups_1       = max(0, (block_row  - DETOUR_ROW) // 5)
-    ups_2       = max(1, (DETOUR_ROW - FINAL_ROW)  // 5)
-    left_count  = max(1, (block_col  - DETOUR_COL) // 5)
-    right_count = (FINAL_COL - DETOUR_COL) // 5   # always 3 — returns to c34
+    # Normalize cursor to x=34 before UP moves. The x=29 column (and others)
+    # have ihdgageizm walls at y=30/35/40 that block the UP path. x=34 is clear.
+    col_diff = (block_col - STANDARD_COL) // 5
+    if col_diff > 0:
+        prefix = [LEFT] * col_diff
+    elif col_diff < 0:
+        prefix = [RIGHT] * (-col_diff)
+    else:
+        prefix = []
+
+    ups_1 = max(0, (block_row - DETOUR_ROW) // 5)
+    ups_2 = (DETOUR_ROW - FINAL_ROW) // 5   # always 3: (25-10)//5
 
     return (
-        [UP]    * ups_1        +
-        [LEFT]  * left_count   +   # go far enough left to pass through c19
-        [DOWN]  * 1            +
-        [UP]    * 1            +
-        [RIGHT] * right_count  +   # return only to c34 regardless of start column
-        [UP]    * ups_2
+        prefix          +          # normalize cursor to x=34 corridor first
+        [UP]    * ups_1 +          # ascend to y=25 along x=34 (walls-free corridor)
+        [LEFT]  * 3     +          # traverse to x=19 along y=25 (walls-free corridor)
+        [DOWN]  * 1     +          # drop to rhsxkxzdjz at y=30 (rotation trigger)
+        [UP]    * 1     +          # return to y=25
+        [RIGHT] * 3     +          # return to x=34 along y=25
+        [UP]    * ups_2            # ascend to goal at y=10
     )
 
 

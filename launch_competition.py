@@ -72,9 +72,10 @@ _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 # cd82: [ACTION1-ACTION5]    → indices 0-4
 # sp80: [ACTION1-ACTION5]    → indices 0-4
 _HARDCODED_ROUTES: dict[str, list[int]] = {
-    # ls20: validated 45+ wins. UP×3+LEFT×3+DOWN+UP+RIGHT×3+UP×3 from start r40-41.
-    # Pure-UP adaptive detection does not win (L1 WIN requires the lateral detour
-    # that brings block to r10-11 via c19-23 approach). Static route is reliable.
+    # ls20: fallback placeholder — on_level_start always replaces this with
+    # compute_route() from games/ls20/detector.py. Route adapts to cursor's
+    # detected starting column and normalizes to the x=34 corridor before
+    # executing UP+LEFT×3+DOWN+UP+RIGHT×3+UP to the goal at (x=34,y=10).
     "ls20": [0, 0, 0, 2, 2, 2, 1, 0, 3, 3, 3, 0, 0, 0],
     "cd82": [3, 0, 1, 0, 0, 0, 1, 1, 1, 3, 2, 0, 4, 4, 2, 0, 0, 0, 1],
     "sp80": [4, 3, 3, 3, 4, 2, 2, 1],
