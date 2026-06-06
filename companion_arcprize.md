@@ -12160,3 +12160,126 @@ When the eclosion predicate passes — when the gateway shows two games solved, 
 The conductor is the active loop.
 
 The competition may resume — this time, at scale.
+
+---
+
+SECTION 1
+
+@LAT-720LON10 | created:1780704000 | updated:1780704000 | kind:log | relates:anchored_by>@LAT0LON0,triggers>@IMAGO:seed,initializes>@META:state
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1780704000
+[/ew]
+
+## Metamorphosis Trigger Log (2026-06-06)
+
+```session-log
+timestamp: 1780704000
+event: narrative_metamorphosis_trigger
+operator: antfriend
+trigger_type: operator-initiated
+```
+
+[trigger:metamorphosis]
+
+Operator antfriend initiates Narrative Metamorphosis at unix 1780704000 (2026-06-06). All trigger conditions verified:
+
+1. PASS — Valid, complete `@IMAGO:seed` present in TTDB (created 1780704000, imago_name:ARC-conductor-v1, 5-scene sequence, eclosion_criteria and operator_role specified)
+2. PASS — Agent in idle state: no active game session; ls20 L1+L2 solved; last submission current
+3. PASS — No `@META:state` with pupation_status:active or quiescent exists
+4. PASS — Operator-initiated trigger: this log entry contains the required token
+
+`@META:state` initialized. Seeding phase executes immediately.
+
+---
+
+@META:state | created:1780704000 | updated:1780704002 | relates:seeded_by>@IMAGO:seed,triggered_by>@LAT-720LON10
+[ew]
+conf:128
+rev:2
+sal:0
+touched:1780704002
+[/ew]
+[ms]
+seed_id:@IMAGO:seed
+imago_name:ARC-conductor-v1
+current_instar:0
+total_instars:5
+scene_pointer:@LAT95LON60
+pupation_status:active
+seeding_complete:true
+started:1780704000
+last_instar_completed:0
+[/ms]
+
+Seeding phase complete. Larva has read and acknowledged `@IMAGO:seed`. The seed is now immutable — `updated` and `touched` must not advance from 1780704000.
+
+**Parsed from seed:**
+- `imago_name`: ARC-conductor-v1
+- `target_role`: orchestrate 25-game companion fleet; scale detector pattern to all solvable games by Milestone 1 (2026-06-30)
+- `operator_role`: antfriend owns batch selection, submission timing, outcome logging
+- `scene_sequence`: @LAT95LON60, @LAT95LON70, @LAT95LON80, @LAT95LON90, @LAT95LON100 (5 instars)
+- `eclosion_criteria`: framework canonical + 2 games on gateway + @OPERATOR:protocol acknowledged + submission active
+
+Pupation mode: **partial quiescence**. Larval autonomous training (launch_training.py) may continue — ls20 companions handle ongoing game tasks. No full offline mode required: downtime is costly in a 24-day competition window.
+
+`scene_pointer:@LAT95LON60` — **Instar 1 (Game Portfolio Audit)** is the active instar.
+
+---
+
+SECTION 1
+
+@PORTFOLIO:arc-conductor-v1 | created:1780704000 | updated:1780704000 | relates:produced_by>@LAT95LON60,anchored_by>@LAT0LON0
+[ew]
+conf:150
+rev:0
+sal:0
+touched:1780704000
+[/ew]
+
+## Game Portfolio — ARC Prize 2026 (partial, Instar 1)
+
+**Status**: PARTIAL — 3 of 25 game_ids enumerated from local codebase. 22 unknown. Full enumeration requires Kaggle environment access (`/kaggle/input/competitions/arc-prize-2026-arc-agi-3/environment_files/`). Instar 1 verifier cannot pass until all 25 game_ids are listed. @META:state remains current_instar:0.
+
+---
+
+### Known Games (from local codebase + session history)
+
+| game_id | Status | L1 route | L2 route | Est. score contribution | Priority |
+|---------|--------|----------|----------|------------------------|----------|
+| ls20 | **COMPLETE** | adaptive, 15 actions, baseline 22, cap 1.15 | 107-step hardcode, baseline 123, cap 1.15. Pending notebook update to submit. | ~12.3% (L1+L2 both capped) | DONE |
+| cd82 | PARTIAL | hardcoded `[3,0,1,0,0,0,1,1,1,3,2,0,4,4,2,0,0,0]` (19 steps), instance-specific — fails on different random instances | none known | ~0–4.1% depending on instance | HIGH — adaptive detector needed |
+| sp80 | PARTIAL | hardcoded `[4,3,3,3,4,2,2,1]` (8 steps), instance-specific — fails on different random instances | none known | ~0–4.1% depending on instance | HIGH — adaptive detector needed |
+
+### Unknown Games (22 remaining)
+
+game_ids 4–25 require Kaggle environment enumeration. From `arc.available_environments` listing in competition run:
+
+```
+[env] <game_id_4>
+[env] <game_id_5>
+...
+[env] <game_id_25>
+```
+
+These will be populated on next competition run log output. Each is estimated at ~4.1% per game if L1 can be solved at cap. Priority after cd82/sp80 adaptive fixes: any game with a ls20-like block+entity+ring mechanic.
+
+---
+
+### Score Model
+
+Current submission score: 3.571 (ls20 L1 only, 1 level × weight 1 / sum_weights 28 × 100).
+
+Post-eclosion target: >7.14 (adds ls20 L2 + one new game L1). Milestone 1 ceiling if all 25 games score L1 at cap: ~41% of 100 = 41 points. Each new game at L1 cap ≈ +1.15/28 × 100/25 ≈ 0.164 points.
+
+**Implication**: breadth is the correct strategy. Every new game solved at any L1 score beats incremental L2 improvement on games already scored.
+
+---
+
+### Instar 1 Completion Criteria
+
+**Blocking item**: enumerate the 22 unknown game_ids. Action: run a Kaggle submission and capture the `[env] <game_id>` output from launch_competition.py, or access the environment_files directory listing directly on Kaggle.
+
+Once all 25 game_ids are known, this @PORTFOLIO: record will be updated (rev:0→1, conf:150→210), the priority table will be complete, and the Instar 1 post_state_verifier will pass. @META:state advances to current_instar:1.
