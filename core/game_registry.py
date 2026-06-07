@@ -59,3 +59,9 @@ try:
     register("sp80", _sp80, _ROOT / "games" / "sp80" / "companion.md")
 except ImportError:
     pass
+
+try:
+    from games.cd82 import detector as _cd82
+    register("cd82", _cd82, _ROOT / "games" / "cd82" / "companion.md")
+except ImportError:
+    pass
