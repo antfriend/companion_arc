@@ -1,29 +1,28 @@
 """
 games/re86/detector.py — Adaptive detector for re86 (ARC-AGI-3).
 
-re86 appears to be a cursor-navigation puzzle with two single-pixel entities:
-a moveable cursor (color 0) and a fixed target at the bottom-right corner
-(color 1). The cursor must navigate to the target.
+re86 is a single-pixel cursor navigation puzzle.
 
-Observed frame constants (instance 8af5384d):
-  CURSOR  = 0  — single pixel at (45, 33), interior position
-  TARGET  = 1  — single pixel at (63, 63), bottom-right corner
-  BOTTOM  = 15 — 63 cells along row 63 c0-62, boundary row
-  bg      = 5  — background (assumed; computed via argmax if needed)
+Observed frame (instance 8af5384d):
+  CURSOR  = 0  — single pixel, interior position (e.g., (45,39))
+  TARGET  = 1  — single pixel, bottom-right corner at (63,63)
+  BOTTOM  = 15 — 63-cell floor along row 63 c0-62
+  v4, v9, v11 — large structures (walls/obstacles)
 
-Large entities (v4=64, v9=56, v11=49): unknown role — may be walls or
-decorative structure. Not incorporated into route (direct path assumed).
+Initial hypothesis: direct Manhattan route. FAILED — large structures block
+the path. Switching to BFS treating all non-background pixels (except cursor
+and target) as walls.
 
 Action convention (shared with ls20/tu93 framework):
   0=UP  1=DOWN  2=LEFT  3=RIGHT
 
-Route strategy: move RIGHT to align column with target, then DOWN to reach
-target row. This keeps the cursor in the interior until the final DOWN moves,
-avoiding the bottom boundary row (v15) until necessary.
+Route strategy: BFS from cursor pixel to target pixel, treating any pixel
+that is not background as an obstacle (cursor and target are allowed).
 """
 
-from dataclasses import dataclass
-from typing import Optional
+from collections import deque
+from dataclasses import dataclass, field
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -33,12 +32,18 @@ import numpy as np
 
 CURSOR = 0    # single-pixel moveable agent
 TARGET = 1    # single-pixel destination (bottom-right corner)
-BOTTOM = 15   # bottom boundary row (63 cells, row 63 c0-62)
 
 UP    = 0
 DOWN  = 1
 LEFT  = 2
 RIGHT = 3
+
+_DELTAS = {
+    UP:    (-1,  0),
+    DOWN:  ( 1,  0),
+    LEFT:  ( 0, -1),
+    RIGHT: ( 0,  1),
+}
 
 
 # ---------------------------------------------------------------------------
@@ -52,7 +57,8 @@ class GameState:
     cursor_col: Optional[int]
     target_row: Optional[int]
     target_col: Optional[int]
-    raw_sigs: dict
+    route: list = field(default_factory=list)
+    raw_sigs: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -60,6 +66,30 @@ class StepResult:
     success: bool
     reason: str
     delta: dict
+
+
+# ---------------------------------------------------------------------------
+# BFS helpers
+# ---------------------------------------------------------------------------
+
+def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], bg: int) -> list:
+    if start == target:
+        return []
+    rows, cols = grid.shape
+    queue: deque = deque([(start[0], start[1], [])])
+    visited = {start}
+    while queue:
+        r, c, path = queue.popleft()
+        for action, (dr, dc) in _DELTAS.items():
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                nxt = (nr, nc)
+                if nxt == target:
+                    return path + [action]
+                if nxt not in visited and grid[nr, nc] == bg:
+                    visited.add(nxt)
+                    queue.append((nr, nc, path + [action]))
+    return []  # no path found
 
 
 # ---------------------------------------------------------------------------
@@ -85,11 +115,9 @@ def detect_state(grid: np.ndarray) -> GameState:
         r1, r2, c1, c2 = sigs[CURSOR]["bbox"]
         cursor_row, cursor_col = r1, c1
     else:
-        # Fallback: any single-pixel entity not at an extreme corner
         for val, sig in sigs.items():
             if sig["count"] == 1:
                 r1, r2, c1, c2 = sig["bbox"]
-                # Exclude corner positions — those are likely the target
                 if r1 < rows - 5 and c1 < cols - 5:
                     cursor_row, cursor_col = r1, c1
                     break
@@ -100,7 +128,6 @@ def detect_state(grid: np.ndarray) -> GameState:
         r1, r2, c1, c2 = sigs[TARGET]["bbox"]
         target_row, target_col = r1, c1
     else:
-        # Fallback: any single-pixel entity at an extreme corner position
         for val, sig in sigs.items():
             if sig["count"] == 1:
                 r1, r2, c1, c2 = sig["bbox"]
@@ -108,12 +135,20 @@ def detect_state(grid: np.ndarray) -> GameState:
                     target_row, target_col = r1, c1
                     break
 
+    # BFS computed in detect_state (compute_route needs the grid)
+    route = []
+    if cursor_row is not None and target_row is not None:
+        start = (cursor_row, cursor_col)
+        target = (target_row, target_col)
+        route = _bfs(grid, start, target, bg)
+
     return GameState(
         grid_shape=(rows, cols),
         cursor_row=cursor_row,
         cursor_col=cursor_col,
         target_row=target_row,
         target_col=target_col,
+        route=route,
         raw_sigs=sigs,
     )
 
@@ -121,29 +156,7 @@ def detect_state(grid: np.ndarray) -> GameState:
 def compute_route(state: GameState, level_num: int = 1) -> list:
     if level_num != 1:
         return []
-
-    if any(x is None for x in [
-        state.cursor_row, state.cursor_col,
-        state.target_row, state.target_col,
-    ]):
-        return []
-
-    dr = state.target_row - state.cursor_row
-    dc = state.target_col - state.cursor_col
-
-    # Move horizontally first (avoids bottom boundary row until final segment)
-    route = []
-    if dc > 0:
-        route += [RIGHT] * dc
-    elif dc < 0:
-        route += [LEFT] * (-dc)
-
-    if dr > 0:
-        route += [DOWN] * dr
-    elif dr < 0:
-        route += [UP] * (-dr)
-
-    return route
+    return list(state.route)
 
 
 def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResult:
@@ -156,30 +169,27 @@ def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResul
     dr = after_state.cursor_row - before_state.cursor_row
     dc = after_state.cursor_col - before_state.cursor_col
 
-    expected = {UP: (-1, 0), DOWN: (1, 0), LEFT: (0, -1), RIGHT: (0, 1)}.get(action)
-    if expected is None:
-        return StepResult(success=False, reason=f"unknown action {action}", delta={})
-
-    if (dr, dc) == expected:
+    expected_dr, expected_dc = _DELTAS.get(action, (0, 0))
+    if (dr, dc) == (expected_dr, expected_dc):
         return StepResult(success=True, reason="cursor moved correctly",
                           delta={"dr": dr, "dc": dc})
 
     if dr == 0 and dc == 0:
         return StepResult(success=False, reason="cursor blocked (wall?)",
-                          delta={"expected": expected, "actual": (dr, dc)})
+                          delta={"expected": (expected_dr, expected_dc)})
 
     return StepResult(success=False,
                       reason=f"unexpected move {(dr,dc)} for action {action}",
-                      delta={"expected": expected, "actual": (dr, dc)})
+                      delta={"expected": (expected_dr, expected_dc), "actual": (dr, dc)})
 
 
 def format_companion_block(state: GameState, route: list) -> str:
     lines = [
-        "[strategy game=re86 level=1 type=cursor-nav]",
+        "[strategy game=re86 level=1 type=cursor-nav-bfs]",
         f"cursor: ({state.cursor_row}, {state.cursor_col})",
         f"target: ({state.target_row}, {state.target_col})",
-        f"route_len: {len(route)}",
-        f"route: RIGHT×{route.count(3)} DOWN×{route.count(1)} LEFT×{route.count(2)} UP×{route.count(0)}",
+        f"bfs_route_len: {len(route)}",
+        f"route_sample: {route[:10]}{'...' if len(route)>10 else ''}",
         "[/strategy]",
     ]
     return "\n".join(lines)
