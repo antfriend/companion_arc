@@ -24,14 +24,20 @@ Each action moves the cursor 3 pixels (1 maze cell):
   0=UP  1=DOWN  2=LEFT  3=RIGHT
 
 WHY PRIOR ROUTE FAILED:
-  Cursor active pixel at (16,17). Sprite top-left at (16,16).
-  Maze cell of cursor: ((16-15)//3, (16-15)//3) = (0,0).
-  Maze cell of target top-left (45,45): ((45-15)//3, (45-15)//3) = (10,10).
-  Direct distance = 10+10 = 20 CELL steps.
+  v2: cursor active pixel at (16,17) or (16,18) depending on run.
+  Sprite top-left at (16,16) or (16,17).
 
-  The old detector computed pixel distances: DOWN×29 + RIGHT×28 = 57 steps.
-  But each action moves 3 pixels, so 57 pixel-unit steps would overshoot
-  massively. The budget is ~50 steps, which is plenty for 20-cell BFS.
+  MAZE_ORIGIN = (13,13) confirmed: the ONLY origin that satisfies BOTH:
+    cursor at sprite_top (16,16) → cell_r=(16-13)//3=1, cell_c=(16-13)//3=1 → (1,1)
+    cursor at sprite_top (16,17) → cell_r=(16-13)//3=1, cell_c=(17-13)//3=1 → (1,1)
+    target at (45,45) → cell_r=(45-13)//3=10, cell_c=(45-13)//3=10 → (10,10)
+
+  Old detector with MAZE_ORIGIN=(15,15) placed cursor at cell (0,0) =
+  rows 15-17, cols 15-17 — which contains wall pixels from maze sprites,
+  making BFS immediately fail (returns []).
+
+  Correct: cursor at cell (1,1), target at cell (10,10). BFS distance ≤ 18
+  cell steps in open grid. Budget = 50 steps.
 
 Route strategy: BFS over maze cells from cursor cell to target cell,
 treating any cell that contains color 0 or 2 as a wall.
@@ -47,8 +53,8 @@ import numpy as np
 # Maze constants (confirmed from sprite analysis)
 # ---------------------------------------------------------------------------
 
-MAZE_ORIGIN_R = 15   # pixel row where maze cell (0,0) starts
-MAZE_ORIGIN_C = 15   # pixel col where maze cell (0,0) starts
+MAZE_ORIGIN_R = 13   # pixel row where maze cell (0,0) starts
+MAZE_ORIGIN_C = 13   # pixel col where maze cell (0,0) starts
 CELL_SIZE = 3        # pixels per maze cell edge
 
 # Grid value constants
