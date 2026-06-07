@@ -1,42 +1,73 @@
 """
 games/tu93/detector.py — Adaptive detector for tu93 (ARC-AGI-3).
 
-tu93 is a cursor-navigation puzzle. A single-pixel cursor starts inside a
-hollow 3×3 start zone and must reach a solid 3×3 target zone.
+tu93 is a MAZE navigation puzzle. A 3×3 cursor sprite must navigate
+through a maze to reach a 3×3 target sprite.
 
-Observed frame constants (instance 1):
-  CURSOR = 4   — single pixel, the agent
-  START  = 9   — hollow 3×3 border (8 cells) — start zone
-  TARGET = 14  — solid 3×3 block (9 cells) — target zone
-  BG     = 5   — background
+Source analysis (tu93-0768757b):
+  Cursor sprite (0000npnrdhvwvh):
+    pixels = [[9,4,9],[9,9,9],[9,9,9]]
+    color 4 at sprite [0,1] = top-center of 3×3 sprite
+    v4:n=1 in the frame is this single pixel
 
-Action convention (shared with ls20 framework):
+  Target sprite (0014mzhhvzrazi):
+    pixels = [[14,14,14],[14,14,14],[14,14,14]]
+    3×3 solid block of color 14
+    v14:n=9 in the frame = this sprite
+
+  Maze walls: colors 0 and 2 (from backdrop sprites)
+  Floor (passable): color 5 (background = transparent cells of maze)
+  Maze cell size: 3×3 pixels per logical cell
+  Maze origin in the 64×64 grid: row=15, col=15
+
+Each action moves the cursor 3 pixels (1 maze cell):
   0=UP  1=DOWN  2=LEFT  3=RIGHT
 
-Route strategy (L1): navigate cursor to the nearest corner of the target
-zone via a two-segment path (vertical then horizontal). No wall avoidance —
-assumes open field between start and target. If walls are discovered on
-gateway, route will need obstacle-aware logic.
+WHY PRIOR ROUTE FAILED:
+  Cursor active pixel at (16,17). Sprite top-left at (16,16).
+  Maze cell of cursor: ((16-15)//3, (16-15)//3) = (0,0).
+  Maze cell of target top-left (45,45): ((45-15)//3, (45-15)//3) = (10,10).
+  Direct distance = 10+10 = 20 CELL steps.
+
+  The old detector computed pixel distances: DOWN×29 + RIGHT×28 = 57 steps.
+  But each action moves 3 pixels, so 57 pixel-unit steps would overshoot
+  massively. The budget is ~50 steps, which is plenty for 20-cell BFS.
+
+Route strategy: BFS over maze cells from cursor cell to target cell,
+treating any cell that contains color 0 or 2 as a wall.
 """
 
-from dataclasses import dataclass
-from typing import Optional
+from collections import deque
+from dataclasses import dataclass, field
+from typing import Optional, Tuple
 
 import numpy as np
 
 # ---------------------------------------------------------------------------
-# Grid value constants
+# Maze constants (confirmed from sprite analysis)
 # ---------------------------------------------------------------------------
 
-CURSOR = 4    # single-pixel agent
-START  = 9    # hollow 3×3 start zone border
-TARGET = 14   # solid 3×3 target zone
-BG     = 5    # background
+MAZE_ORIGIN_R = 15   # pixel row where maze cell (0,0) starts
+MAZE_ORIGIN_C = 15   # pixel col where maze cell (0,0) starts
+CELL_SIZE = 3        # pixels per maze cell edge
+
+# Grid value constants
+CURSOR_COLOR = 4              # top-center pixel of cursor sprite
+CURSOR_SPRITE_COL_OFFSET = 1  # color-4 is at sprite col 1; top-left = col - 1
+TARGET_COLOR = 14             # target sprite fill color
+WALL_COLORS = frozenset({0, 2})
 
 UP    = 0
 DOWN  = 1
 LEFT  = 2
 RIGHT = 3
+
+_DELTAS = {
+    UP:    (-1,  0),
+    DOWN:  ( 1,  0),
+    LEFT:  ( 0, -1),
+    RIGHT: ( 0,  1),
+}
 
 
 # ---------------------------------------------------------------------------
@@ -46,13 +77,12 @@ RIGHT = 3
 @dataclass
 class GameState:
     grid_shape: tuple
-    cursor_row: Optional[int]
-    cursor_col: Optional[int]
-    target_r1: Optional[int]    # top row of target bbox
-    target_r2: Optional[int]
-    target_c1: Optional[int]    # left col of target bbox
-    target_c2: Optional[int]
-    raw_sigs: dict              # value → {count, bbox} for debug
+    cursor_pixel: Optional[Tuple[int, int]]   # (row, col) of the color-4 pixel
+    cursor_cell:  Optional[Tuple[int, int]]   # maze cell (cell_r, cell_c)
+    target_pixel: Optional[Tuple[int, int]]   # (row, col) of v14 top-left
+    target_cell:  Optional[Tuple[int, int]]   # maze cell (cell_r, cell_c)
+    route: list = field(default_factory=list) # BFS route computed in detect_state
+    raw_sigs: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -63,15 +93,60 @@ class StepResult:
 
 
 # ---------------------------------------------------------------------------
+# Maze helpers
+# ---------------------------------------------------------------------------
+
+def _pixel_to_cell(pixel_row: int, pixel_col: int) -> Tuple[int, int]:
+    return (
+        (pixel_row - MAZE_ORIGIN_R) // CELL_SIZE,
+        (pixel_col - MAZE_ORIGIN_C) // CELL_SIZE,
+    )
+
+
+def _cell_passable(grid: np.ndarray, cell_r: int, cell_c: int) -> bool:
+    pr = MAZE_ORIGIN_R + cell_r * CELL_SIZE
+    pc = MAZE_ORIGIN_C + cell_c * CELL_SIZE
+    max_r, max_c = grid.shape
+    for dr in range(CELL_SIZE):
+        for dc in range(CELL_SIZE):
+            r, c = pr + dr, pc + dc
+            if r >= max_r or c >= max_c:
+                return False
+            if grid[r, c] in WALL_COLORS:
+                return False
+    return True
+
+
+def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:
+    if start == target:
+        return []
+    max_r = (grid.shape[0] - MAZE_ORIGIN_R) // CELL_SIZE
+    max_c = (grid.shape[1] - MAZE_ORIGIN_C) // CELL_SIZE
+    queue: deque = deque([(start[0], start[1], [])])
+    visited = {start}
+    while queue:
+        r, c, path = queue.popleft()
+        for action, (dr, dc) in _DELTAS.items():
+            nr, nc = r + dr, c + dc
+            if nr < 0 or nc < 0 or nr >= max_r or nc >= max_c:
+                continue
+            nxt = (nr, nc)
+            if nxt == target:
+                return path + [action]
+            if nxt not in visited and _cell_passable(grid, nr, nc):
+                visited.add(nxt)
+                queue.append((nr, nc, path + [action]))
+    return []  # no path (maze unsolvable from this state)
+
+
+# ---------------------------------------------------------------------------
 # Interface functions
 # ---------------------------------------------------------------------------
 
 def detect_state(grid: np.ndarray) -> GameState:
     rows, cols = grid.shape
-
-    # Build entity signatures (same as stub, kept for debug)
-    bg = BG
-    sigs = {}
+    bg = int(np.bincount(grid.flatten()).argmax())
+    sigs: dict = {}
     for val in np.unique(grid):
         if int(val) == bg:
             continue
@@ -80,42 +155,34 @@ def detect_state(grid: np.ndarray) -> GameState:
         r2, c2 = int(pos[:, 0].max()), int(pos[:, 1].max())
         sigs[int(val)] = {"count": len(pos), "bbox": (r1, r2, c1, c2)}
 
-    # Locate cursor (primary: CURSOR color; fallback: any single-pixel non-BG)
-    cursor_row = cursor_col = None
-    if CURSOR in sigs and sigs[CURSOR]["count"] == 1:
-        r1, r2, c1, c2 = sigs[CURSOR]["bbox"]
-        cursor_row, cursor_col = r1, c1
-    else:
-        for val, sig in sigs.items():
-            if sig["count"] == 1:
-                r1, r2, c1, c2 = sig["bbox"]
-                cursor_row, cursor_col = r1, c1
-                break
+    # Cursor: color 4, count=1 (top-center pixel of cursor sprite)
+    cursor_pixel = cursor_cell = None
+    if CURSOR_COLOR in sigs and sigs[CURSOR_COLOR]["count"] == 1:
+        r1, r2, c1, c2 = sigs[CURSOR_COLOR]["bbox"]
+        cursor_pixel = (r1, c1)
+        # sprite top-left is 1 pixel left of the color-4 pixel
+        sprite_top_c = c1 - CURSOR_SPRITE_COL_OFFSET
+        cursor_cell = _pixel_to_cell(r1, sprite_top_c)
 
-    # Locate target (primary: TARGET color; fallback: solid 3×3 cluster far from cursor)
-    target_r1 = target_r2 = target_c1 = target_c2 = None
-    if TARGET in sigs:
-        r1, r2, c1, c2 = sigs[TARGET]["bbox"]
-        target_r1, target_r2, target_c1, target_c2 = r1, r2, c1, c2
-    else:
-        # Find a filled 3×3 block (count=9) that is not near the cursor
-        for val, sig in sigs.items():
-            if sig["count"] == 9:
-                r1, r2, c1, c2 = sig["bbox"]
-                if cursor_row is not None:
-                    if abs(r1 - cursor_row) < 5 and abs(c1 - cursor_col) < 5:
-                        continue  # too close — probably start zone
-                target_r1, target_r2, target_c1, target_c2 = r1, r2, c1, c2
-                break
+    # Target: color 14, solid 3×3 block
+    target_pixel = target_cell = None
+    if TARGET_COLOR in sigs:
+        r1, r2, c1, c2 = sigs[TARGET_COLOR]["bbox"]
+        target_pixel = (r1, c1)
+        target_cell = _pixel_to_cell(r1, c1)
+
+    # BFS route computed here so compute_route doesn't need the grid
+    route = []
+    if cursor_cell is not None and target_cell is not None:
+        route = _bfs(grid, cursor_cell, target_cell)
 
     return GameState(
         grid_shape=(rows, cols),
-        cursor_row=cursor_row,
-        cursor_col=cursor_col,
-        target_r1=target_r1,
-        target_r2=target_r2,
-        target_c1=target_c1,
-        target_c2=target_c2,
+        cursor_pixel=cursor_pixel,
+        cursor_cell=cursor_cell,
+        target_pixel=target_pixel,
+        target_cell=target_cell,
+        route=route,
         raw_sigs=sigs,
     )
 
@@ -123,76 +190,45 @@ def detect_state(grid: np.ndarray) -> GameState:
 def compute_route(state: GameState, level_num: int = 1) -> list:
     if level_num != 1:
         return []
-
-    if any(x is None for x in [
-        state.cursor_row, state.cursor_col,
-        state.target_r1, state.target_c1,
-    ]):
-        return []
-
-    # Navigate to the nearest corner of the target zone
-    # Choose target corner closest to cursor to minimise steps
-    corners = [
-        (state.target_r1, state.target_c1),
-        (state.target_r1, state.target_c2),
-        (state.target_r2, state.target_c1),
-        (state.target_r2, state.target_c2),
-    ]
-    best_corner = min(
-        corners,
-        key=lambda rc: abs(rc[0] - state.cursor_row) + abs(rc[1] - state.cursor_col),
-    )
-    goal_row, goal_col = best_corner
-
-    dr = goal_row - state.cursor_row
-    dc = goal_col - state.cursor_col
-
-    route = []
-    if dr > 0:
-        route += [DOWN] * dr
-    elif dr < 0:
-        route += [UP] * (-dr)
-
-    if dc > 0:
-        route += [RIGHT] * dc
-    elif dc < 0:
-        route += [LEFT] * (-dc)
-
-    return route
+    return list(state.route)
 
 
 def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResult:
-    before_state = detect_state(before)
-    after_state  = detect_state(after)
+    bs = detect_state(before)
+    as_ = detect_state(after)
 
-    if before_state.cursor_row is None or after_state.cursor_row is None:
+    if bs.cursor_pixel is None or as_.cursor_pixel is None:
         return StepResult(success=False, reason="cursor not found", delta={})
 
-    dr = after_state.cursor_row - before_state.cursor_row
-    dc = after_state.cursor_col - before_state.cursor_col
+    dr_px = as_.cursor_pixel[0] - bs.cursor_pixel[0]
+    dc_px = as_.cursor_pixel[1] - bs.cursor_pixel[1]
 
-    expected = {UP: (-1, 0), DOWN: (1, 0), LEFT: (0, -1), RIGHT: (0, 1)}.get(action)
-    if expected is None:
-        return StepResult(success=False, reason=f"unknown action {action}", delta={})
+    # Each action should move the cursor exactly CELL_SIZE pixels
+    expected_dr, expected_dc = _DELTAS.get(action, (0, 0))
+    expected_dr_px = expected_dr * CELL_SIZE
+    expected_dc_px = expected_dc * CELL_SIZE
 
-    if (dr, dc) == expected:
-        return StepResult(success=True, reason="cursor moved correctly",
-                          delta={"dr": dr, "dc": dc})
+    if (dr_px, dc_px) == (expected_dr_px, expected_dc_px):
+        return StepResult(success=True, reason="cursor moved one cell",
+                          delta={"dr_px": dr_px, "dc_px": dc_px})
 
-    if dr == 0 and dc == 0:
+    if dr_px == 0 and dc_px == 0:
         return StepResult(success=False, reason="cursor blocked (wall?)",
-                          delta={"expected": expected, "actual": (dr, dc)})
+                          delta={"expected": (expected_dr_px, expected_dc_px)})
 
-    return StepResult(success=False, reason=f"unexpected move {(dr,dc)} for action {action}",
-                      delta={"expected": expected, "actual": (dr, dc)})
+    return StepResult(
+        success=False,
+        reason=f"unexpected move ({dr_px},{dc_px}) for action {action}",
+        delta={"expected": (expected_dr_px, expected_dc_px), "actual": (dr_px, dc_px)},
+    )
 
 
 def format_companion_block(state: GameState, route: list) -> str:
     lines = [
-        "[strategy game=tu93 level=1 type=cursor-nav]",
-        f"cursor: ({state.cursor_row}, {state.cursor_col})",
-        f"target: r{state.target_r1}-{state.target_r2} c{state.target_c1}-{state.target_c2}",
-        f"route_len: {len(route)}",
+        "[strategy game=tu93 level=1 type=maze-nav]",
+        f"cursor_pixel: {state.cursor_pixel}  cursor_cell: {state.cursor_cell}",
+        f"target_pixel: {state.target_pixel}  target_cell: {state.target_cell}",
+        f"bfs_route_len: {len(route)}",
         f"route: {route}",
         "[/strategy]",
     ]
