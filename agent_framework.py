@@ -168,6 +168,9 @@ class ArcAgent:
             return
 
         # Log compact frame for games without a dedicated detector (frame archaeology)
+        # compact_frame=True (env var ARC_FRAME_COMPACT=1) enables full grid dump;
+        # default is signature-only to keep log volume manageable.
+        _compact = os.environ.get("ARC_FRAME_COMPACT") == "1"
         if self._verbose and self._game_prefix != "ls20":
             sigs = snap.entity_signatures
             sig_str = " ".join(
@@ -175,7 +178,7 @@ class ArcAgent:
                 for v, d in sorted(sigs.items())
             )
             print(f"[frame] {self._game_prefix} L{level_num} grid={snap.grid_shape[0]}x{snap.grid_shape[1]} {sig_str}", flush=True)
-            if snap.raw_compact:
+            if _compact and snap.raw_compact:
                 for line in snap.raw_compact.splitlines():
                     print(f"[frame]   {line}", flush=True)
 
