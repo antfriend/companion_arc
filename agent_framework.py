@@ -17,6 +17,7 @@ Mode-specific behavior:
   - 'competition': reads stored levelmaps; uses systematic + random fallback
 """
 
+import os
 import random
 import re
 from pathlib import Path
