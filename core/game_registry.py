@@ -72,11 +72,17 @@ try:
 except ImportError:
     pass
 
+try:
+    from games.re86 import detector as _re86
+    register("re86", _re86, _ROOT / "companion_arcprize.md")
+except ImportError:
+    pass
+
 # Stub detectors — remaining competition games (no real detector yet)
 _STUBS = [
     "sk48", "tn36", "m0r0", "bp35", "cn04", "dc22", "lp85",
     "ka59", "wa30", "vc33", "lf52", "r11l", "sc25", "ar25", "sb26",
-    "re86", "s5i5", "ft09", "su15", "tr87", "g50t",
+    "s5i5", "ft09", "su15", "tr87", "g50t",
 ]
 for _g in _STUBS:
     try:
