@@ -4,20 +4,20 @@ games/re86/detector.py — Adaptive detector for re86 (ARC-AGI-3).
 re86 is a single-pixel cursor navigation puzzle.
 
 Observed frame (instance 8af5384d):
-  CURSOR  = 0  — single pixel, interior position (e.g., (45,39))
+  CURSOR  = 0  — single pixel, interior position (e.g., (42,36))
   TARGET  = 1  — single pixel, bottom-right corner at (63,63)
   BOTTOM  = 15 — 63-cell floor along row 63 c0-62
-  v4, v9, v11 — large structures (walls/obstacles)
+  v4 (color 4), v9 (color 9), v11 (color 11) — obstacle structures
 
-Initial hypothesis: direct Manhattan route. FAILED — large structures block
-the path. Switching to BFS treating all non-background pixels (except cursor
-and target) as walls.
+BFS passability: treat colors {4, 9, 11, 15} as obstacles (impassable).
+All other pixels (background, color 0 corridors, etc.) are passable.
+This is safer than background-only BFS because re86 may use non-background
+colors for open corridors (e.g., color 0 as dark floor tiles).
 
-Action convention (shared with ls20/tu93 framework):
-  0=UP  1=DOWN  2=LEFT  3=RIGHT
+The target (63,63) is approached from (62,63) — a DOWN move triggers win.
+v15 covers row 63 cols 0-62, so left-side approach to (63,63) is blocked.
 
-Route strategy: BFS from cursor pixel to target pixel, treating any pixel
-that is not background as an obstacle (cursor and target are allowed).
+Action convention:  0=UP  1=DOWN  2=LEFT  3=RIGHT
 """
 
 from collections import deque
@@ -32,6 +32,9 @@ import numpy as np
 
 CURSOR = 0    # single-pixel moveable agent
 TARGET = 1    # single-pixel destination (bottom-right corner)
+
+# Colors that block movement (obstacle structures + floor border)
+OBSTACLE_COLORS = frozenset({4, 9, 11, 15})
 
 UP    = 0
 DOWN  = 1
@@ -72,7 +75,7 @@ class StepResult:
 # BFS helpers
 # ---------------------------------------------------------------------------
 
-def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], bg: int) -> list:
+def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:
     if start == target:
         return []
     rows, cols = grid.shape
@@ -86,7 +89,7 @@ def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], bg: 
                 nxt = (nr, nc)
                 if nxt == target:
                     return path + [action]
-                if nxt not in visited and grid[nr, nc] == bg:
+                if nxt not in visited and grid[nr, nc] not in OBSTACLE_COLORS:
                     visited.add(nxt)
                     queue.append((nr, nc, path + [action]))
     return []  # no path found
@@ -140,7 +143,7 @@ def detect_state(grid: np.ndarray) -> GameState:
     if cursor_row is not None and target_row is not None:
         start = (cursor_row, cursor_col)
         target = (target_row, target_col)
-        route = _bfs(grid, start, target, bg)
+        route = _bfs(grid, start, target)
 
     return GameState(
         grid_shape=(rows, cols),

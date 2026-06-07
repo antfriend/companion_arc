@@ -6,38 +6,36 @@ through a maze to reach a 3×3 target sprite.
 
 Source analysis (tu93-0768757b):
   Cursor sprite (0000npnrdhvwvh):
-    pixels = [[9,4,9],[9,9,9],[9,9,9]]
-    color 4 at sprite [0,1] = top-center of 3×3 sprite
+    pixels = [[9,9,9],[9,9,4],[9,9,9]]
+    color 4 at sprite [1][2] = mid-right of 3×3 sprite (NOT top-center)
     v4:n=1 in the frame is this single pixel
+    v9:n=8,r15-17,c15-17 are the remaining 8 sprite pixels
+
+  Proof from v9 bounding box:
+    v4 at (16,17) → sprite top-left must be (r-1, c-2) = (15,15)
+    v9 bounding box r15-17,c15-17 spans the full 3×3 sprite ✓
+    (If v4 were at [0,1], v9 bounding box would start at row 16, not 15)
 
   Target sprite (0014mzhhvzrazi):
     pixels = [[14,14,14],[14,14,14],[14,14,14]]
     3×3 solid block of color 14
-    v14:n=9 in the frame = this sprite
+    v14:n=9,r45-47,c45-47
 
   Maze walls: colors 0 and 2 (from backdrop sprites)
-  Floor (passable): color 5 (background = transparent cells of maze)
+  Floor (passable): color 5 (background)
   Maze cell size: 3×3 pixels per logical cell
-  Maze origin in the 64×64 grid: row=15, col=15
+  Maze origin: row=15, col=15 (cursor sprite aligns with cell (0,0))
 
 Each action moves the cursor 3 pixels (1 maze cell):
   0=UP  1=DOWN  2=LEFT  3=RIGHT
 
-WHY PRIOR ROUTE FAILED:
-  v2: cursor active pixel at (16,17) or (16,18) depending on run.
-  Sprite top-left at (16,16) or (16,17).
+Cursor at cell (0,0): _pixel_to_cell(15,15) = (0,0).
+Target at cell (10,10): _pixel_to_cell(45,45) = (10,10).
+BFS distance ≤ 20 steps in open grid. Budget = 50 steps.
 
-  MAZE_ORIGIN = (13,13) confirmed: the ONLY origin that satisfies BOTH:
-    cursor at sprite_top (16,16) → cell_r=(16-13)//3=1, cell_c=(16-13)//3=1 → (1,1)
-    cursor at sprite_top (16,17) → cell_r=(16-13)//3=1, cell_c=(17-13)//3=1 → (1,1)
-    target at (45,45) → cell_r=(45-13)//3=10, cell_c=(45-13)//3=10 → (10,10)
-
-  Old detector with MAZE_ORIGIN=(15,15) placed cursor at cell (0,0) =
-  rows 15-17, cols 15-17 — which contains wall pixels from maze sprites,
-  making BFS immediately fail (returns []).
-
-  Correct: cursor at cell (1,1), target at cell (10,10). BFS distance ≤ 18
-  cell steps in open grid. Budget = 50 steps.
+Frame variant robustness:
+  v4 at col 17 → sprite_top_c = 17-2 = 15 → cell_c = (15-15)//3 = 0 ✓
+  v4 at col 18 → sprite_top_c = 18-2 = 16 → cell_c = (16-15)//3 = 0 ✓
 
 Route strategy: BFS over maze cells from cursor cell to target cell,
 treating any cell that contains color 0 or 2 as a wall.
@@ -53,13 +51,14 @@ import numpy as np
 # Maze constants (confirmed from sprite analysis)
 # ---------------------------------------------------------------------------
 
-MAZE_ORIGIN_R = 13   # pixel row where maze cell (0,0) starts
-MAZE_ORIGIN_C = 13   # pixel col where maze cell (0,0) starts
+MAZE_ORIGIN_R = 15   # pixel row where maze cell (0,0) starts
+MAZE_ORIGIN_C = 15   # pixel col where maze cell (0,0) starts
 CELL_SIZE = 3        # pixels per maze cell edge
 
 # Grid value constants
-CURSOR_COLOR = 4              # top-center pixel of cursor sprite
-CURSOR_SPRITE_COL_OFFSET = 1  # color-4 is at sprite col 1; top-left = col - 1
+CURSOR_COLOR = 4              # mid-right pixel of cursor sprite ([1][2])
+CURSOR_SPRITE_ROW_OFFSET = 1  # color-4 is 1 row below sprite top-left
+CURSOR_SPRITE_COL_OFFSET = 2  # color-4 is 2 cols right of sprite top-left
 TARGET_COLOR = 14             # target sprite fill color
 WALL_COLORS = frozenset({0, 2})
 
@@ -161,14 +160,15 @@ def detect_state(grid: np.ndarray) -> GameState:
         r2, c2 = int(pos[:, 0].max()), int(pos[:, 1].max())
         sigs[int(val)] = {"count": len(pos), "bbox": (r1, r2, c1, c2)}
 
-    # Cursor: color 4, count=1 (top-center pixel of cursor sprite)
+    # Cursor: color 4, count=1 (mid-right pixel [1][2] of cursor sprite)
     cursor_pixel = cursor_cell = None
     if CURSOR_COLOR in sigs and sigs[CURSOR_COLOR]["count"] == 1:
         r1, r2, c1, c2 = sigs[CURSOR_COLOR]["bbox"]
         cursor_pixel = (r1, c1)
-        # sprite top-left is 1 pixel left of the color-4 pixel
+        # sprite top-left is 1 row up and 2 cols left of the color-4 pixel
+        sprite_top_r = r1 - CURSOR_SPRITE_ROW_OFFSET
         sprite_top_c = c1 - CURSOR_SPRITE_COL_OFFSET
-        cursor_cell = _pixel_to_cell(r1, sprite_top_c)
+        cursor_cell = _pixel_to_cell(sprite_top_r, sprite_top_c)
 
     # Target: color 14, solid 3×3 block
     target_pixel = target_cell = None
