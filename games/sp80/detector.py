@@ -72,8 +72,13 @@ def detect_state(grid: np.ndarray) -> GameState:
         c2 = int(positions[:, 1].max())
         sigs[int(val)] = {"count": len(positions), "bbox": (r1, r2, c1, c2)}
 
-    # Locate selected piece (pixel 9) → game coordinates
+    # Locate selected piece (pixel 9); fall back to largest pixel-8 entity
+    # (pixel 8 = unselected piece, seen at L2 start before auto-select fires)
     selected_positions = np.argwhere(grid == _SELECTED_VALUE)
+    if not len(selected_positions):
+        # Find pixel-8 entities; the moveable piece is the widest one (≥20px)
+        p8 = np.argwhere(grid == 8)
+        selected_positions = p8 if len(p8) >= 20 else np.array([])
     if len(selected_positions):
         min_row = int(selected_positions[:, 0].min())
         min_col = int(selected_positions[:, 1].min())
