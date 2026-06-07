@@ -65,3 +65,17 @@ try:
     register("cd82", _cd82, _ROOT / "games" / "cd82" / "companion.md")
 except ImportError:
     pass
+
+# Stub detectors — all 22 remaining competition games
+_STUBS = [
+    "sk48", "tn36", "m0r0", "bp35", "cn04", "dc22", "tu93", "lp85",
+    "ka59", "wa30", "vc33", "lf52", "r11l", "sc25", "ar25", "sb26",
+    "re86", "s5i5", "ft09", "su15", "tr87", "g50t",
+]
+for _g in _STUBS:
+    try:
+        import importlib as _il
+        _mod = _il.import_module(f"games.{_g}.detector")
+        register(_g, _mod, _ROOT / "companion_arcprize.md")
+    except ImportError:
+        pass
