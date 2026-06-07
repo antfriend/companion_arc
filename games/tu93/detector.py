@@ -60,7 +60,7 @@ CURSOR_COLOR = 4              # mid-right pixel of cursor sprite ([1][2])
 CURSOR_SPRITE_ROW_OFFSET = 1  # color-4 is 1 row below sprite top-left
 CURSOR_SPRITE_COL_OFFSET = 2  # color-4 is 2 cols right of sprite top-left
 TARGET_COLOR = 14             # target sprite fill color
-WALL_COLORS = frozenset({0, 2})
+WALL_COLORS = frozenset({2})   # v0 (color 0) is maze floor, not wall
 
 UP    = 0
 DOWN  = 1

@@ -33,8 +33,10 @@ import numpy as np
 CURSOR = 0    # single-pixel moveable agent
 TARGET = 1    # single-pixel destination (bottom-right corner)
 
-# Colors that block movement (obstacle structures + floor border)
-OBSTACLE_COLORS = frozenset({4, 9, 11, 15})
+# Fixed obstacle structures + floor border.
+# v9 is cursor-relative (its bounding box tracks the cursor position),
+# so it is NOT an obstacle — including it would trap BFS inside cursor's shadow.
+OBSTACLE_COLORS = frozenset({4, 11, 15})
 
 UP    = 0
 DOWN  = 1
