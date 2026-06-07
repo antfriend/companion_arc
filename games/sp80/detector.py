@@ -3,18 +3,18 @@ games/sp80/detector.py — Per-game detector for sp80 (ARC-AGI-3).
 
 Standard detector interface:
   detect_state(grid)              → GameState
-  compute_route(state)            → list[int]
+  compute_route(state, level_num) → list[int]
   verify_step(before, after, act) → StepResult
   format_companion_block(state, route) → str
 
-STATUS: STUB — adaptive route not yet implemented.
-  The hardcoded fallback [4,3,3,3,4,2,2,1] works for some instances only.
-  Frame analysis needed to identify which entity position varies between
-  instances. Run a batch with agent_framework's [frame] logging enabled
-  to capture entity_signatures, then update detect_state + compute_route.
+Action space: 5 simple actions
+  0=UP(y-1)  1=DOWN(y+1)  2=LEFT(x-1)  3=RIGHT(x+1)  4=SPILL
 
-Action space: 5 simple actions (ACTION1=0 … ACTION5=4).
-Known winning route (one instance): [4, 3, 3, 3, 4, 2, 2, 1]
+Frame mapping: frame_col = game_x * 4,  frame_row = game_y * 4
+
+Selected piece (plzwjbfyfli) appears as pixel 9 in the frame;
+unselected pieces are pixel 8. Canonical winning position for L1 is
+game (3, 4). The spill route [4,3,3,3,4,2,2,1] wins from that position.
 """
 
 from dataclasses import dataclass
@@ -22,9 +22,20 @@ from typing import Optional
 
 import numpy as np
 
-# Hardcoded route — works for the known instance only.
-# TODO: replace with adaptive logic once frame archaeology is complete.
-_FALLBACK_ROUTE = [4, 3, 3, 3, 4, 2, 2, 1]
+# Pixel value of the auto-selected piece at level start
+_SELECTED_VALUE = 9
+
+# Frame pixels per game unit
+_CELL = 4
+
+# Canonical piece position for level 1 (game coordinates)
+_CANONICAL_X = 3
+_CANONICAL_Y = 4
+
+# Known winning sequence from canonical position
+_SPILL_ROUTE = [4, 3, 3, 3, 4, 2, 2, 1]
+
+UP, DOWN, LEFT, RIGHT, SPILL = 0, 1, 2, 3, 4
 
 
 @dataclass
@@ -32,7 +43,9 @@ class GameState:
     """Observable state extracted from one sp80 frame."""
     grid_shape: tuple
     entity_signatures: dict   # {pixel_value: {'count': N, 'bbox': (r1,r2,c1,c2)}}
-    # TODO: add specific cursor_pos / target_pos fields once game mechanics are known
+    piece_game_x: int         # detected selected piece game x (or canonical if not found)
+    piece_game_y: int         # detected selected piece game y (or canonical if not found)
+    piece_detected: bool      # False if pixel-9 not found (used canonical fallback)
 
 
 @dataclass
@@ -58,20 +71,55 @@ def detect_state(grid: np.ndarray) -> GameState:
         c1 = int(positions[:, 1].min())
         c2 = int(positions[:, 1].max())
         sigs[int(val)] = {"count": len(positions), "bbox": (r1, r2, c1, c2)}
-    return GameState(grid_shape=(rows, cols), entity_signatures=sigs)
+
+    # Locate selected piece (pixel 9) → game coordinates
+    selected_positions = np.argwhere(grid == _SELECTED_VALUE)
+    if len(selected_positions):
+        min_row = int(selected_positions[:, 0].min())
+        min_col = int(selected_positions[:, 1].min())
+        game_x = min_col // _CELL
+        game_y = min_row // _CELL
+        detected = True
+    else:
+        game_x = _CANONICAL_X
+        game_y = _CANONICAL_Y
+        detected = False
+
+    return GameState(
+        grid_shape=(rows, cols),
+        entity_signatures=sigs,
+        piece_game_x=game_x,
+        piece_game_y=game_y,
+        piece_detected=detected,
+    )
 
 
 def compute_route(state: GameState, level_num: int = 1) -> list:
-    """Return the action route for the given state."""
-    # TODO: implement adaptive route based on cursor position once
-    # entity_signatures archaeology identifies the moveable entity and its
-    # starting position across multiple instances.
-    return list(_FALLBACK_ROUTE)
+    """
+    Return action route for the given state.
+
+    Prefix moves the piece from its detected position to canonical (3,4),
+    then appends the known winning spill sequence.
+    """
+    dx = _CANONICAL_X - state.piece_game_x
+    dy = _CANONICAL_Y - state.piece_game_y
+
+    prefix: list = []
+    if dx > 0:
+        prefix += [RIGHT] * dx
+    elif dx < 0:
+        prefix += [LEFT] * (-dx)
+    if dy > 0:
+        prefix += [DOWN] * dy
+    elif dy < 0:
+        prefix += [UP] * (-dy)
+
+    return prefix + list(_SPILL_ROUTE)
 
 
 def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResult:
-    """Stub — always reports unknown until game mechanics are understood."""
-    return StepResult(success=True, reason="unverified (sp80 stub)", delta={})
+    """Stub — always reports unverified."""
+    return StepResult(success=True, reason="unverified (sp80)", delta={})
 
 
 def format_companion_block(state: GameState, route: list) -> str:
@@ -84,7 +132,8 @@ def format_companion_block(state: GameState, route: list) -> str:
     )
     route_str = ",".join(str(a) for a in route)
     return (
-        f"[strategy game=sp80 level=1 type=hardcoded version=1 created={ts}]\n"
+        f"[strategy game=sp80 level=1 type=adaptive version=2 created={ts}]\n"
+        f"piece_game=({state.piece_game_x},{state.piece_game_y}) detected={state.piece_detected}\n"
         f"entity_signatures: {sig_str}\n"
         f"route: {route_str}\n"
         "[/strategy]"

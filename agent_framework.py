@@ -231,7 +231,7 @@ class ArcAgent:
         if detector is not None and level_num in (1, 2):
             try:
                 state = detector.detect_state(grid)
-                adaptive = detector.compute_route(state)
+                adaptive = detector.compute_route(state, level_num)
                 self._routes[level_num] = adaptive
                 # Adaptive route is correct for this instance regardless of
                 # snapshot match — clear diff so choose_action uses it.
