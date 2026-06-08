@@ -109,17 +109,14 @@ def _pixel_to_cell(pixel_row: int, pixel_col: int) -> Tuple[int, int]:
 
 
 def _cell_passable(grid: np.ndarray, cell_r: int, cell_c: int) -> bool:
-    pr = MAZE_ORIGIN_R + cell_r * CELL_SIZE
-    pc = MAZE_ORIGIN_C + cell_c * CELL_SIZE
+    # Check only the center pixel — avoids false walls from 1-px border pixels
+    # at cell edges that are shared with adjacent wall cells.
+    cr = MAZE_ORIGIN_R + cell_r * CELL_SIZE + CELL_SIZE // 2
+    cc = MAZE_ORIGIN_C + cell_c * CELL_SIZE + CELL_SIZE // 2
     max_r, max_c = grid.shape
-    for dr in range(CELL_SIZE):
-        for dc in range(CELL_SIZE):
-            r, c = pr + dr, pc + dc
-            if r >= max_r or c >= max_c:
-                return False
-            if grid[r, c] in WALL_COLORS:
-                return False
-    return True
+    if cr >= max_r or cc >= max_c:
+        return False
+    return grid[cr, cc] not in WALL_COLORS
 
 
 def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:

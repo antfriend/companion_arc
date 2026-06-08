@@ -33,22 +33,25 @@ import numpy as np
 CURSOR = 0    # single-pixel moveable agent
 TARGET = 1    # single-pixel destination (bottom-right corner)
 
-# Fixed obstacle structures + floor border.
-# v9 spans ~40 rows (e.g. r16-55 with cursor at r42) — far too large to be a
-# cursor shadow. It is a static obstacle structure and must be included so BFS
-# routes around it rather than through the blocked pixels.
-OBSTACLE_COLORS = frozenset({4, 9, 11, 15})
+# Physical obstacle structures + floor border (v15).
+# v9 is cursor-relative (moves with cursor, always surrounds it) — including it
+# in OBSTACLE_COLORS traps BFS at the start cell. Exclude v9; it is visual only.
+OBSTACLE_COLORS = frozenset({4, 11, 15})
 
 UP    = 0
 DOWN  = 1
 LEFT  = 2
 RIGHT = 3
 
+# re86 cursor moves 3 pixels per action (all cursor/target positions are
+# multiples of 3). Using 1-px steps produced routes that ran 3× too far
+# and took the cursor out of bounds immediately.
+_STEP = 3
 _DELTAS = {
-    UP:    (-1,  0),
-    DOWN:  ( 1,  0),
-    LEFT:  ( 0, -1),
-    RIGHT: ( 0,  1),
+    UP:    (-_STEP,  0),
+    DOWN:  ( _STEP,  0),
+    LEFT:  ( 0, -_STEP),
+    RIGHT: ( 0,  _STEP),
 }
 
 
@@ -78,6 +81,19 @@ class StepResult:
 # BFS helpers
 # ---------------------------------------------------------------------------
 
+def _move_clear(grid: np.ndarray, r: int, c: int, dr: int, dc: int) -> bool:
+    """Check all pixels along a move (exclusive of start, inclusive of end)."""
+    steps = max(abs(dr), abs(dc))
+    for i in range(1, steps + 1):
+        pr = r + dr * i // steps
+        pc = c + dc * i // steps
+        if pr < 0 or pr >= grid.shape[0] or pc < 0 or pc >= grid.shape[1]:
+            return False
+        if grid[pr, pc] in OBSTACLE_COLORS:
+            return False
+    return True
+
+
 def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:
     if start == target:
         return []
@@ -88,13 +104,16 @@ def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> l
         r, c, path = queue.popleft()
         for action, (dr, dc) in _DELTAS.items():
             nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols:
-                nxt = (nr, nc)
-                if nxt == target:
-                    return path + [action]
-                if nxt not in visited and grid[nr, nc] not in OBSTACLE_COLORS:
-                    visited.add(nxt)
-                    queue.append((nr, nc, path + [action]))
+            if not (0 <= nr < rows and 0 <= nc < cols):
+                continue
+            if not _move_clear(grid, r, c, dr, dc):
+                continue
+            nxt = (nr, nc)
+            if nxt == target:
+                return path + [action]
+            if nxt not in visited:
+                visited.add(nxt)
+                queue.append((nr, nc, path + [action]))
     return []  # no path found
 
 
