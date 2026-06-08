@@ -44,8 +44,11 @@ _ACTION_NAMES = {UP: "UP", DOWN: "DOWN", LEFT: "LEFT", RIGHT: "RIGHT"}
 # ---------------------------------------------------------------------------
 # Known multi-step routes (level 2)
 # ---------------------------------------------------------------------------
-# DC31 75-step L2 route. Assumes block starts at r40-41 c34-38 (i.e. after
-# the RIGHT initial action from the c29-33 start position).
+# Full L2 route starting from r40,c29 (traditional training start position).
+# Structure: UP×6+RIGHT×3 preamble to reach r10,c49, then ring B approach
+# and win sequence. Produced by compute_route; the trailing [RIGHT] acts as
+# the level_step=0 probe that moves the block from c29 to c34 before the
+# main route starts.
 # 0=UP  1=DOWN  2=LEFT  3=RIGHT
 _L2_ROUTE = [
     # HYPOTHESIS: cross collectible ("+" at r45,c49) ROTATES the inner ring entity1
@@ -97,6 +100,11 @@ _L2_ROUTE = [
     1, 1, 1, 1,                     # DOWN×4 → r35,c14 (timer=13)
     1,                              # DOWN [10A TEST: after cross ×4 (0°/360°)]
 ]
+
+# Alias: _L2_ROUTE_FROM_TOP is the same route starting from r10,c49
+# (skipping the UP×6+RIGHT×3 preamble that gets the block from r40,c34 to r10,c49).
+# Used by compute_route to build adaptive L2 routes for any block starting position.
+_L2_ROUTE_FROM_TOP = _L2_ROUTE[9:]
 
 _L2_ROUTE_DC31_CONTINUATION = [
     # Ascend to wide connector (7 steps)
@@ -385,6 +393,50 @@ def initial_action(level_num: int) -> int:
     return {1: UP, 2: RIGHT}.get(level_num, UP)
 
 
+def _l2_navigate_to_r10_c49(block_pos: Optional[tuple]) -> list:
+    """
+    Build the minimal navigation from block_pos to r10,c49 (ring B gateway).
+
+    Always routes via c34 (the proven clear vertical corridor) to avoid
+    UP-blocking walls at c29 and other columns. Each action moves 5 units.
+
+    Returns a list of actions. The CALLER puts actions[0] at route[-1] (probe
+    slot) and actions[1:] at route[0:] — preserving the level_step=0 probe
+    pattern used by the competition/batch runner.
+
+    Examples:
+      r40,c29 → [RIGHT, UP×6, RIGHT×3]  (10 steps; training default)
+      r10,c34 → [RIGHT, RIGHT, RIGHT]    (3 steps; competition default if L2
+                                          starts where L1 goal was)
+      r40,c34 → [UP×6, RIGHT×3]          (9 steps)
+    """
+    r, c = block_pos
+    if r == 10 and c == 49:
+        return []  # already at gateway
+
+    steps = []
+
+    # 1. Normalize column to c34 (clear vertical corridor)
+    col_diff = c - 34
+    if col_diff > 0:
+        steps += [LEFT] * (col_diff // 5)
+    elif col_diff < 0:
+        steps += [RIGHT] * ((-col_diff) // 5)
+    c = 34
+
+    # 2. Ascend to r10 via c34
+    if r > 10:
+        steps += [UP] * ((r - 10) // 5)
+    elif r < 10:
+        steps += [DOWN] * ((10 - r) // 5)
+    r = 10
+
+    # 3. Go RIGHT from c34 to c49 (3 steps × 5 cols each)
+    steps += [RIGHT, RIGHT, RIGHT]
+
+    return steps
+
+
 def compute_route(state: GameState, level_num: int = 1) -> list:
     """
     Compute the winning route from a GameState.
@@ -399,12 +451,33 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
     Level 2 — known DC31 route (_L2_ROUTE).
     """
     if level_num == 2:
-        # Append RIGHT at the end so route[-1]=RIGHT, which the batch runner
-        # uses as the probe action to move the block from c29→c34 before
-        # the route proper starts at route[0]=UP.
-        # For practice_offline.py the trailing RIGHT is unreachable (L2 wins
-        # at route[104]) so it has no effect on that path.
-        return list(_L2_ROUTE) + [RIGHT]
+        # Adaptive: detect where the block actually is at L2 start and build
+        # a prefix that navigates to r10,c49 (ring B gateway) from there.
+        #
+        # The batch/competition runner uses route[-1] as a probe action at
+        # level_step=0 (before the route proper begins at level_step=1).
+        # We preserve this pattern: nav[0] goes to route[-1] and nav[1:]
+        # goes to route[0:], so the full execution order is:
+        #   level_step=0: nav[0]       ← moves block toward c34 corridor
+        #   level_step=1: nav[1]       (or _L2_ROUTE_FROM_TOP[0] if no nav)
+        #   ...
+        #   level_step=k: _L2_ROUTE_FROM_TOP[0]  ← ring B approach starts
+        #
+        # For r40,c29 (training default): nav=[RIGHT,UP×6,RIGHT×3], so
+        #   route = [UP×6,RIGHT×3] + _L2_ROUTE_FROM_TOP + [RIGHT]
+        #         = _L2_ROUTE + [RIGHT]   ← identical to the old hardcoded form.
+        # For r10,c34 (competition: L2 starts where L1 goal was):
+        #   nav=[RIGHT,RIGHT,RIGHT], route=[RIGHT,RIGHT]+_L2_ROUTE_FROM_TOP+[RIGHT]
+        #   → 3 RIGHTs navigate c34→c49, then ring B approach.
+        #   Timer to ring B: 21-13=8 (vs 21-20=1 in training) — more margin.
+        if state.block_pos is None:
+            return list(_L2_ROUTE) + [RIGHT]  # can't detect position; use original
+        nav = _l2_navigate_to_r10_c49(state.block_pos)
+        if not nav:
+            # Already at r10,c49; DOWN is a safe no-op probe (r5 is passable but
+            # _L2_ROUTE_FROM_TOP[0]=DOWN will correct it on the first real step).
+            return list(_L2_ROUTE_FROM_TOP) + [DOWN]
+        return list(nav[1:]) + list(_L2_ROUTE_FROM_TOP) + [nav[0]]
 
     STANDARD_COL = 34   # game x of the clear vertical corridor
     DETOUR_ROW   = 25   # game y of the clear horizontal corridor (y=25)
