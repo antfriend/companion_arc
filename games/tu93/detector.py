@@ -60,7 +60,7 @@ CURSOR_COLOR = 4              # mid-right pixel of cursor sprite ([1][2])
 CURSOR_SPRITE_ROW_OFFSET = 1  # color-4 is 1 row below sprite top-left
 CURSOR_SPRITE_COL_OFFSET = 2  # color-4 is 2 cols right of sprite top-left
 TARGET_COLOR = 14             # target sprite fill color
-WALL_COLORS = frozenset({2})   # v0 (color 0) is maze floor, not wall
+WALL_COLORS = frozenset({0, 2})  # both color 0 and 2 are maze wall sprites
 
 UP    = 0
 DOWN  = 1
@@ -122,9 +122,9 @@ def _cell_passable(grid: np.ndarray, cell_r: int, cell_c: int) -> bool:
 def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:
     if start == target:
         return []
-    # Bound search to actual maze cells (0..target[dim]); grid is larger than the maze.
-    maze_max_r = target[0] + 1
-    maze_max_c = target[1] + 1
+    # Bound search to maze + 1 border row/col; allows bypass routes along outer edge.
+    maze_max_r = target[0] + 2
+    maze_max_c = target[1] + 2
     queue: deque = deque([(start[0], start[1], [])])
     visited = {start}
     while queue:
