@@ -35,12 +35,16 @@ Target at cell (10,10): _pixel_to_cell(45,45) = (10,10).
 BFS distance ≤ 20 steps in open grid. Budget = 50 steps.
 
 Frame variant robustness:
-  v4 at col 17 → _pixel_to_cell(16,17) → cell_c = (17-15)//3 = 0, cursor_cell=(0,0)
-  v4 at col 18 → _pixel_to_cell(16,18) → cell_c = (18-15)//3 = 1, cursor_cell=(0,1)
-  Each instance may have a different sub-cell column offset; use pixel directly.
+  v4 at col 17 → sprite TL (15,15) → _pixel_to_cell(15,15) = (0,0) ← cursor_cell
+  v4 at col 18 → sprite TL (15,16) → _pixel_to_cell(15,16) = (0,0) ← cursor_cell
+  Both instances give (0,0). After 10D+10R: TL=(45,46).
+  Game's int-div: (46-15)//3=10 → game cell_c=10 = target_c=10. WIN. ✓
+  (Using v4 pixel directly gave cell (0,1) → 9R net → TL col 43 → game cell_c 9 ≠ 10. ✗)
 
 Route strategy: BFS over maze cells from cursor cell to target cell,
 treating any cell whose center pixel is color 2 as a wall.
+BFS restricted to rows/cols 0..target_row to match game viewport (pixel rows 15-47 only).
+Row 11 (pixel rows 48-50) is outside viewport; game blocks movement there.
 """
 
 from collections import deque
@@ -122,9 +126,11 @@ def _cell_passable(grid: np.ndarray, cell_r: int, cell_c: int) -> bool:
 def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:
     if start == target:
         return []
-    # Bound search to maze + 1 border row/col; allows bypass routes along outer edge.
-    maze_max_r = target[0] + 2
-    maze_max_c = target[1] + 2
+    # Restrict to valid maze cells (rows/cols 0..target). The game viewport ends at
+    # pixel row 47 (cell row 10 = target row), so the cursor cannot move to row 11+.
+    # Using +2 caused the BFS to route through row 11, where the game blocks movement.
+    maze_max_r = target[0] + 1
+    maze_max_c = target[1] + 1
     queue: deque = deque([(start[0], start[1], [])])
     visited = {start}
     while queue:
@@ -158,15 +164,22 @@ def detect_state(grid: np.ndarray) -> GameState:
         r2, c2 = int(pos[:, 0].max()), int(pos[:, 1].max())
         sigs[int(val)] = {"count": len(pos), "bbox": (r1, r2, c1, c2)}
 
-    # Cursor: color 4, count=1 (mid-right pixel [1][2] of cursor sprite)
-    # Use the color-4 pixel position directly for cell computation — the pixel
-    # can start at different sub-cell offsets across instances (e.g., col 17 or
-    # col 18), and only the raw pixel→cell conversion gives the right start cell.
+    # Cursor: color 4, count=1 (mid-right pixel [1][2] of cursor sprite).
+    # cell position must use the sprite TOP-LEFT, not the color-4 pixel directly.
+    # The color-4 pixel is at [1][2] = 1 row below, 2 cols right of sprite TL.
+    # Using sprite TL ensures the game's own integer-division cell check agrees:
+    #   TL (15,16) → _pixel_to_cell(15,16) = (0,0); after 10D+10R: TL (45,46)
+    #   → game cell (31//3, 30//3) = (10,10) = target. ✓
+    # Using color-4 pixel (16,18) → cell (0,1); after 10D+9R: TL (45,43)
+    #   → game cell (28//3, 30//3) = (9,10) ≠ target. ✗
     cursor_pixel = cursor_cell = None
     if CURSOR_COLOR in sigs and sigs[CURSOR_COLOR]["count"] == 1:
         r1, r2, c1, c2 = sigs[CURSOR_COLOR]["bbox"]
         cursor_pixel = (r1, c1)
-        cursor_cell = _pixel_to_cell(r1, c1)
+        # Sprite TL = color-4 pixel − [1][2] offset
+        sprite_tl_r = r1 - 1
+        sprite_tl_c = c1 - 2
+        cursor_cell = _pixel_to_cell(sprite_tl_r, sprite_tl_c)
 
     # Target: color 14, solid 3×3 block
     target_pixel = target_cell = None
