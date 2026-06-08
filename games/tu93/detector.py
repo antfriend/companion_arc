@@ -21,8 +21,9 @@ Source analysis (tu93-0768757b):
     3×3 solid block of color 14
     v14:n=9,r45-47,c45-47
 
-  Maze walls: colors 0 and 2 (from backdrop sprites)
-  Floor (passable): color 5 (background)
+  Maze walls: color 2 only (backdrop wall sprites)
+  Corridors (passable): color 0 (maze floor pixels, non-background)
+  Void outside maze: background color (most common, not in entity sigs)
   Maze cell size: 3×3 pixels per logical cell
   Maze origin: row=15, col=15 (cursor sprite aligns with cell (0,0))
 
@@ -60,7 +61,7 @@ CURSOR_COLOR = 4              # mid-right pixel of cursor sprite ([1][2])
 CURSOR_SPRITE_ROW_OFFSET = 1  # color-4 is 1 row below sprite top-left
 CURSOR_SPRITE_COL_OFFSET = 2  # color-4 is 2 cols right of sprite top-left
 TARGET_COLOR = 14             # target sprite fill color
-WALL_COLORS = frozenset({0, 2})  # both color 0 and 2 are maze wall sprites
+WALL_COLORS = frozenset({2})     # color 0 is maze corridor (floor), color 2 is wall
 
 UP    = 0
 DOWN  = 1
@@ -175,13 +176,9 @@ def detect_state(grid: np.ndarray) -> GameState:
         target_pixel = (r1, c1)
         target_cell = _pixel_to_cell(r1, c1)
 
-    # BFS route computed here so compute_route doesn't need the grid.
-    # Rotate so route[-1] = raw_route[0]: the framework's probe executes the
-    # first BFS step, then route[0..n-2] = raw_route[1..n-1] complete the path.
     route = []
     if cursor_cell is not None and target_cell is not None:
-        raw = _bfs(grid, cursor_cell, target_cell)
-        route = (raw[1:] + raw[:1]) if raw else []
+        route = _bfs(grid, cursor_cell, target_cell)
 
     return GameState(
         grid_shape=(rows, cols),

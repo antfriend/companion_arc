@@ -160,15 +160,11 @@ def detect_state(grid: np.ndarray) -> GameState:
                     target_row, target_col = r1, c1
                     break
 
-    # BFS computed in detect_state (compute_route needs the grid).
-    # Rotate so route[-1] = raw_route[0]: the framework's probe executes the
-    # first BFS step, then route[0..n-2] = raw_route[1..n-1] complete the path.
     route = []
     if cursor_row is not None and target_row is not None:
         start = (cursor_row, cursor_col)
         target = (target_row, target_col)
-        raw = _bfs(grid, start, target)
-        route = (raw[1:] + raw[:1]) if raw else []
+        route = _bfs(grid, start, target)
 
     return GameState(
         grid_shape=(rows, cols),
