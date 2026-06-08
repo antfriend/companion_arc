@@ -34,9 +34,10 @@ CURSOR = 0    # single-pixel moveable agent
 TARGET = 1    # single-pixel destination (bottom-right corner)
 
 # Fixed obstacle structures + floor border.
-# v9 is cursor-relative (its bounding box tracks the cursor position),
-# so it is NOT an obstacle — including it would trap BFS inside cursor's shadow.
-OBSTACLE_COLORS = frozenset({4, 11, 15})
+# v9 spans ~40 rows (e.g. r16-55 with cursor at r42) — far too large to be a
+# cursor shadow. It is a static obstacle structure and must be included so BFS
+# routes around it rather than through the blocked pixels.
+OBSTACLE_COLORS = frozenset({4, 9, 11, 15})
 
 UP    = 0
 DOWN  = 1

@@ -125,15 +125,16 @@ def _cell_passable(grid: np.ndarray, cell_r: int, cell_c: int) -> bool:
 def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:
     if start == target:
         return []
-    max_r = (grid.shape[0] - MAZE_ORIGIN_R) // CELL_SIZE
-    max_c = (grid.shape[1] - MAZE_ORIGIN_C) // CELL_SIZE
+    # Bound search to actual maze cells (0..target[dim]); grid is larger than the maze.
+    maze_max_r = target[0] + 1
+    maze_max_c = target[1] + 1
     queue: deque = deque([(start[0], start[1], [])])
     visited = {start}
     while queue:
         r, c, path = queue.popleft()
         for action, (dr, dc) in _DELTAS.items():
             nr, nc = r + dr, c + dc
-            if nr < 0 or nc < 0 or nr >= max_r or nc >= max_c:
+            if nr < 0 or nc < 0 or nr >= maze_max_r or nc >= maze_max_c:
                 continue
             nxt = (nr, nc)
             if nxt == target:
