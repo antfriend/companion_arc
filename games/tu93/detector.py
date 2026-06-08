@@ -35,11 +35,12 @@ Target at cell (10,10): _pixel_to_cell(45,45) = (10,10).
 BFS distance ≤ 20 steps in open grid. Budget = 50 steps.
 
 Frame variant robustness:
-  v4 at col 17 → sprite_top_c = 17-2 = 15 → cell_c = (15-15)//3 = 0 ✓
-  v4 at col 18 → sprite_top_c = 18-2 = 16 → cell_c = (16-15)//3 = 0 ✓
+  v4 at col 17 → _pixel_to_cell(16,17) → cell_c = (17-15)//3 = 0, cursor_cell=(0,0)
+  v4 at col 18 → _pixel_to_cell(16,18) → cell_c = (18-15)//3 = 1, cursor_cell=(0,1)
+  Each instance may have a different sub-cell column offset; use pixel directly.
 
 Route strategy: BFS over maze cells from cursor cell to target cell,
-treating any cell that contains color 0 or 2 as a wall.
+treating any cell whose center pixel is color 2 as a wall.
 """
 
 from collections import deque
