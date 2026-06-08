@@ -57,10 +57,8 @@ MAZE_ORIGIN_C = 15   # pixel col where maze cell (0,0) starts
 CELL_SIZE = 3        # pixels per maze cell edge
 
 # Grid value constants
-CURSOR_COLOR = 4              # mid-right pixel of cursor sprite ([1][2])
-CURSOR_SPRITE_ROW_OFFSET = 1  # color-4 is 1 row below sprite top-left
-CURSOR_SPRITE_COL_OFFSET = 2  # color-4 is 2 cols right of sprite top-left
-TARGET_COLOR = 14             # target sprite fill color
+CURSOR_COLOR = 4   # mid-right pixel of cursor sprite ([1][2]); used directly for cell pos
+TARGET_COLOR = 14  # target sprite fill color
 WALL_COLORS = frozenset({2})     # color 0 is maze corridor (floor), color 2 is wall
 
 UP    = 0
@@ -160,14 +158,14 @@ def detect_state(grid: np.ndarray) -> GameState:
         sigs[int(val)] = {"count": len(pos), "bbox": (r1, r2, c1, c2)}
 
     # Cursor: color 4, count=1 (mid-right pixel [1][2] of cursor sprite)
+    # Use the color-4 pixel position directly for cell computation — the pixel
+    # can start at different sub-cell offsets across instances (e.g., col 17 or
+    # col 18), and only the raw pixel→cell conversion gives the right start cell.
     cursor_pixel = cursor_cell = None
     if CURSOR_COLOR in sigs and sigs[CURSOR_COLOR]["count"] == 1:
         r1, r2, c1, c2 = sigs[CURSOR_COLOR]["bbox"]
         cursor_pixel = (r1, c1)
-        # sprite top-left is 1 row up and 2 cols left of the color-4 pixel
-        sprite_top_r = r1 - CURSOR_SPRITE_ROW_OFFSET
-        sprite_top_c = c1 - CURSOR_SPRITE_COL_OFFSET
-        cursor_cell = _pixel_to_cell(sprite_top_r, sprite_top_c)
+        cursor_cell = _pixel_to_cell(r1, c1)
 
     # Target: color 14, solid 3×3 block
     target_pixel = target_cell = None
