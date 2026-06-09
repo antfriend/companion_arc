@@ -356,6 +356,16 @@ def run_competition() -> None:
 # Batch run path (offline play → submission.parquet)
 # ---------------------------------------------------------------------------
 
+def _print_game_source(env_dir: str, game_prefix: str) -> None:
+    """Print game source for offline analysis."""
+    import glob as _glob
+    pattern = str(Path(env_dir) / game_prefix / "*" / f"{game_prefix}.py")
+    for path in _glob.glob(pattern):
+        print(f"[source] {path}", flush=True)
+        print(Path(path).read_text(), flush=True)
+        break
+
+
 def run_offline() -> None:
     env_dir = _resolve_env_dir()
     if env_dir is None:
@@ -376,6 +386,8 @@ def run_offline() -> None:
             print("[launch] No environments loaded — writing dummy", flush=True)
             _write_dummy()
             return
+
+        _print_game_source(env_dir, "sp80")
 
         card_id = arc.open_scorecard(tags=["locus"])
         for game_info in arc.available_environments:
