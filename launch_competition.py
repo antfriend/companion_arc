@@ -237,7 +237,7 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         # Level transition: reset on levels_completed advancing
         if obs.levels_completed and obs.levels_completed > prev_levels:
             prev_levels = obs.levels_completed
-            level_start_step = step
+            level_start_step = step - 1  # step already incremented; -1 so next level_step=1 → route[0]
             level_scanned = False  # trigger on_level_start for the next level
 
     levels = obs.levels_completed if obs else 0
