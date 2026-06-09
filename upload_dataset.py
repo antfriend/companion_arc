@@ -1,0 +1,16 @@
+"""Upload companion-arc dataset to Kaggle."""
+import os
+import tempfile
+
+from kaggle import api
+
+upload_dir = os.path.join(tempfile.gettempdir(), "kaggle_upload")
+api.authenticate()
+print(f"Uploading from: {upload_dir}")
+api.dataset_create_version(
+    upload_dir,
+    "tu93 detector fix - logical cell BFS",
+    dir_mode="zip",
+    quiet=False,
+)
+print("Upload complete!")
