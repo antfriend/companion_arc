@@ -1,0 +1,509 @@
+LOCUS SESSION LOG
+Apply LOCUS's suggested record updates to companion_arcprize.md
+via Claude Code: open the file, paste each @LOCUS LOG line,
+and let Claude Code write the updated records.
+============================================================
+
+[FOCUS game_state]
+SENT:
+@LOCUS FOCUS lat-10lon10
+
+LOCUS:
+```cursor
+selected:
+  - @LAT-10LON10
+preview:
+  @LAT-10LON10: "Game State. sal:40+, conf:245. ls20 L1 solved (hardcoded, 42+ consecutive wins). L2: 40+ attempts NOT WON. Entity1 state machine: 9 collectible hypotheses exhausted. DC28 = Hypothesis 9A (N blocked-DOWN events). Competition: 3 games solved offline (ls20+cd82+sp80), v33 submitted. 22/25 unsolved."
+```
+
+---
+
+## @LOCUS — FOCUS @LAT-10LON10
+
+**Record**: [Game State](lat-10lon10)
+**sal**: incrementing on access → current value: **40** (approx — last confirmed in session 61 FOCUS)
+**EPS signal**: ~12+ (high — Game State is the most-consulted record in the file, and the L2 win condition remains unresolved after 40+ attempts)
+
+---
+
+### Current Competition Status
+
+**Active games**: 25 games (OFFLINE mode). 3 solved:
+- **ls20**: L1 solved (hardcoded, 42+ consecutive wins at 15 steps). L2: **NOT WON** — 40+ attempts, entity1 state machine under active investigation.
+- **cd82**: L1 solved (adaptive basket detector, ≤5 steps).
+- **sp80**: L1 solved (adaptive 8-step spill).
+- **Remaining 22**: unsolved. See [Game Roster](lat-10lon40).
+
+**Submission status**: Kernel v33 (ls20+cd82+sp80 hardcoded). Kaggle gateway score confirmation pending. Score progression: 0.00 (dummy) → 0.1429 (offline real play) → gateway TBD.
+
+---
+
+### ls20 Level 2 — Current State
+
+**Entity1 state machine** (the L2 blocker):
+
+All 9 single-cycle collectible ordering hypotheses exhausted (3A, 3E, 4A, 5B, 5C, 6A, 6B, 8A, 8B — all REFUTED). Session 61 ran DC28: **Hypothesis 9A** (N consecutive blocked-DOWN events → state 3) — **INCONCLUSIVE at N=53** (53 blocked DOWNs produced no entity1 state change; timer frozen throughout as expected).
+
+Session 62 ran DC29 (Hypothesis 10A — ring A ×2 via multi-cycle) — **INCONCLUSIVE: route failure** (c29–33 void gap caused block to land at c29–33 instead of c14–18 deadlock position). DC30 corrected the oscillation path (LEFT/RIGHT micro-oscillation at c9–13 ↔ c14–18 instead of wide lateral traversal).
+
+Sessions 64–66 ran DC30 — **INCONCLUSIVE: LOCUS free-phase navigation failure** (LOCUS didn't reach c14–18 due to void corridor blindspot). @BELIEF:LAT-200LON-40 written to capture the routing rule.
+
+Sessions 67–68 ran DC31/DC32 (extended route + max_steps raised to 125) — ring A ×2 **confirmed collected** at session 67 step 109, but session ended 4 steps short of entity1 probe position. Session 68 log truncated before L2 data.
+
+Sessions 69–70: **L1 regressions** (route-offset bug from ArcAgent framework integration). Fix applied. Streak of 46 consecutive L1 wins broken at session 68.
+
+---
+
+### Priority Queue
+
+| Priority | Action | Rationale |
+|---|---|---|
+| **IMMEDIATE** | Restore L1 win streak (session 71) | Confirm route-offset fix; verify L1 hardcode intact after framework changes |
+| **CRITICAL** | Complete Hypothesis 10A probe (DC32+) | Ring A ×2 was collected but probe incomplete — entity1 state at probe position unknown |
+| **HIGH** | Competition gateway score | v33 submitted; confirm >3.571 or diagnose gateway mechanism |
+| **SECONDARY** | Extend search for 22 uns
+
+============================================================
+
+[STATUS]
+SENT:
+@LOCUS STATUS
+
+LOCUS:
+## LOCUS STATUS
+
+**Competition file**: `companion_arcprize.md` (this file)
+**Invoked at**: lat-10lon0 (Welcome)
+**Session**: active
+
+---
+
+### EPS Scan (sal × (255 − conf) / 255)
+
+| Record | sal | conf | EPS | Note |
+|---|---|---|---|---|
+| @LAT-10LON10 (Game State) | 40 | 245 | **3.94** | ls20 L2 win condition — entity1 deadlock, all 9+ collectible orderings exhausted |
+| @BELIEF:LAT-50LON-40 (entity1 state machine) | 8 | 80 | **4.39** | Rev 7: 8B REFUTED, all single-cycle collectible orderings done; DC28=9A, DC29=10A inconclusive |
+| @BELIEF:LAT-140LON-40 (entity2 approach) | 7 | 50 | **4.81** | All entry paths blocked; state-3 trigger unknown; 10A inconclusive |
+| @BELIEF:LAT-60LON-40 (RIGHT at state 1) | 1 | 195 | **0.24** | Confirmed unblocked, conf adequate |
+| @BELIEF:LAT-80LON-40 (void map rows 40–46) | 2 | 230 | **0.20** | Cross-track gap geometry confirmed |
+
+**Highest EPS**: @BELIEF:LAT-140LON-40 (4.81) — entity2 approach is the most-consulted, least-resolved record in the file.
+
+---
+
+### Competition Score
+
+```
+Overall: 0.1429 (offline) — 3 games solved
+ls20 L1+L2: 10.7143 (offline)
+cd82 L1:    4.7619 (offline)
+sp80 L1:    4.7619 (offline)
+Gateway v53: pending / unconfirmed
+```
+
+---
+
+### Active Goals (from @LAT20LON0)
+
+| Goal | Status |
+|---|---|
+| Find winning routes for 22 unsolved games | **ACTIVE / CRITICAL** — each new game = +1/25 score ceiling |
+| Submit v33 / confirm score > 0.00 | superseded — v53 submitted 2026-06-07 |
+| Maximize efficiency on solved games | deferred to depth phase |
+| Advance ls20 L2 | **ACTIVE** — 10A inconclusive; last session (70) = L1 regression due to route-offset bug |
+| Close all four revision cycle phases | ongoing |
+
+---
+
+### Current Situation
+
+**ls20 L1** is broken as of session 69–70. A route-offset fix introduced in the ArcAgent framework (`route[level_step - 1]` indexing) causes the block to collect the cluster prematurely when the cluster spawns at rows 31–33 (the high-position instance). The fix that previously worked (14-element UP×3 path) did not restore the win in session 70 — the levelmap capture shows cluster at rows 31–33, and the adaptive route's LEFT×3 segment still crosses that zone.
+
+**ls20 L2**: DC32 hypothesis 10A (ring A ×2 via multi-cycle) reached ring A ×2 collection confirmed at session 67 step 109, but session ended 4 steps short of the entity1 probe position. Session 68 consumed 110 L2 actions without clear resolution (log truncated). Sessions 69–70 were L1 regressions; L2 not reached.
+
+**Competition breadth**: @PORTFOLIO: shows 22 unsolved games. Instar 5 is active — the competition submission (v53) needs gateway score confirmation. LucusAgent adaptive detection is the active competition path.
+
+---
+
+### Recommended First Action
+
+Before returning to ls20 L2, the L1 regression must be closed. The adaptive route at rows 31–33 cluster is the immediate blocker.
+
+**Option A** (quickest): Harden the L1 route so it explicitly avoids triggering entity1 state 2. The cluster at rows 31–33 cols
+
+============================================================
+
+[ACTION step=17]
+SENT:
+@LOCUS what should I do next?
+
+step: 17
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+WARNING: last move (DOWN) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=5
+  r2: c14-16=4
+  r3: c14=4, c15=11, c16=4
+  r4: c14-16=4
+  r8: c5-7=4, c23-25=4
+  r9: c5=4, c6=11, c7=4, c23=4, c24=11, c25=4
+  r10: c5-7=4, c23-25=4
+  r15: c47-49=4
+  r16: c14-16=4, c21=11, c47=4, c48=9, c49=4
+  r17: c14=4, c15=11, c16=4, c21=11, c47-49=4
+  r18: c14-16=4, c21=11
+  r19: c21=11
+  r20: c21=11
+  r21: c21=11
+  r22: c21=11
+  r23: c21=11, c39-41=4, c52-54=4
+  r24: c21=11, c39=4, c40=9, c41=4, c52=4, c53=9, c54=4
+  r25: c21=11, c39-41=4, c52-54=4
+  r26: c21=11
+  r27: c10-32=11
+  r28: c21=11
+  r29: c21=11
+  r30: c21=11
+  r31: c21=11
+  r32: c21=11
+  r33: c21=11
+  r34: c21=11, c47-49=4
+  r35: c21=11, c47=4, c48=9, c49=4
+  r36: c21=11, c47-49=4
+  r37: c21=11
+  r38: c21=11
+  r50: c63=9
+  r51: c63=9
+  r52: c63=9
+  r53: c63=9
+  r54: c63=9
+  r55: c63=9
+  r56: c63=9
+  r57: c63=9
+  r58: c63=9
+  r59: c63=9
+  r60: c63=9
+  r61: c63=9
+  r62: c63=9
+  r63: c0-52=15, c53-63=1
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Game analysis:**
+
+This appears to be a game (likely re86 based on the frame structure) where the cursor is at a specific position. Let me parse the frame:
+
+- Value 11 (cursor/block?) forms a cross/plus pattern centered around c21, rows 19–38, with a horizontal bar at r27 (c10–32)
+- Value 9 appears at: r16 c48, r17 c15, r24 c40, r35 c48, r50–63 c63
+- Value 4 (obstacles) scattered at: r2–4 c14–16, r8–10 c5–7, r8–10 c23–25, r15 c47–49, r16 c14–16, r17 c14–16, r18 c14–16, r23–25 c39–41, r23–25 c52–54, r34–36 c47–49
+- Row 63: c0–52=15, c53–63=1 (likely score/timer row)
+
+The cursor appears to be the value-11 cross structure. The value-9 items at corners (r16 c48, r24 c40, r35 c48) look like collectibles or targets.
+
+Last move (DOWN) was blocked. The cross shape suggests the cursor is a navigable entity. 
+
+The value-9 cluster at r50–63 c63 in a vertical line on the rightmost column suggests that's a target or score indicator.
+
+Looking at accessible directions from the current cross position (centered ~r27 c21), UP was just blocked. Let me try RIGHT to move toward the collectibles on the right side.
+
+**3**
+
+============================================================
+
+[ACTION step=18]
+SENT:
+@LOCUS what should I do next?
+
+step: 18
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+WARNING: last move (4) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=5
+  r2: c14-16=4
+  r3: c14=4, c15=11, c16=4
+  r4: c14-16=4
+  r8: c5-7=4, c23-25=4
+  r9: c5=4, c6=11, c7=4, c23=4, c24=11, c25=4
+  r10: c5-7=4, c23-25=4
+  r15: c47-49=4
+  r16: c14-16=4, c21=11, c47=4, c48=9, c49=4
+  r17: c14=4, c15=11, c16=4, c21=11, c47-49=4
+  r18: c14-16=4, c21=11
+  r19: c21=11
+  r20: c21=11
+  r21: c21=11
+  r22: c21=11
+  r23: c21=11, c39-41=4, c52-54=4
+  r24: c21=11, c39=4, c40=9, c41=4, c52=4, c53=9, c54=4
+  r25: c21=11, c39-41=4, c52-54=4
+  r26: c21=11
+  r27: c10-20=11, c21=0, c22-32=11
+  r28: c21=11
+  r29: c21=11
+  r30: c21=11
+  r31: c21=11
+  r32: c21=11
+  r33: c21=11
+  r34: c21=11, c47-49=4
+  r35: c21=11, c47=4, c48=9, c49=4
+  r36: c21=11, c47-49=4
+  r37: c21=11
+  r38: c21=11
+  r50: c63=9
+  r51: c63=9
+  r52: c63=9
+  r53: c63=9
+  r54: c63=9
+  r55: c63=9
+  r56: c63=9
+  r57: c63=9
+  r58: c63=9
+  r59: c63=9
+  r60: c63=9
+  r61: c63=9
+  r62: c63=9
+  r63: c0-51=15, c52-63=1
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame, I need to understand what's happening in this game (which appears to be different from ls20 based on the frame structure).
+
+Key observations:
+- The warning says action 4 (ACTION5) produced no movement — that direction is blocked
+- There's a vertical line of value 11 at c21, rows 10-38 (a wall or track)
+- There's a cursor/block at r27 c21=0 (the only 0 value, likely my cursor position)
+- There are ring-like structures (value 11 with value 4 borders) at various positions
+- The bottom has a progress bar or indicator at r63
+
+The cursor appears to be at r27, c21 (the `0` cell). The vertical track runs along c21. The rings/collectibles are at:
+- r3 c15 (value 11 with 4-borders)
+- r9 c6 and c24
+- r17 c15
+- r24 c40 and c53
+- r35 c48
+
+Since ACTION5 (4) is blocked, I should try a different direction. The cursor is at r27 c21 on the vertical track. The track extends up and down. Let me try moving along the track.
+
+Given the vertical track structure and that the last move (4=ACTION5) was blocked, I'll try ACTION1 (0) to move in a different direction.
+
+0
+
+============================================================
+
+[ACTION step=19]
+SENT:
+@LOCUS what should I do next?
+
+step: 19
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=5
+  r2: c14-16=4
+  r3: c14=4, c15=11, c16=4
+  r4: c14-16=4
+  r8: c5-7=4, c23-25=4
+  r9: c5=4, c6=11, c7=4, c23=4, c24=11, c25=4
+  r10: c5-7=4, c23-25=4
+  r13: c21=11
+  r14: c21=11
+  r15: c21=11, c47-49=4
+  r16: c14-16=4, c21=11, c47=4, c48=9, c49=4
+  r17: c14=4, c15=11, c16=4, c21=11, c47-49=4
+  r18: c14-16=4, c21=11
+  r19: c21=11
+  r20: c21=11
+  r21: c21=11
+  r22: c21=11
+  r23: c21=11, c39-41=4, c52-54=4
+  r24: c10-20=11, c21=0, c22-32=11, c39=4, c40=9, c41=4, c52=4, c53=9, c54=4
+  r25: c21=11, c39-41=4, c52-54=4
+  r26: c21=11
+  r27: c21=11
+  r28: c21=11
+  r29: c21=11
+  r30: c21=11
+  r31: c21=11
+  r32: c21=11
+  r33: c21=11
+  r34: c21=11, c47-49=4
+  r35: c21=11, c47=4, c48=9, c49=4
+  r36: c47-49=4
+  r50: c63=9
+  r51: c63=9
+  r52: c63=9
+  r53: c63=9
+  r54: c63=9
+  r55: c63=9
+  r56: c63=9
+  r57: c63=9
+  r58: c63=9
+  r59: c63=9
+  r60: c63=9
+  r61: c63=9
+  r62: c63=9
+  r63: c0-51=15, c52-63=1
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame, I need to understand the current game state.
+
+**Frame analysis:**
+- Background value: 5 (passable)
+- Value 11 = walls/structure (the vertical column at c21, horizontal elements)
+- Value 4 = void/obstacle borders
+- Value 9 = special entities (cursor or collectibles)
+- Value 15 = bottom row (UI/timer)
+- Value 1 = bottom right corner
+
+**Key observations:**
+- The vertical column of 11s runs from r13 to r34 at c21
+- There's a horizontal bar at r24: `c10-20=11, c21=0, c22-32=11` - this looks like the cursor is AT c21 (value 0 = the active position)
+- There are small 4-bordered 9-cells at: r9 c6, r24 c40, r24 c53, r35 c48 - these appear to be collectibles or targets
+- The cursor appears to be at r24 c21 (where the 0 value is in the horizontal bar)
+- The c21 column extends from r13 to r34 - this is the cursor's track
+
+**Current position**: The cursor is at r24 c21 (the 0 in the horizontal bar indicates current position).
+
+**Targets**: The small rings with value 9 at:
+- r9 c6 (ring)
+- r24 c40 (ring - same row as cursor!)
+- r24 c53 (ring - same row as cursor!)
+- r35 c48 (ring)
+
+Since there's a ring at r24 c40 and r24 c53 on the SAME ROW as the cursor, and the cursor seems to be on a horizontal track at r24, I should move RIGHT to collect those targets.
+
+Action 3 = RIGHT direction.
+
+3
+
+============================================================
+
+[ACTION step=20]
+SENT:
+@LOCUS what should I do next?
+
+step: 20
+obs_state: GameState.NOT_FINISHED
+levels_completed: 0
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=5
+  r2: c14-16=4
+  r3: c14=4, c15=11, c16=4
+  r4: c14-16=4
+  r8: c5-7=4, c23-25=4
+  r9: c5=4, c6=11, c7=4, c23=4, c24=11, c25=4
+  r10: c5-7=4, c23-25=4
+  r13: c24=11
+  r14: c24=11
+  r15: c24=11, c47-49=4
+  r16: c14-16=4, c24=11, c47=4, c48=9, c49=4
+  r17: c14=4, c15=11, c16=4, c24=11, c47-49=4
+  r18: c14-16=4, c24=11
+  r19: c24=11
+  r20: c24=11
+  r21: c24=11
+  r22: c24=11
+  r23: c24=11, c39-41=4, c52-54=4
+  r24: c13-23=11, c24=0, c25-35=11, c39=4, c40=9, c41=4, c52=4, c53=9, c54=4
+  r25: c24=11, c39-41=4, c52-54=4
+  r26: c24=11
+  r27: c24=11
+  r28: c24=11
+  r29: c24=11
+  r30: c24=11
+  r31: c24=11
+  r32: c24=11
+  r33: c24=11
+  r34: c24=11, c47-49=4
+  r35: c24=11, c47=4, c48=9, c49=4
+  r36: c47-49=4
+  r50: c63=9
+  r51: c63=9
+  r52: c63=9
+  r53: c63=9
+  r54: c63=9
+  r55: c63=9
+  r56: c63=9
+  r57: c63=9
+  r58: c63=9
+  r59: c63=9
+  r60: c63=9
+  r61: c63=9
+  r62: c63=9
+  r63: c0-50=15, c51-63=1
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame, I need to understand the game state.
+
+**Frame analysis:**
+- Long vertical line of value 11 at c24 (rows 13–35) — this appears to be the cursor/block position column
+- Horizontal line at r24: c13-23=11, c24=0, c25-35=11 — cursor at the intersection point r24,c24 (value 0 = cursor)
+- Small diamond patterns (value 4 with value 9 center) at various positions:
+  - r2-4 c14-16 (center r3,c15=11... actually r3,c15=11, surrounding=4)
+  - r8-10 c5-7 (center r9,c6=11)
+  - r8-10 c23-25 (center r9,c24=11)
+  - r15-17 c47-49 (center r16,c48=9)
+  - r23-25 c39-41 (center r24,c40=9)
+  - r23-25 c52-54 (center r24,c53=9)
+  - r34-36 c47-49 (center r35,c48=9)
+- Score row r63: c0-50=15, c51-63=1
+
+The cursor is at r24,c24. The target appears to be nearby. Looking at the pattern, there's a target at r24,c40=9 (to the RIGHT) and r24,c53=9 (further right). The cursor is on a crosshair at r24.
+
+This looks like a cursor navigation game (re86-like). The cursor appears to be at the intersection r24,c24. Targets with value 9 are at r16,c48 and r35,c48 (vertical pair) and r24,c40 and r24,c53 (horizontal).
+
+The nearest target at r24,c40 is to the RIGHT. ACTION4 = RIGHT (index 3).
+
+3
+
+============================================================
+

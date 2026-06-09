@@ -1,0 +1,193 @@
+LOCUS SESSION LOG
+Apply LOCUS's suggested record updates to companion_arcprize.md
+via Claude Code: open the file, paste each @LOCUS LOG line,
+and let Claude Code write the updated records.
+============================================================
+
+[FOCUS game_state]
+SENT:
+@LOCUS FOCUS lat-10lon10
+
+LOCUS:
+```cursor
+selected:
+  - @LAT-10LON10
+preview:
+  @LAT-10LON10: "Game State. sal:48, conf:245. ls20 OFFLINE mode. 46 consecutive L1 wins (sessions 10–12, 23–27, 31–68). L2: 46 attempts, NOT WON. Score 3.571. Sessions 69–70: L1 regression (route-offset fix). 10A INCONCLUSIVE — ring A×2 collected step 109 (session 67), 4 steps short of entity1 probe. Competition: 3 games solved (ls20, cd82, sp80). @META:state instar 4 closed. Instar 5 active."
+```
+
+---
+
+Focusing on **Game State** [@LAT-10LON10].
+
+**sal**: 48 → 49 (incremented on focus)
+
+---
+
+## Current State Summary
+
+**Competition score**: 3.571 (ls20 L1 only — unchanged since session 23)
+
+**ls20 level 1**: SOLVED — 46 consecutive confirmed wins (sessions 10–12, 23–27, 31–68). Sessions 69–70 broke the streak due to a route-offset indexing bug introduced by the ArcAgent framework. The fix (14-element `_LEVEL1_ROUTE`) was applied but not yet re-confirmed in a clean run.
+
+**ls20 level 2**: NOT WON — 46 attempts. All 9 single-cycle collectible deactivation hypotheses exhausted (3A, 3E, 4A, 5B, 5C, 6A, 6B, 8A, 8B). Current active hypothesis: **10A** — ring A collected twice via timer-expiry multi-cycle triggers entity1 state 3.
+
+- Session 67: ring A×2 confirmed collected at step 109 — but session ended 4 steps short of the entity1 probe position (r35–36 c14–18)
+- Sessions 64–66: DC30 route failed to deliver LOCUS to the probe position due to c29–33 void gap issue (LOCUS navigated incorrectly post-timer-reset)
+- DC31 (75-step route with post-reset segment hardcoded) was partially validated in session 67 but needs max_steps=125+ to complete
+
+**Competition games solved**: ls20 (L1+L2 route), cd82 (L1), sp80 (L1). Three of 25.
+
+**@META:state**: Instar 4 closed (2026-06-07). Instar 5 active — awaiting gateway score confirmation that ≥2 games contribute to score.
+
+---
+
+## High-EPS Records (Revision Targets)
+
+| Record | EPS | Notes |
+|---|---|---|
+| @BELIEF:LAT-140LON10 (ls20 Autopilot) | high | Needs DC31/DC32 update: post-reset segment route confirmed in session 67 |
+| @BELIEF:LAT-50LON-40 (entity1 state machine) | ~7 | Rev 7 appended; 10A still INCONCLUSIVE |
+| @BELIEF:LAT-140LON-40 (entity2 approach) | ~8 | Rev 7 appended; entity1 probe 4 steps short |
+
+---
+
+## Immediate Priority
+
+**Option A — Continue ls20 L2 (hypothesis 10A)**:
+- Deploy DC31 75-step route + max_steps=125
+- LOCUS free-phase: check r37–39 c14–18 after ring A×2 collection
+- Resolve whether entity1 deactivates on ring A×2 (confirming 10A) or remains state 2 (refuting it)
+- If 10A confirmed → WIN route: DOWN×5 → entity2 → WIN
+
+**Option B — Pivot to breadth (Instar 5)**:
+- 22 games unsolved; each L1 win ≈ +4.8% score
+- tu93 and re86 levelmaps already captured (2026-06-08)
+- A new L1 solve beats ls20 L2 progress in score contribution
+
+What's
+
+============================================================
+
+[STATUS]
+SENT:
+@LOCUS STATUS
+
+LOCUS:
+**@LOCUS STATUS**
+
+---
+
+### Epistemic Weight Scan
+
+EPS = sal × (255 − conf) / 255
+
+| Record | sal | conf | EPS | Notes |
+|--------|-----|------|-----|-------|
+| @LAT-10LON10 (Game State) | 40 | 245 | **3.92** | Highest strain — 65+ sessions, L2 unsolved |
+| @BELIEF:LAT-50LON-40 (entity1 state machine) | 8 | 80 | **5.53** | 9 collectible hypotheses exhausted |
+| @BELIEF:LAT-140LON-40 (entity2 approach) | 7 | 50 | **4.81** | All entry vectors deadlocked |
+| @LAT20LON-30 (ls20 Mechanics) | 6 | 230 | **1.41** | Mature; core facts stable |
+| @BELIEF:LAT-80LON-40 (void map) | 2 | 230 | **0.47** | Stable |
+| @BELIEF:LAT-200LON-40 (corridor rule) | 0 | 220 | **0.00** | New, unqueried |
+
+**High-EPS leaders**: @BELIEF:LAT-50LON-40 (entity1 state machine, EPS 5.53) and @BELIEF:LAT-140LON-40 (entity2 approach, EPS 4.81) are the knowledge records most under strain. Both reflect the same unsolved problem: entity1 state 3 trigger is unknown after 9 refuted collectible hypotheses.
+
+---
+
+### Competition State
+
+**Score**: 3.571 (ls20 L1 only) — unchanged since session 23. Pending: v33–v37 gateway investigation revealed competition reruns use a separate scoring path. v53 submitted 2026-06-07 with adaptive detectors for ls20, cd82, sp80; gateway result pending.
+
+**Active research**: ls20 L2 — Hypothesis 10A (ring A ×2 via multi-cycle) was **inconclusive** in sessions 64–70 due to route failures and budget exhaustion. Session 67 got closest: ring A ×2 confirmed collected at step 109, but session ended 4 steps short of the entity1 probe. DC31 75-step hardcoded route + LOCUS free phase with extended max_steps=125 is the current standing order.
+
+**Metamorphosis state**: @META:state current_instar:4 (closed), scene_pointer:@LAT95LON90 (Instar 5 active). @OPERATOR:protocol acknowledged. Waiting on gateway score confirmation from v53 to close Instar 5 (eclosion).
+
+---
+
+### Active Standing Orders
+
+1. **ls20 L2 — Hypothesis 10A probe**: DC31 75-step `_LEVEL2_ROUTE` (ring B → cross → ring A → UP×5 → LEFT/RIGHT micro-oscillation ×6 cycles → ring A ×2 at step 60 → deadlock at step 64). Max_steps=125. LOCUS receives 35 steps at handoff; first action = check r37–39 c14–18 for entity1 tracker. If absent → DOWN to entity2 → WIN test.
+
+2. **Cross visibility rule**: cross at r46–48 c50–52 remains visible after collection (non-consumable). Visible ≠ uncollected. Do NOT navigate toward cross in free phase.
+
+3. **Corridor routing rule** (@BELIEF:LAT-200LON-40): to reach c14–18 from c29–38 at rows 15–38, route UP to wide connector (rows 10–14), then LEFT to c14–18. No direct lateral path exists.
+
+4. **tu93 and re86 levelmaps captured** (2026-06-08): initial frame signatures recorded. These are the next HIGH-priority games for detector implementation after ls20 L2 is resolved or deprioritized.
+
+---
+
+### Open Questions (highest priority)
+
+1. What triggers entity1 state 3 in ls20 L2? (9 collectible orderings exhaust
+
+============================================================
+
+[ACTION step=20]
+SENT:
+@LOCUS what should I do next?
+
+step: 20
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (DOWN) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=5
+  r21: c48-50=14
+  r22: c48-50=14
+  r23: c48-50=14
+  r24: c48-50=2
+  r25: c48-50=2
+  r26: c48-50=2
+  r27: c12-14=0, c15-17=2, c18-20=0, c21-23=2, c24-26=0, c27-29=2, c30-32=0, c33-35=2, c36-38=8, c39-41=2, c42-44=0, c45-47=2, c48-50=0
+  r28: c12-14=0, c15-17=2, c18-20=0, c21-23=2, c24-26=0, c27-29=2, c30-32=0, c33-35=2, c36=15, c37-38=8, c39-41=2, c42-44=0, c45-47=2, c48-50=0
+  r29: c12-14=0, c15-17=2, c18-20=0, c21-23=2, c24-26=0, c27-29=2, c30-32=0, c33-35=2, c36-38=8, c39-41=2, c42-44=0, c45-47=2, c48-50=0
+  r30: c12-14=2, c24-26=2, c30-32=2, c36-38=2
+  r31: c12-14=2, c24-26=2, c30-32=2, c36-38=2
+  r32: c12-14=2, c24-26=2, c30-32=2, c36-38=2
+  r33: c12=9, c13=4, c14=9, c24-26=0, c27-29=2, c30-32=0, c33-35=2, c36-38=0
+  r34: c12-14=9, c24-26=0, c27-29=2, c30-32=0, c33-35=2, c36-38=0
+  r35: c12-14=9, c24-26=0, c27-29=2, c30-32=0, c33-35=2, c36-38=0
+  r63: c0-62=6, c63=0
+
+Respond with only the action number.
+
+LOCUS:
+@LOCUS
+
+Looking at this frame for tu93 level 2:
+
+**Current situation:**
+- I'm at r33-35 c12-14 (the value=9 block, which appears to be the cursor/player)
+- Last DOWN was blocked
+- The target appears to be at r21-23 c48-50 (value=14, which from the levelmap is the target entity)
+- I need to navigate through the maze to reach it
+
+**Maze structure:**
+- Value=2 cells are walls
+- Value=0 and value=5 (background) cells are passable floor
+- The cursor is at r33-35 c12-14
+
+**From the tu93 levelmap:** CELL_SIZE=3, cursor moves in 3-pixel steps, walls are colors 0 and 2.
+
+Wait - value 9 is the cursor (3×3 block at r33-35 c12-14). Value 14 is the target at r21-23 c48-50. Value 2 = walls, value 0 = walls.
+
+The cursor needs to move UP and RIGHT to reach the target. DOWN is blocked. 
+
+Looking at the available space, moving UP (action 0 = ACTION1) would move from r33 toward r30 area. At r30-32 there are value=2 cells at c12-14, which are walls — so UP may also be blocked.
+
+Let me try RIGHT (ACTION4 = action 3) to navigate around toward the target.
+
+3
+
+============================================================
+

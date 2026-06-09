@@ -12515,3 +12515,102 @@ One agent per domain. Two agents writing the same artifact produce conflicts; on
 - Solved games: ls20 (L1+L2), cd82 (L1), sp80 (L1)
 - Active instar: 4 (closed by this record)
 - Next milestone: Instar 5 — gateway score confirms ≥2 games contributing, eclosion predicate passes
+
+
+---
+
+[levelmap game=re86 level=1 session=2026-06-09T00:09:42 created=1780963782]
+grid_shape: 64x64
+block_pos: none
+entity2_ring: none
+entity2_notch_orientation: none
+cluster: none
+entity1_state: 0
+entity_signatures: 0:count=1,bbox=42-42x36-36 1:count=1,bbox=63-63x63-63 4:count=64,bbox=2-36x5-54 9:count=56,bbox=16-55x23-53 11:count=49,bbox=3-38x6-32 15:count=63,bbox=63-63x0-62
+[/levelmap]
+
+
+---
+
+[levelmap game=tu93 level=1 session=2026-06-08T20:41:12 created=1780951272]
+grid_shape: 64x64
+block_pos: none
+entity2_ring: none
+entity2_notch_orientation: none
+cluster: none
+entity1_state: 0
+entity_signatures: 0:count=262,bbox=15-63x15-63 2:count=288,bbox=15-47x15-47 4:count=1,bbox=16-16x17-17 6:count=63,bbox=63-63x0-62 9:count=8,bbox=15-17x15-17 14:count=9,bbox=45-47x45-47
+[/levelmap]
+
+
+---
+
+[levelmap game=tu93 level=2 session=2026-06-08T21:16:52 created=1780953412]
+grid_shape: 64x64
+block_pos: none
+entity2_ring: none
+entity2_notch_orientation: none
+cluster: none
+entity1_state: 0
+entity_signatures: 0:count=82,bbox=27-63x12-63 2:count=117,bbox=24-35x12-50 4:count=1,bbox=33-33x13-13 6:count=63,bbox=63-63x0-62 8:count=8,bbox=27-29x36-38 9:count=8,bbox=33-35x12-14 14:count=9,bbox=21-23x48-50 15:count=1,bbox=28-28x36-36
+[/levelmap]
+
+---
+
+SECTION 1
+
+@LAT-800LON10 | created:1749254400 | updated:1749254400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-140LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1749254400
+[/ew]
+
+## re86 — Session 1 Log (2026-06-07)
+
+```session-log
+timestamp: 1749254400
+game: "re86"
+environment: "re86-8af5384d"
+run_guid: "5de4c03f-297f-4475-83df-926cef272433"
+card_id: "050b918e-209c-40ce-88e6-81219d1a1b4b"
+level: "level 1 NOT WON (21 actions)"
+actions: 21
+levels_completed: 0
+score: 0.0
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [21, 0, 0, 0, 0, 0, 0, 0]
+level_scores: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [26, 42, 86, 108, 189, 139, 424, 241]
+```
+
+**Session outcome**: Level 1 NOT WON. 21 actions consumed. `levels_completed: 0`. Score 0.0. First session on re86. 8-level game (`level_count: 8`, total weights 1+2+…+8 = 36). Level 1 baseline = 26 actions.
+
+**tag**: `keyboard_click` — re86 is a keyboard/click hybrid game. Not a pure directional-move game like ls20.
+
+---
+
+### Key Session Exchanges
+
+**FOCUS @LAT-10LON10**: LOCUS loaded Game State. Summarised ls20 L2 situation (entity1 deadlock, 10A inconclusive) and competition status (3 games solved, 22 unsolved, v33 submitted). EPS rankings: @BELIEF:LAT-140LON-40 (4.81), @BELIEF:LAT-50LON-40 (4.39), @LAT-10LON10 (3.94).
+
+**STATUS**: LOCUS confirmed active goals and recommended addressing ls20 L1 regression before L2. However, this session targeted re86 — a new game from the unsolved roster.
+
+---
+
+### Level Map (from [levelmap game=re86 level=1])
+
+Captured via `ArcAgent.on_level_start`. Key entity signatures:
+- **Value 0** (count=1): bbox 42–42 × 36–36 — single cell, likely the cursor/player position
+- **Value 11** (count=49): bbox 3–38 × 6–32 — large region, likely maze/floor tiles
+- **Value 4** (count=64): bbox 2–36 × 5–54 — large obstacle region (void / walls)
+- **Value 9** (count=56): bbox 16–55 × 23–53 — large region, likely maze interior / passable floor
+- **Value 15** (count=63): bbox 63–63 × 0–62 — bottom row, likely UI/status bar
+- **Value 1** (count=1): bbox 63–63 × 63–63 — single cell, bottom-right corner
+
+**Structural interpretation** (first contact, low confidence):
+- `tag: keyboard_click` indicates this game uses keyboard navigation + click actions, not pure cardinal moves
+- The single value-0 cell at (42, 36) is the most likely player cursor position
+- Value-9 region (bbox 16–55 × 23–53) is large and central — probable navigable floor
