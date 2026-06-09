@@ -4,3 +4,12 @@ __pycache__
 *.pyc
 kernel-metadata.json
 submission.parquet
+environment_files
+locus_*.txt
+*.pdf
+kaggle_notebook.ipynb
+RFCs
+_patch_notebook.py
+pyproject.toml
+resubmit_notebook.py
+upload_dataset.py
