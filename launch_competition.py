@@ -213,7 +213,14 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             level_scanned = True
 
         level_step = step - level_start_step
-        action_idx = agent.choose_action(obs, actions, step, level_step)
+        if obs is None:
+            # First step: obs not yet available, level not yet scanned.
+            # Use action 0 (navigation) to avoid accidentally firing before
+            # the canvas/game state is read — a random ACTION5 here would
+            # irreversibly corrupt the canvas for games like cd82.
+            action_idx = 0
+        else:
+            action_idx = agent.choose_action(obs, actions, step, level_step)
         action_idx = action_idx % len(actions)
 
         obs = env.step(actions[action_idx])
