@@ -156,16 +156,11 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         print(f"[game] {game_id}: env creation failed — skipping", flush=True)
         return
 
-    # Use only simple (non-click) actions to avoid KeyError on complex action data
     actions = [a for a in (env.action_space or []) if a.is_simple()]
     if not actions:
         print(f"[game] {game_id}: no simple actions — skipping", flush=True)
         return
 
-    if route:
-        print(f"[actions] {game_id}: {[str(a) for a in actions]}", flush=True)
-
-    # Load companion text for levelmap comparison
     companion_text = ""
     try:
         if _COMPANION.exists():
@@ -173,8 +168,6 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     except Exception:
         pass
 
-    # Use offline_levels=2 for games where an L2 route exists in the detector.
-    # The detector's compute_route(state, level_num=2) will supply it on level start.
     try:
         from core.game_registry import get_detector as _gd
         _det = _gd(game_id)
@@ -198,54 +191,43 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     level_scanned = False
     prev_levels = 0
     route_steps = 0
-    random_steps = 0
     _END_STATES = ("GameState.WIN", "GameState.GAME_OVER", "win", "game_over")
 
-    # Unified loop: ArcAgent decides each action (route → random fallback in batch)
     while step < 600:
         if obs is not None and str(obs.state) in _END_STATES:
             break
 
-        # First-frame capture at level start
+        # First-frame scan: compute adaptive route for this level via detector
         if obs is not None and obs.frame and not level_scanned:
             current_level = (obs.levels_completed or 0) + 1
             agent.on_level_start(current_level, list(obs.frame)[0])
+            route = list(agent.routes.get(current_level, route))
             level_scanned = True
 
+        # Play route (1-indexed: level_step=1 → route[0]) or action 0 — no random fallback
         level_step = step - level_start_step
         if obs is None:
-            # First step: obs not yet available, level not yet scanned.
-            # Use action 0 (navigation) to avoid accidentally firing before
-            # the canvas/game state is read — a random ACTION5 here would
-            # irreversibly corrupt the canvas for games like cd82.
-            action_idx = 0
+            action_idx = 0  # safety: get first frame before acting
+        elif 0 < level_step <= len(route):
+            action_idx = route[level_step - 1] % len(actions)
+            route_steps += 1
         else:
-            action_idx = agent.choose_action(obs, actions, step, level_step)
-        action_idx = action_idx % len(actions)
+            action_idx = 0  # route exhausted or unknown game — no random
 
         obs = env.step(actions[action_idx])
         if obs is None:
             break
         step += 1
 
-        # Track route vs random steps for logging
-        if level_step < len(route):
-            route_steps += 1
-        else:
-            random_steps += 1
-
-        # Level transition: reset on levels_completed advancing
         if obs.levels_completed and obs.levels_completed > prev_levels:
             prev_levels = obs.levels_completed
-            level_start_step = step - 1  # step already incremented; -1 so next level_step=1 → route[0]
-            level_scanned = False  # trigger on_level_start for the next level
+            level_start_step = step - 1  # -1 so next level_step=1 → route[0]
+            level_scanned = False
 
     levels = obs.levels_completed if obs else 0
     state = str(obs.state) if obs else "None"
     print(
-        f"[game] {game_id}: {step} steps "
-        f"(route={route_steps} rnd={random_steps}), "
-        f"L{levels}, state={state}",
+        f"[game] {game_id}: {step} steps (route={route_steps}), L{levels}, state={state}",
         flush=True,
     )
 
