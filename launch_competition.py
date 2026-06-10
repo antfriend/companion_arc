@@ -67,6 +67,9 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN")) or _gatewa
 
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 
+# Games with confirmed, stable solutions — batch runs suppress verbose frame/route logs
+_SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80"})
+
 # Hardcoded winning routes (indices into each game's simple action space)
 # ls20: [UP,DOWN,LEFT,RIGHT] → indices 0-3
 # cd82: [ACTION1-ACTION5]    → indices 0-4
@@ -182,7 +185,7 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         companion_text=companion_text,
         routes={1: route} if route else {},
         offline_levels=_offline,
-        verbose=True,
+        verbose=game_prefix not in _SOLVED_GAMES,
     )
 
     obs = None
@@ -342,16 +345,6 @@ def run_competition() -> None:
 # Batch run path (offline play → submission.parquet)
 # ---------------------------------------------------------------------------
 
-def _print_game_source(env_dir: str, game_prefix: str) -> None:
-    """Print game source for offline analysis."""
-    import glob as _glob
-    pattern = str(Path(env_dir) / game_prefix / "*" / f"{game_prefix}.py")
-    for path in _glob.glob(pattern):
-        print(f"[source] {path}", flush=True)
-        print(Path(path).read_text(), flush=True)
-        break
-
-
 def run_offline() -> None:
     env_dir = _resolve_env_dir()
     if env_dir is None:
@@ -372,8 +365,6 @@ def run_offline() -> None:
             print("[launch] No environments loaded — writing dummy", flush=True)
             _write_dummy()
             return
-
-        _print_game_source(env_dir, "sp80")
 
         card_id = arc.open_scorecard(tags=["locus"])
         for game_info in arc.available_environments:
