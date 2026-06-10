@@ -200,6 +200,10 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         # First-frame scan: compute adaptive route for this level via detector
         if obs is not None and obs.frame and not level_scanned:
             current_level = (obs.levels_completed or 0) + 1
+            # Refresh action list — some games remap slots per level (e.g. sp80 rotation)
+            fresh = [a for a in (env.action_space or []) if a.is_simple()]
+            if fresh:
+                actions = fresh
             agent.on_level_start(current_level, list(obs.frame)[0])
             route = list(agent.routes.get(current_level, route))
             level_scanned = True
