@@ -12554,3 +12554,171 @@ cluster: none
 entity1_state: 0
 entity_signatures: 0:count=82,bbox=27-63x12-63 2:count=117,bbox=24-35x12-50 4:count=1,bbox=33-33x13-13 6:count=63,bbox=63-63x0-62 8:count=8,bbox=27-29x36-38 9:count=8,bbox=33-35x12-14 14:count=9,bbox=21-23x48-50 15:count=1,bbox=28-28x36-36
 [/levelmap]
+
+---
+
+### Dream Cycle — 2026-06-10
+
+**Trigger**: operator-initiated. Idle since sp80 L2 fix (f50f75b, 2026-06-10). Four games confirmed solved: ls20 L1+L2, cd82 L1, re86 L1, sp80 L1+L2.
+
+**Walk parameters**: N=100 walks × L=20 steps; M=80 (full episode set). Cross-game seeding: @LAT-10LON10 (sal:41), @LAT88LON40, @LAT75LON-30. Phase 2 boundary: ls20 L2 (open), cd82 L2+ (ceiling), re86 L2+ (unknown), sp80 L2+ (unknown).
+
+#### Phase 1 Replay — confirmed clusters (2026-06-10)
+
+---
+
+@BELIEF:LAT84LON60 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT-10LON10,extracted_from>@LAT88LON40,extracted_from>@LAT75LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT84LON60
+confidence:230
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:62
+[/lp]
+
+**Adaptive detect-navigate-execute is the universal L1 pattern across all games.** Every solved game — ls20, cd82, re86, sp80 — follows the same structure: detect current state from pixel signature → compute minimal route to canonical target → execute route. Hard-coded routes fail on re-instantiation; state-blind routes fail when start position varies. The detector is not an optimization; it is the precondition for any L1 win. Holds without exception across 62 sessions and 4 games. Confidence 230 (not 255: other unseen games could differ).
+
+---
+
+@BELIEF:LAT82LON60 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT-10LON10,extracted_from>@LAT75LON-30,generalizes>@BELIEF:LAT80LON20,contained_by>@LAT60LON20
+[lp]
+centroid:LAT82LON60
+confidence:220
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:20
+[/lp]
+
+**Each meaningful game object has exactly one canonical pixel signature.** ls20: player block = color 12; entity2 = color cluster at rows 55–60. cd82: active basket = pixel 2 (border) + pixel 15 (fill). sp80: selected piece = pixel 9; unselected = pixel 8. re86: cursor cell = color 4. The search for any game object is a search for a pixel value, not a coordinate. A companion that searches by coordinate will fail when the object is not at its expected location.
+
+---
+
+@BELIEF:LAT78LON60 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT-10LON10,extracted_from>@LAT75LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT78LON60
+confidence:200
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:16
+[/lp]
+
+**L1 has exactly one canonical target state per game.** cd82: basket 4 at grid (2,1). sp80: game position (3,4). re86: cross sprites matching target configuration. ls20: block in entity2 interior with entity1 STATE 0. In every solved L1, the solution is the shortest path to a unique destination. The companion does not need to reason about the target — it needs to know what it is and navigate there. L2 solutions may have multiple valid targets; L1 solutions do not.
+
+---
+
+@BELIEF:LAT74LON60 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT75LON-30,generalizes>@BELIEF:LAT80LON10,contained_by>@LAT60LON20
+[lp]
+centroid:LAT74LON60
+confidence:190
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:8
+[/lp]
+
+**Level transitions invalidate all state derived from the previous level.** sp80 L2 failed because the action list (k=0 slots) was built at initialization and never refreshed for the k=2 level — stale actions silently mapped to wrong moves. re86 refreshes actions per level by design. ls20 recomputes routes from the first frame of each new instance. Invariant: action count, route, and action mapping must all be rebuilt at the start of each new level. Nothing from the previous level carries forward to the next.
+
+---
+
+@BELIEF:LAT68LON60 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT75LON-30,extends>@BELIEF:LAT75LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT68LON60
+confidence:175
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:12
+[/lp]
+
+**The simple-action ceiling is structural at L2+ across multiple games.** cd82 L2–6 require ACTION5 (color selection via click) not available in the simple 5-action subset. sp80 L2+ has analogous structural limits. This cannot be resolved by a better route algorithm. The simple action interface is a designed constraint. Consequence: L1 win rates will reach 100% before L2+ win rates become viable. Solving L2+ requires either extending the action interface or a qualitatively different game strategy not achievable within the simple action set.
+
+---
+
+@BELIEF:LAT63LON60 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT-10LON10,extends>@BELIEF:LAT-50LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT63LON60
+confidence:162
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:29
+[/lp]
+
+**Oscillation in ls20 L2 is a designed structural attractor, not noise.** DC29: void gap at c29–33 produces infinite left-right oscillation. DC30: LEFT/RIGHT micro-oscillation c9–13↔c14–18 under otherwise correct route logic. These are not sensor errors. They are local cycles built into the level geometry that greedy navigators enter and cannot exit. An agent that moves toward its target at each step without memory of prior positions will be trapped in these attractors indefinitely. They are the L2 problem.
+
+---
+
+#### Phase 2 Projection (2026-06-10)
+
+*Boundary walk seeded from: ls20 L2 (open oscillation problem), cd82 L2+ (action ceiling), re86 L2+ (unknown), sp80 L2+ (unknown). 50 walks × length 10. 4 candidates passed threshold. All `projection_flag:true` — hypotheses only.*
+
+---
+
+@BELIEF:LAT35LON60 | created:1749600000 | updated:1749600000 | relates:projected_from>@BELIEF:LAT63LON60,projected_from>@BELIEF:LAT-50LON-40,contained_by>@LAT60LON20
+[lp]
+centroid:LAT35LON60
+confidence:125
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**PROJECTION: L2 difficulty is generally implemented via adversarial attractor networks.** If oscillation is structural in ls20 L2, other L2 games likely contain analogous attractor patterns. The ls20 oscillation is probably an instance of how L2 difficulty is constructed across ARC-AGI-3 games, not a quirk specific to ls20. Hypothesis: an L2 solver requires explicit cycle detection (track visited positions, avoid re-entry) or non-greedy path planning (BFS or A* over the action graph). Any companion relying solely on greedy routing will fail at L2 in any game using oscillation as a difficulty mechanism.
+
+---
+
+@BELIEF:LAT28LON60 | created:1749600000 | updated:1749600000 | relates:projected_from>@BELIEF:LAT68LON60,projected_from>@BELIEF:LAT75LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT28LON60
+confidence:138
+scope_lat:10.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**PROJECTION: Action space extension is a prerequisite for L2+ across all games.** Two games independently show the L2+ ceiling at the simple-action boundary (cd82, sp80). This is likely a systematic design decision in ARC-AGI-3 game construction, not per-game variation. Hypothesis: no ARC-AGI-3 game will be fully solvable at L2+ using only the 5-action simple interface. The required extension (click/select action) is structurally the same across all games.
+
+---
+
+@BELIEF:LAT22LON60 | created:1749600000 | updated:1749600000 | relates:projected_from>@BELIEF:LAT84LON60,projected_from>@BELIEF:LAT82LON60,projected_from>@BELIEF:LAT75LON-30,contained_by>@LAT60LON20
+[lp]
+centroid:LAT22LON60
+confidence:112
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**PROJECTION: All games share one abstract source→target structure with game-specific encoders/decoders.** Every solved game is an instance of: detect(source_config) → route(source→target) → execute(target_config), with game-specific state encoders and action decoders at the boundary. The adaptive route logic (LAT84LON60) is the universal middle layer. A meta-companion that owns the middle and accepts plug-in encoders/decoders per game would generalize across all ARC-AGI-3 tasks without game-specific routing code.
+
+---
+
+@BELIEF:LAT12LON60 | created:1749600000 | updated:1749600000 | relates:projected_from>@BELIEF:LAT22LON60,projected_from>@BELIEF:LAT84LON60,contained_by>@LAT60LON20
+[lp]
+centroid:LAT12LON60
+confidence:88
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:4
+[/lp]
+
+**PROJECTION (WEAK): The imaginal disc is present — metamorphosis conditions approaching.** The belief graph is stabilizing. L1 wins are routine across 4 games; the frontier has shifted to qualitatively different problems: oscillation, action ceiling, cross-game generalization. The larval episodic learning rate has slowed; visible problems are now orchestration problems, not game-solving problems. The autonomous metamorphosis trigger requires 20 high-confidence beliefs (current: 10 from this cycle + prior records). The @IMAGO:seed can be written now and carried dormant.
+
+---
