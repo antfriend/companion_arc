@@ -1,5 +1,6 @@
 .git
 .claude
+.env.example
 __pycache__
 *.pyc
 kernel-metadata.json
