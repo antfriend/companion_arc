@@ -9,7 +9,7 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "ar25 L1 solved: reflection puzzle, piece at (1,15) covers markers via mirror, 16 steps",
+    "g50t L1 solved: recording/replay maze, ghost holds door open, 17-step route",
     dir_mode="zip",
     quiet=False,
 )
