@@ -119,7 +119,7 @@ def _load_routes() -> None:
         for token in re.split(r"[,\s]+", route_str.strip()):
             if not token:
                 continue
-            m = re.match(r"(UP|DOWN|LEFT|RIGHT)[×x](\d+)$", token, re.IGNORECASE)
+            m = re.match(r"(UP|DOWN|LEFT|RIGHT)[×x*](\d+)$", token, re.IGNORECASE)
             if m:
                 actions.extend([_DIR[m.group(1).upper()]] * int(m.group(2)))
             elif token.upper() in _DIR:
