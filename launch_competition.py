@@ -68,7 +68,7 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN")) or _gatewa
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 
 # Games with confirmed, stable solutions — batch runs suppress verbose frame/route logs
-_SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80", "tu93", "wa30"})
+_SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80", "tu93", "wa30", "ar25"})
 
 # Hardcoded winning routes (indices into each game's simple action space)
 # ls20: [UP,DOWN,LEFT,RIGHT] → indices 0-3

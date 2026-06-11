@@ -1,48 +1,65 @@
 """
-games/ar25/detector.py — Stub detector for ar25 (ARC-AGI-3).
+games/ar25/detector.py — Adaptive L1 solver for ar25 (reflection puzzle).
 
-Not yet implemented. Returns empty route from all interface functions.
-Replace detect_state / compute_route / verify_step once the mechanic is known.
+Mechanics (L1):
+  - One moveable piece "0007arvfmhagbj" (shape [[5,5,5],[-1,-1,5],[-1,-1,5]], 5 pixels)
+  - Vertical mirror "0055nwhypaamix" at game x=10 → reflects pixels as: reflected_x = 20 - pixel_x
+  - 5 target markers (color 11) at (17,15),(18,15),(19,15),(17,16),(17,17)
+  - WIN: piece reflections cover all 5 markers
+  - Solution: place piece at (1,15) → reflections land exactly on all 5 markers
+
+Frame layout (64×64, scale=3, game=21×21):
+  - game (gx,gy) → frame col=gx*3, row=gy*3 (top-left aligned)
+  - Letterbox color=5 at frame row 63 and col 63 (game padding)
+  - Piece color=5 in interior rows 0-62, cols 0-62
+
+Route: LEFT×(piece_x−1) + DOWN×(15−piece_y)  →  16 total steps for L1 win
+  (15 moves + 1 extra action from framework to trigger level transition)
 """
 
 from dataclasses import dataclass
+
 import numpy as np
+
+
+SCALE = 3
+GAME_W = 21
+GAME_H = 21
+PIECE_COLOR = 5
+PIECE_TARGET_X = 1
+PIECE_TARGET_Y = 15
+
+# Action indices into the available_actions list (order: ACTION1-4 + ACTION5 + ACTION7)
+IDX_UP = 0    # ACTION1
+IDX_DOWN = 1  # ACTION2
+IDX_LEFT = 2  # ACTION3
+IDX_RIGHT = 3 # ACTION4
 
 
 @dataclass
 class GameState:
-    grid_shape: tuple
-    entity_signatures: dict
-
-
-@dataclass
-class StepResult:
-    success: bool
-    reason: str
-    delta: dict
+    piece_x: int
+    piece_y: int
 
 
 def detect_state(grid: np.ndarray) -> GameState:
-    rows, cols = grid.shape
-    bg = int(np.bincount(grid.flatten()).argmax())
-    sigs = {}
-    for val in np.unique(grid):
-        if int(val) == bg:
-            continue
-        pos = np.argwhere(grid == val)
-        r1, c1 = int(pos[:, 0].min()), int(pos[:, 1].min())
-        r2, c2 = int(pos[:, 0].max()), int(pos[:, 1].max())
-        sigs[int(val)] = {"count": len(pos), "bbox": (r1, r2, c1, c2)}
-    return GameState(grid_shape=(rows, cols), entity_signatures=sigs)
+    """Find piece position from 64×64 frame."""
+    game_area = grid[:GAME_H * SCALE, :GAME_W * SCALE]
+    positions = np.argwhere(game_area == PIECE_COLOR)
+    if len(positions) == 0:
+        # Fallback to known level-1 start position
+        return GameState(piece_x=6, piece_y=5)
+    min_row = int(positions[:, 0].min())
+    min_col = int(positions[:, 1].min())
+    return GameState(piece_x=min_col // SCALE, piece_y=min_row // SCALE)
 
 
-def compute_route(state: GameState, level_num: int = 1) -> list:
-    return []
-
-
-def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResult:
-    return StepResult(success=True, reason="stub (ar25)", delta={})
-
-
-def format_companion_block(state: GameState, route: list) -> str:
-    return "[strategy game=ar25 level=1 type=stub]\nnot implemented\n[/strategy]"
+def compute_route(state: GameState, level_num: int = 1) -> list[int]:
+    """Return action-index list to move piece to (1,15) and win L1."""
+    if level_num != 1:
+        return []
+    dx = state.piece_x - PIECE_TARGET_X   # steps LEFT needed
+    dy = PIECE_TARGET_Y - state.piece_y   # steps DOWN needed
+    if dx < 0 or dy < 0:
+        return []
+    return [IDX_LEFT] * dx + [IDX_DOWN] * dy
