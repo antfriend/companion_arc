@@ -6,7 +6,7 @@ from pathlib import Path
 api.authenticate()
 
 COMPETITION = 'arc-prize-2026-arc-agi-3'
-TARGETS = ['wa30-ee6fef47', 'cn04-2fe56bfb', 'ka59-38d34dbb']
+TARGETS = ['sk48-d8078629']
 DEST = Path('environment_files')
 
 # Try to find environment_files in competition data via page tokens
