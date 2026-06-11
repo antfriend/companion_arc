@@ -13218,7 +13218,7 @@ su15: v0:n=69,r52-63c0-63 v3:n=29,r14-57c6-49 v4:n=631,r0-9c0-63 v9:n=59,r11-19c
 tr87: v0:n=14,r48-60c15-19 v1:n=64,r63-63c0-63 v3:n=1370,r7-62c0-63 v5:n=321,r5-56c13-50 v7:n=363,r4-57c14-51 v10:n=394,r4-46c12-48
 
 
-[route game=sk48 level=1 steps=13 confirmed=true adaptive=false commit=pending]
+[route game=sk48 level=1 steps=13 confirmed=true adaptive=false commit=15adbc0,fd3f27e]
 UP*2, RIGHT*4, LEFT, DOWN*2, RIGHT, LEFT, UP, RIGHT
 Note: pre-route ACTION1 (UP) slides snake row=36->30 before route starts.
 Full sequence: UP(pre), UP, UP, R, R, R, R, L, D, D, R, L, U, R (14 total actions).
@@ -13235,3 +13235,368 @@ L1 target: [c8,c14,c9] = [8,14,9]. Budget: 196. Human baseline: see metadata.
 CRITICAL: Segment checks BOTH current AND target positions for blocks (target-position blocks pushed first).
 CRITICAL: Pre-route ACTION1=UP fires before route starts; route must account for row=30 start, not row=36.
 [/mechanic]
+
+[/mechanic]
+
+---
+
+## sk48 — Competition Confirmation (2026-06-11, v2026-06-11.4)
+
+sk48 L1 WIN confirmed in competition run v2026-06-11.4. score=2.7778. overall=1.1778 (9/25 games, up from 1.0667).
+
+**Two bugs required fixing before the route ran:**
+
+Bug 1 — Stale upload staging file: kaggle_upload/launch_competition.py had timestamp 7:19 AM, predating the sk48 commit (15adbc0 at ~9:36 AM). Companion file refreshed but code was not. Symptom: sk48 absent from [route] Routes loaded output. Fix: Copy-Item before each upload. Commit: 418d77a (also added * repetition syntax to route parser).
+
+Bug 2 — Empty adaptive route clobbered hardcoded route: agent.routes.get(1, route) returns [] when stub detector sets agent.routes[1] = [] (key exists, fallback never triggered). Symptom: sk48 in Routes but route=0 steps, all actions UP, snake slides row=36->30->24... budgeting out. Fix: adaptive = agent.routes.get(current_level); if adaptive: route = list(adaptive). Commit: fd3f27e.
+
+**Double-route artifact (harmless):** route=26 in logs (expected 13) because after L1 win, L2 scan finds agent.routes.get(2)=None -> route not cleared -> L1 route reruns on L2 (does not win L2). All solved games now show ~2x route steps. Scores unaffected.
+
+---
+
+## Batch Solve Record — 2026-06-11 (v2)
+
+sk48 added. Solved roster: **9/25**.
+
+**Solved (9/25)**: ls20, cd82, sp80, re86, tu93, wa30, ar25, g50t, sk48
+
+**Unsolved — simple actions (10/25)**: m0r0, bp35, cn04, dc22, ka59, lf52, sc25, sb26, su15, tr87
+
+**Unsolved — no simple actions (6/25)**: lp85, vc33, r11l, s5i5, ft09, tn36
+
+---
+
+## Score Model — 2026-06-11 (v2)
+
+| Game | L1 steps | Route type | Game score |
+|------|----------|------------|------------|
+| ls20 | 15 | adaptive | 3.5714 |
+| cd82 | 19 | adaptive | 4.7619 |
+| sp80 | 8  | adaptive | 4.7619 |
+| re86 | 19-20 | adaptive | 2.7778 |
+| tu93 | ~18 | adaptive BFS | 2.2222 |
+| wa30 | 30 | adaptive BFS | 2.2222 |
+| ar25 | 16 | adaptive | 2.7778 |
+| g50t | 17 | hardcoded | 3.5714 |
+| sk48 | 14 | hardcoded | 2.7778 |
+
+**Overall offline: 1.1778** (9 game scores summed / 25)
+
+Each additional solved game contributes approximately game_score / 25 to overall. Minimum expected gain: ~0.09 per new L1 solve.
+
+---
+
+@LAT-840LON10 | created:1749600000 | updated:1749600000 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+## Competition Run — v2026-06-11.4
+
+| Game | Route steps | Score | Notes |
+|------|-------------|-------|-------|
+| sp80 | 17 | 4.7619 | |
+| cd82 | 10 | 4.7619 | route doubled (L2 retry harmless) |
+| ls20 | 80 | 3.5714 | |
+| g50t | 34 | 3.5714 | route doubled |
+| ar25 | 32 | 2.7778 | route doubled |
+| re86 | 38 | 2.7778 | route doubled |
+| sk48 | 26 | 2.7778 | **NEW — L1 WIN** route doubled (13+13) |
+| tu93 | 36 | 2.2222 | route doubled |
+| wa30 | 58 | 2.2222 | route doubled |
+
+---
+
+## DREAM — 2026-06-11 (9-game pattern consolidation)
+
+Walk parameters: 100 walks x length 20 (Phase 1), 50 walks x length 10 (Phase 2). Sources: all mechanic records (re86, tu93, wa30, ar25, g50t, sk48), session logs @LAT-840LON10 and prior. High-sal pull: solved-game mechanic records (fresh), frame signatures for 10 unsolved simple-action games.
+
+---
+
+### Phase 1 — Replay (confirmed clusters)
+
+**Cluster A: Adaptive vs. hardcoded routing correlates with layout stability**
+
+Adaptive (per-instance scan): ls20, re86, tu93, wa30, ar25 — entity positions randomize per competition run.
+Hardcoded (fixed layout): cd82, sp80, g50t, sk48 — entity positions deterministic.
+Discriminator: run same game twice; compare first-frame entity centroids. Any drift -> adaptive required.
+
+@BELIEF:LAT85LON50 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT85LON-10,extracted_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:220
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF: Route type determined by layout stability, not mechanic type**
+
+If entity positions randomize per instance -> first-frame scan required, adaptive BFS. If deterministic -> hardcoded route sufficient. Test: compare two run first-frames; centroid drift of any entity -> adaptive. Applies to every new game before committing a route strategy.
+
+---
+
+**Cluster B: BFS/deterministic routes systematically outperform human baselines**
+
+Ratios (ai_steps / human_baseline): g50t 17/130=13%, tu93 18/108=17%, ls20 15/60=25%, wa30 30/71=42%, ar25 16/18=89%, re86 19/57=33%. All at or under the RHAE cap. Human baselines reflect exploratory play; BFS takes the shortest path. New games: optimize for minimum correct path length.
+
+@BELIEF:LAT82LON50 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT85LON-10,contained_by>@LAT60LON20
+[ew]
+conf:240
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF: Deterministic routes always beat human baselines by >= 10%**
+
+Every solved L1 BFS/hardcoded route outperforms the human baseline by a significant margin. No padding needed. Optimize for minimum correct path length only.
+
+---
+
+**Cluster C: Win target always identifiable in L1 first frame**
+
+All 9 solved games: player entity and win target both visible from first-frame value-count + bounding-box analysis. No exploration required to discover the goal.
+
+@BELIEF:LAT79LON50 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT85LON-10,contained_by>@LAT60LON20
+[ew]
+conf:210
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF: Player entity and win target both identifiable from L1 first-frame signature alone**
+
+No game requires exploration to find the goal. First-frame value-count + bbox analysis is sufficient. License: commit to player+target hypothesis from signature alone; build BFS immediately. If it fails, revise entity identification, not the BFS architecture.
+
+---
+
+**Cluster D: Step size in {1, 3, 4, 6} pixels across all solved games**
+
+re86/ar25: 3px. wa30: 4px. tu93/g50t/sk48: 6px. ls20: 1px. All small integers. Entity positions are always multiples of step size. Derivable from entity pixel count and logical dims.
+
+@BELIEF:LAT76LON50 | created:1749600000 | updated:1749600000 | relates:extracted_from>@LAT85LON-10,contained_by>@LAT60LON20
+[ew]
+conf:185
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF: Step size is a small integer (1-8px); derive from entity pixel count / expected cell dims**
+
+Observed: {1, 3, 4, 6}. For new games: identify player entity, estimate logical size, step = sqrt(pixel_count / cell_area). Cross-check: two adjacent positions differ by exactly step in one axis.
+
+---
+
+### Phase 2 — Projection (hypotheses for 10 unsolved simple-action games)
+
+Seeded from frame signatures captured in v2026-06-11.2 run. Each projection assigns a mechanic class and identifies likely player + target entities.
+
+---
+
+@BELIEF:LAT55LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:145
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: ka59 — cursor navigation (PRIORITY 1)**
+
+Frame: v5:n=1,r31c28 — single pixel. This is a cursor-direction indicator, identical in signature to ls20 (single-pixel entity at step 0). v14:n=16,r27-32c18-29 — 4x4 player block adjacent to cursor. v1:n=607,r21-41c9-53 — 21x45 main field (navigable area). v15:n=126,r21-41c33-38 — 21x6 zone on right side of field.
+
+Mechanic: cursor (v5) + player block (v14) navigates across v1 field to reach v15 target. BFS inside v1 bounds, step ~4-6px.
+
+Approach: scan v5 centroid (cursor facing), v14 top-left, v15 centroid. BFS from v14 to v15; obstacle = non-v1 cells.
+
+Confidence: 145. Single-pixel cursor is the strongest pattern match to a known solved game.
+
+---
+
+@BELIEF:LAT50LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:130
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: cn04 — cross-field navigation (PRIORITY 2)**
+
+Frame: v0:n=135,r8-22c11-25 (top-left, ~15x15 region). v14:n=144,r29-49c41-49 (bottom-right, ~21x9 region). v8:n=36,r23-43c14-40 (obstacle field between them). v4:n=32,r0c16-47 (UI top row).
+
+Mechanic: v0=player (top-left). v14=target (bottom-right). v8=obstacle field. Navigate v0 through v8 to reach v14. Entity sizes suggest: v0 = 5x3 sprite at 3px step (5*3*3*3=135 yes), v14 = 4x4 sprite at 3px step (4*4*3*3=144 yes). Step = 3px.
+
+Confidence: 130. Clean spatial split (top-left player, bottom-right target) matches navigation template. Size arithmetic confirms 3px step.
+
+---
+
+@BELIEF:LAT45LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:120
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: m0r0 — bilateral symmetry / two-field transfer (PRIORITY 3)**
+
+Frame: v11:n=1294,r1-62c0-31 + v12:n=1299,r1-62c32-63 — two colors divide frame left (cols 0-31) and right (cols 32-63) with near-equal counts. v10:n=50,r44-48c19-43 — horizontal band spanning left-right boundary at center-bottom.
+
+Mechanic: v11 and v12 are two game fields. v10 is a player entity at the boundary, or a bridge object. Novel mechanic — no solved-game analogue. Win: symmetric arrangement or transfer v10 to one side.
+
+Approach: probe each action and observe which value changes. If v10 translates -> sliding entity. If v11/v12 pixels change -> mutable fields.
+
+Confidence: 120. Bilateral split is unique; mechanic is most uncertain of the top-3 games.
+
+---
+
+@BELIEF:LAT42LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:115
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: sb26 — vertical stripe sorting (PRIORITY 4)**
+
+Frame: v9:n=36,r1-60c18-37; v11:n=36,r1-60c32-45; v14:n=36,r1-60c18-30; v15:n=36,r1-60c26-44. Four entities with IDENTICAL count=36, all spanning rows 1-60. Col ranges overlap. v8:n=72 (double count) = likely goal slot. v2:n=79 (wide horizontal band) = floor/divider. v5:n=152,r0-7c17-45 (top band). v0:n=20,r24-35c17-46 (small block = cursor?).
+
+Mechanic: four colored vertical stripes must be sorted into non-overlapping target positions (left-to-right color order). Mechanic: push or slide columns. Analogue to sk48 block sequence alignment but with columns.
+
+Confidence: 115. Identical counts are the strongest structural signal. Overlapping bboxes confirm stripes currently interleave and must be separated.
+
+---
+
+@BELIEF:LAT38LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:112
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: su15 — top-reservoir delivery to bottom zone (PRIORITY 5)**
+
+Frame: v4:n=631,r0-9c0-63 (10x64 solid top band, 98% fill). v9:n=59,r11-19c44-52 (9x9 entity just below top band, top-right). v15:n=18,r4-60c3-32 (sparse left-side elements). v3:n=29,r14-57c6-49 (sparse scattered). v0:n=69,r52-63 (bottom band).
+
+Mechanic: v4=top source/tank. v9=player entity (9x9 body, below top band). v0=bottom delivery zone. Navigate v9 downward through scattered elements to reach v0. May be delivery (collect v15/v3) or maze (avoid them).
+
+Confidence: 112. Top-dominant structure with bottom zone is a clear directional flow pattern.
+
+---
+
+@BELIEF:LAT35LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:108
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: bp35 — maze nav to top target zone (PRIORITY 6)**
+
+Frame: v10:n=1805,r0-62c13-53 (dominant background/floor, 71% fill in that region). v14:n=147,r1-17c13-53 (dense 17-row top zone, same col span as floor). v9:n=6,r37-40c18-19 (tiny 6-pixel entity at mid-frame = player, ~2x3 sprite). v3:n=178,r1-61c1-62 (scattered obstacles). v0:n=63,r63c1-63 (UI row).
+
+Mechanic: v9=player (tiny 6-pixel entity). v14=top target zone (rows 1-17). Navigate player upward through v3 obstacles to reach v14. v10=passable floor.
+
+Confidence: 108. v9 (tiny entity at mid-frame) as player and v14 (dense top zone) as goal. v3 scatter matches obstacle pattern from ls20/tu93.
+
+---
+
+@BELIEF:LAT32LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:105
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: sc25 — cursor nav, right UI stripe (PRIORITY 7)**
+
+Frame: v14:n=128,r0-63c62-63 (full-height 2-column right stripe = UI/score display, NOT a game entity). v9:n=22,r17-22c12-40 + v10:n=24,r18-22c13-42 (player cursor at top, rows 17-22). v15:n=16,r51-58c12-19 (target lower-left). v2:n=169,r19-61c12-38 + v3:n=244,r47-63c11-38 (obstacle fields).
+
+Mechanic: v14=UI (ignore). Cursor (v9 or v10) at top navigates to target (v15) lower-left through v2/v3 obstacle regions. Classic cursor-to-target nav.
+
+Confidence: 105. Right-column stripe is interpretable as UI. Top cursor + lower-left target is a clean navigation structure.
+
+---
+
+@BELIEF:LAT28LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:95
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: tr87 — three-entity arrangement puzzle (PRIORITY 8)**
+
+Frame: v3:n=1370,r7-62c0-63 (dominant background). v5:n=321,r5-56c13-50; v7:n=363,r4-57c14-51; v10:n=394,r4-46c12-48 — three entities of similar scale (~320-400px each), overlapping bboxes. v1:n=64,r63c0-63 (UI row).
+
+Mechanic: three game entities of similar scale must be arranged on v3 background. Win: specific spatial arrangement (stacking, sorting, non-overlapping placement). ACTION5 likely cycles active entity. Overlapping bboxes confirm the three entities currently collide — win requires separating or ordering them. Analogue to re86 multi-piece placement.
+
+Confidence: 95. Three entities of near-equal scale is the clearest structural signal.
+
+---
+
+@BELIEF:LAT25LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:88
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: lf52 — two-body territory puzzle (PRIORITY 9)**
+
+Frame: v0:n=723,r0-52c1-63 + v1:n=469,r0-51c0-50 (two huge overlapping bodies covering most of frame). v5:n=172,r10-53c9-52 + v9:n=86,r11-54c10-53 (smaller overlapping bodies). v14:n=60,r18-39c17-44 (mid-frame entity = player candidate).
+
+Mechanic: v0 and v1 are two territorial fields. v14=player entity. v5/v9=targets or obstacles within territories. Win: position v14 relative to v0/v1 boundary or collect v5/v9 within one territory. Novel mechanic, highest uncertainty.
+
+Confidence: 88. Two large overlapping bodies have no solved-game analogue. Lowest-confidence projection.
+
+---
+
+@BELIEF:LAT22LON50 | created:1749600000 | updated:1749600000 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:82
+rev:0
+sal:0
+touched:1749600000
+[/ew]
+
+**BELIEF [PROJECTION]: dc22 — paired-entity manipulation puzzle (PRIORITY 10)**
+
+Frame: v3:n=1217,r0-63c0-63 + v5:n=1190,r10-53c32-63 (two near-equal dominant bodies, left and right halves). v8:n=71,r17-33c12-54 + v9:n=71,r20-38c8-54 (IDENTICAL count=71, overlapping bboxes). v11:n=4,r20-21c24-25 + v14:n=4,r38-39c10-11 (tiny 4-pixel cursor/target markers). v2:n=80,r18-43c8-27.
+
+Mechanic: v8 and v9 (identical count=71) are a matched pair requiring alignment or overlap. v3/v5 partition the play space into left/right zones. v11/v14=cursor or target markers. Most complex unsolved game — possibly two-entity synchronization or matching puzzle.
+
+Confidence: 82. Identical v8/v9 counts are the strongest signal. Overall mechanic remains most uncertain.
+
+---
+
+### Priority Queue — Next Game Attacks
+
+| Rank | Game | Conf | Projected mechanic | Solved analogue |
+|------|------|------|--------------------|-----------------|
+| 1 | **ka59** | 145 | Cursor nav: single-px cursor + 4x4 player + field + target zone | ls20 / tu93 |
+| 2 | **cn04** | 130 | Cross-field nav: player top-left to target bottom-right, 3px step | tu93 / wa30 |
+| 3 | **m0r0** | 120 | Bilateral symmetry / two-field transfer (3 values only) | novel |
+| 4 | **sb26** | 115 | Stripe sorting: 4 identical-count entities, overlapping cols | sk48 |
+| 5 | **su15** | 112 | Top-reservoir to bottom delivery, 9x9 player | wa30 |
+| 6 | **bp35** | 108 | Maze nav to top zone, tiny 6-px player | ls20 / tu93 |
+| 7 | **sc25** | 105 | Cursor nav top to lower-left, right-col UI stripe | ls20 |
+| 8 | **tr87** | 95  | Three-entity arrangement / piece placement | re86 |
+| 9 | **lf52** | 88  | Two-body territory or boundary puzzle | novel |
+| 10 | **dc22** | 82  | Paired-entity (identical-count v8/v9) manipulation | re86 |
+
+---
+
+[DREAM COMPLETE 2026-06-11: Phase 1 extracted 4 confirmed beliefs (LAT85LON50, LAT82LON50, LAT79LON50, LAT76LON50). Phase 2 generated 10 projection hypotheses (LAT55LON50 through LAT22LON50). Competition state: 9/25 solved, overall=1.1778. Priority queue opens with ka59 (strongest analogue to existing solved games). No-simple-action games (lp85, vc33, r11l, s5i5, ft09, tn36) deferred until click/coordinate action support available.]
