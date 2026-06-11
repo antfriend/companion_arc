@@ -217,7 +217,9 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             if fresh:
                 actions = fresh
             agent.on_level_start(current_level, list(obs.frame)[0])
-            route = list(agent.routes.get(current_level, route))
+            adaptive = agent.routes.get(current_level)
+            if adaptive:  # only override if detector produced a non-empty route
+                route = list(adaptive)
             level_scanned = True
 
         # Play route (1-indexed: level_step=1 → route[0]) or action 0 — no random fallback
