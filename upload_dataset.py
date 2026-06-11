@@ -9,7 +9,7 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "offline run 2026-06-11: overall=1.0667, 8 games scoring L1; frame sigs for 11 unsolved",
+    "offline run 2026-06-11.2: 9 games L1 solved (added sk48 snake+sokoban, 14 actions)",
     dir_mode="zip",
     quiet=False,
 )

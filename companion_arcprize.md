@@ -13217,3 +13217,21 @@ sb26: v0:n=20,r24-35c17-46 v2:n=79,r29-53c0-62 v3:n=1,r53-53c63-63 v5:n=152,r0-7
 su15: v0:n=69,r52-63c0-63 v3:n=29,r14-57c6-49 v4:n=631,r0-9c0-63 v9:n=59,r11-19c44-52 v15:n=18,r4-60c3-32
 tr87: v0:n=14,r48-60c15-19 v1:n=64,r63-63c0-63 v3:n=1370,r7-62c0-63 v5:n=321,r5-56c13-50 v7:n=363,r4-57c14-51 v10:n=394,r4-46c12-48
 
+
+[route game=sk48 level=1 steps=13 confirmed=true adaptive=false commit=pending]
+UP*2, RIGHT*4, LEFT, DOWN*2, RIGHT, LEFT, UP, RIGHT
+Note: pre-route ACTION1 (UP) slides snake row=36->30 before route starts.
+Full sequence: UP(pre), UP, UP, R, R, R, R, L, D, D, R, L, U, R (14 total actions).
+Blocks: c8=(41,18), c9=(41,24), c14=(41,30) pushed to segs[3,4,5] at row=24.
+Win: vjfbwggsd[launch]=[8,14,9] matches target.
+[/route]
+
+[mechanic game=sk48 version=2026-06-11]
+SNAKE+SOKOBAN hybrid. Horizontal snake (RIGHT-facing) slides on rails.
+Actions: ACTION1=UP(slide), ACTION2=DOWN(slide), ACTION3=LEFT(retract), ACTION4=RIGHT(extend).
+Blocks (elmjchdqcn) pushed by segment movement (forward=detach-at-boundary, backward=push-left, slide=push-perp).
+Win: vjfbwggsd[launch] = vjfbwggsd[target] (colored block sequence match).
+L1 target: [c8,c14,c9] = [8,14,9]. Budget: 196. Human baseline: see metadata.
+CRITICAL: Segment checks BOTH current AND target positions for blocks (target-position blocks pushed first).
+CRITICAL: Pre-route ACTION1=UP fires before route starts; route must account for row=30 start, not row=36.
+[/mechanic]

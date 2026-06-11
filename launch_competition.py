@@ -68,7 +68,7 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN")) or _gatewa
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 
 # Games with confirmed, stable solutions — batch runs suppress verbose frame/route logs
-_SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80", "tu93", "wa30", "ar25", "g50t"})
+_SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80", "tu93", "wa30", "ar25", "g50t", "sk48"})
 
 # Hardcoded winning routes (indices into each game's simple action space)
 # ls20: [UP,DOWN,LEFT,RIGHT] → indices 0-3
@@ -88,6 +88,12 @@ _HARDCODED_ROUTES: dict[str, list[int]] = {
     # g50t: recording/replay maze. Stage 0: RIGHT*4 to button (37,7) + ACTION5 submit.
     # Stage 1: ghost holds button open, DOWN*7 + RIGHT*5 to win target (43,49). 17 actions.
     "g50t": [3, 3, 3, 3, 4, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3],
+    # sk48: snake+sokoban hybrid. Pre-route UP slides row=36→30 automatically.
+    # Route starts from row=30: UP*2→row=18, extend*4 (c8 detaches at 41,18),
+    # retract (c8→35,18), DOWN*2→row=30 (c8→35,30), extend (c14 detaches at 41,30),
+    # retract (c8→29,30 c14→35,30), UP→row=24, extend (c9 at 41,24 wins).
+    # Final: row=24 segs[3,4,5] hold [c8,c14,c9]=[8,14,9]. 13 route actions (14 total).
+    "sk48": [0, 0, 3, 3, 3, 3, 2, 1, 1, 3, 2, 0, 3],
 }
 
 _ROUTES: dict[str, list[int]] = {}
