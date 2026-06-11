@@ -9,7 +9,7 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "wa30 L1 solved: adaptive delivery BFS, 30 steps (commit 7d2b5e8)",
+    "ar25 L1 solved: reflection puzzle, piece at (1,15) covers markers via mirror, 16 steps",
     dir_mode="zip",
     quiet=False,
 )
