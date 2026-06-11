@@ -12993,3 +12993,164 @@ tags: ["keyboard"]
 Level 1 used exactly 30 actions to win. With baseline 71, the route found was approximately 42% of human length — strong efficiency, well within the 1.15× cap. The wa30 adaptive detector (or LOCUS-guided navigation) found a path in 30 steps.
 
 Level 2 consumed all remaining 30 actions without winning. Level 2 baseline = 119; 30 actions is only 25% of the baseline budget — the level 2 route is substantially longer and was not found
+
+
+---
+
+## Batch Solve Record -- 2026-06-09 to 2026-06-11
+
+Five new games confirmed solved (L1). Solved roster advances from 3/25 to 8/25.
+Dataset versions: v2026-06-09.1 (re86), v2026-06-10.1 (tu93 + sp80-L2 fix), v2026-06-11.1 (wa30, ar25), v2026-06-11.2 (g50t).
+
+**Solved (8/25)**: ls20, cd82, sp80, re86, tu93, wa30, ar25, g50t
+**Unsolved (17/25)**: bp35, cn04, dc22, ft09, ka59, lf52, lp85, m0r0, r11l, s5i5, sb26, sc25, sk48, su15, tn36, tr87, vc33
+
+---
+
+### Confirmed Routes -- 2026-06-09 to 2026-06-11
+
+[route game=re86 level=1 steps=19 confirmed=true adaptive=true commit=86bed08]
+UP*up_042, RIGHT*4, CYCLE, UP*6, LEFT*2
+where up_042 = (active_center_row - 24) // 3; batch row~42 -> up_042=6 (19 steps); competition row~45 -> up_042=7 (20 steps)
+[/route]
+
+[route game=tu93 level=1 steps=18 confirmed=true adaptive=true commit=986dc66]
+BFS from cursor logical cell to exit logical cell (5,5). Cell size=6px. CORRIDOR_COLOR=2. Route length varies per instance (~18 steps typical).
+[/route]
+
+[route game=wa30 level=1 steps=30 confirmed=true adaptive=true commit=7d2b5e8]
+BFS delivery loop: cursor->item->dropzone x3 items. STEP=4px. 0=UP,1=DOWN,2=LEFT,3=RIGHT,4=PICKUP/DROP. 30 steps vs baseline 71.
+[/route]
+
+[route game=ar25 level=1 steps=16 confirmed=true adaptive=true commit=a1eaaca]
+LEFT*(piece_x-1) + DOWN*(15-piece_y). Typical: LEFT*5+DOWN*10 for piece at game (6,5). Total=16 steps vs baseline 18.
+[/route]
+
+[route game=g50t level=1 steps=17 confirmed=true commit=a049952]
+RIGHT*4, ACTION5, DOWN*7, RIGHT*5
+[/route]
+
+---
+
+## re86 -- Mechanic Record (2026-06-09, commit 86bed08)
+
+**Type**: PIECE PLACEMENT puzzle (NOT cursor navigation).
+
+Two cross-shaped pieces must be placed to match a target composite sprite (0053, at canvas origin):
+- Sprite 0042 (color 9, 27x27 cross): starts at game (x=23,y=32), target (x=35,y=11).
+- Sprite 0030 (color 11, 23x23 cross): starts at game (x=10,y=16), target (x=4,y=-2).
+
+Mechanics:
+- ACTION5 cycles the active piece; active piece marked by single color-0 center pixel.
+- ACTION1-4 move the active piece by 3 pixels (step size=3).
+- Win: composite pixel map of both pieces matches target sprite 0053.
+- Cursor position varies per instance (batch vs competition timing differ by 1 action).
+
+Adaptive formula: up_042 = (active_center_row - 24) // 3 (target center row = 24).
+
+CRITICAL LESSON: Do not assume cursor navigation. re86 has a piece-placement mechanic where ACTION5 cycles between pieces (not navigate/select). The single color-0 pixel is the active-piece center marker, not a navigation cursor.
+
+---
+
+## tu93 -- Mechanic Record (2026-06-10, commit 986dc66)
+
+**Type**: MAZE navigation puzzle.
+
+A 3x3 probe sprite navigates through a maze to reach a 3x3 exit sprite:
+- Maze step size: hwthhtvyki=3 px (half-step); alignment unit=6px.
+- Passability: pixel 3 ahead in move direction must equal CORRIDOR_COLOR=2.
+- Logical cell layout: 6x6 pixels each. Level 1: probe at (0,0), exit at (5,5).
+- BFS operates in cell space; maze layout randomizes per instance.
+- Action mapping: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT (ACTION1-4, no ACTION5 needed).
+
+CRITICAL LESSON: Wall color naming is inverted from intuition. Color 2 = CORRIDOR (passable). Color 0 = ROOM INTERIOR (blocked). The code had WALL_COLORS={2}, making corridors appear impassable. Fix: treat color 2 as passable corridors, color 0 as blocked room interiors.
+
+Also: BFS cell center offset must use MAZE_ORIGIN + cell * CELL_SIZE + CELL_SIZE // 2. Off-by-one caused route to miss exit by 1 cell.
+
+---
+
+## wa30 -- Mechanic Record (2026-06-11, commit 7d2b5e8)
+
+**Type**: DELIVERY puzzle.
+
+4x4 cursor (color-0 direction-edge + color-14 body) picks up items and delivers them:
+- Items: color-4 border + color-9 interior (4x4 sprite).
+- Drop zone: color-9 border + color-2 interior.
+- ACTION4 = PICKUP/DROP (context-sensitive: picks up if empty, drops if carrying).
+- Step size: celomdfhbh=4 px. All positions multiples of 4.
+- L1: 3 items, one drop zone, no adversaries.
+
+BFS route: for each item: navigate->pickup->navigate->drop. Repeat x3. 30 steps total.
+
+Cursor detection: color-0 direction edge indicates facing. Infer sprite TL from edge orientation and adjacent color-14 body.
+
+**Score**: (71/30)^2=5.60 -> capped at 1.15x. Level score 115.0.
+
+---
+
+## ar25 -- Mechanic Record (2026-06-11, commit a1eaaca)
+
+**Type**: REFLECTION puzzle.
+
+One moveable piece must be positioned so its mirror-reflection covers all target markers:
+- Piece "0007arvfmhagbj": L-shaped 5-pixel cross variant (color 5), starts at game (x=6,y=5).
+- Vertical mirror at game x=10. Reflection rule: reflected_x = 20 - pixel_x.
+- 5 target markers (color 11) at game positions (17,15),(18,15),(19,15),(17,16),(17,17).
+- Win: reflected pixels cover all 5 targets.
+- Solution: place piece at game (1,15). Scale=3: game (gx,gy) -> frame col=gx*3, row=gy*3.
+
+Adaptive route: LEFT*(piece_x-1) + DOWN*(15-piece_y). For typical start (6,5): 15+1=16 steps.
+
+**Score**: (18/16)^2=1.266 -> capped at 1.15x. Baseline only 18 actions (tightest margin of all solved games).
+
+CRITICAL LESSON: The 64x64 frame is 21x21 game units at scale=3. Solve in game coordinates (divide by 3). The winning piece position is NOT at the target markers but at the position where the REFLECTED piece covers them.
+
+---
+
+## g50t -- Mechanic Record (2026-06-11, commit a049952)
+
+**Type**: RECORDING/REPLAY MAZE puzzle (most novel mechanic encountered so far).
+
+Player moves a 7x7 goal cursor inside a large player sprite body:
+- Goal cursor: qftsebtxuc (7x7), starts at game pixel (13,7). Step: jarvstobjt=6 px.
+- Win: goal center reaches (43,49) = tracker pos (42,48) + (1,1).
+- Door: kjrcloicja at (13,37), rotation=270 -> opens RIGHT to (19,37).
+- Button: medyellngi at (37,7). Goal center inside button -> door opens.
+- Hold-door: dpdubazedr=False -> door closes when goal leaves button.
+
+TWO-STAGE RECORDING mechanic:
+- Stage 0: user records path. ACTION5 submits -> ghost created at old goal position.
+- Stage 1: ghost replays path step N on user move N. Ghost holds last position on path exhaustion.
+- Ghost exhausts at button position (37,7) -> door stays open for all remaining stage-1 moves.
+
+Solution (17 actions): RIGHT*4 + ACTION5 [creates ghost], then DOWN*7 + RIGHT*5.
+Ghost fires on moves 1-4 of stage 1; at move 4, ghost reaches (37,7) -> door permanently open.
+Hardcoded route: [3,3,3,3,4,1,1,1,1,1,1,1,3,3,3,3,3]
+
+**Score**: (130/17)^2=58.5 -> capped at 1.15x. Baseline 130 actions.
+
+CRITICAL LESSONS:
+1. The player sprite IS the navigable terrain (goal moves inside it). The sprite pixels define walkable space.
+2. BFS alone fails for two-stage puzzles. Must model the recording mechanic to find the solution space.
+3. Ghost is the only door-hold mechanism; it works passively by staying at the button after path exhausts.
+4. Simulation resetting to level 2 layout mid-route = L1 WIN followed by level load. Not a route failure.
+
+---
+
+### Score Model Update -- 2026-06-11
+
+Solved 8/25 games, all at L1 cap (1.15x RHAE).
+
+| Game | L1 steps | Baseline | Cap |
+|------|----------|----------|-----|
+| ls20 | 15       | ~60      | YES |
+| cd82 | 19       | ~90      | YES |
+| sp80 | 8        | 14       | YES |
+| re86 | 19-20    | ~57      | YES |
+| tu93 | ~18      | ~108     | YES |
+| wa30 | 30       | 71       | YES |
+| ar25 | 16       | 18       | YES |
+| g50t | 17       | 130      | YES |
+
+Unsolved 17 games contribute 0. Breadth-first attack on unsolved games is the highest-value next step.
+
