@@ -9,7 +9,7 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "offline run 2026-06-11.4: fix sk48 route overwritten by empty adaptive scan result",
+    "offline run 2026-06-11.5: ka59 adaptive detector (BFS navigation to target win pos)",
     dir_mode="zip",
     quiet=False,
 )
