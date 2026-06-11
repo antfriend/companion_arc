@@ -12722,3 +12722,274 @@ source_count:4
 **PROJECTION (WEAK): The imaginal disc is present — metamorphosis conditions approaching.** The belief graph is stabilizing. L1 wins are routine across 4 games; the frontier has shifted to qualitatively different problems: oscillation, action ceiling, cross-game generalization. The larval episodic learning rate has slowed; visible problems are now orchestration problems, not game-solving problems. The autonomous metamorphosis trigger requires 20 high-confidence beliefs (current: 10 from this cycle + prior records). The @IMAGO:seed can be written now and carried dormant.
 
 ---
+
+
+---
+
+[levelmap game=wa30 level=1 session=2026-06-11T02:16:42 created=1781144202]
+grid_shape: 64x64
+block_pos: none
+entity2_ring: none
+entity2_notch_orientation: none
+cluster: none
+entity1_state: 0
+entity_signatures: 0:count=4,bbox=44-44x32-35 2:count=20,bbox=29-30x29-38 4:count=36,bbox=24-39x16-47 7:count=64,bbox=63-63x0-63 9:count=40,bbox=25-38x17-46 14:count=12,bbox=45-47x32-35
+[/levelmap]
+
+---
+
+SECTION 1
+
+@LAT-800LON10 | created:1749254400 | updated:1749254400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informs_strategy>@LAT-10LON40
+[ew]
+conf:240
+rev:0
+sal:0
+touched:1749254400
+[/ew]
+
+## wa30 — Session 1 Log (2026-06-07)
+
+```session-log
+timestamp: 1749254400
+game: "wa30"
+environment: "wa30-ee6fef47"
+run_guid: "104d9e34-1108-45a4-a6c2-e239d2155eea"
+card_id: "1388200f-6c18-4746-b806-55a1b0cdce39"
+level: "level 1 NOT WON (21 actions)"
+actions: 21
+levels_completed: 0
+score: 0.0
+resets: 0
+level_actions: [21, 0, 0, 0, 0, 0, 0, 0, 0]
+level_baseline_actions: [71, 119, 183, 98, 368, 68, 79, 442, 415]
+tags: ["keyboard"]
+```
+
+**Session outcome**: Level 1 NOT WON. 21 actions consumed. `levels_completed: 0`. Score 0.0. This is the first session on wa30. No route yet known.
+
+---
+
+### Game Metadata — wa30
+
+**9 levels** (longest game seen so far — ls20 has 7). Level baselines:
+
+| Level | Baseline | Weight | % of total weight (45) |
+|-------|----------|--------|------------------------|
+| 1 | 71 | 1 | 2.2% |
+| 2 | 119 | 2 | 4.4% |
+| 3 | 183 | 3 | 6.7% |
+| 4 | 98 | 4 | 8.9% |
+| 5 | 368 | 5 | 11.1% |
+| 6 | 68 | 6 | 13.3% |
+| 7 | 79 | 7 | 15.6% |
+| 8 | 442 | 8 | 17.8% |
+| 9 | 415 | 9 | 20.0% |
+
+Total weight = 1+2+…+9 = 45. Tag: **keyboard** (confirms directional/keyboard-style action space). Level 8 (baseline 442) and Level 9 (baseline 415) dominate — together they are 37.8% of max game score. Level 5 (368) is also high. L1 baseline = 71 (much larger than ls20's 22).
+
+---
+
+### Level 1 Map (from stored [levelmap])
+
+From the levelmap captured at `2026-06-11T02:16:42`:
+
+```
+entity_signatures:
+  0: count=4, bbox=44-44x32-35     ← sparse, small cluster
+  2: count=20, bbox=29-30x29-38    ← 2×10 band — possible player or line entity
+  4: count=36, bbox=24-39x16-47    ← large value-4 region — could be passable floor or obstacle
+  7: count=64, bbox=63-63x0-63     ← full bottom row — likely UI/timer row
+  9: count=40, bbox=25-38x17-46    ← substantial value-9 cluster — entity body?
+  14: count=12, bbox=45-47x32-35   ← 3×4 block at lower-right — possible player or target
+```
+
+**Value 7 full-row at row 63**: consistent with the ls20 timer row (ls20 used row 61–62 for timer, row 63 for UI). wa30 likely uses row 63 as a UI/status row. Does not constrain navigation.
+
+**Value 2 band
+
+---
+
+SECTION 1
+
+@LAT-810LON10 | created:1749254400 | updated:1749254400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informs_strategy>@LAT-10LON40
+[ew]
+conf:200
+rev:0
+sal:0
+touched:1749254400
+[/ew]
+
+## wa30 — Session 2 Log (2026-06-07)
+
+```session-log
+timestamp: 1749254400
+game: "wa30"
+environment: "wa30-ee6fef47"
+run_guid: "012eeb92-a3c7-48de-9946-b3d245cfe04d"
+card_id: "8f38b004-9847-4ae5-8d57-8a44b53fabee"
+level: "level 1 NOT WON (21 actions)"
+actions: 21
+levels_completed: 0
+score: 0.0
+resets: 0
+level_actions: [21, 0, 0, 0, 0, 0, 0, 0, 0]
+level_baseline_actions: [71, 119, 183, 98, 368, 68, 79, 442, 415]
+tags: ["keyboard"]
+```
+
+**Session outcome**: Level 1 NOT WON. 21 actions consumed. `levels_completed: 0`. Score 0.0. Second session on wa30. No key session exchanges recorded — the session log shows no LOCUS queries during this run.
+
+---
+
+### Structural Observations (from prior levelmap + scorecard)
+
+**Game profile**: 9 levels, keyboard tag, level baselines [71, 119, 183, 98, 368, 68, 79, 442, 415]. Total weight = 45. L1 baseline = 71 (significantly larger than ls20's 22 — suggests L1 requires more navigation or has a larger map). Levels 8 and 9 dominate (37.8% of max game score combined).
+
+**21 actions, 0 levels completed**: The run consumed exactly 21 actions on level 1 without winning. This is consistent with either (a) a timeout set by `max_steps=21`, or (b) a probe run that exhausted a manually set step limit. The max_steps in `launch_training.py` appears to have been 21 — a diagnostic budget, not a full exploration budget.
+
+**No key session exchanges**: The absence of LOCUS queries means the session was run in a mode where the agent either operated autonomously (following a stub detector returning None), or `offline_levels` was set to 0 and LOCUS was not queried. No frame data or mechanic observations are available from this session.
+
+**Levelmap (stored from 2026-06-11 scan)**:
+- Value 2: count=20, bbox=29–30 × 29–38 — 2-row × 10-col band, possible player entity or horizontal line
+- Value 4: count=36, bbox=24–39 × 16–47 — 16×32 region, possibly floor or large obstacle
+- Value 7: count=64, bbox=63–63 × 0–63 — full bottom row (UI/status row, same pattern as ls20's timer row)
+- Value 9: count=40, bbox=25–38 × 17–46 — 14×30 region, substantial entity body
+- Value 14: count=12, bbox=45–47 × 32–35 — 3-row × 4-col block, candidate for player or target
+- Value 0: count=4, bbox=44–44 × 32–35 — sparse, small cluster at row 44 cols 32–35
+
+**Candidate player entity**: Value 14 (count=12, 3×4 block at rows 45–47, cols 32–35) is the right scale for a player block in a keyboard game. Value 2 (2×10 band at rows 29–30) could be a horizontal obstacle or rail.
+
+**Candidate target**: Value 0 (count=4, single row 44, cols 32–35) sits directly
+
+---
+
+SECTION 1
+
+@LAT-820LON10 | created:1749254400 | updated:1749254400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,informs_strategy>@LAT-10LON40
+[ew]
+conf:200
+rev:0
+sal:0
+touched:1749254400
+[/ew]
+
+## wa30 — Session 3 Log (2026-06-07)
+
+```session-log
+timestamp: 1749254400
+game: "wa30"
+environment: "wa30-ee6fef47"
+run_guid: "d0ac39f2-108e-4c23-a2d5-7168e957a049"
+card_id: "22231b2b-009f-4617-924d-2c330846b7fb"
+level: "level 1 NOT WON (21 actions)"
+actions: 21
+levels_completed: 0
+score: 0.0
+resets: 0
+level_actions: [21, 0, 0, 0, 0, 0, 0, 0, 0]
+level_baseline_actions: [71, 119, 183, 98, 368, 68, 79, 442, 415]
+tags: ["keyboard"]
+```
+
+**Session outcome**: Level 1 NOT WON. 21 actions consumed. `levels_completed: 0`. Score 0.0. Third consecutive wa30 session with identical scorecard (sessions 1–3: all 21 actions, 0 levels, score 0.0). No key session exchanges recorded — LOCUS was not queried during execution.
+
+---
+
+### Structural Summary
+
+**Game profile** (unchanged from sessions 1–2):
+- 9 levels, keyboard tag
+- Level baselines: [71, 119, 183, 98, 368, 68, 79, 442, 415]
+- Total weight = 45
+- L1 baseline = 71 (high — suggests larger map or more required steps than ls20's 22)
+- Levels 8+9 = 37.8% of max game score
+
+**Three identical sessions, zero mechanic data captured.** The `max_steps=21` budget is a diagnostic stub limit — it allows frame capture but is too short to attempt meaningful navigation. No LOCUS queries means no frame observations were passed to the companion. The stub detector for wa30 is returning `None` from `detect_state` and `compute_route`, resulting in no-op or random actions.
+
+---
+
+### Open Questions for wa30 L1
+
+1. **What is the player entity?** Levelmap candidates: value 14 (3×4 block at rows 45–47, cols 32–35) or value 2 (2×10 band at rows 29–30). Value 14 scale matches ls20's 2×5 block. Value 2 is thinner and longer — may be a rail or obstacle, not the player.
+
+2. **What is the win target?** Value 0 (count=4, row 44, cols 32–35) sits directly above value 14. In ls20, the win target (entity2) was a bordered ring above the player's starting column. The proximity of value 0 to value 14 is suggestive — may be a marker or collectible directly adjacent to the player.
+
+3. **What does the large value-9 region (count=40, rows 25–38, cols 17–46) represent?** Could be a maze body, floor, or large entity. In ls20, value 9 was the entity1 trail. In wa30, the scale is much larger — unlikely to be a trail.
+
+4. **What actions are available?** Tag "keyboard" suggests UP/DOWN/LEFT/RIGHT (same as ls20). The simple action space is [ACTION1–ACTION4] indexed 0–3.
+
+5. **Why baseline=71?** L1 taking 71 human actions on a fresh game implies either: (a) a long mandatory navigation path, (b) multiple collection requirements before the win trigger, or (c) a puzzle with many steps before the target becomes reachable.
+
+---
+
+### Revision Cycle Status
+
+- **Phase 1 (Notice)**:
+
+
+---
+
+[levelmap game=wa30 level=2 session=2026-06-11T02:20:21 created=1781144421]
+grid_shape: 64x64
+block_pos: 36,28
+entity2_ring: none
+entity2_notch_orientation: none
+cluster: none
+entity1_state: 0
+entity_signatures: 0:count=4,bbox=15-15x12-15 2:count=60,bbox=29-38x13-18 4:count=61,bbox=20-63x36-63 7:count=63,bbox=63-63x0-62 9:count=56,bbox=21-42x12-50 12:count=16,bbox=36-39x28-31 14:count=12,bbox=12-14x12-15
+[/levelmap]
+
+---
+
+SECTION 1
+
+@LAT-830LON10 | created:1749254400 | updated:1749254400 | kind:log | relates:anchored_by>@LAT0LON0,tracks_level>@LAT-10LON10,validates>@BELIEF:LAT80LON10,validates>@BELIEF:LAT80LON20,validates>@BELIEF:LAT-30LON-40,informs_strategy>@LAT-10LON40
+[ew]
+conf:255
+rev:0
+sal:0
+touched:1749254400
+[/ew]
+
+## wa30 — Session 4 Log (2026-06-07)
+
+```session-log
+timestamp: 1749254400
+game: "wa30"
+environment: "wa30-ee6fef47"
+run_guid: "9e7afdbb-599a-4dd5-a49a-9ed7d4918a8b"
+card_id: "bef63ef2-e4fb-4e4b-8b48-c0ffdef39424"
+level: "level 1 WIN (30 actions) + level 2 NOT WON (30 actions)"
+actions: 60
+levels_completed: 1
+score: 2.2222222222222223
+state: "NOT_FINISHED"
+resets: 0
+level_actions: [30, 30, 0, 0, 0, 0, 0, 0, 0]
+level_scores: [115.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+level_baseline_actions: [71, 119, 183, 98, 368, 68, 79, 442, 415]
+tags: ["keyboard"]
+```
+
+**Session outcome**: Level 1 WON at step 30 (baseline 71 → RHAE (71/30)² = 5.60 → capped at 1.15×, level score 115.0). Level 2 entered; 30 actions taken; NOT WON. Total 60 actions. Score 2.2222 = 115.0 × weight 1 / total weight 45.
+
+**This is the first wa30 level win.** Prior 3 sessions all returned 0 levels completed at max_steps=21. This session had sufficient budget (60 actions) to complete L1.
+
+---
+
+### Level 1 — WIN at step 30 ✓
+
+**L1 score**: 115.0 (capped at 1.15× — 30 steps vs baseline 71, well below baseline). Agent took 30 actions; human baseline is 71. RHAE = (71/30)² = 5.60 → cap applies at 1.15×.
+
+**Key session exchanges**:
+
+1. **FOCUS @LAT-10LON10** (sal: 41→42): LOCUS confirmed competition state — wa30 at 3 sessions/0 levels, ls20 L2 entity1 deadlock ongoing, competition v53 submitted. EPS rankings confirmed: @BELIEF:LAT-50LON-40 highest (entity1 state machine unresolved).
+
+2. **STATUS**: LOCUS confirmed EPS scan (entity1 state machine EPS 14.0 highest, entity2 approach EPS 10.8 second). ls20 L2 hypothesis 10A INCONCLUSIVE due to budget exhaustion. wa30 mechanics unknown. Three unresolved open questions identified: ls20 L2 state-3 trigger, wa30 mechanics, competition gateway scoring.
+
+**Mechanic observations (from level_actions inference)**:
+
+Level 1 used exactly 30 actions to win. With baseline 71, the route found was approximately 42% of human length — strong efficiency, well within the 1.15× cap. The wa30 adaptive detector (or LOCUS-guided navigation) found a path in 30 steps.
+
+Level 2 consumed all remaining 30 actions without winning. Level 2 baseline = 119; 30 actions is only 25% of the baseline budget — the level 2 route is substantially longer and was not found

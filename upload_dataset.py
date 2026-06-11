@@ -9,7 +9,7 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "tu93 detector fix - logical cell BFS",
+    "wa30 L1 solved: adaptive delivery BFS, 30 steps (commit 7d2b5e8)",
     dir_mode="zip",
     quiet=False,
 )

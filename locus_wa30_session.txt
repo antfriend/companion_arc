@@ -1,0 +1,2270 @@
+LOCUS SESSION LOG
+Apply LOCUS's suggested record updates to companion_arcprize.md
+via Claude Code: open the file, paste each @LOCUS LOG line,
+and let Claude Code write the updated records.
+============================================================
+
+[FOCUS game_state]
+SENT:
+@LOCUS FOCUS lat-10lon10
+
+LOCUS:
+```cursor
+selected:
+  - @LAT-10LON10
+preview:
+  @LAT-10LON10: "Game State. sal:41 (incrementing now). 25 games. ls20 L1 solved (hardcoded, 40+ consecutive wins). L2: 40+ attempts NOT WON. Entity1 deadlock at c14-18. 9 collectible hypotheses refuted. DC28/DC29/DC30 ring-A×2 multi-cycle inconclusive. wa30 3 sessions, 0 levels. cd82/sp80/re86 L1 solved. Competition v53 submitted."
+```
+
+---
+
+**FOCUS: @LAT-10LON10 — Game State**
+
+Loading the full Game State record. `sal` incrementing to 42.
+
+---
+
+**Current competition status** (as written in @LAT-10LON10):
+
+| Dimension | State |
+|---|---|
+| Active game (training) | ls20 — L1 solved, L2 NOT WON across 40+ sessions |
+| Competition games solved | ls20 (L1+L2), cd82 (L1), sp80 (L1), re86 (L1) — 4 of 25 |
+| Current submission | v53 (2026-06-07), gateway score pending |
+| Score since session 23 | 3.571 (ls20 L1 only — L2 still 0) |
+| wa30 | 3 sessions, 0 levels, no mechanic data |
+
+---
+
+**ls20 L2 — entity1 deadlock summary (the active barrier)**
+
+Entity1 enters tracking mode (state 2) as soon as the first collectible is collected — ring A, ring B, or cross, whichever comes first. Once in state 2, entity1 tracks 1 row below the block at the same column. At c14–18 (the only column that reaches entity2), entity1 cannot execute its 5-row jump because entity2's permanent body at r41–43 c15–17 blocks the landing zone. Block cannot reach r40–41 c14–18 while entity1 is at r37–39.
+
+**Hypotheses exhausted (9 collectible orderings + 1 collision test)**:
+3A, 3E, 4A, 5B, 5C, 6A, 6B, 8A, 8B — all refuted. 9A (N blocked-DOWN events, N=53) inconclusive. 10A (ring A ×2 multi-cycle) inconclusive due to route failures in sessions 62–70.
+
+**Last session (70)**: L1 regression — route-offset bug caused cluster collection before entity2 entry, triggering entity1 state 2 inside L1 and blocking the L1 win. Fix applied (14-element `_LEVEL1_ROUTE`). Session 70 ended at 21 actions with the diagnostic `max_steps=21`.
+
+---
+
+**EPS scan** (sal × (255 − conf) / 255):
+
+| Record | sal | conf | EPS |
+|---|---|---|---|
+| @LAT-10LON10 (Game State) | 42 | 245 | **1.66** |
+| @BELIEF:LAT-50LON-40 (entity1 state machine) | ~10 | 75 | **7.06** |
+| @BELIEF:LAT-140LON-40 (entity2 approach) | ~9 | 45 | **4.88** |
+| @LAT20LON-30 (ls20 Mechanics) | 6 | 230 | **1.53** |
+
+**Highest-EPS records** are the ls20 L2 entity1 mechanism and entity2 approach — these have been consulted repeatedly without conf rising because the win condition remains unknown after 40+ sessions.
+
+---
+
+**What is worth doing next?**
+
+Two paths with different risk/reward profiles:
+
+1. **Continue ls20 L2 (Hypothesis 10A / 9A extension)**: Fix the DC30/DC31 route to complete the ring-A×2 multi-cycle probe cleanly. Requires restoring `max_steps=125` and verifying the DC
+
+============================================================
+
+[STATUS]
+SENT:
+@LOCUS STATUS
+
+LOCUS:
+## LOCUS STATUS — 2026-06-11
+
+---
+
+### EPS Rankings (sal × (255 − conf) / 255)
+
+| Record | sal | conf | EPS | Note |
+|---|---|---|---|---|
+| @BELIEF:LAT-50LON-40 | 8 | 80 | 14.0 | entity1 state machine — 9 collectible hypotheses refuted; state-3 trigger unknown |
+| @BELIEF:LAT-140LON-40 | 7 | 50 | 10.8 | entity2 approach — all known entry methods blocked; state-3 is the only remaining path |
+| @LAT-10LON10 (Game State) | 41 | 245 | 4.1 | updated but conf high — stable |
+| @LAT20LON-30 (ls20 Mechanics) | 6 | 230 | 7.1 | entity1 tracker mechanic documented but state-3 trigger still open |
+
+**Interpretation**: The two highest-EPS records are both pointing at the same unresolved problem: how does entity1 in ls20 L2 advance to state 3 (which would clear the deadlock at r35–36 c14–18 and allow entity2 entry)?
+
+---
+
+### Competition State
+
+**Score**: 3.571 (ls20 L1 only). Unchanged since session 23. Last submission: v32/v33. 
+
+**Games solved**: 
+- ls20: L1 confirmed (42 consecutive wins). L2: 46 attempts, NOT WON. Hypothesis 10A (ring A ×2 multi-cycle) INCONCLUSIVE — session 67 reached ring A ×2 at step 109, 4 steps short of the entity1 probe. Sessions 68–70 hit budget or route regression issues.
+- cd82 L1: route confirmed (19 steps, search trial 366).
+- sp80 L1: route confirmed (8 steps, search trial 159).
+
+**Active hypothesis**: 10A — ring A ×2 via timer-expiry multi-cycle → entity1 state 3 triggered. Ring A ×2 successfully collected in session 67 step 109 (timer reset confirmed). Entity1 state at probe position never read due to budget exhaustion. DC31 75-step route + max_steps=125 is the active design; session 68 was truncated mid-STATUS; sessions 69–70 had L1 regressions.
+
+**Other games being explored**: wa30 (3 sessions, 0 mechanic data — stub detector, max_steps=21 diagnostic limit too short).
+
+---
+
+### Open Questions (highest priority)
+
+1. **ls20 L2 state-3 trigger**: All 9 single-cycle collectible orderings refuted. 9A (N blocked-DOWN events) inconclusive at N=53. 10A (ring A ×2) inconclusive due to budget. Requires clean session with max_steps=125 and DC31 75-step `_LEVEL2_ROUTE` running correctly to completion.
+
+2. **wa30 mechanics**: Three sessions, zero frame data captured. Player entity unknown (candidate: value 14, 3×4 block at rows 45–47). Win target unknown. Large value-9 region (rows 25–38) role unknown. No route exists. Need first real exploration session.
+
+3. **Competition scoring (gateway)**: @LAT-740LON10 documents the architectural finding that `KAGGLE_IS_COMPETITION_RERUN` IS set during competition evaluation — parquet is read but game reruns determine the actual score. v37–v53 attempts have all returned 0.00 on the gateway. Routes may be instance-specific (hardcoded ls20-9607627b routes fail on different competition instances). Adaptive detection is the fix, but the competition agent (`LucusAgent`) needs to call the Claude API per step or use pre-validated adaptive detectors.
+
+---
+
+### Immediate Recommendations
+
+**Priority 1 — ls20 L2 close**: Run a clean session 68-equivalent with max_steps=125 and DC31 75-step `_LEVEL2_ROUTE`. If entity1 ABSENT at probe → state 3 achieved → WIN. If PRESENT → 10
+
+============================================================
+
+[ACTION step=31]
+SENT:
+@LOCUS what should I do next?
+
+step: 31
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r12: c12-15=14
+  r13: c12-15=14
+  r14: c12-15=14
+  r15: c12-15=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c36-39=4
+  r29: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r30: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r31: c12=9, c13-18=2, c19=9, c36-39=4
+  r32: c12=9, c13-18=2, c19=9, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c48-51=4
+  r36: c12=9, c13-18=2, c19=9, c28-31=12
+  r37: c12=9, c13-18=2, c19=9, c28-31=12
+  r38: c12=9, c13-18=2, c19=9, c28-31=12
+  r39: c12-19=9, c28-31=12
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-62=7, c63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Current state:**
+- Block (value 12): r36–39 c28–31 (4×4 block? or 3-wide at c28–31)
+- Value 14 entity: r12–15 c12–15 (top-left area) — likely the **target**
+- Value 15 (value 0): r15 c12–15 — one row below the 14-cluster
+- Value 2 structures (bordered with value 9): multiple 4×4 bordered boxes with value 9 interior at:
+  - r20–23 c40–43
+  - r24–27 c48–51
+  - r28–39 c12–19 (tall vertical structure)
+  - r32–35 c48–51
+  - r40–43 c44–47
+- Background: value 1
+
+**Navigation analysis:**
+- Block is at r36–39 c28–31
+- Target appears to be at r12–15 c12–15 (value 14 = likely player/goal destination)
+- Need to move UP and LEFT toward rows 12–15, cols 12–15
+- Current position: rows 36–39 — need to go UP significantly
+- Current cols 28–31 — need to go LEFT toward cols 12–15
+
+The value-9-bordered boxes with value-4 interiors may be collectibles or obstacles. The tall vertical structure at c12–19 rows 28–39 contains value 2 (rails?) with value 9 borders.
+
+**Priority**: Move toward the target at r12–15 c12–15. Need UP and LEFT movement.
+
+Looking at available actions (0=ACTION1, 1=ACTION2, 2=ACTION3, 3=ACTION4, 4=ACTION5) — for a keyboard game, likely 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT.
+
+Block at r36–39 needs to go UP toward r12–15. Choose UP.
+
+0
+
+============================================================
+
+[ACTION step=32]
+SENT:
+@LOCUS what should I do next?
+
+step: 32
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r8: c12-15=0
+  r9: c12-15=14
+  r10: c12-15=14
+  r11: c12-15=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c36-39=4
+  r29: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r30: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r31: c12=9, c13-18=2, c19=9, c36-39=4
+  r32: c12=9, c13-18=2, c19=9, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c48-51=4
+  r36: c12=9, c13-18=2, c19=9, c32-35=12
+  r37: c12=9, c13-18=2, c19=9, c32-35=12
+  r38: c12=9, c13-18=2, c19=9, c32-35=12
+  r39: c12-19=9, c32-35=12
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-61=7, c62-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Block (value 12)**: r36-39, c32-35 — a 4×4 block at the right side of the long value-2 corridor.
+
+**Value-2 corridor**: r29-38, c13-18 — a 6-wide column of value 2, bordered by value 9 on both sides (c12 and c19).
+
+**Small bordered structures (value 4 outer, value 9 inner)**:
+- r20-23 c40-43 (2×2 interior at r21-22 c41-42)
+- r24-27 c48-51 (2×2 interior at r25-26 c49-50)
+- r28-31 c36-39 (value 4 border, value 9 at r29-30 c37-38)
+- r32-35 c48-51 (value 4 border, value 9 at r33-34 c49-50)
+- r40-43 c44-47 (value 4 border, value 9 at r41-42 c45-46)
+
+**Top structure**: r8-11 c12-15 — value 0 at r8 (top), value 14 at r9-11. This looks like the win target (entity2 equivalent — bordered block above).
+
+The block needs to move LEFT and UP to reach the r8-11 c12-15 target. The block is currently at r36-39 c32-35. Moving LEFT would bring it toward c12-15 zone, and UP toward r8-11.
+
+3
+
+============================================================
+
+[ACTION step=33]
+SENT:
+@LOCUS what should I do next?
+
+step: 33
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r8: c16-18=14, c19=0
+  r9: c16-18=14, c19=0
+  r10: c16-18=14, c19=0
+  r11: c16-18=14, c19=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c36-39=4
+  r29: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r30: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r31: c12=9, c13-18=2, c19=9, c36-39=4
+  r32: c12=9, c13-18=2, c19=9, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c48-51=4
+  r36: c12=9, c13-18=2, c19=9, c36-39=12
+  r37: c12=9, c13-18=2, c19=9, c36-39=12
+  r38: c12=9, c13-18=2, c19=9, c36-39=12
+  r39: c12-19=9, c36-39=12
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-60=7, c61-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+- **Block** (value 12): r36–39, c36–39 — a 4×4 block
+- **Background** = 1
+- **Value 2** (rails): c13–18, rows 29–39 — a vertical rail
+- **Value 9**: Large left column c12/c19 rows 28–39 (border), plus small rings at (r20–23 c40–43), (r24–27 c48–51), (r33–35 c49–50), (r41–42 c45–46) — these look like collectibles/rings
+- **Value 4**: Bordered 4×4 rings at (r20–23 c40–43), (r24–27 c48–51), (r40–43 c44–47), (r36–39 c36–39 region) — wait, value 4 is the ring border
+- **Value 14**: r8–11, c16–19 — a 4×4 block near top-left, likely the **target**
+
+The block (value 12) is at r36–39 c36–39. The target (value 14) is at r8–11 c16–19.
+
+I need to move the block UP and LEFT toward the target. The block needs to go from row 36–39 toward row 8–11 (UP) and from col 36–39 toward col 16–19 (LEFT).
+
+Action 0 = ACTION1 (likely UP based on ls20 mapping, but this is a different game). Given level 2 is active and I need to navigate toward the target at the top-left, I'll try moving UP first.
+
+0
+
+============================================================
+
+[ACTION step=34]
+SENT:
+@LOCUS what should I do next?
+
+step: 34
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r4: c16-19=0
+  r5: c16-19=14
+  r6: c16-19=14
+  r7: c16-19=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c36-39=4
+  r29: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r30: c12=9, c13-18=2, c19=9, c36=4, c37-38=9, c39=4
+  r31: c12=9, c13-18=2, c19=9, c36-39=4
+  r32: c12=9, c13-18=2, c19=9, c36-39=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c36-39=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c36-39=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c36-39=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-59=7, c60-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully, I need to understand the current game state.
+
+**Frame analysis:**
+
+Level 2 is active (levels_completed=1). Let me identify the entities:
+
+- **r29-38, c12-19**: A large bordered structure with value-2 interior (c13-18) and value-9 border — this looks like the player/block entity
+- **r4-7, c16-19**: Small structure with value-0 top (r4) and value-14 body (r5-7) — this is the target (similar to ls20's entity2 pattern: bordered with 0-marker above)
+- **r20-23, c40-43**: Bordered 4 with value-9 interior — collectible ring
+- **r24-27, c48-51**: Bordered 4 with value-9 interior — collectible ring  
+- **r28, c36-39 / r29-35, c36-39**: Bordered structure with value-12 interior (rows 32-35) — another entity
+- **r40-43, c44-47**: Bordered 4 with value-9 interior — collectible ring
+- **r63**: UI row
+
+**Player** appears to be the large bordered entity at rows 29-39, cols 12-19 (value-9 border + value-2 interior). The target is at rows 4-7, cols 16-19.
+
+The player needs to move UP toward the target at r4-7 c16-19. The player's left column is at c12; center is around c15-16 which aligns with the target at c16-19.
+
+Moving UP (ACTION1 = 0) to navigate toward the target.
+
+0
+
+============================================================
+
+[ACTION step=35]
+SENT:
+@LOCUS what should I do next?
+
+step: 35
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (UP) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r0: c16-19=0
+  r1: c16-19=14
+  r2: c16-19=14
+  r3: c16-19=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c36-39=5
+  r29: c12=9, c13-18=2, c19=9, c36=5, c37-38=9, c39=5
+  r30: c12=9, c13-18=2, c19=9, c36=5, c37-38=9, c39=5
+  r31: c12=9, c13-18=2, c19=9, c36-39=5
+  r32: c12=9, c13-18=2, c19=9, c36-39=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c36-39=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c36-39=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c36-39=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-58=7, c59-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+The level 1 WIN already happened (`levels_completed: 1`). I'm now in level 2.
+
+Let me read the frame:
+
+- **Player block (value 12)**: r32–35 c36–39 (4×4 block)
+- **Value 2 structure**: c13–18 rows 29–38 — a vertical rail/wall
+- **Value 9 border**: c12 and c19 along rows 28–39, plus top/bottom rows 28 and 39 — this is a bordered container with value 2 fill
+- **Value 4 structures** (bordered rings with 9 interior):
+  - r20–23 c40–43: small ring
+  - r24–27 c48–51: small ring
+  - r32–35 c48–51: small ring (same rows as player)
+  - r40–43 c44–47: small ring
+- **Value 5 structure**: r28–31 c36–39, r31 c36–39=5 — adjacent to player above
+- **UI row 63**: c0–58=7
+
+The player (value 12) is at r32–35 c36–39. UP is blocked.
+
+The value 5 cells at r28–31 c36–39 are directly above the player — this looks like a target or passable zone. UP is blocked, which is unusual.
+
+Looking more carefully: the player is **inside** a bordered structure (r28–39 c12–19 has value 9 borders, value 2 interior). The player at c36–39 is outside that structure. 
+
+The small ring at r32–35 c48–51 is at the same row as the player — RIGHT would move toward it.
+
+**Action: RIGHT (3)** — move toward the ring at the same level.
+
+3
+
+============================================================
+
+[ACTION step=36]
+SENT:
+@LOCUS what should I do next?
+
+step: 36
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r0: c20-22=14, c23=0
+  r1: c20-22=14, c23=0
+  r2: c20-22=14, c23=0
+  r3: c20-22=14, c23=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c32-35=5
+  r29: c12=9, c13-18=2, c19=9, c32=5, c33-34=9, c35=5
+  r30: c12=9, c13-18=2, c19=9, c32=5, c33-34=9, c35=5
+  r31: c12=9, c13-18=2, c19=9, c32-35=5
+  r32: c12=9, c13-18=2, c19=9, c32-35=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c32-35=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c32-35=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c32-35=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-58=7, c59-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+- `r32-35 c32-35=12` — this is a 4×4 block of value 12 at rows 32-35, cols 32-35. This is the player block.
+- `r28-39 c12-19=9, c13-18=2` — a large bordered structure (value 9 outer, value 2 inner) running rows 28-39, cols 12-19. This looks like an entity/target ring with value 2 interior.
+- `r0-3 c20-22=14, c23=0` — a 4×4 entity of value 14 at top-left area, with value 0 adjacent. Possible target marker.
+- Several value-4 bordered rings: r20-23 c40-43, r24-27 c48-51, r32-35 c48-51, r40-43 c44-47. These appear to be scattered collectibles or obstacles.
+
+**Player position**: r32-35 c32-35 (center of map).
+
+**Target**: The large value-2 structure at c12-19 (rows 28-39) is to the LEFT of the player. That bordered structure with value 9 outer and value 2 inner resembles a target ring. The player needs to move LEFT toward it.
+
+The player is at cols 32-35. The structure is at cols 12-19. Moving LEFT will bring the player toward the target.
+
+2
+
+============================================================
+
+[ACTION step=37]
+SENT:
+@LOCUS what should I do next?
+
+step: 37
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r0: c16=0, c17-19=14
+  r1: c16=0, c17-19=14
+  r2: c16=0, c17-19=14
+  r3: c16=0, c17-19=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c28-31=5
+  r29: c12=9, c13-18=2, c19=9, c28=5, c29-30=9, c31=5
+  r30: c12=9, c13-18=2, c19=9, c28=5, c29-30=9, c31=5
+  r31: c12=9, c13-18=2, c19=9, c28-31=5
+  r32: c12=9, c13-18=2, c19=9, c28-31=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c28-31=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c28-31=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c28-31=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-57=7, c58-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Current state**: `levels_completed: 1` → I am in Level 2 (or higher). The game is `NOT_FINISHED`.
+
+**Frame analysis**:
+
+- `r0–r3: c16=0, c17-19=14` — this is the **player block** (value 14, 4 rows × 3 cols at top-left zone)
+- `r28–r39: c12-19=9/2` — a tall bordered structure (value 2 = interior, value 9 = border) at cols 12–19 — this is a **large entity or target structure**
+- `r28-35: c28-31=5/9/12` — value 12 appears here at rows 32–35, cols 28–31 — **another block or collectible**
+- Several 4×4 bordered boxes (value 4 outer, value 9 inner) scattered at: r20-23 c40-43, r24-27 c48-51, r32-35 c48-51, r40-43 c44-47 — these are likely **collectible rings**
+- `r63: c0-57=7` — timer/UI row
+
+**Player block location**: rows 0–3, cols 16–19 (top of screen).
+
+**Strategy**: The bordered structure at r28–39 c12–19 (tall column, value 2 interior) appears to be a significant target. The player needs to navigate DOWN and LEFT toward it. The rings (value 9 inside value 4 borders) may be collectibles.
+
+The player is at the top (rows 0–3). Need to move DOWN toward the main structure. 
+
+**Action**: DOWN (ACTION2 = action index 1)
+
+1
+
+============================================================
+
+[ACTION step=38]
+SENT:
+@LOCUS what should I do next?
+
+step: 38
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r4: c16-19=14
+  r5: c16-19=14
+  r6: c16-19=14
+  r7: c16-19=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c24-27=5
+  r29: c12=9, c13-18=2, c19=9, c24=5, c25-26=9, c27=5
+  r30: c12=9, c13-18=2, c19=9, c24=5, c25-26=9, c27=5
+  r31: c12=9, c13-18=2, c19=9, c24-27=5
+  r32: c12=9, c13-18=2, c19=9, c24-27=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c24-27=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c24-27=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c24-27=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-56=7, c57-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the current frame, I need to understand the game state.
+
+**Frame analysis:**
+- The block (value 14, 4×4) is at **r4–r7, c16–19** — upper-left area
+- Value 0 at r7 c16–19 — directly below the block, appears to be a target or marker
+- Multiple bordered structures (value 4 outer, value 9 inner) scattered around: r20–23 c40–43, r24–27 c48–51, r32–35 c48–51, r40–43 c44–47
+- A large value-2 band at c13–18, rows 29–38 — appears to be a wall/obstacle column
+- Value 12 region at r32–35 c24–27 — unknown entity
+- Value 5 region at r28–31 c24–27 — possible target or collectible
+
+**Context from Game State:**
+- `levels_completed: 1` means level 2 is now active
+- The block is at rows 4–7, upper portion of the grid
+- The bordered 4/9 structures look like collectibles or targets
+
+The block is in the upper region. There are bordered ring structures (value 4 + value 9) distributed across the grid. The value 12 entity at r32–35 c24–27 could be important. The value 5 block at r28–31 c24–27 is adjacent to it.
+
+Given the block is at r4–7 and there are targets to the south, moving DOWN (ACTION2 = action 1) to navigate toward the visible structures seems appropriate.
+
+1
+
+============================================================
+
+[ACTION step=39]
+SENT:
+@LOCUS what should I do next?
+
+step: 39
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r8: c16-19=14
+  r9: c16-19=14
+  r10: c16-19=14
+  r11: c16-19=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-19=9, c20-23=5
+  r29: c12=9, c13-18=2, c19=9, c20=5, c21-22=9, c23=5
+  r30: c12=9, c13-18=2, c19=9, c20=5, c21-22=9, c23=5
+  r31: c12=9, c13-18=2, c19=9, c20-23=5
+  r32: c12=9, c13-18=2, c19=9, c20-23=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c20-23=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c20-23=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c20-23=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-55=7, c56-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame, I need to understand the game state.
+
+**Frame analysis:**
+- **Block (value 12)**: r32–35 c20–23 — this is the player entity
+- **Value 2 structure**: r29–38 c13–18 — a 10-row × 6-col rectangle (bordered, appears to be the target/entity2)
+- **Value 0 at r11 c16–19**: small single-row marker
+- **Value 14 at r8–10 c16–19**: 3×4 block above the value-0 marker
+- **Level**: `levels_completed: 1` means we just entered level 2
+- **Multiple value-4 bordered rings** (with value-9 interiors): at r20–23 c40–43, r24–27 c48–51, r32–35 c48–51, r40–43 c44–47 — these are collectibles or obstacles
+- **Step 39**: 39 actions into this session
+
+The block (value 12, r32–35 c20–23) is immediately to the RIGHT of the value-2 structure (cols 13–18). The block needs to navigate toward the win target.
+
+The value-2 structure runs r29–38 c13–18. The block at c20–23 is 2 columns right of c19 (the right edge of the value-2 structure). Moving LEFT would place the block at c15–18, which overlaps the value-2 target interior.
+
+**Action**: 2 (LEFT — move block toward the value-2 target)
+
+2
+
+============================================================
+
+[ACTION step=40]
+SENT:
+@LOCUS what should I do next?
+
+step: 40
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r8: c12=0, c13-15=14
+  r9: c12=0, c13-15=14
+  r10: c12=0, c13-15=14
+  r11: c12=0, c13-15=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=5
+  r29: c12=9, c13-15=2, c16=5, c17-18=9, c19=5
+  r30: c12=9, c13-15=2, c16=5, c17-18=9, c19=5
+  r31: c12=9, c13-15=2, c16-19=5
+  r32: c12=9, c13-15=2, c16-19=12, c48-51=4
+  r33: c12=9, c13-15=2, c16-19=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-15=2, c16-19=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-15=2, c16-19=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-54=7, c55-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame, I need to understand the current game state.
+
+**Game context**: This is a new game (not ls20). I'm at step 40, levels_completed=1, so I'm in level 2+.
+
+**Frame analysis**:
+- Background = 1 (bright)
+- Value 7 row at r63 (status/UI row)
+- Value 4 clusters at r20-23 c40-43, r24-27 c48-51, r32-35 c48-51, r40-43 c44-47 — these look like 4×4 bordered entities with value 9 interiors (2×2 each)
+- Value 9 at r8-11 c12 (single column) + r28-39 region — large entity or trail
+- Value 14 at r8-11 c13-15 (4 rows × 3 cols) — this looks like a 4×3 player block
+- Value 2 at r29-35 c13-15, r36-38 c13-18 — obstacle/wall sections
+- Value 12 at r32-35 c16-19 — small block or entity
+- Value 5 at r28-31 c16-19 — passable interior?
+
+**Player identification**: Value 14 at r8-11 c13-15 appears to be the player block (4×3 shape, near top-left).
+
+**What's nearby**: Value 0 at r8-9 c12 (adjacent to player on the left) — possible collectible or target marker.
+
+**Objectives**: The 4 small bordered entities (value 4 outer, value 9 inner, 2×2 interior) at various positions look like targets or collectibles to visit.
+
+**Strategy**: With the player at r8-11 c13-15, I should explore systematically. The value 0 cells at r8-9 c12 are immediately to the left.
+
+Moving DOWN (action 1) to explore the map and understand movement mechanics.
+
+1
+
+============================================================
+
+[ACTION step=41]
+SENT:
+@LOCUS what should I do next?
+
+step: 41
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (DOWN) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r12: c12-15=14
+  r13: c12-15=14
+  r14: c12-15=14
+  r15: c12-15=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-15=2, c16-19=12, c48-51=4
+  r33: c12=9, c13-15=2, c16-19=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-15=2, c16-19=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-15=2, c16-19=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-53=7, c54-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully.
+
+The block (value 14) is at r12–14 c12–15. The last DOWN was blocked.
+
+I can see value 0 at r15 c12–15 — that's directly below the block, which is what DOWN was trying to reach. But DOWN is blocked, which is odd.
+
+Wait — value 15 at r15 c12–15 means that row is directly adjacent. Let me re-read: `r15: c12-15=0`. Value 0 at r15 c12–15.
+
+The block is at rows 12–14. DOWN would move to rows 17–19, not r15. The block moves in jumps (like ls20 with 5-row jumps). DOWN from r12–14 would land at r17–19. But that space isn't listed — meaning it's background (bg=1). Actually if bg=1 fills everything not listed, then r17–19 c12–15 = bg=1 = floor. But DOWN was blocked.
+
+The WARNING says DOWN produced no movement. Let me try a different direction.
+
+Looking at value 12 at r32–35 c16–19 — this could be the player's current location (value 14 is at r12–14, value 12 elsewhere). Actually value 14 = 3 rows × 4 cols at r12–14 c12–15. That's the block.
+
+r15 c12–15 has value 0 — this is directly below the block's bottom edge. This may be a target or collectible that's blocking the descent.
+
+Let me try UP (moving away from the blocked direction):
+
+2
+
+============================================================
+
+[ACTION step=42]
+SENT:
+@LOCUS what should I do next?
+
+step: 42
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r12: c8=0, c9-11=14
+  r13: c8=0, c9-11=14
+  r14: c8=0, c9-11=14
+  r15: c8=0, c9-11=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c20-23=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c20-23=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c20-23=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c20-23=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-52=7, c53-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+
+- **Player block** (value 12): r32–35, c20–23 — 4 rows × 4 cols
+- **UI row 63**: c0–52=7 (status), standard
+- **Value 9 entities** (multiple):
+  - Large L-shaped value-9 structure: c12–19 spanning rows 28–39
+  - r33–35: c19=9 (rightmost col of the L-shape, adjacent to block at c20–23)
+- **Value 4 bordered rings** (4 visible):
+  - r20–23, c40–43
+  - r24–27, c48–51
+  - r32–35, c48–51
+  - r40–43, c44–47
+- **Value 14** (marker): r12–15, c8–11 — top-left area
+- **Value 2** (obstacle/rail): c13–18 spanning rows 29–38
+
+**Game state context:** `levels_completed: 1` — I'm in level 2. The block (value 12) is at r32–35 c20–23. The value-9 structure appears to be trailing/adjacent. There are four bordered 4-rings scattered around the map.
+
+**Reasoning:** The block needs to navigate toward one of the 4-bordered rings (likely collectibles or targets). The nearest ring is at r32–35 c48–51 (same rows as the block, to the right). Moving RIGHT (ACTION4 = 3) would move toward it.
+
+3
+
+============================================================
+
+[ACTION step=43]
+SENT:
+@LOCUS what should I do next?
+
+step: 43
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r12: c12-14=14, c15=0
+  r13: c12-14=14, c15=0
+  r14: c12-14=14, c15=0
+  r15: c12-14=14, c15=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c24-27=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c24-27=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c24-27=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c24-27=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-51=7, c52-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+**Block (value 12)**: r32–35 c24–27 (4 rows × 4 cols)
+
+**Entities with value 4 (bordered rings)**:
+- Ring A: r20–23 c40–43 (4×4 with 9-interior at r21–22 c41–42)
+- Ring B: r24–27 c48–51 (4×4 with 9-interior at r25–26 c49–50)
+- Ring C: r40–43 c44–47 (4×4 with 9-interior at r41–42 c45–46)
+
+**Large entity (value 9)**: r28–39 c12–19 — substantial structure in the left section
+
+**Value 14 entity**: r12–15 c12–15 — 4×4 block at top-left, likely the win target
+
+The block is at c24–27. The win target (value 14) is at c12–15. I need to move LEFT to approach it.
+
+Value 2 (rails) at r29–38 c13–18 — these appear to be part of the large entity structure.
+
+The block needs to move LEFT toward the value 14 target at r12–15 c12–15. From c24–27, moving LEFT brings the block toward c12.
+
+Action mapping for this game (keyboard/directional): checking the frame — block moved UP in prior steps based on being in the upper half of the map. LEFT = ACTION3 = action 2.
+
+2
+
+============================================================
+
+[ACTION step=44]
+SENT:
+@LOCUS what should I do next?
+
+step: 44
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r12: c8=0, c9-11=14
+  r13: c8=0, c9-11=14
+  r14: c8=0, c9-11=14
+  r15: c8=0, c9-11=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c28-31=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c28-31=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c28-31=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c28-31=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-50=7, c51-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Identifying entities:**
+- Block (value 12): r32–35 c28–31 — 4 rows × 4 cols
+- Value 2 structures (bordered boxes with value 9 interior): at rows 29–31 c13–15 and rows 32–38 c13–18 — these appear to be the target or entity structures
+- Value 14 cluster: r12–15 c9–11 — likely a collectible or target marker
+- Value 4 bordered rings with 9 interior: rows 20–23 c40–43, rows 24–27 c48–51, rows 32–35 c48–51, rows 40–43 c44–47 — ring entities scattered around the map
+
+**Current position**: Block at r32–35 c28–31, `levels_completed: 1` so this is level 2.
+
+**Orientation**: The block is near the large value-2/9 structure on its left. The target likely involves moving toward one of the value-4 rings or the value-14 cluster.
+
+The value-14 cluster is at r12–15 c9–11 — far upper-left. The block needs to move UP and LEFT to reach it.
+
+From r32–35 c28–31, moving UP will bring the block toward the value-2 structure and eventually toward the value-14 cluster.
+
+`0`
+
+============================================================
+
+[ACTION step=45]
+SENT:
+@LOCUS what should I do next?
+
+step: 45
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r8: c8-11=0
+  r9: c8-11=14
+  r10: c8-11=14
+  r11: c8-11=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c32-35=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c32-35=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c32-35=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c32-35=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-49=7, c50-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully:
+
+- The player block (value 12) is at r32–35, c32–35
+- I can see several bordered entities with value-4 borders and value-9 interiors (likely targets or collectibles):
+  - r20–23, c40–43
+  - r24–27, c48–51
+  - r32–35, c48–51
+  - r40–43, c44–47
+- There's a large value-9/value-2 structure on the left side (rows 28–39, cols 12–19)
+- The entity at r8–11, c8–11 shows value 0 (top) and value 14 (bottom) — this looks like a target or level indicator
+
+The player block at r32–35 c32–35 needs to navigate. The closest bordered entity with value-9 interior is at r32–35 c48–51 (same row band as the block). Moving RIGHT would approach it.
+
+But first I need to understand the action mapping. This is wa30 with ACTION1–ACTION5. Based on the "keyboard" tag and game structure, I'll proceed with the most likely directional approach.
+
+The bordered entity at r32–35 c48–51 is directly to the right of the block. Moving right (likely ACTION4 = index 3, or ACTION3 = index 2 depending on mapping).
+
+Given the block is at c32–35 and the nearest bordered target is at c48–51 (13 cols right, roughly 3 moves at 4-pixel steps), I'll move right.
+
+3
+
+============================================================
+
+[ACTION step=46]
+SENT:
+@LOCUS what should I do next?
+
+step: 46
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r8: c12-14=14, c15=0
+  r9: c12-14=14, c15=0
+  r10: c12-14=14, c15=0
+  r11: c12-14=14, c15=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c36-39=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c36-39=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c36-39=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c36-39=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-48=7, c49-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame, I need to understand the current state.
+
+**Frame analysis:**
+- `r32-35 c36-39=12`: This is the player block (value 12, 4 rows × 4 cols)
+- Several value-4 bordered structures with value-9 interiors scattered around: at r20-23 c40-43, r24-27 c48-51, r32-35 c48-51 (c49-50=9), r40-43 c44-47 — these look like ring collectibles or targets
+- Value-2 structure at r29-38 c13-18 — a large bordered region
+- Value-9 cluster at r28-39 c12-13 and c19 — entity trail/body flanking the value-2 structure
+- r8-11 c12-15: value 14 with c15=0 — this looks like a target/entity2 (small bordered structure, upper left area)
+- `r63 c0-48=7, c49-63=4` — UI row (timer)
+
+**Current situation:**
+- Player (value 12) is at r32-35 c36-39
+- The structure at r8-11 c12-15 (value 14 with value-0 interior) appears to be a target/win zone — upper-left area
+- This game is wa30 level 2 (levels_completed=1, so level 1 is done)
+
+**Navigation:** The player needs to reach the upper area. The player is at rows 32-35, target appears to be at rows 8-11. Need to move UP.
+
+3
+
+============================================================
+
+[ACTION step=47]
+SENT:
+@LOCUS what should I do next?
+
+step: 47
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r8: c16-18=14, c19=0
+  r9: c16-18=14, c19=0
+  r10: c16-18=14, c19=0
+  r11: c16-18=14, c19=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c40-43=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c40-43=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c40-43=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c40-43=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-47=7, c48-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame carefully:
+
+**Current state analysis:**
+- Level 2 is active (levels_completed: 1)
+- Block (value 12): r32–35 c40–43 (4×4 block, 4 rows tall)
+- This appears to be a different game than ls20
+
+**What I can see:**
+- Value 4 entities (bordered rings with value 9 interiors): at r20–23 c40–43, r24–27 c48–51, r32–35 c16–19, r40–43 c44–47
+- Block at r32–35 c40–43 with value 12
+- Value 2 band at r29–38 c13–18 (obstacle/wall)
+- Value 14 at r8–11 c16–19 (possible target entity — bordered?)
+- Value 9 at r28–39 (various positions — entity trails or bodies)
+- Row 63: timer/UI row (c0–47=7)
+
+**Navigation goal:** The value 14 entity at r8–11 c16–19 looks like a target. The block needs to move UP and LEFT to reach it.
+
+The block at r32–35 c40–43 should move UP to close the row gap, and LEFT to close the column gap toward c16–19.
+
+Moving UP (action 0 = ACTION1) to approach the target:
+
+1
+
+============================================================
+
+[ACTION step=48]
+SENT:
+@LOCUS what should I do next?
+
+step: 48
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r12: c16-19=14
+  r13: c16-19=14
+  r14: c16-19=14
+  r15: c16-19=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c44-47=12, c48-51=4
+  r33: c12=9, c13-18=2, c19=9, c44-47=12, c48=4, c49-50=9, c51=4
+  r34: c12=9, c13-18=2, c19=9, c44-47=12, c48=4, c49-50=9, c51=4
+  r35: c12=9, c13-18=2, c19=9, c44-47=12, c48-51=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-47=7, c48-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+- r12-14 c16-19=14 → Player block (3 rows × 4 cols) at rows 12-14, cols 16-19
+- r15 c16-19=0 → Value 0 directly below the block at row 15 — this is likely the target/win position I need to reach
+
+Wait — the block is ABOVE the value-0 row. In prior sessions, value 0 at r44 c32-35 was identified as a candidate target. But now the block (value 14) is at r12-14 c16-19 and value 0 is at r15 c16-19 (directly below).
+
+**Other entities visible:**
+- r20-23 c40-43: bordered ring (4=border, 9=interior) — small 2×2 interior
+- r24-27 c48-51: another bordered ring
+- r28-39 c12-19: large value-9 body with value-2 section — likely a long entity or obstacle
+- r32-35 c44-47: value 12 block (second player? or target block?)
+- r40-43 c44-47: another bordered ring
+- r63: timer/UI row
+
+**Block at r12-14, value 0 at r15 (directly below).** The win condition in ls20 required block to enter entity2 interior. Here, the block may need to move DOWN to reach the value-0 cell.
+
+Action: DOWN = ACTION2 = index **1**
+
+1
+
+============================================================
+
+[ACTION step=49]
+SENT:
+@LOCUS what should I do next?
+
+step: 49
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (DOWN) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c16-19=14
+  r17: c16-19=14
+  r18: c16-19=14
+  r19: c16-19=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c44-47=12, c48-51=5
+  r33: c12=9, c13-18=2, c19=9, c44-47=12, c48=5, c49-50=9, c51=5
+  r34: c12=9, c13-18=2, c19=9, c44-47=12, c48=5, c49-50=9, c51=5
+  r35: c12=9, c13-18=2, c19=9, c44-47=12, c48-51=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-46=7, c47-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Current state analysis:**
+- Block (value 12): r32–35 c44–47
+- Last move DOWN was blocked (void below at r36+ c44–47)
+- Level 2 entered (levels_completed: 1) — this is ls20 L2, step 49
+
+**Level 2 map elements visible:**
+- Entity2 ring candidates: r20–23 c40–43 (value 4 border, value 9 interior) and r24–27 c48–51 (similar pattern) and r40–43 c44–47 (similar pattern)
+- Entity1 tracker: r28–39 c12–19 (large value 9 region with value 2 elements) — this is the state machine region
+- Value 5 at r32–35 c48–51: possible interior/passable zone adjacent to block
+
+Wait — this doesn't match ls20 L2. The bg=1 and these values suggest a **different game**. The block at r32–35 c44–47 (value 12, 4 rows tall, 4 cols wide) is not the ls20 2×5 block.
+
+**Most likely game**: wa30 (bg=1, 4×4 block pattern, value 9 entities, value 2 elements). Level 1 just completed, now in level 2.
+
+**Strategy**: Block is at r32–35 c44–47. DOWN is blocked. The entity at r32–35 c48–51 (value 5 with value 9 interior at r33–34) looks like a target ring. Try moving RIGHT to enter it.
+
+3
+
+============================================================
+
+[ACTION step=50]
+SENT:
+@LOCUS what should I do next?
+
+step: 50
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c20-22=14, c23=0
+  r17: c20-22=14, c23=0
+  r18: c20-22=14, c23=0
+  r19: c20-22=14, c23=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c40-43=12, c44-47=5
+  r33: c12=9, c13-18=2, c19=9, c40-43=12, c44=5, c45-46=9, c47=5
+  r34: c12=9, c13-18=2, c19=9, c40-43=12, c44=5, c45-46=9, c47=5
+  r35: c12=9, c13-18=2, c19=9, c40-43=12, c44-47=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-45=7, c46-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+- Block (value 12): r32–35 c40–43 (4 rows × 4 cols)
+- Block is already inside a bordered region at c40–47 (value 5 = passable interior, value 4 = walls visible at r40–43 c44–47 and r20–23 c40–43)
+- This appears to be level 2 (levels_completed: 1)
+
+**Key entities:**
+- r16–19 c20–22: value 14 — appears to be a 4×3 cluster (possible target/collectible)
+- r28–39 c12–19: large value-9 region with value-2 embedded — entity body
+- r40–43 c44–47: bordered value-9 ring (4×4, same structure as r20–23 and r24–27 rings)
+- r44–47 c44–47: value 5 interior adjacent to block (the block is at c40–43, just LEFT of this)
+
+**The block is at r32–35 c40–43.** The bordered structures with value-9 interiors (rings at r20–23, r24–27, r40–43) look like collectibles. The value-14 cluster at r16–19 c20–22 with trailing zeros (c23=0) looks like the win target or a state indicator.
+
+**Action choice:** The block needs to move toward the target region. The value-14 cluster is UP and LEFT from current position. Moving UP will explore the space above.
+
+3
+
+============================================================
+
+[ACTION step=51]
+SENT:
+@LOCUS what should I do next?
+
+step: 51
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c24-26=14, c27=0
+  r17: c24-26=14, c27=0
+  r18: c24-26=14, c27=0
+  r19: c24-26=14, c27=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c36-39=12, c40-43=5
+  r33: c12=9, c13-18=2, c19=9, c36-39=12, c40=5, c41-42=9, c43=5
+  r34: c12=9, c13-18=2, c19=9, c36-39=12, c40=5, c41-42=9, c43=5
+  r35: c12=9, c13-18=2, c19=9, c36-39=12, c40-43=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-44=7, c45-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+- Block (value 12): r32-35 c36-39 (4 rows × 4 cols)
+- Bordered rings with value 9 interior:
+  - Ring at r20-23 c40-43 (4×4, interior r21-22 c41-42=9)
+  - Ring at r24-27 c48-51 (4×4, interior r25-26 c49-50=9)
+  - Ring at r40-43 c44-47 (4×4, interior r41-42 c45-46=9)
+- Large entity with value 9: r12-19 c12-15 (left column area, value 14)
+- Entity at r28-39 c12-19 (value 2 band with value 9 surrounding)
+- Small ring at r32-35 c40-43 (interior r33-34 c41-42=9) — this is RIGHT of the block
+
+The block is at c36-39. The ring to its right (r32-35 c40-43) has interior at r33-34 c41-42. The block needs to move RIGHT to enter that ring.
+
+Level 2 is active (levels_completed=1). The block at r32-35 c36-39 should move RIGHT toward the ring at c40-43.
+
+3
+
+============================================================
+
+[ACTION step=52]
+SENT:
+@LOCUS what should I do next?
+
+step: 52
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c28-30=14, c31=0
+  r17: c28-30=14, c31=0
+  r18: c28-30=14, c31=0
+  r19: c28-30=14, c31=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c32-35=12, c36-39=5
+  r33: c12=9, c13-18=2, c19=9, c32-35=12, c36=5, c37-38=9, c39=5
+  r34: c12=9, c13-18=2, c19=9, c32-35=12, c36=5, c37-38=9, c39=5
+  r35: c12=9, c13-18=2, c19=9, c32-35=12, c36-39=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-43=7, c44-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame, I need to understand the current state.
+
+**Frame analysis:**
+- Block (value 12): r32–35 c32–35 (4×4 block)
+- Value 5 region: r32–35 c36–39 — this is adjacent to the block on the right
+- Value 9 at r33–34 c37–38 — inside the value-5 region (possible target/collectible)
+- Multiple bordered value-4 rings with value-9 interiors scattered: r20–23 c40–43, r24–27 c48–51, r40–43 c44–47
+- Large value-9 + value-2 structure at r28–39 c12–19 (possible entity)
+- Value 14 at r16–19 c28–30 with value 0 at c31 — possible indicator or UI
+
+**What game is this?** This appears to be **wa30** (the wa30 levelmap shows value 2, 4, 9, 14 entities matching this frame).
+
+**Current situation:** The block is at r32–35 c32–35. Level 1 is completed (levels_completed=1), so this is **level 2**. The block is next to a value-5 region with a value-9 cluster at r33–34 c37–38.
+
+The bordered rings (value 4 outer, value 9 interior) at r20–23, r24–27, r40–43 look like collectible targets. The nearest one below is r40–43 c44–47.
+
+Given limited game knowledge for wa30, I'll try moving RIGHT toward the value-5/value-9 region adjacent to the block.
+
+3
+
+============================================================
+
+[ACTION step=53]
+SENT:
+@LOCUS what should I do next?
+
+step: 53
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c32-34=14, c35=0
+  r17: c32-34=14, c35=0
+  r18: c32-34=14, c35=0
+  r19: c32-34=14, c35=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c28-31=12, c32-35=5
+  r33: c12=9, c13-18=2, c19=9, c28-31=12, c32=5, c33-34=9, c35=5
+  r34: c12=9, c13-18=2, c19=9, c28-31=12, c32=5, c33-34=9, c35=5
+  r35: c12=9, c13-18=2, c19=9, c28-31=12, c32-35=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-42=7, c43-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at the frame, I need to understand the game state.
+
+**Block** (value 12): rows 32–35, cols 28–31 — the 4×4 player block.
+
+**Target area** (value 5): rows 32–35, cols 32–35 — directly to the RIGHT of the block.
+
+The block needs to move RIGHT to enter the value-5 zone.
+
+**Action 3 = RIGHT**
+
+3
+
+============================================================
+
+[ACTION step=54]
+SENT:
+@LOCUS what should I do next?
+
+step: 54
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c36-38=14, c39=0
+  r17: c36-38=14, c39=0
+  r18: c36-38=14, c39=0
+  r19: c36-38=14, c39=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c24-27=12, c28-31=5
+  r33: c12=9, c13-18=2, c19=9, c24-27=12, c28=5, c29-30=9, c31=5
+  r34: c12=9, c13-18=2, c19=9, c24-27=12, c28=5, c29-30=9, c31=5
+  r35: c12=9, c13-18=2, c19=9, c24-27=12, c28-31=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-41=7, c42-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+
+- **Block (value 12)**: r32-35, c24-27 (4 rows × 4 cols)
+- **Target/companion (value 5)**: r32-35, c28-31 — directly to the RIGHT of the block
+- **Various ring entities (value 4 borders with value 9 interiors)**: scattered at r20-23, r24-27, r40-43
+- **Long entity (value 2 + value 9)**: rows 28-38, cols 12-19 — a large vertical structure to the left
+- **Top entity (value 14)**: r16-19, c36-38 — upper right area
+- **Timer/UI**: r63
+
+The block is at c24-27 and the value-5 entity is immediately at c28-31. In wa30, the win condition likely involves moving the block into contact with the target entity.
+
+The block needs to move RIGHT to reach the value-5 target at c28-31.
+
+Action mapping from prior sessions: ACTION3 = RIGHT (index 2) or ACTION4 = RIGHT (index 3). Given the `keyboard` tag and ls20's mapping (0=UP, 1=DOWN, 2=LEFT, 3=RIGHT):
+
+3
+
+============================================================
+
+[ACTION step=55]
+SENT:
+@LOCUS what should I do next?
+
+step: 55
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c40-42=14, c43=0
+  r17: c40-42=14, c43=0
+  r18: c40-42=14, c43=0
+  r19: c40-42=14, c43=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-18=2, c19=9, c20-23=12, c24-27=5
+  r33: c12=9, c13-18=2, c19=9, c20-23=12, c24=5, c25-26=9, c27=5
+  r34: c12=9, c13-18=2, c19=9, c20-23=12, c24=5, c25-26=9, c27=5
+  r35: c12=9, c13-18=2, c19=9, c20-23=12, c24-27=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-40=7, c41-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Current state**: Level 2 (levels_completed=1), step 55.
+
+**Frame analysis**:
+- Block (value 12): r32–35 c20–23 — a 4×4 block
+- Value 9 entities: large cluster at c12–19 rows 28–39 (entity1 body/trail?), plus small bordered boxes at rows 20–23 c40–43, rows 24–27 c48–51, rows 40–43 c44–47
+- Value 2: rows 29–38 c13–18 (horizontal bars — collectible or rail?)
+- Value 4: bordered squares around the value-9 clusters at rows 20–23, 24–27, 40–43
+- Value 14: rows 16–19 c40–42 (appears to be a target or secondary entity)
+- Value 5: rows 32–35 c24–27 (adjacent to block on right)
+
+The small bordered boxes (value 4 border + value 9 interior) at (r20–23 c40–43), (r24–27 c48–51), (r40–43 c44–47) look like collectible targets. The block at r32–35 c20–23 is near the large value-9/value-2 structure on the left.
+
+The block needs to move toward one of these collectibles or the target at r16–19 c40–42. The block is at c20–23; the nearest bordered box is at c40–43 rows 20–23, which is UP and RIGHT from current position.
+
+Moving RIGHT to close the column gap toward the collectibles.
+
+3
+
+============================================================
+
+[ACTION step=56]
+SENT:
+@LOCUS what should I do next?
+
+step: 56
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c44-46=14, c47=0
+  r17: c44-46=14, c47=0
+  r18: c44-46=14, c47=0
+  r19: c44-46=14, c47=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12=9, c13-15=2, c16-19=12, c20-23=5
+  r33: c12=9, c13-15=2, c16-19=12, c20=5, c21-22=9, c23=5
+  r34: c12=9, c13-15=2, c16-19=12, c20=5, c21-22=9, c23=5
+  r35: c12=9, c13-15=2, c16-19=12, c20-23=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-39=7, c40-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+
+- `r16-19 c44-47`: value 14 (3 cols) + value 0 (col 47) — this appears to be the player block (4 rows × 4 cols, partially shown) with a trailing marker
+- `r32-35 c16-19`: value 12 — this is the win target (entity2 equivalent)
+- `r20-23 c40-43`: bordered 4-block with 9 interior — collectible/entity
+- `r24-27 c48-51`: bordered 4-block with 9 interior — another collectible/entity
+- `r40-43 c44-47`: bordered 4-block with 9 interior — another collectible/entity
+- `r28-39 c12-19`: complex structure with values 9, 2, 12 — the entity/mechanism zone
+
+The player (value 14) is at rows 16–19, cols 44–46. The target (value 12) is at rows 32–35, cols 16–19. The player needs to move toward the target — that means moving LEFT and DOWN from current position.
+
+The player appears to need to navigate LEFT (decreasing columns) toward the target zone around cols 16–19.
+
+**Action**: LEFT = ACTION3 = action **2**
+
+2
+
+============================================================
+
+[ACTION step=57]
+SENT:
+@LOCUS what should I do next?
+
+step: 57
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c40=0, c41-43=14
+  r17: c40=0, c41-43=14
+  r18: c40=0, c41-43=14
+  r19: c40=0, c41-43=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12-15=12, c16-19=5
+  r33: c12-15=12, c16=5, c17-18=9, c19=5
+  r34: c12-15=12, c16=5, c17-18=9, c19=5
+  r35: c12-15=12, c16-19=5
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-38=7, c39-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+
+- Block (value 12): r32–35 c12–15 (4×4 block — player entity)
+- Value 5 region: r32–35 c16–19 (right of block — this is where the block needs to go)
+- Value 9 patterns: small clusters at various locations — collectibles or entities
+- Value 14: r16–19 c41–43 (upper right — possible target ring)
+- Value 2: r29–31 c13–15 and r36–38 c13–18 (obstacles or rails bordering the block area)
+
+The block is at c12–15. To the right is value 5 (passable). The block appears to be between value-2 obstacles above and below. There's a bordered region (value 4 outer, value 9/5 inner) pattern similar to ls20's entity2 ring structure.
+
+Looking at the value 4 bordered boxes with value 9 interiors at:
+- r20–23 c40–43
+- r24–27 c48–51
+- r40–43 c44–47
+
+These look like collectible rings.
+
+The block is at r32–35 c12–15 with value 5 to the right (c16–19). Moving RIGHT would enter the value-5 zone. The win condition likely involves navigating the block toward a target.
+
+Given the block is adjacent to value 5 (passable interior) on the right, and this is level 2 after level 1 completed, the most productive action is to move RIGHT to explore the value 5 zone.
+
+3
+
+============================================================
+
+[ACTION step=58]
+SENT:
+@LOCUS what should I do next?
+
+step: 58
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+WARNING: last move (RIGHT) produced NO movement — block position unchanged. That direction is blocked by a void. Choose a different direction.
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r16: c44-46=14, c47=0
+  r17: c44-46=14, c47=0
+  r18: c44-46=14, c47=0
+  r19: c44-46=14, c47=0
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=9, c16-19=4
+  r29: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r30: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r31: c12=9, c13-15=2, c16-19=4
+  r32: c12-15=12, c16-19=4
+  r33: c12-15=12, c16=4, c17-18=9, c19=4
+  r34: c12-15=12, c16=4, c17-18=9, c19=4
+  r35: c12-15=12, c16-19=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-37=7, c38-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+The block (value 12) is at rows 32-35, cols 12-15. The last RIGHT move was blocked.
+
+I can see several bordered structures that look like ring collectibles (value 4 with value 9 interior):
+- rows 20-23, cols 40-43 (2×2 interior at r21-22 c41-42)
+- rows 24-27, cols 48-51 (2×2 interior at r25-26 c49-50)
+- rows 40-43, cols 44-47 (2×2 interior at r41-42 c45-46)
+
+The block is at c12-15. There's a structure at rows 16-19, cols 44-47 with value 14 cells and value 0 at c47 — this looks like a target marker.
+
+There are also value 9 cells at r28-31 c12 and r36-39 c12 forming bordered structures.
+
+The block needs to move. RIGHT is blocked. Looking at the available space:
+
+- r28-31 at c12 shows value 9 — that's above the block (rows 32-35)
+- r36-39 shows value 9 below
+
+I should try moving UP (ACTION1 = 0) to navigate toward the collectibles or target.
+
+0
+
+============================================================
+
+[ACTION step=59]
+SENT:
+@LOCUS what should I do next?
+
+step: 59
+obs_state: GameState.NOT_FINISHED
+levels_completed: 1
+
+Available actions:
+  0: GameAction.ACTION1
+  1: GameAction.ACTION2
+  2: GameAction.ACTION3
+  3: GameAction.ACTION4
+  4: GameAction.ACTION5
+
+Current frame(s):
+frame[0]:
+grid 64x64 bg=1
+  r12: c44-47=0
+  r13: c44-47=14
+  r14: c44-47=14
+  r15: c44-47=14
+  r20: c40-43=4
+  r21: c40=4, c41-42=9, c43=4
+  r22: c40=4, c41-42=9, c43=4
+  r23: c40-43=4
+  r24: c48-51=4
+  r25: c48=4, c49-50=9, c51=4
+  r26: c48=4, c49-50=9, c51=4
+  r27: c48-51=4
+  r28: c12-15=12, c16-19=4
+  r29: c12-15=12, c16=4, c17-18=9, c19=4
+  r30: c12-15=12, c16=4, c17-18=9, c19=4
+  r31: c12-15=12, c16-19=4
+  r32: c12=9, c13-15=2, c16-19=4
+  r33: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r34: c12=9, c13-15=2, c16=4, c17-18=9, c19=4
+  r35: c12=9, c13-15=2, c16-19=4
+  r36: c12=9, c13-18=2, c19=9
+  r37: c12=9, c13-18=2, c19=9
+  r38: c12=9, c13-18=2, c19=9
+  r39: c12-19=9
+  r40: c44-47=4
+  r41: c44=4, c45-46=9, c47=4
+  r42: c44=4, c45-46=9, c47=4
+  r43: c44-47=4
+  r63: c0-36=7, c37-63=4
+
+Respond with only the action number.
+
+LOCUS:
+Looking at this frame carefully.
+
+**Frame analysis:**
+- `r13-15 c44-47=14` — this is a 3×4 block (value 14), likely the player entity
+- `r12 c44-47=0` — directly above the player, value 0 sparse markers
+- Several bordered value-4 regions with value-9 interiors: at r20-23 c40-43, r24-27 c48-51, r40-43 c44-47
+- Large value-2/9/12 structure at r28-39 c12-19 — appears to be a different entity or obstacle zone
+- Row 63: c0-36=7, c37-63=4 — UI row
+
+This is wa30 (9-level keyboard game). Player at r13-15 c44-47. The value-0 marker at r12 c44-47 is directly above — possible target or collectible.
+
+The bordered value-4+9 ring at r40-43 c44-47 is directly below the player and in the same column range — this looks like a ring entity similar to ls20's entity2. The player needs to descend into it.
+
+Action 1 (DOWN) to move player toward the ring below.
+
+1
+
+============================================================
+
