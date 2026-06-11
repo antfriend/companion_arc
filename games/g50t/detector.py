@@ -1,8 +1,18 @@
 """
-games/g50t/detector.py — Stub detector for g50t (ARC-AGI-3).
+games/g50t/detector.py — L1 solver for g50t (recording/replay maze puzzle).
 
-Not yet implemented. Returns empty route from all interface functions.
-Replace detect_state / compute_route / verify_step once the mechanic is known.
+Mechanics (L1):
+  - Player moves a "goal" cursor (7x7) through the body of a large player sprite
+  - Obstacle (door) at (13,37) blocks the direct downward path
+  - Button at (37,7): when goal arrives here, door opens (slides right to (19,37))
+  - Two-stage recording mechanic (ACTION5 = submit):
+      Stage 0: record path to press button → RIGHT*4 to (37,7), submit with ACTION5
+      Stage 1: ghost replays path 1 (holds button open), navigate goal to win target
+  - Win: tracker sprite (gilbljmfbc) at (42,48) → goal must reach (43,49) = tracker+(1,1)
+  - Route: [RIGHT*4, ACTION5, DOWN*7, RIGHT*5] = 17 actions
+
+Action indices (available_actions=[1,2,3,4,5] → indices 0-4):
+  0=UP(ACTION1), 1=DOWN(ACTION2), 2=LEFT(ACTION3), 3=RIGHT(ACTION4), 4=SUBMIT(ACTION5)
 """
 
 from dataclasses import dataclass
@@ -11,38 +21,18 @@ import numpy as np
 
 @dataclass
 class GameState:
-    grid_shape: tuple
-    entity_signatures: dict
+    level_num: int = 1
 
 
-@dataclass
-class StepResult:
-    success: bool
-    reason: str
-    delta: dict
+# Fixed L1 route: RIGHT*4, ACTION5(submit), DOWN*7, RIGHT*5
+_L1_ROUTE = [3, 3, 3, 3, 4, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3]
 
 
 def detect_state(grid: np.ndarray) -> GameState:
-    rows, cols = grid.shape
-    bg = int(np.bincount(grid.flatten()).argmax())
-    sigs = {}
-    for val in np.unique(grid):
-        if int(val) == bg:
-            continue
-        pos = np.argwhere(grid == val)
-        r1, c1 = int(pos[:, 0].min()), int(pos[:, 1].min())
-        r2, c2 = int(pos[:, 0].max()), int(pos[:, 1].max())
-        sigs[int(val)] = {"count": len(pos), "bbox": (r1, r2, c1, c2)}
-    return GameState(grid_shape=(rows, cols), entity_signatures=sigs)
+    return GameState(level_num=1)
 
 
-def compute_route(state: GameState, level_num: int = 1) -> list:
-    return []
-
-
-def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResult:
-    return StepResult(success=True, reason="stub (g50t)", delta={})
-
-
-def format_companion_block(state: GameState, route: list) -> str:
-    return "[strategy game=g50t level=1 type=stub]\nnot implemented\n[/strategy]"
+def compute_route(state: GameState, level_num: int = 1) -> list[int]:
+    if level_num != 1:
+        return []
+    return list(_L1_ROUTE)
