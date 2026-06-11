@@ -415,7 +415,8 @@ def run_training_attempt(
             # Offline phase: hardcoded route for this level, no LOCUS
             action_idx = route[level_step - 1]
             if verbose:
-                _name = ["UP", "DOWN", "LEFT", "RIGHT"][action_idx]
+                _names = ["UP", "DOWN", "LEFT", "RIGHT", "ACTION5", "ACTION6"]
+                _name = _names[action_idx] if action_idx < len(_names) else str(action_idx)
                 print(f"[agent] step={step} — L{current_level} hardcode {action_idx} ({_name})")
         elif in_offline and stop_after_offline:
             # Route exhausted within offline level — stop (offline-only mode)
