@@ -129,17 +129,19 @@ def main() -> None:
             print(f"[practice] detect_state failed: {exc}")
             break
 
-        # Print detected state
-        block_str = str(state.block_pos) if state.block_pos else "unknown"
-        e2 = state.entity2_ring
+        # Print detected state (fields are ls20-style; other games may omit them)
+        _block = getattr(state, "block_pos", None)
+        block_str = str(_block) if _block else "unknown"
+        e2 = getattr(state, "entity2_ring", None)
         e2_str = (
             f"rows={e2['top']}-{e2['bot']} cols={e2['left']}-{e2['right']}"
             if e2 else "not detected"
         )
         print(f"[detect]  block={block_str}")
         print(f"[detect]  entity2={e2_str}")
-        print(f"[detect]  entity1_state={state.entity1_state}")
-        if state.cluster:
+        print(f"[detect]  entity1_state={getattr(state, 'entity1_state', None)}")
+        print(f"[detect]  state={state}")
+        if getattr(state, "cluster", None):
             cl = state.cluster
             print(f"[detect]  cluster=rows={cl['top_row']}-{cl['bot_row']} "
                   f"cols={cl['col_min']}-{cl['col_max']}")

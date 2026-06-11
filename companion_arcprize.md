@@ -13600,3 +13600,66 @@ Confidence: 82. Identical v8/v9 counts are the strongest signal. Overall mechani
 ---
 
 [DREAM COMPLETE 2026-06-11: Phase 1 extracted 4 confirmed beliefs (LAT85LON50, LAT82LON50, LAT79LON50, LAT76LON50). Phase 2 generated 10 projection hypotheses (LAT55LON50 through LAT22LON50). Competition state: 9/25 solved, overall=1.1778. Priority queue opens with ka59 (strongest analogue to existing solved games). No-simple-action games (lp85, vc33, r11l, s5i5, ft09, tn36) deferred until click/coordinate action support available.]
+
+---
+
+## cn04 — Mechanic Record (2026-06-11)
+
+[mechanic game=cn04 version=2026-06-11]
+class: connector-matching (rotate + translate selected piece to mate connectors)
+grid: 20x20 logical, display scale 3px/cell, letterbox offset 2
+win: every visible sprite's connector pixels (color 8 and color 13) each overlap
+     a same-type connector of another sprite (exactly 2 markers per cell).
+     8-13 cross contacts display as matched (color 3) but do NOT satisfy the win
+     predicate — only 8-8 and 13-13 pairs count.
+selection: engine auto-selects the visible sprite nearest origin at level start.
+     Selected renders body color 0 with markers as 8 (13 remapped to 8 on display).
+actions: ACTION1-4 move selected 1 cell (bounds only, NO collision between
+     sprites); ACTION5 rotates +90; ACTION6 (click-select) not needed for L1.
+L1: selected sprite "0000" (5x6 body color 12) starts (3,3) rot 90; target sprite
+     "0001" (color 14) fixed at (12,9) with connectors at (12,11)=8, (12,13)=13.
+     Win position: selected at grid (7,10) rot 0. Canonical route: ACTION5*3,
+     RIGHT*4, DOWN*7 = 14 actions (baseline 29).
+detector: adaptive — burn action may move OR rotate the piece before first scan.
+     detect_state recovers position+rotation from body(0)∪marker(8) cell extent
+     (body alone is 5x5 at every rotation; the marker edge disambiguates rot).
+     Validated 7/7: practice run + all 5 burn scenarios (incl. ACTION5 burn → rot
+     180) + post-fix practice. 16 actions, level score 115.0 (capped), game
+     score 4.7619.
+L2+: levels 2-6 use 3-4 pieces, GreyMasking (sprites hidden until selected),
+     and stacked sprite variants cycled by ACTION5 — needs click-select for
+     multi-piece levels; deferred.
+[/mechanic]
+
+The DREAM projection (cross-field navigation, conf 130) was wrong about the
+mechanic class — cn04 is rotate-and-mate, not field navigation — but right
+about what mattered: player top-left, target bottom-right, 3px step, BFS-free
+direct route. Third consecutive game where the projection's player/target
+identification held while the mechanic guess missed. Frame signatures locate;
+environment source explains.
+
+---
+
+## Batch Solve Record — 2026-06-11 (v3)
+
+cn04 added. Solved roster: **10/25**.
+
+**Solved (10/25)**: ls20, cd82, sp80, re86, tu93, wa30, ar25, g50t, sk48, cn04
+
+**Unsolved — simple actions (9/25)**: m0r0, bp35, dc22, ka59, lf52, sc25, sb26, su15, tr87
+(ka59 detector committed 31435d9, P(win)≈1/6 — levels[4] variant only, awaiting competition confirmation)
+
+**Unsolved — no simple actions (6/25)**: lp85, vc33, r11l, s5i5, ft09, tn36
+
+---
+
+## Score Model — 2026-06-11 (v3)
+
+cn04 adds 4.7619 offline. **Overall offline: 1.3683** (10 game scores summed / 25, up from 1.1778).
+
+| Game | L1 steps | Route type | Game score |
+|------|----------|------------|------------|
+| cn04 | 16 (incl. burn) | adaptive rotate+translate | 4.7619 |
+
+Priority queue next: m0r0 (rank 3, conf 120), sb26 (rank 4, conf 115), su15 (rank 5, conf 112).
+ka59 already has a committed detector (probabilistic, levels[4] only).
