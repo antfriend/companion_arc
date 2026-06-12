@@ -9,7 +9,9 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "offline run 2026-06-11.5: ka59 adaptive detector (BFS navigation to target win pos)",
+    "2026-06-12.1: hidden-variant robustification — all 10 solved detectors "
+    "frame-derived or translation-invariant (cn04/tu93/wa30/ar25/sp80/g50t/re86 "
+    "fixed, sk48/cd82 verified); commits 7d6fb93+135a88b",
     dir_mode="zip",
     quiet=False,
 )
