@@ -13663,3 +13663,53 @@ cn04 adds 4.7619 offline. **Overall offline: 1.3683** (10 game scores summed / 2
 
 Priority queue next: m0r0 (rank 3, conf 120), sb26 (rank 4, conf 115), su15 (rank 5, conf 112).
 ka59 already has a committed detector (probabilistic, levels[4] only).
+
+---
+
+## Gateway Diagnosis — 2026-06-11 (leaderboard 0.08 vs offline 1.1778)
+
+Operator report: leaderboard 0.08 on 6/11 and 6/12 submissions. History (Kaggle API):
+6/7-6/10 = 0.01; 6/11+ = 0.08. Offline overall meanwhile grew 0.81 → 1.18.
+
+**Hypotheses tested and ELIMINATED (all evidence local + live API):**
+
+1. Environment drift — NO. All 25 competition instance hashes match local
+   environment_files exactly (cn04-2fe56bfb, ls20-9607627b, sk48-d8078629, ...).
+2. Per-run randomization on the platform — NO. cn04/ls20/g50t first frames are
+   pixel-identical across two fresh runs on three.arcprize.org (live API test).
+3. ONLINE code-path bugs — NO. Full competition rerun reproduced locally against
+   arc_agi.server (competition_mode=True, same REST protocol): 8/9 games WIN,
+   final 13.46 mean. (_test_gateway_local.py)
+4. Wheel version skew — NO. Competition wheels = arc_agi 0.9.8 + arcengine 0.9.3,
+   identical to local.
+5. Double execution in rerun — NO. Save-run log line duplication is a Kaggle
+   log-capture artifact (identical scorecard GUID in both copies).
+
+**Surviving explanation (docs-confirmed):** docs.arcprize.org/arc-prize-2026:
+"Phase B: Competition Rerun ... Your agent plays the HIDDEN GAME SET."
+The rerun gateway does not serve the canonical public instances. It serves
+hidden variants. Layout-coordinate-dependent detectors fail there:
+hardcoded routes (cd82, sp80, g50t, sk48), fixed win positions (cn04 (7,10)),
+fixed structure coords (ar25 mirror x=10), calibrated colors (tu93, wa30).
+Only ls20 — the one detector that derives everything from the observed frame —
+plausibly survives. Reconstruction: ls20 L1 win in ~30 actions → game 1.9-2.0
+→ 2.0/25 = 0.080 ✓. The 0.01 era = ls20 at ~80 actions under the stale
+pre-6/11 launcher ✓.
+
+@BELIEF:LAT85LON50 REVISION (rev 0 → 1, conf 220 → 80):
+"Route type determined by layout stability" observed LOCAL stability only.
+Local determinism does not transfer to the competition rerun — the hidden set
+varies layouts regardless. REPLACEMENT BELIEF: every detector must derive its
+full route from the observed first frame: detect player, detect target,
+compute geometry, never embed canonical coordinates. Hardcoded routes are
+practice-mode scaffolding only — they score zero on the gateway.
+
+**Action plan (conductor domain):**
+1. Refactor detectors frame-derived, highest gateway-gain first: cn04 (compute
+   win pos from detected target sprite + connector geometry), g50t, sk48, cd82,
+   sp80, ar25 (detect mirror), tu93/wa30 (derive colors from frame structure).
+2. Re-validate each via _test_gateway_local.py with PERTURBED level definitions
+   (shifted positions, swapped palettes) to simulate hidden variants.
+3. Operator ask: open the 6/12 submission on Kaggle → rerun notebook output/logs
+   if viewable → [game]/[online-row] lines reveal hidden game_ids + per-game
+   scores. Confirms which detectors actually win on the hidden set.
