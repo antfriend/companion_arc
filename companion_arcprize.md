@@ -13784,3 +13784,239 @@ points → leaderboard ~1.1 (vs 0.08). Any partial movement decodes per-game
 (quanta: 4.76 sp80/cd82/cn04=0.19; 3.57 ls20/g50t=0.14; 2.78 sk48/re86/ar25=0.11;
 2.22 tu93/wa30=0.089). Flat 0.08 falsifies translation → palette/structural
 variants → round 3 targets colors + structure derivation.**
+
+---
+
+## DREAM — 2026-06-12 (gateway-diagnosis + robustification consolidation)
+
+Walk parameters: 100 walks × 20 steps (Phase 1), 50 × 10 (Phase 2).
+Sources: gateway diagnosis record (5 eliminated hypotheses), robustification
+rounds 1-2, perturbation matrices, submission history 0.01→0.08, cn04 solve.
+High-sal pull: the contradiction between @BELIEF:LAT85LON50 (minted 6/11,
+local data) and the 2026-06-02 competition randomization observation.
+
+---
+
+### Phase 1 — Replay (confirmed clusters)
+
+**Cluster A: Validation has a hierarchy, and "solved" was defined one level too low**
+
+Every game called solved had passed offline-canonical validation. The
+competition plays a hidden set; offline-canonical predicts nothing about it.
+Ordered: offline-canonical < offline-perturbed < local-gateway-protocol <
+leaderboard. Submission history 0.01→0.08 while offline grew 0.81→1.18 is
+the cost of the gap, measured.
+
+@BELIEF:LAT88LON55 | created:1749686400 | updated:1749686400 | relates:extracted_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:240
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF: A detector is "solved" only at offline-perturbed validation or above**
+
+Canonical-instance wins are a necessary precondition, not a result. The
+solve checklist ends at `_test_perturbed.py` passing under every solvable
+translation (whole-scene, `--entities`, or `--sans-ui` as the game's
+structure demands), not at 3 canonical wins.
+
+---
+
+**Cluster B: Canonical-coordinate dependence is the default authorship failure**
+
+Audited 10 "solved" detectors: 7 embedded absolute facts — origins (tu93),
+lattice phases (wa30), win positions (cn04, ar25), target rows + fixed step
+counts (re86), canonical targets (sp80), whole routes (g50t). Each was
+written while staring at one instance; the instance's coordinates leaked
+into the code silently. Only ls20 (62-session hardening), cd82, and sk48
+(pure relative choreography) were free of it.
+
+@BELIEF:LAT85LON55 | created:1749686400 | updated:1749686400 | relates:extracted_from>@LAT-840LON10,generalizes>@BELIEF:LAT85LON50,contained_by>@LAT60LON20
+[ew]
+conf:230
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF: Every constant in a detector must be frame-derived or a mechanic invariant**
+
+Permitted constants: step sizes, color-role assignments confirmed from
+source, win-predicate structure. Forbidden: any coordinate, origin, count,
+or phase that names where something sits in the canonical instance. Review
+rule: read each detector constant and ask "what derives this?" — if the
+answer is "the instance I looked at," it is a bug not yet expressed.
+
+---
+
+**Cluster C: The fix-pattern library (transferable)**
+
+@BELIEF:LAT82LON55 | created:1749686400 | updated:1749686400 | relates:extracted_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:215
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF: Four fix patterns cover every canonical dependency found so far**
+
+1. ANCHOR — express choreography relative to a detected win-relevant entity
+   (sp80: obstacle cluster).
+2. PHASE — derive lattice alignment from the player entity's position
+   (wa30, tu93: cursor phase mod step).
+3. ENDPOINT-COUNTS — keep route structure, derive leg lengths from detected
+   entity separations on the movement lattice (g50t, re86).
+4. WIN-SOLVE — compute the goal placement by inverting the win predicate
+   over detected geometry (ar25: reflection; cn04: connector mating;
+   re86: marker centers).
+Pure relative choreography needs no fix — it is translation-invariant by
+construction (sk48).
+
+---
+
+**Cluster D: Dream-minted beliefs require audit against competition-sourced evidence**
+
+LAT85LON50 ("hardcoded OK for layout-stable games", conf 220) was minted
+from local observations on 6/11 and directly contradicted the 6/02
+competition observation already in this graph ("instances randomized per
+run"). The contradiction went undetected for a day and suppressed ~4 games
+of gateway score. The dream that minted it sampled only fresh local
+episodes; the older, harder evidence had lower salience and was never
+walked.
+
+@BELIEF:LAT79LON55 | created:1749686400 | updated:1749686400 | relates:extracted_from>@LAT-840LON10,revises_process_of>@BELIEF:LAT85LON50,contained_by>@LAT60LON20
+[ew]
+conf:235
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF: Evidence provenance outranks evidence freshness**
+
+Ranking for any belief that touches scoring: leaderboard/gateway evidence >
+competition-run observation > local perturbed > local canonical. Before a
+new belief closes, walk the graph for competition-tagged records that bear
+on it; a contradiction with higher-provenance evidence blocks the mint.
+
+---
+
+**Cluster E: Source reading beats probing; signatures locate, source explains**
+
+cn04 went from stub to validated in one session by reading the environment
+source first. ka59, re86, cn04 projections all misclassified mechanics from
+frame signatures alone while correctly identifying player/target entities.
+
+@BELIEF:LAT76LON55 | created:1749686400 | updated:1749686400 | relates:extracted_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:220
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF: For any new game: read source for mechanics, use signatures for entities**
+
+The environment source is available for all 25 games. Mechanic class, win
+predicate, action semantics, and collision rules come from source in
+minutes; frame signatures then bind the source's roles to pixels. Probing
+sessions are for nothing except confirming the binding.
+
+---
+
+### Phase 2 — Projection
+
+@BELIEF:LAT55LON55 | created:1749686400 | updated:1749686400 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:150
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF [PROJECTION]: Next leaderboard reading decodes as a four-branch tree**
+
+≥1.0 → translation hypothesis confirmed; resume new-game queue (m0r0 next)
+at full speed with frame-derived-first discipline.
+0.3–0.9 → variants exceed translation for some games; identify the missing
+quanta (0.19/0.14/0.11/0.089) and target those detectors' assumptions.
+≈0.08 flat → translation falsified; round 3 = color-role and structural
+derivation across all detectors.
+<0.08 → pipeline regression; audit dataset version pinning and notebook
+save-run log before touching detectors.
+
+---
+
+@BELIEF:LAT50LON55 | created:1749686400 | updated:1749686400 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:140
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF [PROJECTION]: Color roles are structurally derivable if palettes permute**
+
+If round 3 is needed: corridor color = the color forming the largest
+connected lattice (tu93); item color = small repeated congruent clusters
+(wa30); player = cluster adjacent to the distinctive marker signature;
+hazard/target zones = recolored-at-level-start uniform regions. Each
+detector's color constants become role-detection functions. Estimated cost:
+~1 session for the BFS games, more for choreography games whose win
+predicates also reference colors (sp80 obstacles=11 is already role-based:
+"the things that must be wetted").
+
+---
+
+@BELIEF:LAT45LON55 | created:1749686400 | updated:1749686400 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:120
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF [PROJECTION]: ACTION6 support unlocks six deferred games**
+
+lp85, vc33, r11l, s5i5, ft09, tn36 are excluded only by `a.is_simple()`
+filtering. ACTION6 carries (x,y); the REST endpoint exists and the local
+server exposes it. Framework change: route format admits (action, x, y)
+tuples; _play_game passes coordinates through. Detector side: clicks are
+frame-derived coordinates — the same discipline as everything else.
+Potential: 6 games × 0.09–0.19 ≈ +0.5–1.1 leaderboard — comparable to the
+entire current roster. Investigate after the next reading lands; the
+framework change is isolated and testable against the local gateway.
+
+---
+
+@BELIEF:LAT40LON55 | created:1749686400 | updated:1749686400 | projection_flag:true | relates:projected_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:130
+rev:0
+sal:0
+touched:1749686400
+[/ew]
+
+**BELIEF [PROJECTION]: Remaining queue under the new discipline**
+
+m0r0 (rank 3, conf 120) → sb26 → su15 → bp35 → sc25 → tr87 → lf52 → dc22,
+each solved source-first and validated perturbed-first — no detector ships
+on canonical wins again. ka59 coverage extension (5 unsolved level variants,
+currently P≈1/6) competes with m0r0 for the next slot; ka59's mechanics are
+already understood, which under Cluster E pricing makes it cheaper than its
+queue position suggests. g50t burn-recording caveat rides along as a
+round-3 audit item.
+
+---
+
+[DREAM COMPLETE 2026-06-12: Phase 1 extracted 5 confirmed beliefs
+(LAT88LON55 validation hierarchy, LAT85LON55 no-canonical-constants,
+LAT82LON55 fix-pattern library, LAT79LON55 provenance>freshness,
+LAT76LON55 source-first). Phase 2 generated 4 projections (LAT55LON55
+leaderboard decode tree, LAT50LON55 color-role derivation, LAT45LON55
+ACTION6 unlock, LAT40LON55 queue discipline). Competition state: 10/25
+solved offline, all translation-robust, dataset v2026-06-12.1 uploaded,
+submission pending. The next number on the leaderboard is the experiment.]
