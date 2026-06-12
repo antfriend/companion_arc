@@ -56,8 +56,8 @@ import numpy as np
 # Maze constants (confirmed from game source tu93-0768757b)
 # ---------------------------------------------------------------------------
 
-MAZE_ORIGIN_R = 15   # frame row of maze sprite top-left
-MAZE_ORIGIN_C = 15   # frame col of maze sprite top-left
+MAZE_ORIGIN_R = 15   # canonical maze origin — fallback only; detect_state derives
+MAZE_ORIGIN_C = 15   # the actual origin from the frame (hidden variants shift layouts)
 CELL_SIZE = 3        # hwthhtvyki — step size in pixels (passage pixel offset)
 LOGICAL_CELL_SIZE = CELL_SIZE * 2  # hcgctulqhn=6 — pixels per logical cell (room-to-room)
 
@@ -105,49 +105,75 @@ class StepResult:
 # Maze helpers
 # ---------------------------------------------------------------------------
 
-def _pixel_to_cell(pixel_row: int, pixel_col: int) -> Tuple[int, int]:
+def _derive_origin(grid: np.ndarray, cursor_tl: Tuple[int, int]) -> Tuple[int, int]:
+    """Derive the maze origin from the frame.
+
+    The corridor (color 2) bbox min sits at the maze origin plus 0 or 3 px
+    (horizontal vs vertical passage). The cursor sprite TL is always on the
+    6px cell lattice, so snapping the corridor bbox min down to the cursor's
+    lattice phase recovers the true origin under any whole-scene shift.
+    """
+    pos = np.argwhere(grid == CORRIDOR_COLOR)
+    if len(pos) == 0:
+        return (MAZE_ORIGIN_R, MAZE_ORIGIN_C)
+    cb_r = int(pos[:, 0].min())
+    cb_c = int(pos[:, 1].min())
+    phase_r = cursor_tl[0] % LOGICAL_CELL_SIZE
+    phase_c = cursor_tl[1] % LOGICAL_CELL_SIZE
+    origin_r = cb_r - ((cb_r - phase_r) % LOGICAL_CELL_SIZE)
+    origin_c = cb_c - ((cb_c - phase_c) % LOGICAL_CELL_SIZE)
+    return (origin_r, origin_c)
+
+
+def _pixel_to_cell(pixel_row: int, pixel_col: int,
+                   origin: Tuple[int, int]) -> Tuple[int, int]:
     """Convert frame pixel (top-left of sprite) to logical cell coordinates."""
     return (
-        (pixel_row - MAZE_ORIGIN_R) // LOGICAL_CELL_SIZE,
-        (pixel_col - MAZE_ORIGIN_C) // LOGICAL_CELL_SIZE,
+        (pixel_row - origin[0]) // LOGICAL_CELL_SIZE,
+        (pixel_col - origin[1]) // LOGICAL_CELL_SIZE,
     )
 
 
 def _passage_open(grid: np.ndarray, from_r: int, from_c: int,
-                  to_r: int, to_c: int) -> bool:
+                  to_r: int, to_c: int, origin: Tuple[int, int]) -> bool:
     """Check if the passage from logical cell (from_r,from_c) to (to_r,to_c) is open.
 
     The game checks maze.pixels[y_rel + dr*CELL_SIZE, x_rel + dc*CELL_SIZE] == 2
     before allowing movement. In frame coordinates, the passage pixel is at
-    (MAZE_ORIGIN_R + from_r*6 + dr*3, MAZE_ORIGIN_C + from_c*6 + dc*3).
+    (origin_r + from_r*6 + dr*3, origin_c + from_c*6 + dc*3).
     """
     dr = to_r - from_r
     dc = to_c - from_c
-    pr = MAZE_ORIGIN_R + from_r * LOGICAL_CELL_SIZE + dr * CELL_SIZE
-    pc = MAZE_ORIGIN_C + from_c * LOGICAL_CELL_SIZE + dc * CELL_SIZE
+    pr = origin[0] + from_r * LOGICAL_CELL_SIZE + dr * CELL_SIZE
+    pc = origin[1] + from_c * LOGICAL_CELL_SIZE + dc * CELL_SIZE
     max_r, max_c = grid.shape
     if pr < 0 or pc < 0 or pr >= max_r or pc >= max_c:
         return False
     return int(grid[pr, pc]) == CORRIDOR_COLOR
 
 
-def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]) -> list:
+def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],
+         origin: Tuple[int, int]) -> list:
     if start == target:
         return []
-    # Restrict BFS to cells 0..target (the maze viewport).
-    maze_max_r = target[0] + 1
-    maze_max_c = target[1] + 1
+    # BFS bounds from the corridor extent (not the target's quadrant — the
+    # path may route around the target in hidden variants).
+    pos = np.argwhere(grid == CORRIDOR_COLOR)
+    if len(pos) == 0:
+        return []
+    maze_max_r = (int(pos[:, 0].max()) - origin[0]) // LOGICAL_CELL_SIZE + 1
+    maze_max_c = (int(pos[:, 1].max()) - origin[1]) // LOGICAL_CELL_SIZE + 1
     queue: deque = deque([(start[0], start[1], [])])
     visited = {start}
     while queue:
         r, c, path = queue.popleft()
         for action, (dr, dc) in _DELTAS.items():
             nr, nc = r + dr, c + dc
-            if nr < 0 or nc < 0 or nr >= maze_max_r or nc >= maze_max_c:
+            if nr < 0 or nc < 0 or nr > maze_max_r or nc > maze_max_c:
                 continue
             # Check passage pixel BEFORE treating as target — only return if the
             # actual game move is allowed (passage color == 2).
-            if not _passage_open(grid, r, c, nr, nc):
+            if not _passage_open(grid, r, c, nr, nc, origin):
                 continue
             nxt = (nr, nc)
             if nxt == target:
@@ -176,23 +202,25 @@ def detect_state(grid: np.ndarray) -> GameState:
 
     # Cursor: color 4 at sprite [1][2]. Sprite TL = (r4-1, c4-2).
     cursor_pixel = cursor_cell = None
+    origin = (MAZE_ORIGIN_R, MAZE_ORIGIN_C)
     if CURSOR_COLOR in sigs and sigs[CURSOR_COLOR]["count"] == 1:
         r1, r2, c1, c2 = sigs[CURSOR_COLOR]["bbox"]
         cursor_pixel = (r1, c1)
         sprite_tl_r = r1 - 1
         sprite_tl_c = c1 - 2
-        cursor_cell = _pixel_to_cell(sprite_tl_r, sprite_tl_c)
+        origin = _derive_origin(grid, (sprite_tl_r, sprite_tl_c))
+        cursor_cell = _pixel_to_cell(sprite_tl_r, sprite_tl_c, origin)
 
     # Target: color 14, solid 3×3 block; TL → logical cell.
     target_pixel = target_cell = None
     if TARGET_COLOR in sigs:
         r1, r2, c1, c2 = sigs[TARGET_COLOR]["bbox"]
         target_pixel = (r1, c1)
-        target_cell = _pixel_to_cell(r1, c1)
+        target_cell = _pixel_to_cell(r1, c1, origin)
 
     route = []
     if cursor_cell is not None and target_cell is not None:
-        route = _bfs(grid, cursor_cell, target_cell)
+        route = _bfs(grid, cursor_cell, target_cell, origin)
 
     return GameState(
         grid_shape=(rows, cols),

@@ -42,6 +42,14 @@ def detect_state(grid):
         else:
             cursor_x, cursor_y = c, r       # rotation 270: left edge, body to right
 
+    # All entities live on the same STEP lattice as the cursor; derive the
+    # lattice phase from the cursor so shifted (hidden-variant) layouts work.
+    phase_x = cursor_x % STEP
+    phase_y = cursor_y % STEP
+
+    def snap(v: int, phase: int) -> int:
+        return ((v - phase) // STEP) * STEP + phase
+
     # --- Drop zone: color-2 interior → derive valid item placement positions ---
     pos2 = np.argwhere(frame == 2)
     dz_valid = set()
@@ -52,15 +60,15 @@ def detect_state(grid):
         dz_x1 = int(pos2[:, 1].max()) + 1
         for y in range(dz_y0, dz_y1 + 1):
             for x in range(dz_x0, dz_x1 + 1):
-                if x % STEP == 0 and y % STEP == 0:
+                if x % STEP == phase_x and y % STEP == phase_y:
                     dz_valid.add((x, y))
 
-    # --- Items: color-4 clusters, snap to STEP grid, exclude drop zone positions ---
+    # --- Items: color-4 clusters, snap to the phased STEP lattice ---
     pos4 = np.argwhere(frame == 4)
     seen_cells = set()
     items = []
     for row, col in pos4:
-        cell = ((int(col) // STEP) * STEP, (int(row) // STEP) * STEP)
+        cell = (snap(int(col), phase_x), snap(int(row), phase_y))
         if cell not in seen_cells:
             seen_cells.add(cell)
             if cell not in dz_valid:

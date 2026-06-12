@@ -13713,3 +13713,40 @@ practice-mode scaffolding only — they score zero on the gateway.
 3. Operator ask: open the 6/12 submission on Kaggle → rerun notebook output/logs
    if viewable → [game]/[online-row] lines reveal hidden game_ids + per-game
    scores. Confirms which detectors actually win on the hidden set.
+
+**Operator confirmed 2026-06-11: rerun log is NOT viewable — score only.**
+The leaderboard delta is the only observable. Proceeding on local simulation.
+
+---
+
+## Hidden-Variant Robustification — 2026-06-11 (round 1)
+
+New harness `_test_perturbed.py`: whole-scene translation (level 1) and
+entity-only translation (`--entities`, small sprites move, walls stay) —
+mirrors the observed hidden-set variation class (ls20 block start shifts).
+
+**Reproduced the hidden-set failure locally**, then fixed:
+
+| Game | Failure under shift | Root cause | Fix |
+|------|--------------------|------------|-----|
+| tu93 | no route | MAZE_ORIGIN_R/C = (15,15) hardcoded | origin from corridor bbox, phase-snapped to cursor lattice; BFS bounds from corridor extent |
+| wa30 | no route | item/dz cells snapped to absolute %4 lattice | lattice phase derived from cursor |
+| cn04 | route missed | win position (7,10) hardcoded | target connectors detected from frame; rotation x assignment candidates solved geometrically; dual-candidate route (26 steps worst case, still above 1.15 cap) |
+| ar25 | route missed | win position (1,15) hardcoded | placement solved from {reflect(piece)} == {markers} with mirror column detected from frame |
+
+**Post-fix matrix (whole-scene shifts):** cn04, tu93, wa30 WIN at all tested
+deltas; ar25 WINs at solvable deltas (fails only where the reflected placement
+leaves the grid — variant unsolvable, not a detector miss).
+
+**Entity-mode findings:** cd82 WINs all entity shifts (genuinely adaptive —
+no work needed). sk48 hardcoded route survives 2/4 shifts. g50t fails when
+entities move. re86/ls20 not perturbable by the size heuristic (tile-built
+scenery); ls20 is the one detector already proven on the hidden set.
+
+**Regression check:** local gateway repro unchanged — 8/9 WIN, 13.4568.
+
+**Remaining canonical-dependent:** g50t, sk48, sp80 (no local env files) —
+need true adaptive detectors next. ka59 unchanged (P≈1/6).
+
+**Expected leaderboard movement if hidden variants are translations:**
+tu93 + wa30 + cn04 + ar25 + cd82 ≈ +0.5-0.7 above the current 0.08.
