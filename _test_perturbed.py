@@ -38,6 +38,20 @@ DELTAS = [(0, 0), (2, 1), (-1, 2), (3, -1), (-2, -2)]
 # Entity mode: translate only "small" sprites (entities), leave walls/scene.
 # Mirrors the observed hidden-set variation (ls20 block start moved; maze didn't).
 ENTITY_MODE = "--entities" in sys.argv
+# Scene-sans-UI: translate everything except UI overlays (sprites pinned to
+# the last row/col or spanning the full grid) — for games whose playfield is
+# one large sprite that must move together with its entities.
+SANS_UI_MODE = "--sans-ui" in sys.argv
+sys.argv = [a for a in sys.argv if a not in ("--entities", "--sans-ui")]
+
+# Override deltas: --deltas "6,0;0,6;-6,0" (games with movement lattices need
+# lattice-preserving shifts)
+if "--deltas" in sys.argv:
+    i = sys.argv.index("--deltas")
+    spec = sys.argv[i + 1]
+    del sys.argv[i:i + 2]
+    DELTAS = [(0, 0)] + [tuple(int(v) for v in pair.split(","))
+                         for pair in spec.split(";")]
 
 
 def load_game_module(game: str):
@@ -61,6 +75,9 @@ def translate_levels(mod, dx: int, dy: int) -> bool:
     gw, gh = level.grid_size if level.grid_size else (64, 64)
 
     def movable(s) -> bool:
+        if SANS_UI_MODE:
+            return not (s.y >= gh - 1 or s.x >= gw - 1
+                        or s.width >= gw - 4 or s.height >= gh - 4)
         if not ENTITY_MODE:
             return True
         return s.width <= gw // 3 and s.height <= gh // 3

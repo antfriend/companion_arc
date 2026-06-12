@@ -1,51 +1,46 @@
 """
 games/re86/detector.py — Adaptive detector for re86 (ARC-AGI-3).
 
-re86 Level 1 is a PIECE PLACEMENT puzzle with two cross-shaped pieces:
-  Sprite 0042 (color 9, 27x27 cross, center=0) → starts at (x=23, y=32), move to (x=35, y=11)
-  Sprite 0030 (color 11, 23x23 cross)          → starts at (x=10, y=16), move to (x=4, y=-2)
+re86 Level 1 is a PIECE PLACEMENT puzzle with two cross-shaped pieces
+(color 9, 27x27 and color 11, 23x23). ACTION5 cycles the active piece
+(its center pixel renders color 0); ACTION1-4 move it 3px per action.
+Win: the pieces cover their target positions, marked by small marker
+pixels of the matching color (arm endpoints: two share the target center
+row, two share the target center column).
 
-ACTION5 cycles the active piece (sets its center pixel to 0).
-ACTION1-4 move the active piece by 3 pixels (step size = 3).
-Win: composite of pieces tagged 0031cppcuvqlbi matches target sprite 0053.
+Everything is frame-derived (hidden variants translate layouts):
+  - active piece center: the unique color-0 pixel; its piece color is read
+    from the neighboring pixels
+  - each piece's target center: among that color's pixels, the small marker
+    clusters (the big cluster is the piece itself) — the duplicated row is
+    the target center row, the duplicated column the target center column
+  - the inactive piece center: bbox center of its big cluster
 
-Target positions derived from target sprite 0053 (64x64, at (x=0,y=0)):
-  Color-11 markers at canvas (3,15),(9,6),(9,24),(17,15):
-    → piece 0030 cross: vertical arm at col x+11=15→x=4, horizontal at row y+11=9→y=-2
-  Color-9 markers at canvas (16,48),(24,40),(24,53),(35,48):
-    → piece 0042 cross: vertical arm at col x+13=48→x=35, horizontal at row y+13=24→y=11
+Route: move active piece to its target (vertical then horizontal), CYCLE,
+move the second piece to its target.
 
 Action index mapping:
-  0=ACTION1 (UP, dy=-3)   1=ACTION2 (DOWN, dy=+3)
-  2=ACTION3 (LEFT, dx=-3) 3=ACTION4 (RIGHT, dx=+3)
-  4=ACTION5 (CYCLE: switch active piece)
-
-Route is adaptive: reads active-piece center row from the first observed frame.
-In batch mode, one UP fires before the frame is captured (v0_row=42, up_042=6).
-In competition mode, the frame is the initial state (v0_row=45, up_042=7).
-Formula: up_042 = (v0_row - 24) // 3.
+  0=UP(dy=-3) 1=DOWN(dy=+3) 2=LEFT(dx=-3) 3=RIGHT(dx=+3) 4=CYCLE(ACTION5)
 """
 
-from dataclasses import dataclass, field
+from collections import Counter
+from dataclasses import dataclass
 
 import numpy as np
 
-UP    = 0
-RIGHT = 3
-LEFT  = 2
-CYCLE = 4
-
-_TARGET_042_CENTER_ROW = 24   # y=11 → center row = 11+13 = 24
-_TARGET_030_UP   = 6          # sprite 0030: y=16 → y=-2, 6 UP steps
-_TARGET_030_LEFT = 2          # sprite 0030: x=10 → x=4,  2 LEFT steps
-_RIGHT_042 = 4                # sprite 0042: x=23 → x=35, 4 RIGHT steps
+UP, DOWN, LEFT, RIGHT, CYCLE = 0, 1, 2, 3, 4
+_STEP = 3
+_PIECE_COLORS = (9, 11)
 
 
 @dataclass
 class GameState:
-    active_center_row: int
-    active_center_col: int
-    detected: bool
+    active_center: tuple | None = None    # (row, col) of the color-0 pixel
+    active_color: int | None = None
+    targets: dict | None = None           # {color: (row, col) target center}
+    other_center: tuple | None = None     # inactive piece cross center
+    other_color: int | None = None
+    detected: bool = False
 
 
 @dataclass
@@ -55,38 +50,97 @@ class StepResult:
     delta: dict
 
 
+def _clusters(grid: np.ndarray, color: int) -> list:
+    """8-connected clusters of color → list of sets of (r, c)."""
+    remaining = {(int(r), int(c)) for r, c in np.argwhere(grid == color)}
+    out = []
+    while remaining:
+        stack = [next(iter(remaining))]
+        cluster = set()
+        while stack:
+            cur = stack.pop()
+            if cur not in remaining:
+                continue
+            remaining.discard(cur)
+            cluster.add(cur)
+            r, c = cur
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    if (r + dr, c + dc) in remaining:
+                        stack.append((r + dr, c + dc))
+        out.append(cluster)
+    return out
+
+
+def _target_center(clusters: list) -> tuple | None:
+    """Markers = small clusters; duplicated row/col among them = target center."""
+    markers = [cl for cl in clusters if len(cl) <= 4]
+    pts = [next(iter(cl)) for cl in markers]
+    if len(pts) < 3:
+        return None
+    row_dup = [r for r, n in Counter(r for r, _ in pts).items() if n >= 2]
+    col_dup = [c for c, n in Counter(c for _, c in pts).items() if n >= 2]
+    if not row_dup or not col_dup:
+        return None
+    return (row_dup[0], col_dup[0])
+
+
+def _piece_center(clusters: list) -> tuple | None:
+    big = max(clusters, key=len, default=None)
+    if not big or len(big) < 20:
+        return None
+    rs = [r for r, _ in big]
+    cs = [c for _, c in big]
+    return ((min(rs) + max(rs)) // 2, (min(cs) + max(cs)) // 2)
+
+
 def detect_state(grid: np.ndarray) -> GameState:
-    """Find the active piece center (single color-0 pixel = center marker)."""
-    pos = np.argwhere(grid == 0)
-    if len(pos) == 1:
-        return GameState(
-            active_center_row=int(pos[0][0]),
-            active_center_col=int(pos[0][1]),
-            detected=True,
-        )
-    # Fallback: assume competition-mode initial position
-    return GameState(active_center_row=45, active_center_col=36, detected=False)
+    g = np.asarray(grid)
+    pos0 = np.argwhere(g == 0)
+    if len(pos0) != 1:
+        return GameState()
+    ar, ac = int(pos0[0][0]), int(pos0[0][1])
+
+    # Active piece color from the center pixel's neighbors
+    neigh = [int(g[ar + dr, ac + dc]) for dr in (-1, 0, 1) for dc in (-1, 0, 1)
+             if (dr or dc) and 0 <= ar + dr < g.shape[0] and 0 <= ac + dc < g.shape[1]]
+    active_color = next((v for v in neigh if v in _PIECE_COLORS), None)
+    if active_color is None:
+        return GameState()
+    other_color = 11 if active_color == 9 else 9
+
+    targets = {}
+    for color in _PIECE_COLORS:
+        cl = _clusters(g, color)
+        tc = _target_center(cl)
+        if tc is None:
+            return GameState()
+        targets[color] = tc
+        if color == other_color:
+            other_center = _piece_center(cl)
+
+    if other_center is None:
+        return GameState()
+    return GameState(active_center=(ar, ac), active_color=active_color,
+                     targets=targets, other_center=other_center,
+                     other_color=other_color, detected=True)
+
+
+def _legs(cur: tuple, target: tuple) -> list:
+    dr, dc = target[0] - cur[0], target[1] - cur[1]
+    if dr % _STEP or dc % _STEP:
+        return []
+    route = [UP if dr < 0 else DOWN] * (abs(dr) // _STEP)
+    route += [LEFT if dc < 0 else RIGHT] * (abs(dc) // _STEP)
+    return route
 
 
 def compute_route(state: GameState, level_num: int = 1) -> list:
-    """
-    L1: Move sprite 0042 (active) to (x=35, y=11), cycle to sprite 0030,
-    move sprite 0030 to (x=4, y=-2).
-
-    up_042 = (center_row - 24) // 3  adaptive to batch vs competition timing.
-    """
-    if level_num != 1:
+    if level_num != 1 or not state.detected:
         return []
-
-    up_042 = max(0, (state.active_center_row - _TARGET_042_CENTER_ROW) // 3)
-
-    return (
-        [UP]    * up_042        # move sprite 0042 up to y=11
-        + [RIGHT] * _RIGHT_042  # move sprite 0042 right to x=35
-        + [CYCLE]               # switch active piece to sprite 0030
-        + [UP]    * _TARGET_030_UP    # move sprite 0030 up to y=-2
-        + [LEFT]  * _TARGET_030_LEFT  # move sprite 0030 left to x=4
-    )
+    a = _legs(state.active_center, state.targets[state.active_color])
+    b = _legs(state.other_center, state.targets[state.other_color])
+    return a + [CYCLE] + b
 
 
 def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResult:
@@ -94,13 +148,11 @@ def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResul
 
 
 def format_companion_block(state: GameState, route: list) -> str:
-    import time
-    ts = int(time.time())
-    route_str = ",".join(str(a) for a in route)
     return (
-        f"[strategy game=re86 level=1 type=piece-placement version=1 created={ts}]\n"
-        f"active_center=({state.active_center_row},{state.active_center_col})"
-        f" detected={state.detected} up_042={(state.active_center_row-24)//3}\n"
-        f"route: {route_str}\n"
+        f"[strategy game=re86 level=1 type=piece-placement version=2]\n"
+        f"active: center={state.active_center} color={state.active_color}\n"
+        f"other: center={state.other_center} color={state.other_color}\n"
+        f"targets: {state.targets}\n"
+        f"route_len: {len(route)}\n"
         "[/strategy]"
     )

@@ -13750,3 +13750,37 @@ need true adaptive detectors next. ka59 unchanged (P≈1/6).
 
 **Expected leaderboard movement if hidden variants are translations:**
 tu93 + wa30 + cn04 + ar25 + cd82 ≈ +0.5-0.7 above the current 0.08.
+
+---
+
+## Hidden-Variant Robustification — 2026-06-11 (round 2, pre-submission)
+
+Completed in the 12h window before the next submission. All 10 solved games
+now frame-derived or verified translation-invariant:
+
+| Game | Status | Change |
+|------|--------|--------|
+| sp80 | FIXED | env files re-downloaded (589a99af); spill choreography anchored to detected color-11 obstacle cluster (canonical target (3,4) removed) |
+| g50t | FIXED | hardcoded route replaced: goal/button/tracker detected from frame (goal = 5-pixel ringed by 9s; tracker = inverse; button = isolated 3x3 of 8s); two-stage step counts derived, /6 lattice |
+| re86 | FIXED | absolute target row + fixed step counts replaced: target centers from marker pixels (duplicated row/col among small same-color clusters), inactive piece from cluster bbox center |
+| sk48 | VERIFIED | route is pure relative choreography — translation-invariant as-is |
+| cd82 | VERIFIED | wins all entity shifts unchanged |
+| ls20 | hidden-set proven (the 0.08 itself) |
+| cn04/tu93/wa30/ar25 | fixed in round 1 |
+
+Harness upgrades: `--sans-ui` mode (translate scene except UI/frame overlays —
+needed for g50t/sk48/re86 whose playfields pin whole-scene shifts), `--deltas`
+override for lattice-preserving shifts (6px g50t/sk48, 3px re86).
+
+g50t known caveat: the pre-route burn (UP) is recorded into stage 0;
+canonically wall-blocked. A hidden variant with open space above the goal
+start would desync stage 1 by one step. Round 3 item.
+
+Regression: full matrix canonical-clean; local gateway repro 9/10 WIN
+(+ sp80 now present), ka59 0 expected.
+
+**Ceiling for next submission if translation hypothesis holds: ~28.6 game
+points → leaderboard ~1.1 (vs 0.08). Any partial movement decodes per-game
+(quanta: 4.76 sp80/cd82/cn04=0.19; 3.57 ls20/g50t=0.14; 2.78 sk48/re86/ar25=0.11;
+2.22 tu93/wa30=0.089). Flat 0.08 falsifies translation → palette/structural
+variants → round 3 targets colors + structure derivation.**

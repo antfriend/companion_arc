@@ -28,11 +28,19 @@ _SELECTED_VALUE = 9
 # Frame pixels per game unit
 _CELL = 4
 
-# Canonical piece position for level 1 (game coordinates)
+# Canonical piece position for level 1 (game coordinates) — fallback only.
 _CANONICAL_X = 3
 _CANONICAL_Y = 4
 
-# Known winning sequence from canonical position
+# The winning choreography is anchored to the color-11 obstacle cluster
+# (the win condition: liquid must wet every color-11 obstacle). Canonical
+# obstacles bbox-min is game (4,13); canonical spill-1 piece position (3,4).
+# Hidden variants translate layouts, so the spill position is expressed
+# relative to the detected obstacle anchor.
+_OBSTACLE_COLOR = 11
+_ANCHOR_TO_PIECE = (3 - 4, 4 - 13)   # piece offset from obstacle bbox-min
+
+# Known winning sequence once the piece stands at the spill-1 position
 _SPILL_ROUTE = [4, 3, 3, 3, 4, 2, 2, 1]
 
 UP, DOWN, LEFT, RIGHT, SPILL = 0, 1, 2, 3, 4
@@ -46,6 +54,8 @@ class GameState:
     piece_game_x: int         # detected selected piece game x (or canonical if not found)
     piece_game_y: int         # detected selected piece game y (or canonical if not found)
     piece_detected: bool      # False if pixel-9 not found (used canonical fallback)
+    anchor_game_x: int = 4    # color-11 obstacle bbox-min (canonical fallback)
+    anchor_game_y: int = 13
 
 
 @dataclass
@@ -90,12 +100,21 @@ def detect_state(grid: np.ndarray) -> GameState:
         game_y = _CANONICAL_Y
         detected = False
 
+    # Obstacle anchor: color-11 cells (recolored uniformly at level start).
+    anchor_x, anchor_y = 4, 13
+    p11 = np.argwhere(grid == _OBSTACLE_COLOR)
+    if len(p11):
+        anchor_x = int(p11[:, 1].min()) // _CELL
+        anchor_y = int(p11[:, 0].min()) // _CELL
+
     return GameState(
         grid_shape=(rows, cols),
         entity_signatures=sigs,
         piece_game_x=game_x,
         piece_game_y=game_y,
         piece_detected=detected,
+        anchor_game_x=anchor_x,
+        anchor_game_y=anchor_y,
     )
 
 
@@ -103,11 +122,14 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
     """
     Return action route for the given state.
 
-    Prefix moves the piece from its detected position to canonical (3,4),
-    then appends the known winning spill sequence.
+    Prefix moves the piece from its detected position to the spill-1
+    position (obstacle anchor + offset), then appends the winning spill
+    sequence. Anchor-relative so translated hidden variants still win.
     """
-    dx = _CANONICAL_X - state.piece_game_x
-    dy = _CANONICAL_Y - state.piece_game_y
+    target_x = state.anchor_game_x + _ANCHOR_TO_PIECE[0]
+    target_y = state.anchor_game_y + _ANCHOR_TO_PIECE[1]
+    dx = target_x - state.piece_game_x
+    dy = target_y - state.piece_game_y
 
     prefix: list = []
     if dx > 0:
