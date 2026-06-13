@@ -14102,3 +14102,60 @@ best available proxy for hidden-variant generality. Multi-level success is
 a necessary (not sufficient) condition for hidden-set transfer under
 H-variant, and pure waste under H-novel — so it is gated on the ablation
 result.]
+
+---
+
+## Multi-level generality attempt — 2026-06-13 (operator chose H-variant path)
+
+Built `_test_levels.py` (isolated per-level test via set_level + camera.render,
+decoupling detector generality from transition/burn framework quirks) and
+`_survey_levels.py` (L1-vs-L2 sprite-composition delta). Baseline: every
+detector solves ONLY L1; all return [] or fail on L2+.
+
+**Decisive finding: levels 2-6 are not parametric variants — they introduce
+NEW MECHANICS.** Per-game L1→L2 delta and the blocker:
+
+| Game | L2 change | Blocker for L2+ |
+|------|-----------|-----------------|
+| tu93 | +chaser sprite (tag 0001haidilggfh/0020) | PURSUIT: a moving enemy deletes the probe (uneirnujpq→remove_sprite). Needs dynamic evasion, not static BFS. |
+| wa30 | +adversaries | moving adversaries (same class as tu93) |
+| ar25 | +markers, asymmetric, piece same side as mirror | reflection geometry differs from L1; L1 win-invert solver finds no placement |
+| re86 | +piece | more pieces; cycle-order + per-piece targets |
+| sp80 | +movable pieces, per-level dir-remap table (6 tables in source) | ACTION1-4 remap rotates per level; spill choreography not invariant |
+| cd82 | +0 kinds but L2 needs color-selection | ACTION6 click (not a simple action) |
+| cn04 | +pieces (multi) | ACTION6 click-select per piece |
+| sk48 | +segments | ACTION6; relative choreography is L1-specific |
+| g50t | +5 kinds (multi-stage) | multi-button/multi-ghost recording |
+| ka59 | +8 kinds | effectively a different puzzle per level |
+| ls20 | the known 107-step L2 (partial) | timer/oscillation; open problem |
+
+**Conclusion:** "solve levels 2-6" ≈ solving ~40 new mini-games, several
+requiring ACTION6 (deferred — not a simple action) and several requiring
+dynamic/adversarial planning. This IS the ARC-AGI-3 generalization problem
+in miniature: each level is a novel environment. It is NOT a small uniform
+refactor.
+
+**Genuine gain banked:** tu93 detector rewritten rotation-independent
+(cursor TL from full 3×3 body extent, not the rotation-specific marker
+offset) and fully layout/size-general (origin + BFS bounds from corridor
+extent, cursor-relative cell space incl. negative cells). L1 still wins
+under all perturbations; now also handles any cursor rotation and maze
+size — a real hidden-variant robustness improvement even though tu93's
+chaser levels remain unsolved.
+
+@BELIEF:LAT72LON55 | created:1749772800 | updated:1749772800 | relates:extracted_from>@LAT-840LON10,contained_by>@LAT60LON20
+[ew]
+conf:225
+rev:0
+sal:0
+touched:1749772800
+[/ew]
+
+**BELIEF: Within a game, later levels are novel mechanics, not parametric
+variants.** A detector that solves L1 has no head start on L2 beyond the
+entity-detection primitives. Multi-level coverage requires per-level mechanic
+modeling (pursuit, multi-agent, click-selection, action-remap), much of it
+gated on ACTION6 support. Corollary: the per-game-detector strategy scales
+linearly with (games × levels × mechanics), which is the opposite of
+generalization — reinforces that a general frame-reasoning agent, not a
+detector library, is what the benchmark rewards.

@@ -62,7 +62,8 @@ CELL_SIZE = 3        # hwthhtvyki — step size in pixels (passage pixel offset)
 LOGICAL_CELL_SIZE = CELL_SIZE * 2  # hcgctulqhn=6 — pixels per logical cell (room-to-room)
 
 # Frame color constants
-CURSOR_COLOR = 4   # color-4 pixel at [1][2] of cursor sprite
+CURSOR_COLOR = 4   # color-4 marker pixel in the cursor sprite
+CURSOR_BODY  = 9   # cursor sprite body color (cursor-only; used for TL anchor)
 TARGET_COLOR = 14  # exit sprite fill color
 CORRIDOR_COLOR = 2  # passage pixel color — maze.pixels[i,c]==2 allows movement
 
@@ -156,20 +157,22 @@ def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],
          origin: Tuple[int, int]) -> list:
     if start == target:
         return []
-    # BFS bounds from the corridor extent (not the target's quadrant — the
-    # path may route around the target in hidden variants).
+    # Cell-space bounds from the corridor (color-2) extent relative to the
+    # cursor-anchored origin. Cells may be negative (target up/left of cursor).
     pos = np.argwhere(grid == CORRIDOR_COLOR)
     if len(pos) == 0:
         return []
-    maze_max_r = (int(pos[:, 0].max()) - origin[0]) // LOGICAL_CELL_SIZE + 1
-    maze_max_c = (int(pos[:, 1].max()) - origin[1]) // LOGICAL_CELL_SIZE + 1
+    min_r = (int(pos[:, 0].min()) - origin[0]) // LOGICAL_CELL_SIZE - 1
+    max_r = (int(pos[:, 0].max()) - origin[0]) // LOGICAL_CELL_SIZE + 1
+    min_c = (int(pos[:, 1].min()) - origin[1]) // LOGICAL_CELL_SIZE - 1
+    max_c = (int(pos[:, 1].max()) - origin[1]) // LOGICAL_CELL_SIZE + 1
     queue: deque = deque([(start[0], start[1], [])])
     visited = {start}
     while queue:
         r, c, path = queue.popleft()
         for action, (dr, dc) in _DELTAS.items():
             nr, nc = r + dr, c + dc
-            if nr < 0 or nc < 0 or nr > maze_max_r or nc > maze_max_c:
+            if nr < min_r or nc < min_c or nr > max_r or nc > max_c:
                 continue
             # Check passage pixel BEFORE treating as target — only return if the
             # actual game move is allowed (passage color == 2).
@@ -200,23 +203,31 @@ def detect_state(grid: np.ndarray) -> GameState:
         r2, c2 = int(pos[:, 0].max()), int(pos[:, 1].max())
         sigs[int(val)] = {"count": len(pos), "bbox": (r1, r2, c1, c2)}
 
-    # Cursor: color 4 at sprite [1][2]. Sprite TL = (r4-1, c4-2).
+    # Cursor = the 3×3 sprite carrying the single color-4 marker. Derive its
+    # top-left from the FULL sprite extent (color 4 marker + color 9 body),
+    # which is rotation-independent — the marker's offset within the 3×3
+    # varies per level with sprite rotation, so it must not be used as anchor.
     cursor_pixel = cursor_cell = None
     origin = (MAZE_ORIGIN_R, MAZE_ORIGIN_C)
-    if CURSOR_COLOR in sigs and sigs[CURSOR_COLOR]["count"] == 1:
-        r1, r2, c1, c2 = sigs[CURSOR_COLOR]["bbox"]
-        cursor_pixel = (r1, c1)
-        sprite_tl_r = r1 - 1
-        sprite_tl_c = c1 - 2
-        origin = _derive_origin(grid, (sprite_tl_r, sprite_tl_c))
-        cursor_cell = _pixel_to_cell(sprite_tl_r, sprite_tl_c, origin)
+    cur_tl = None
+    if CURSOR_COLOR in sigs:
+        c4 = np.argwhere(grid == CURSOR_COLOR)
+        body = np.argwhere(grid == CURSOR_BODY)  # cursor body (cursor-only)
+        allc = np.vstack([c4, body]) if len(body) else c4
+        cur_tl = (int(allc[:, 0].min()), int(allc[:, 1].min()))
+        cursor_pixel = (int(c4[:, 0].min()), int(c4[:, 1].min()))
+        # The cursor sprite fully fills a room cell, so its TL is a room TL
+        # on the 6px logical lattice. Use it directly as the lattice anchor.
+        origin = cur_tl
+        cursor_cell = (0, 0)
 
-    # Target: color 14, solid 3×3 block; TL → logical cell.
+    # Target: color 14, solid 3×3 exit; TL → logical cell relative to cursor.
     target_pixel = target_cell = None
-    if TARGET_COLOR in sigs:
+    if TARGET_COLOR in sigs and cur_tl is not None:
         r1, r2, c1, c2 = sigs[TARGET_COLOR]["bbox"]
         target_pixel = (r1, c1)
-        target_cell = _pixel_to_cell(r1, c1, origin)
+        target_cell = (round((r1 - cur_tl[0]) / LOGICAL_CELL_SIZE),
+                       round((c1 - cur_tl[1]) / LOGICAL_CELL_SIZE))
 
     route = []
     if cursor_cell is not None and target_cell is not None:
@@ -234,8 +245,8 @@ def detect_state(grid: np.ndarray) -> GameState:
 
 
 def compute_route(state: GameState, level_num: int = 1) -> list:
-    if level_num != 1:
-        return []
+    # Maze navigation is the same mechanic at every level (levels differ only
+    # in grid size and wall layout, both read from the frame). No level guard.
     return list(state.route)
 
 
