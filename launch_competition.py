@@ -67,6 +67,11 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN")) or _gatewa
 
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 
+# Ablation mode (diagnostic): "random" plays uniformly-random simple actions and
+# ignores ALL routes/detectors — the control for "do our detectors transfer to
+# the hidden set?". Set LOCUS_ABLATION=random in the environment. Empty = normal.
+_ABLATION = os.getenv("LOCUS_ABLATION", "").strip().lower()
+
 # Games with confirmed, stable solutions — batch runs suppress verbose frame/route logs
 _SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80", "tu93", "wa30", "ar25", "g50t", "sk48"})
 
@@ -209,8 +214,9 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         if obs is not None and str(obs.state) in _END_STATES:
             break
 
-        # First-frame scan: compute adaptive route for this level via detector
-        if obs is not None and obs.frame and not level_scanned:
+        # First-frame scan: compute adaptive route for this level via detector.
+        # Skipped entirely under ablation (no detector/route influence at all).
+        if not _ABLATION and obs is not None and obs.frame and not level_scanned:
             current_level = (obs.levels_completed or 0) + 1
             # Refresh action list — some games remap slots per level (e.g. sp80 rotation)
             fresh = [a for a in (env.action_space or []) if a.is_simple()]
@@ -221,10 +227,17 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             if adaptive:  # only override if detector produced a non-empty route
                 route = list(adaptive)
             level_scanned = True
+        elif _ABLATION and obs is not None and obs.frame and not level_scanned:
+            fresh = [a for a in (env.action_space or []) if a.is_simple()]
+            if fresh:
+                actions = fresh
+            level_scanned = True
 
         # Play route (1-indexed: level_step=1 → route[0]) or action 0 — no random fallback
         level_step = step - level_start_step
-        if obs is None:
+        if _ABLATION == "random":
+            action_idx = random.randrange(len(actions))  # control: undirected play
+        elif obs is None:
             action_idx = 0  # safety: get first frame before acting
         elif 0 < level_step <= len(route):
             action_idx = route[level_step - 1] % len(actions)
@@ -400,6 +413,9 @@ def run_offline() -> None:
 def main() -> None:
     env_flag = os.getenv("KAGGLE_IS_COMPETITION_RERUN")
     print(f"[launch] KAGGLE_IS_COMPETITION_RERUN={env_flag!r}  IS_COMPETITION_RERUN={IS_COMPETITION_RERUN}", flush=True)
+    if _ABLATION:
+        print(f"[launch] *** ABLATION MODE: {_ABLATION!r} — detectors/routes DISABLED, "
+              f"playing undirected. Diagnostic floor measurement. ***", flush=True)
     _load_routes()
 
     if IS_COMPETITION_RERUN:
