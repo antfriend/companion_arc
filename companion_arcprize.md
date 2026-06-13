@@ -14020,3 +14020,85 @@ leaderboard decode tree, LAT50LON55 color-role derivation, LAT45LON55
 ACTION6 unlock, LAT40LON55 queue discipline). Competition state: 10/25
 solved offline, all translation-robust, dataset v2026-06-12.1 uploaded,
 submission pending. The next number on the leaderboard is the experiment.]
+
+---
+
+## CRITICAL FINDING — 2026-06-13: the validation chain is blind to the scored set
+
+**6/12 submission (v2026-06-12.1, round-2 robustification) scored 0.08 —
+identical to 6/11 (pre-robustification).** The pre-registered decode tree
+(LAT55LON55) calls flat 0.08 a falsification of the translation hypothesis.
+Investigated before accepting that, and found something larger.
+
+**Eliminations (all evidence, this session):**
+1. Stale upload — FALSIFIED. Downloaded the live danxray/companion-arc
+   dataset; all 7 round-2 detectors hash-identical to repo, every round-2
+   marker present. The gateway ran the new code.
+2. Palette permutation (LAT50LON55) — WEAKENED. ls20 hardcodes its colors
+   (BLOCK=12 FLOOR=5 ENT1=9 TIMER=11 VOID=4 WALL=3). If the hidden set
+   permuted colors, ls20 would fail too — but ls20 is the presumed survivor.
+3. Translation variation — FALSIFIED. Round 2 made 7 detectors
+   translation-invariant (proven in _test_perturbed.py); leaderboard did
+   not move.
+
+**The finding (_test_instance_variation.py):** across 4 FRESH scorecards
+each, ls20/tu93/wa30 return byte-identical first frames. The public API
+serves DETERMINISTIC instances == local environment_files. No variation
+exists to observe. (This also retro-corrects the 2026-06-02 "instances
+randomized per run" note: ls20's c34/c39/c29 was the block sliding DURING
+play or detection at different steps — NOT instance variation. The instance
+is fixed.)
+
+**Therefore:** local-gateway-repro (which serves these deterministic public
+instances) wins 9-10 games ≈ score 13, but the competition leaderboard is
+0.08. The competition gateway does NOT serve the public instances. The
+hidden game set is genuinely distinct and UNOBSERVABLE from here.
+
+@BELIEF:LAT90LON55 | created:1749772800 | updated:1749772800 | relates:extracted_from>@LAT-840LON10,revises>@BELIEF:LAT88LON55,contradicts>@BELIEF:LAT85LON50,contained_by>@LAT60LON20
+[ew]
+conf:245
+rev:0
+sal:0
+touched:1749772800
+[/ew]
+
+**BELIEF: No local validation predicts leaderboard, because the scored
+instances are unobservable.** Public API = local files = deterministic =
+NOT what the competition scores. Every tier of the LAT88LON55 hierarchy
+(canonical, perturbed, local-gateway) runs the same wrong instances. The
+ONLY oracle for the hidden set is the leaderboard itself: ~1 float/day.
+Per-game detectors fit to public instances have ZERO demonstrated transfer.
+
+**Two live hypotheses for the hidden set (undistinguished):**
+- H-variant: hard variants of the 25 known games (different layouts/levels
+  beyond translation). Supported by: competition ships environment_files for
+  the 25 games (why ship them if unrelated?). Implication: detectors must be
+  variant-general, developable locally using LEVELS 2-6 as proxy variants
+  (real structurally-different instances we DO have).
+- H-novel: the hidden set is novel games (ARC-AGI-3 is explicitly a
+  generalization-to-unseen benchmark). Implication: per-game detectors are
+  structurally the wrong tool; a general frame-reasoning agent is required —
+  i.e. what the larva WAS before the imago archived it for detectors.
+
+**0.08 is most likely a floor** (structured-route execution achieving
+partial completion on unseen instances), not a detector win. The 0.01→0.08
+jump on 6/11 coincides with the route-execution fixes (418d77a stale
+launcher, fd3f27e empty-route clobber): before, routes didn't run → random
+floor 0.01; after, structured routes run → 0.08. Robustification can't move
+a floor.
+
+**NEXT EXPERIMENT (operator decision — submission budget 1/day):**
+ABLATION. Submit with all detectors disabled (compute_route → []), pure
+fallback/random play. If leaderboard stays ~0.08 → 0.08 is the floor and NO
+detector transfers → pivot to multi-level-general detectors and/or a general
+agent. If it drops below 0.08 → some detectors DO transfer → identify which
+and why. One submission resolves the foundational unknown that 10 games of
+detector work never tested.
+
+**LOCAL WORK THAT IS VALID REGARDLESS (needs no hidden instances):**
+make each detector solve ALL its local levels (2-6), not just L1. Levels
+2-6 are real structurally-different instances of the same mechanic — the
+best available proxy for hidden-variant generality. Multi-level success is
+a necessary (not sufficient) condition for hidden-set transfer under
+H-variant, and pure waste under H-novel — so it is gated on the ablation
+result.]
