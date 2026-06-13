@@ -9,9 +9,8 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "2026-06-12.1: hidden-variant robustification — all 10 solved detectors "
-    "frame-derived or translation-invariant (cn04/tu93/wa30/ar25/sp80/g50t/re86 "
-    "fixed, sk48/cd82 verified); commits 7d6fb93+135a88b",
+    "2026-06-13.1-ablation: LOCUS_ABLATION=random diagnostic — routes/detectors "
+    "disabled, uniformly-random play, to measure the hidden-set floor; commit 00fbc55",
     dir_mode="zip",
     quiet=False,
 )
