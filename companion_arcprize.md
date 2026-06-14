@@ -14515,3 +14515,54 @@ hides precise puzzles (unsolvable without targeting). The resolution, if one
 exists, is on-line per-instance planning with no canonical prior — not a route,
 not a detector, but a solver. Beyond the current roadmap; flagged for when the
 stochastic ceiling is empirically hit.
+
+---
+
+## Meanwhile prep, round 2 (post-dream exploration) — 2026-06-14
+
+Operator asked for any further improvement gainable before submission. Built and
+tested two dream candidates + a core-mechanism probe. Pattern confirms
+@LAT82LON55 (local validation is one-sided): every result is "no-regression,
+gain unconfirmable."
+
+1. **Meta-explorer (`core/meta_agent.py`, dream @LAT30LON55) — NULL transfer on
+   distinct games.** Cross-game action-id prior (change-rate + completion credit,
+   soft-weighted = additive-only). Controlled warm-vs-cold transfer test
+   (`_test_meta_transfer.py`, 5 orders × 3 seeds): later-half first-50-step
+   no-op rate warm 17.0% vs cold 17.0% (delta ~0); wins warm 1 / cold 2 (noise).
+   Reason: canonical's 11 games are DISTINCT games, not an H-variant family, so
+   id-semantics don't transfer (change-rate uniform across ids). This tests the
+   PESSIMISTIC case; it neither confirms nor refutes the hidden-FAMILY case,
+   which canonical cannot simulate (one instance per game). Shelved as a
+   speculative, locally-unvalidatable bet (same status as v2).
+
+2. **Click effectiveness probe — clicks are weak on canonical, 0 wins.** With the
+   stall-gate, ClickExplorer issues clicks on cd82 (eff ~19%), ka59 (~6%), ar25
+   (~0%); 0 clicks on sp80/sk48 (movement-driven, correctly preserved) and 0 on
+   cn04. 0 actual wins on any click-game. cn04 issues 0 clicks because its action
+   BUDGET is small — episodes GAME_OVER in ~20 steps, before the stall can
+   accumulate. Per @LAT25LON55 canonical click-games are precise puzzles
+   exploration won't crack anyway; click value is purely the hidden pure-click
+   reservoir (@LAT35LON55), unmeasurable locally.
+
+3. **Core-mechanism bug found + fixed: in-grid HUD defeats the signature.**
+   board_signature strips only the outer UI border. cn04 renders an action-budget
+   bar at row 4 (depletes per action, 144 cells/step); sk48 has an animated band.
+   These can make frames look novel and defeat no-op/revisit detection — degrading
+   v1 to random on such games. Fix: `core/dyn_signature.py` DynamicSignature —
+   learns a per-cell volatility mask (cells changing on >60% of steps), excludes
+   them after a 6-step warmup, freezes the mask per level. Verified HARMLESS:
+   stable games (cd82/sp80) collapse to 1 signature unchanged; sk48's real
+   movement is correctly preserved (not masked). A strictly-better default
+   signature for any future build; its own increment (do NOT bundle with clicks —
+   one change per submission). Canonical outcome impact small (binding constraint
+   is budget/precision, not noise), but the noise-immunity is real and general.
+
+**Bottom line (the disciplined conclusion):** local exploration has hit its
+ceiling. v2, meta, clicks, dyn-signature all return no-regression / gain-
+unconfirmable. The leaderboard reading of general-v1 is now the only informative
+next signal — exactly as the dream consolidated (@LAT82LON55). Staged, ordered
+increments ready: (a) ClickExplorer [≈0.15 branch], (b) DynamicSignature [core
+upgrade, any branch], (c) goal-seeking tie-breaker [>0.15 branch, unbuilt],
+(d) meta-explorer [speculative, after a family signal]. New files this round:
+core/meta_agent.py, core/dyn_signature.py, _test_meta_transfer.py.

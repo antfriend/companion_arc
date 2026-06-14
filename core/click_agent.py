@@ -89,6 +89,10 @@ class ClickExplorer:
         self.n_moves = max(0, n_moves)
         self.allow_click = allow_click
         self._rng = random.Random(seed)
+        # Movement-stall threshold: clicks latch on after this many steps with
+        # no never-seen signature. Scaled to the move count so a game gets a
+        # fair chance to exhaust movement before clicks are introduced.
+        self._stall = max(8, 2 * self.n_moves)
         self.reset_level()
 
     def reset_level(self) -> None:
@@ -97,39 +101,48 @@ class ClickExplorer:
         self.noop: set = set()     # (sig, key) with no board change
         self._prev_sig = None
         self._prev_key = None
+        self._since_new = 0        # steps since a never-seen signature appeared
+        self._clicks_on = False    # latched once movement stalls (this level)
 
     def set_actions(self, n_moves: int, allow_click: bool) -> None:
         self.n_moves = max(0, n_moves)
         self.allow_click = allow_click
+        self._stall = max(8, 2 * self.n_moves)
 
     # back-compat with the v1 interface so callers can swap import cleanly
     def set_n_actions(self, n: int) -> None:
         self.n_moves = max(0, n)
 
     def _candidates(self, sig: bytes, frame: np.ndarray):
-        """Movement-first, clicks-on-escalation.
+        """Movement-first, clicks-on-global-stall.
 
         Clicks dilute movement-solvable games (12 extra candidates per state
-        balloon the search), so we only offer clicks from a state where
-        movement no longer offers novelty — every move from here is already
-        tried (and is a no-op or leads to a known state). That preserves
-        movement-games exactly (clicks never appear while moves still have
-        untried options) yet enables clicks where movement dead-ends (the
-        pure-click case: all moves become no-ops immediately).
+        balloon the search). A per-state gate ("offer clicks only where this
+        state has no untried move") fails on games whose moves keep generating
+        fresh states — there is always an untried move somewhere, so clicks
+        never unlock (cn04 issued 0 clicks). The correct trigger is GLOBAL
+        movement-stall: once movement has gone _stall steps without revealing a
+        never-seen signature, movement has dead-ended for this level and clicks
+        latch on for the rest of it. A movement-solvable game (sp80) keeps
+        finding new states, never stalls, never clicks — preserved exactly.
         """
         move_keys = [("m", i) for i in range(self.n_moves)]
-        if not self.allow_click:
+        if not (self.allow_click and self._clicks_on):
             return move_keys or [("m", 0)]
-        move_untried = [k for k in move_keys
-                        if (sig, k) not in self.trans and (sig, k) not in self.noop]
-        if move_untried:
-            return move_keys  # keep exploring movement; don't dilute
         click_keys = [("c", gx, gy) for gx, gy in _foreground_components(frame)]
         return (move_keys + click_keys) or [("m", 0)]
 
     def choose(self, frame: np.ndarray):
         sig = board_signature(frame)
+        is_new = sig not in self.visit
         self.visit[sig] = self.visit.get(sig, 0) + 1
+        # Track movement-stall: clicks latch on once novelty dries up.
+        if is_new:
+            self._since_new = 0
+        else:
+            self._since_new += 1
+            if self.allow_click and not self._clicks_on and self._since_new >= self._stall:
+                self._clicks_on = True
 
         if self._prev_sig is not None and self._prev_key is not None:
             k = (self._prev_sig, self._prev_key)
