@@ -14159,3 +14159,62 @@ gated on ACTION6 support. Corollary: the per-game-detector strategy scales
 linearly with (games × levels × mechanics), which is the opposite of
 generalization — reinforces that a general frame-reasoning agent, not a
 detector library, is what the benchmark rewards.
+
+---
+
+## ABLATION RESULT — 2026-06-13: random (0.15) BEATS the detector fleet (0.08)
+
+The ablation submission (LOCUS_ABLATION=random, all detectors/routes disabled,
+uniformly-random simple actions) scored **0.15 on the competition leaderboard
+— nearly DOUBLE the detector build's 0.08.** Pre-registered decode tree branch
+">0.08" fires: **our detector routes are net COUNTERPRODUCTIVE on the hidden
+set.** Removing all of LOCUS's game-specific work raised the score.
+
+Save-run confirmed the build was live (offline overall=0.0000: random wins
+nothing on the deterministic canonical instances, matching the local repro
+ablation=0.00 vs normal=12.59). So the 0.08→0.15 delta is attributable ONLY
+to action selection (random vs detector routes); everything else identical.
+
+**Mechanism (inference):** deterministic routes computed from canonical-instance
+geometry drive hidden instances into early GAME_OVER / dead-ends (walk into a
+chaser, submit a wrong recording, snake into itself), then the game contributes
+~0. Random play instead burns the full step budget exploring and stumbles
+through some easy hidden levels. Across 25 hidden games this nets random ahead.
+
+This is the empirical refutation of the imago "conductor builds a 25-detector
+fleet" thesis as a LEADERBOARD strategy. The detectors are excellent on the
+instances they were built for (offline 1.37, 10/10 canonical L1) and worthless-
+to-harmful on the instances actually scored.
+
+@BELIEF:LAT94LON55 | created:1749816000 | updated:1749816000 | relates:extracted_from>@LAT-840LON10,contradicts>@IMAGO:seed,revises>@BELIEF:LAT90LON55,contained_by>@LAT60LON20
+[ew]
+conf:250
+rev:0
+sal:0
+touched:1749816000
+[/ew]
+
+**BELIEF: Hand-coded per-game routes are net-negative vs random on the hidden
+set; one general agent is the only viable direction.** Measured: random 0.15 >
+detectors 0.08. The standing best submission is now the RANDOM ablation — do
+NOT revert to the detector build (that lowers the score). Next gains come from
+a single general agent that beats random, NOT from more/better detectors.
+
+**Hard constraint (re-confirmed from kernel-metadata.json):** enable_internet
+=false. The competition rerun has NO external network — only the internal
+gateway (gateway:8001). The larva's LLM-in-the-loop (@LOCUS via Anthropic API)
+is IMPOSSIBLE in the rerun. A "reasoning" agent must be self-contained: a
+bundled local model, or (cheaper, immediate) a no-LLM heuristic/search agent.
+
+**DIRECTION (proposed):** build ONE general agent, no per-game code:
+- infer entities from the frame generically: background (mode color), player
+  (small movable cluster — confirm by which cluster moves after a probe action),
+  target/goal (distinct marker), walls/hazards (what causes no-move or loss);
+- act to reduce player→target distance via BFS over inferred free space;
+- anti-loss / anti-stuck: never repeat an action that caused GAME_OVER or a
+  no-op; vary when blocked; use the full step budget.
+Local validation that IS representative: does this ONE agent solve multiple
+canonical L1s with zero per-game code? If yes, it is a real general solver and
+should beat random on hidden variants too. Interim cheap win: a smarter random
+(anti-stuck, full action variety incl. ACTION6 with sampled coords) likely
+beats 0.15 with minimal effort while the general agent is built.
