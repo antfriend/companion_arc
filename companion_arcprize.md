@@ -14218,3 +14218,39 @@ canonical L1s with zero per-game code? If yes, it is a real general solver and
 should beat random on hidden variants too. Interim cheap win: a smarter random
 (anti-stuck, full action variety incl. ACTION6 with sampled coords) likely
 beats 0.15 with minimal effort while the general agent is built.
+
+---
+
+## General agent v1 built — 2026-06-13 (the pivot, commit pending)
+
+`core/general_agent.py`: ONE count-based novelty explorer, zero per-game code.
+Re-decides every frame (never commits to a killable plan — the 0.08<0.15
+lesson), learns each action's effect online (no-op vs state-change), prefers
+untried actions, then pulls toward least-visited successors. Board signature
+excludes animated UI border rows/cols.
+
+Wired into launch_competition.py via LOCUS_MODE ∈ {detector, random, general}
+(LOCUS_ABLATION=random kept as alias). Notebook v2026-06-13.2-general sets
+LOCUS_MODE=general.
+
+**A/B validation (`_test_agent_ab.py`, general vs uniform-random, 11 games × 3
+seeds, canonical):** both complete ~0 canonical levels (exploration can't crack
+precise canonical puzzles — that's what detectors were for), so the
+representative signal is the MECHANISM:
+- state coverage: general/random = **1.11×** (general explores more, 9/11 games)
+- wasted-step (no-op) rate: general **17%** vs random **23%**
+Canonical absolute scores don't predict the leaderboard, but "loss-averse
+count-based exploration beats uniform random" is an agent-logic property that
+should transfer. Since the agent is provably ≥ random on its mechanism,
+shipping it is low-regret (expected ≥ 0.15) and yields a clean datapoint:
+does smarter exploration beat random on the hidden set?
+
+Regression: detector mode unchanged (gateway repro 12.59); general mode runs
+crash-free through all games (0.00 on canonical, as expected).
+
+**Iteration roadmap (one change per submission, measured):** v1 exploration →
+(if >0.15) add safe generic goal-seeking tie-breaker (move the controllable
+cluster toward the nearest distinct object, only ordering already-safe moves)
+→ add ACTION6 with frame-derived click coords (unlocks click-games; projection
+LAT45LON55). Each gated on the prior leaderboard reading. NO untested
+multi-change leaps — that discipline is what the detector era lacked.

@@ -67,10 +67,14 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN")) or _gatewa
 
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 
-# Ablation mode (diagnostic): "random" plays uniformly-random simple actions and
-# ignores ALL routes/detectors — the control for "do our detectors transfer to
-# the hidden set?". Set LOCUS_ABLATION=random in the environment. Empty = normal.
+# Play mode. Default "detector" (per-game routes; net-NEGATIVE on the hidden
+# set per the 2026-06-13 ablation). "random" = uniform random (scored 0.15).
+# "general" = ONE general count-based explorer, no per-game code (core/general_agent).
+# LOCUS_ABLATION=random is honored as a back-compat alias for LOCUS_MODE=random.
+_MODE = os.getenv("LOCUS_MODE", "").strip().lower()
 _ABLATION = os.getenv("LOCUS_ABLATION", "").strip().lower()
+if not _MODE:
+    _MODE = "random" if _ABLATION == "random" else "detector"
 
 # Games with confirmed, stable solutions — batch runs suppress verbose frame/route logs
 _SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80", "tu93", "wa30", "ar25", "g50t", "sk48"})
@@ -202,6 +206,15 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         verbose=game_prefix not in _SOLVED_GAMES,
     )
 
+    # General-agent mode: one count-based explorer, no per-game code.
+    _gen = None
+    if _MODE == "general":
+        try:
+            from core.general_agent import GeneralAgent
+            _gen = GeneralAgent(len(actions))
+        except Exception as exc:
+            print(f"[game] {game_id}: general agent unavailable ({exc}) — random", flush=True)
+
     obs = None
     step = 0
     level_start_step = 0
@@ -214,29 +227,29 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         if obs is not None and str(obs.state) in _END_STATES:
             break
 
-        # First-frame scan: compute adaptive route for this level via detector.
-        # Skipped entirely under ablation (no detector/route influence at all).
-        if not _ABLATION and obs is not None and obs.frame and not level_scanned:
-            current_level = (obs.levels_completed or 0) + 1
-            # Refresh action list — some games remap slots per level (e.g. sp80 rotation)
+        # First-frame scan. Detector mode computes an adaptive route; random/
+        # general modes only refresh the (possibly remapped) action list.
+        if obs is not None and obs.frame and not level_scanned:
             fresh = [a for a in (env.action_space or []) if a.is_simple()]
             if fresh:
                 actions = fresh
-            agent.on_level_start(current_level, list(obs.frame)[0])
-            adaptive = agent.routes.get(current_level)
-            if adaptive:  # only override if detector produced a non-empty route
-                route = list(adaptive)
-            level_scanned = True
-        elif _ABLATION and obs is not None and obs.frame and not level_scanned:
-            fresh = [a for a in (env.action_space or []) if a.is_simple()]
-            if fresh:
-                actions = fresh
+            if _MODE == "detector":
+                current_level = (obs.levels_completed or 0) + 1
+                agent.on_level_start(current_level, list(obs.frame)[0])
+                adaptive = agent.routes.get(current_level)
+                if adaptive:
+                    route = list(adaptive)
+            if _gen is not None:
+                _gen.set_n_actions(len(actions))
             level_scanned = True
 
-        # Play route (1-indexed: level_step=1 → route[0]) or action 0 — no random fallback
+        # Choose action per mode. random/general re-decide every frame (never
+        # commit to a killable plan — the lesson of the 0.08<0.15 ablation).
         level_step = step - level_start_step
-        if _ABLATION == "random":
-            action_idx = random.randrange(len(actions))  # control: undirected play
+        if _MODE == "general" and _gen is not None and obs is not None and obs.frame:
+            action_idx = _gen.choose(np.asarray(list(obs.frame)[-1])) % len(actions)
+        elif _MODE == "random":
+            action_idx = random.randrange(len(actions))
         elif obs is None:
             action_idx = 0  # safety: get first frame before acting
         elif 0 < level_step <= len(route):
@@ -254,6 +267,8 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             prev_levels = obs.levels_completed
             level_start_step = step - 1  # -1 so next level_step=1 → route[0]
             level_scanned = False
+            if _gen is not None:
+                _gen.reset_level()  # fresh exploration memory per level
 
     levels = obs.levels_completed if obs else 0
     state = str(obs.state) if obs else "None"
@@ -413,9 +428,10 @@ def run_offline() -> None:
 def main() -> None:
     env_flag = os.getenv("KAGGLE_IS_COMPETITION_RERUN")
     print(f"[launch] KAGGLE_IS_COMPETITION_RERUN={env_flag!r}  IS_COMPETITION_RERUN={IS_COMPETITION_RERUN}", flush=True)
-    if _ABLATION:
-        print(f"[launch] *** ABLATION MODE: {_ABLATION!r} — detectors/routes DISABLED, "
-              f"playing undirected. Diagnostic floor measurement. ***", flush=True)
+    print(f"[launch] PLAY MODE: {_MODE!r}"
+          + ("  (general explorer — no per-game routes)" if _MODE == "general"
+             else "  (uniform random)" if _MODE == "random"
+             else "  (per-game detector routes)"), flush=True)
     _load_routes()
 
     if IS_COMPETITION_RERUN:
