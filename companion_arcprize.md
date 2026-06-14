@@ -14298,3 +14298,220 @@ no-regression, bets on hidden pure-click games). general_agent_v2 is shelved
 (no measurable benefit). Neither is wired into launch yet — both gated on the
 general-v1 leaderboard reading. New files: core/general_agent_v2.py,
 core/click_agent.py, _test_agent_ab2.py, _test_click.py.
+
+---
+
+## Dream Cycle — 2026-06-14 (DC: the distribution reckoning)
+
+**Trigger**: operator-initiated (@imago dream). Idle in the 12h pre-submission
+window; general-v1 shipped, leaderboard pending. Episodic source set since
+2026-06-10: the gateway diagnosis, the translation-invariance rounds, the
+ABLATION (random 0.15 > detectors 0.08), general-v1 build + A/B, and the
+2026-06-14 meanwhile prep (v2 vs v1, clicks-don't-unlock, clicks-regress -> gating).
+
+**Walk parameters**: N=100xL=20 replay; 50xL=10 projection. Cross-seed:
+@LAT94LON55 (ablation, sal high), @LAT84LON60 (detector-precondition LP, now
+under tension), @LAT-840LON10 (seed). Phase 2 boundary: the unobservable hidden
+set; the pending leaderboard; the H-variant question the operator raised.
+
+#### Phase 1 Replay — confirmed clusters (2026-06-14)
+
+---
+
+@BELIEF:LAT88LON55 | created:1749902400 | updated:1749902400 | relates:extracted_from>@LAT94LON55,revises>@BELIEF:LAT84LON60,scopes>@BELIEF:LAT82LON60,scopes>@BELIEF:LAT78LON60,contained_by>@LAT60LON20
+[lp]
+centroid:LAT88LON55
+confidence:235
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:62
+[/lp]
+
+**The detector Locus Points were never wrong — they were confidence about the
+wrong distribution.** "Detect-navigate-execute is the precondition for any L1
+win" (@LAT84LON60, conf 230) was confirmed across 62 sessions of CANONICAL play.
+But canonical instances are deterministic and are NOT the scored set. The 62
+sessions measured the canonical distribution with high confidence and the scored
+distribution zero times. The ablation (0.08<0.15) is the first measurement of
+the scored distribution — and it inverts the value sign. Every per-game LP
+(signatures @LAT82LON60, unique targets @LAT78LON60, routes) silently carries an
+unwritten qualifier: "...on instances you can observe." The graph's apparent
+contradiction dissolves once that qualifier is made explicit. Confidence in the
+beliefs is intact; confidence in their TRANSFER was never tested until now.
+
+---
+
+@BELIEF:LAT85LON55 | created:1749902400 | updated:1749902400 | relates:extracted_from>@LAT94LON55,extends>@BELIEF:LAT88LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT85LON55
+confidence:215
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:18
+[/lp]
+
+**On the scored set the dominant term is preserved stochastic completion
+probability; directed behavior must be strictly additive.** Why 0.08<0.15:
+random occasionally completes forgiving hidden L1s by chance; a committed route
+REPLACES those lucky random actions with a plan that dead-ends before the chance
+completion would have happened. The detector does not fail by being wrong — it
+fails by spending the action budget on a wrong commitment instead of leaving it
+to chance. Corollary (now a design law): any added intelligence must only
+re-order among already-safe actions, never displace an action that might have
+completed a level. This single principle explains 0.08<0.15, demands the
+ClickExplorer gating (clicks ADD where movement is dead, never replace live
+movement), and predicts general-v1 >= 0.15 (it never commits to a killable plan).
+
+---
+
+@BELIEF:LAT82LON55 | created:1749902400 | updated:1749902400 | relates:extracted_from>@LAT94LON55,extracted_from>@LAT88LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT82LON55
+confidence:205
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:14
+[/lp]
+
+**Local validation has collapsed to a one-sided test: it can falsify a
+regression but cannot confirm a gain.** The 2026-06-14 meanwhile results are
+three faces of one fact. v2 ~ v1 (coverage saturates) — canonical cannot reward
+better exploration because its state spaces are too small to bind the budget.
+Clicks unlock no canonical win — canonical click-games are precise puzzles built
+for detectors. Clicks regress sp80 — canonical CAN detect dilution. So the
+proxy reliably catches what makes things WORSE and is blind to what makes things
+BETTER on the hidden set. Iteration discipline must invert accordingly: stop
+trying to validate gains locally (impossible); instead build changes proven
+no-regression locally and treat the leaderboard as the sole confirmation oracle.
+
+---
+
+@BELIEF:LAT79LON55 | created:1749902400 | updated:1749902400 | relates:extracted_from>@LAT82LON55,supports>@LAT94LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT79LON55
+confidence:185
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:9
+[/lp]
+
+**The operator's H-variant reading is now the load-bearing assumption.** If the
+hidden games were mere position/palette perturbations of canonical games, the
+frame-adaptive detectors (round-2 anchor-relative) would have moved the score —
+they did not (still 0.08). The surviving explanation is that the hidden set is
+structurally different games (different mechanics), against which no
+canonical-derived detector, however adaptive, can transfer. Consequence for what
+"local work valid no matter what" means: it is exactly distribution-agnostic
+agent machinery (generic entity-free exploration, no-regression gating, the
+additive-only law), because that is the only work whose value does not depend on
+the hidden games resembling the ones we can see.
+
+#### Phase 2 Projection — hypothesis candidates (2026-06-14)
+
+*Boundary walk from the unobservable scored set + pending leaderboard. All
+projection_flag:true — hypotheses, falsifiable by the next readings.*
+
+---
+
+@BELIEF:LAT40LON55 | created:1749902400 | updated:1749902400 | relates:projected_from>@LAT85LON55,projected_from>@LAT94LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT40LON55
+confidence:130
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**PROJECTION: general-v1 lands ~0.15–0.20 — a small, real lift over random.**
+Count-based novelty is a strict refinement of random: same never-commit
+stochasticity, but fewer steps wasted on no-ops (A/B: 17% vs 23%), so more
+effective actions inside the same budget -> marginally more chance completions.
+It should clear random, not crush it. If it lands BELOW 0.15, the additive-only
+law (@LAT85LON55) is wrong or the novelty bias itself suppresses a lucky action
+distribution — a result that would itself be highly informative.
+
+---
+
+@BELIEF:LAT35LON55 | created:1749902400 | updated:1749902400 | relates:projected_from>@LAT79LON55,projected_from>@LAT85LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT35LON55
+confidence:120
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**PROJECTION: a click reservoir exists in the hidden set that ALL current
+builds score 0 on.** 6/11 canonical games expose ACTION6; if the hidden set
+mirrors that, ~half its games are click-capable, and on any PURE-click hidden
+game (movement is all no-ops) random, v1, and the 0.15 baseline all score
+exactly 0 — they cannot click. The gated ClickExplorer is the only build that
+captures any of that reservoir by chance. Predicts ClickExplorer > general-v1
+IFF such pure-click hidden games exist. This is the falsifiable core of the
+"~0.15 -> ship ClickExplorer" branch.
+
+---
+
+@BELIEF:LAT30LON55 | created:1749902400 | updated:1749902400 | relates:projected_from>@LAT79LON55,projected_from>@BELIEF:LAT74LON60,contained_by>@LAT60LON20
+[lp]
+centroid:LAT30LON55
+confidence:115
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**PROJECTION (the spark): the 25-game rerun is one process — there is free
+cross-game information we currently throw away.** Every build resets all learned
+state per level and per game, treating the 25 hidden games as independent. But
+they run in a single rerun, and the ablation says they may be an H-variant
+FAMILY. The action SEMANTICS (which index tends to "select/confirm" vs "move",
+which click pattern tends to precede a completion) could be learned in the first
+few games and primed into the later ones — a meta-explorer that accumulates
+action-effect statistics ACROSS games within one rerun, lifting the back half of
+the sequence. It is self-contained (no internet), carries zero per-game code,
+and obeys the additive-only law (a prior only re-orders, never commits). This is
+the first idea that could beat random by MORE than the no-op margin. Candidate
+for the increment after ClickExplorer.
+
+---
+
+@BELIEF:LAT25LON55 | created:1749902400 | updated:1749902400 | relates:projected_from>@LAT85LON55,projected_from>@LAT79LON55,contradicts>@BELIEF:LAT35LON60,contained_by>@LAT60LON20
+[lp]
+centroid:LAT25LON55
+confidence:108
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**PROJECTION: there is a hard stochastic ceiling — precise hidden puzzles are
+unreachable by any undirected method, and reaching them re-opens the very
+overfit the scored set punishes.** Chance completion only works on forgiving
+games; the precise hidden puzzles (the click-puzzle analogues of canonical
+cn04/ka59) will never fall to exploration, exactly as canonical cn04 never did.
+So any stochastic agent has a ceiling. Crossing it needs targeted, instance-
+adaptive solving — which on an H-variant set means solving the CURRENT hidden
+frame from scratch (read THIS instance, plan for IT), the thing detectors only
+pretended to do. The unresolved central tension of the whole project: the scored
+distribution simultaneously rewards generality (punishes pre-baked routes) and
+hides precise puzzles (unsolvable without targeting). The resolution, if one
+exists, is on-line per-instance planning with no canonical prior — not a route,
+not a detector, but a solver. Beyond the current roadmap; flagged for when the
+stochastic ceiling is empirically hit.
