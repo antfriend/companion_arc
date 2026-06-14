@@ -14254,3 +14254,47 @@ cluster toward the nearest distinct object, only ordering already-safe moves)
 → add ACTION6 with frame-derived click coords (unlocks click-games; projection
 LAT45LON55). Each gated on the prior leaderboard reading. NO untested
 multi-change leaps — that discipline is what the detector era lacked.
+
+---
+
+## Meanwhile prep (general-v1 leaderboard pending) — 2026-06-14
+
+12h pre-submission window. Constraint: general-v1 is the next submission and is
+NOT touched (clean A/B reading of "does count-based exploration beat random
+0.15?"). Built/validated the two roadmap increments as separate modules so we
+ship same-day once the leaderboard reads. Three findings — two negative, one
+defensive:
+
+1. **`core/general_agent_v2.py` (frontier-directed) ≈ v1. Will NOT ship.**
+   v2 replaces v1's myopic 1-step novelty with value iteration over the learned
+   transition graph (back up a frontier reward; walk shortest known path to the
+   nearest unexplored action; auto-prunes exhausted regions). A/B/C
+   (`_test_agent_ab2.py`, 11 games × 8 seeds): coverage v2/v1 = **1.00×**,
+   identical win-rate. Reason: on canonical the reachable-state sets are small
+   enough that v1 ALREADY saturates coverage within 600 steps, so smarter
+   pathing buys nothing — the gain only appears when budget binds (large state
+   spaces). Lesson: exploration sophistication is unfalsifiable on this proxy.
+   The bottleneck is not how we explore; it's that completions are rare.
+
+2. **Clicks do NOT unlock canonical click-puzzles by exploration.** 6/11
+   canonical games expose ACTION6 (cd82, sp80, ar25, sk48, cn04, ka59) and BOTH
+   random and general are structurally blind to them (ACTION6 is_simple()=False
+   → excluded everywhere). For the 64×64 camera display==grid, so a click is
+   just data={"x":gx,"y":gy}. `_test_click.py`: even WITH clicks the explorer
+   wins 0% on cn04/ka59/sk48/cd82 — these are targeted puzzles, not solvable in
+   600 undirected steps (that's what detectors were for).
+
+3. **Naive clicks REGRESS movement-games; gating fixes it.** Adding ~12
+   foreground-click candidates per state balloons the search: ClickExplorer with
+   clicks ON dropped sp80 from 3/12 → 0/12. Fix = **movement-first, clicks-on-
+   escalation** (`core/click_agent.py`): offer clicks only from a state where
+   every move is already tried (no-op or leads to a known state). Restores sp80
+   to 12% and is **≥ v1 by construction** — identical to v1 on movement-games
+   (allow_click only triggers where movement dead-ends), so it is a no-regression
+   way to add the click capability the hidden set's pure-click games need.
+
+**Net:** ClickExplorer is the validated "≈0.15 → add ACTION6" increment (safe,
+no-regression, bets on hidden pure-click games). general_agent_v2 is shelved
+(no measurable benefit). Neither is wired into launch yet — both gated on the
+general-v1 leaderboard reading. New files: core/general_agent_v2.py,
+core/click_agent.py, _test_agent_ab2.py, _test_click.py.
