@@ -207,11 +207,16 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     )
 
     # General-agent mode: one count-based explorer, no per-game code.
+    # "general"     = static board_signature (v1, leaderboard 0.18).
+    # "general_dyn" = DynamicSignature (HUD-noise immune); strict no-regression upgrade.
     _gen = None
-    if _MODE == "general":
+    if _MODE in ("general", "general_dyn"):
         try:
-            from core.general_agent import GeneralAgent
-            _gen = GeneralAgent(len(actions))
+            if _MODE == "general_dyn":
+                from core.general_agent_dyn import GeneralAgentDyn as _GenCls
+            else:
+                from core.general_agent import GeneralAgent as _GenCls
+            _gen = _GenCls(len(actions))
         except Exception as exc:
             print(f"[game] {game_id}: general agent unavailable ({exc}) — random", flush=True)
 
@@ -246,7 +251,7 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         # Choose action per mode. random/general re-decide every frame (never
         # commit to a killable plan — the lesson of the 0.08<0.15 ablation).
         level_step = step - level_start_step
-        if _MODE == "general" and _gen is not None and obs is not None and obs.frame:
+        if _gen is not None and obs is not None and obs.frame:
             action_idx = _gen.choose(np.asarray(list(obs.frame)[-1])) % len(actions)
         elif _MODE == "random":
             action_idx = random.randrange(len(actions))
@@ -430,6 +435,7 @@ def main() -> None:
     print(f"[launch] KAGGLE_IS_COMPETITION_RERUN={env_flag!r}  IS_COMPETITION_RERUN={IS_COMPETITION_RERUN}", flush=True)
     print(f"[launch] PLAY MODE: {_MODE!r}"
           + ("  (general explorer — no per-game routes)" if _MODE == "general"
+             else "  (general explorer + HUD-immune DynamicSignature)" if _MODE == "general_dyn"
              else "  (uniform random)" if _MODE == "random"
              else "  (per-game detector routes)"), flush=True)
     _load_routes()

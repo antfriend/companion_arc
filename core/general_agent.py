@@ -56,8 +56,13 @@ class GeneralAgent:
     def set_n_actions(self, n: int) -> None:
         self.n = max(1, n)
 
+    def _sig(self, frame: np.ndarray) -> bytes:
+        """Signature seam — overridable by subclasses (e.g. DynamicSignature).
+        Default is byte-identical to v1: the static board_signature."""
+        return board_signature(frame)
+
     def choose(self, frame: np.ndarray) -> int:
-        sig = board_signature(frame)
+        sig = self._sig(frame)
         self.visit[sig] = self.visit.get(sig, 0) + 1
 
         # Learn the effect of the previous action.

@@ -14566,3 +14566,36 @@ increments ready: (a) ClickExplorer [≈0.15 branch], (b) DynamicSignature [core
 upgrade, any branch], (c) goal-seeking tie-breaker [>0.15 branch, unbuilt],
 (d) meta-explorer [speculative, after a family signal]. New files this round:
 core/meta_agent.py, core/dyn_signature.py, _test_meta_transfer.py.
+
+---
+
+## LEADERBOARD: general-v1 scores 0.18 — 2026-06-14
+
+The ladder: detectors 0.08 -> random 0.15 -> general-v1 0.18. General-v1 BEAT
+random. Dream projection @LAT40LON55 (predicted 0.15-0.20) CONFIRMED. The
+additive-only law @LAT85LON55 is validated: loss-averse count-based exploration
+(never commit, fewer no-ops) converts marginally more budget into chance
+completions than uniform random. The pivot away from detectors is correct and
+the mechanism transfers from canonical A/B (1.11x coverage, 17% vs 23% no-op) to
+the hidden set as predicted.
+
+**Roadmap update (post-0.18).** Original plan said >0.15 -> goal-seeking tie-
+breaker. Revising based on the ladder logic: every rung so far (0.08->0.15->0.18)
+came from REMOVING commitment and ADDING loss-averse breadth. Goal-seeking is
+directed commitment toward inferred goals — the same shape as the detectors that
+scored 0.08 — so it carries regression risk and fights the trend. The next rungs
+should keep adding BREADTH/robustness, not commitment:
+
+  NEXT: DynamicSignature (HUD-noise immunity). Safest strict improvement
+  (verified harmless: masks only same-cell always-changing HUD, leaves moving
+  gameplay alone per sk48 test). It is ALSO a prerequisite — ClickExplorer's
+  stall-gate depends on signature stability, which HUD defeats. Clean attribution
+  (any move = HUD immunity). Worst case flat (few hidden HUD games), cannot
+  regress 0.18.
+
+  THEN: ClickExplorer (stall-gated clicks). The biggest untapped breadth — on any
+  hidden pure-click game ALL builds incl. general-v1 score 0 (cannot click).
+  No-regression (preserves movement games). Built on the now-stable signature.
+
+  LATER/IF: goal-seeking only if breadth additions plateau, and only strictly
+  additive (reorder already-safe moves, never displace a possibly-winning random).
