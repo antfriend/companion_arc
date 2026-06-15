@@ -14816,3 +14816,41 @@ submission — the dream -> cheap-precondition-probe -> decide loop working as
 intended. Surviving high-EV directions remain: ClickExplorer (staged, breadth),
 object-centric perception substrate (@LAT30LON53), two-sided local proxy
 (@LAT34LON53). New file: _test_scalar_detect.py.
+
+---
+
+## Two-sided proxy BUILT + VALIDATED; breadth gains measurably EXHAUSTED — 2026-06-14 evening
+
+Built the two-sided proxy from @LAT34LON53: coverage CURVES (mean coverage =
+AUC/T) instead of final coverage, on a HUD-immune DynamicSignature yardstick.
+_test_proxy_curve.py.
+
+**VALIDATION (the key result):** mean-coverage reproduces random < v1 by +9.1%,
+matching the only known leaderboard ordering (random 0.15 < general-v1 0.18).
+So mean-coverage is a *gain-sensitive* local proxy for COVERAGE-type gains — the
+one-sided-proxy bottleneck (@LAT82LON55) is partially broken: we can now detect
+coverage gains locally, not only regressions. (Final coverage also separated
+random<v1 here but NOT v1<v2 — the saturation specifically hides increments above
+v1, which the curve metric was built to expose.)
+
+**What it says about the staged increments — all FLAT vs v1:**
+  v2 -0.1%, dyn +0.1%, click -0.1% (all within noise).
+v1's count-based exploration is at/near the COVERAGE ceiling for what canonical
+can express; no staged increment adds measurable exploration.
+
+**Scope caveat (critical):** this is a COVERAGE proxy. It is blind to (a)
+completion-RECOGNITION gains (an agent that completes more without exploring
+more), (b) ClickExplorer's pure-click reservoir bet — canonical has NO pure-click
+games (all 6 click-games also have movement), so the proxy cannot represent
+movement-dead games, (c) dyn's hidden-HUD bet (canonical HUD is self-limited).
+So "click/dyn flat on proxy" does NOT refute their unmeasurable hidden-set bets.
+
+**Strategic implication (regime shift).** The breadth lever (remove commitment +
+add loss-averse exploration, @LAT77LON53) is now MEASURABLY tapped at v1 for
+everything the proxy can see. dyn and click remain worth shipping as FREE
+no-regression lottery tickets on their unmeasurable reservoirs, but the proxy
+predicts ~flat 0.18. The next REAL, measurable gain likely requires the regime
+the ladder warned against — careful per-instance solving (@LAT25LON55: read THIS
+hidden frame, plan for IT) — now justified BECAUSE breadth is empirically
+exhausted, not as a premature leap. The discipline that made breadth-first
+correct also tells us when breadth is done. New file: _test_proxy_curve.py.
