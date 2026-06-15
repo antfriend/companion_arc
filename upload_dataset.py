@@ -9,9 +9,12 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "2026-06-14.2-dynsig: general explorer + HUD-immune DynamicSignature "
-    "(LOCUS_MODE=general_dyn). general-v1 scored 0.18 (beat random 0.15); this "
-    "masks in-grid HUD that defeats the signature; verified no-regression on canonical.",
+    "2026-06-15.1-goal: per-instance solving as an additive-safe, stall-gated "
+    "goal-seeking tie-break (LOCUS_MODE=goal; GoalSeekAgent subclasses general_dyn). "
+    "Re-orders only v1's already-safe top tier; latched stall-gate keeps it coverage-"
+    "neutral vs v1 (+0.2% on the coverage proxy) then biases ties toward an inferred "
+    "goal. Validated on a new completion proxy (oracle/greedy anchors): +14 affordance, "
+    "no trap regression. Includes HUD-immune DynamicSignature; no-regression by construction.",
     dir_mode="zip",
     quiet=False,
 )
