@@ -14599,3 +14599,220 @@ should keep adding BREADTH/robustness, not commitment:
 
   LATER/IF: goal-seeking only if breadth additions plateau, and only strictly
   additive (reorder already-safe moves, never displace a possibly-winning random).
+
+---
+
+## Dream Cycle — 2026-06-14 evening (DC: the obstacle is the asset)
+
+**Trigger**: operator-initiated (@imago dream), 12h to next submission, asking
+what opportunities the newest learnings open. Source set since the morning dream:
+the leaderboard 0.18 (general-v1 beat random), the DynamicSignature build + the
+in-grid-HUD discovery, the meta NULL, general_dyn shipped no-regression.
+
+**Walk params**: N=100xL=20 replay; 50xL=10 projection. Cross-seed:
+@LAT85LON55 (additive-only law, now MEASURED), @LAT74LON60 (level-transition
+invalidation), the dyn_signature HUD discovery. Boundary: the @LAT25LON55
+stochastic ceiling; the @LAT82LON55 one-sided-proxy bottleneck.
+
+#### Phase 1 Replay — confirmed clusters (evening)
+
+---
+
+@BELIEF:LAT77LON53 | created:1749931200 | updated:1749931200 | relates:promotes>@BELIEF:LAT85LON55,extracted_from>@LAT94LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT77LON53
+confidence:228
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:12
+[/lp]
+
+**The ladder is now a MEASURED law, not a hypothesis: remove commitment, add
+loss-averse breadth.** 0.08 (detectors) -> 0.15 (random) -> 0.18 (general-v1),
+each rung from deleting a wrong commitment and adding undirected breadth. The
+additive-only law @LAT85LON55 is promoted from projection to confirmed: it
+PREDICTED 0.18 (@LAT40LON55 said 0.15-0.20) and was right. It now has ranking
+power over every future increment — prefer breadth/robustness (clicks, perception,
+more actions) over directed commitment (goal-seeking, planning). Anything shaped
+like the 0.08 detectors is suspect until breadth is exhausted.
+
+---
+
+@BELIEF:LAT74LON53 | created:1749931200 | updated:1749931200 | relates:extracted_from>@LAT88LON55,siblings>@BELIEF:LAT82LON60,contained_by>@LAT60LON20
+[lp]
+centroid:LAT74LON53
+confidence:195
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:6
+[/lp]
+
+**The state REPRESENTATION is a primary lever, co-equal with the policy.** The
+DynamicSignature discovery: what the agent perceives as "a state" defines
+novelty, no-op, revisit, and completion-adjacency. A representation bug (in-grid
+HUD read as perpetual novelty) silently collapses the whole count-based policy to
+random — no policy change can fix it. Therefore improving WHAT the agent
+perceives can pay as much as improving HOW it acts, and the perception layer is a
+first-class place to invest. This reframes the agent from "policy over pixels"
+to "policy over a learned representation."
+
+---
+
+@BELIEF:LAT71LON53 | created:1749931200 | updated:1749931200 | relates:extracted_from>@LAT40LON55,supports>@LAT82LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT71LON53
+confidence:182
+scope_lat:8.0
+scope_lon:10.0
+projection_flag:false
+contradiction_flag:false
+source_count:8
+[/lp]
+
+**Canonical MECHANISM transfers to the hidden set even though canonical SCORE
+does not.** The A/B mechanism metrics (coverage 1.11x, no-op 17% vs 23%)
+predicted 0.18>0.15 correctly, while the canonical save-run score (0.0/0.19 on
+the sp80 coin) is pure noise. Lesson refined: validate a MECHANISM PROPERTY
+(does X change a behavior that should generalize), never an absolute canonical
+score. The save-run number is to be ignored on sight; the leaderboard is the
+only score oracle; mechanism A/Bs are the only local oracle.
+
+#### Phase 2 Projection — opportunities (what opens up)
+
+*Boundary walk toward the sparse-reward ceiling and the one-sided-proxy
+bottleneck. projection_flag:true — falsifiable opportunities.*
+
+---
+
+@BELIEF:LAT38LON53 | created:1749931200 | updated:1749931200 | relates:projected_from>@LAT74LON53,attacks>@BELIEF:LAT25LON55,projected_from>@LAT85LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT38LON53
+confidence:128
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:2
+[/lp]
+
+**THE SPARK — the HUD we learned to MASK is a dense REWARD signal.** Inversion:
+DynamicSignature masks in-grid volatile cells as noise. But many of those cells
+are monotone scalars — a score counter ticking up, a progress bar filling, an
+item count rising. Those are EXACTLY the dense feedback the sparse-completion
+agent lacks (the reason precise puzzles are unreachable, @LAT25LON55). The same
+per-cell change-tracking already built in dyn_signature can be extended to
+DETECT a monotone-increasing in-grid region and treat its rise as a dense reward
+proxy: bias exploration (additive-only tie-break among safe actions) toward
+moves that increase it. The obstacle becomes the asset. Self-contained, zero
+per-game code, obeys the law (reorder, never commit). This is the first concrete
+attack on the stochastic ceiling — potentially a jump, not a margin. Risk: a
+DEPLETING counter (budget) is the opposite signal; the detector must use the
+SIGN of the monotone trend (reward rising, avoid forcing depletion).
+
+---
+
+@BELIEF:LAT34LON53 | created:1749931200 | updated:1749931200 | relates:attacks>@BELIEF:LAT82LON55,projected_from>@LAT71LON53,contained_by>@LAT60LON20
+[lp]
+centroid:LAT34LON53
+confidence:118
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**Build a TWO-SIDED local proxy by hardening canonical.** The one-sided proxy
+(@LAT82LON55: can falsify regressions, cannot confirm gains) is a bottleneck to
+attack, not just accept. Canonical is one-sided because coverage saturates —
+the budget never binds, so better exploration is invisible. Fix: shrink the
+step budget, randomize start state, perturb/compose canonical games into harder
+instances where exploration QUALITY measurably separates policies. _test_perturbed.py
+is the seed. A non-saturated proxy is strictly more information than a saturated
+one, even if its transfer to the H-variant hidden set is unproven. This could
+restore the ability to validate GAINS before spending a daily submission.
+
+---
+
+@BELIEF:LAT30LON53 | created:1749931200 | updated:1749931200 | relates:generalizes>@BELIEF:LAT74LON53,enables>@BELIEF:LAT35LON55,enables>@BELIEF:LAT38LON53,contained_by>@LAT60LON20
+[lp]
+centroid:LAT30LON53
+confidence:115
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**An object-centric perception substrate unifies every future increment.**
+DynamicSignature (mask HUD) and ClickExplorer (component centroids) are both
+ad-hoc perception. Generalize them into ONE frame->structure layer: background
+(mode color), foreground objects as (color, bbox, centroid), and monotone
+scalars (the reward/budget regions). Feed the explorer a STRUCTURED state.
+Then every increment gets cheap and consistent: signature = object-set
+(HUD-immune by construction), clicks target objects, goal-seeking measures
+object-to-object distance, reward-shaping reads the scalar. Still zero per-game
+code — everything inferred per frame. The representation becomes the platform;
+policy work rides on top. Prerequisite-shaped: build once, harvest repeatedly.
+
+---
+
+@BELIEF:LAT26LON53 | created:1749931200 | updated:1749931200 | relates:projected_from>@LAT77LON53,siblings>@BELIEF:LAT35LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT26LON53
+confidence:108
+scope_lat:15.0
+scope_lon:10.0
+projection_flag:true
+contradiction_flag:false
+source_count:1
+[/lp]
+
+**Remaining breadth dimensions after clicks (cheap, safe, ladder-aligned).**
+Catalog of no-regression breadth adds, each strictly additive: (1) other complex
+actions beyond ACTION6 — ar25 exposes ACTION7; handle the full action type space,
+not just simple+click. (2) Click-target diversity — current centroids miss edges,
+corners, and empty cells adjacent to objects; broaden candidates. (3) Multi-scale
+novelty — a coarse downsampled signature ("same room") plus the fine one ("exact
+position") for large boards where the fine signature never repeats. Individually
+small EV, but cheap and safe; queue them behind the higher-EV reward-shaping and
+perception-substrate work.
+
+---
+
+## Probe: monotone-scalar reward spark (@LAT38LON53) — REFUTED on canonical, 2026-06-14 evening
+
+Tested the dream spark precondition (is the in-grid HUD a dense RISING reward we
+can shape toward?) before building anything. _test_scalar_detect.py: per-color
+cell-count trajectories, monotonicity = net/total-activity in [-1,+1].
+
+Explorer trajectories (11 games, 3 seeds): only 1/11 (cd82) has a clean monotone
+scalar, and it is FALLING (color 0, net -100, mono -1.00) = a depleting budget.
+The RISING candidates (ls20, sk48, g50t) are noisy (|mono| 0.06-0.39) = drift /
+movement side-effects, not progress meters.
+
+Confound ruled out via KNOWN WINNING ROUTES (in case the explorer never triggers
+a reward): cd82 win -> color 0 falling budget (mono -1.00, no rising reward);
+g50t win -> color 2 rises (mono +1.00 on the correct path, but +0.06 under random
+play) = possible progress trail OR movement artifact, single special-case
+replay/trail mechanic (n=1); sk48 -> nothing clean.
+
+**Verdict: the dense-reward-from-HUD spark does NOT generalize.** Canonical
+in-grid scalars are budgets (falling), not rewards (rising); these are
+configuration puzzles, not score games. @LAT38LON53 is REFUTED as a general
+signal (set contradiction_flag). A general reward-shaped agent built on this
+would chase budget bars (wrong sign) or movement trails (no better than v1
+anti-no-op). DO NOT build it. Narrow follow-up possible (g50t-style
+rises-on-correct-only detection) but n=1, unvalidatable for generality,
+deprioritized below the staged ClickExplorer breadth play.
+
+The probe cost ~20 min and killed a speculative build before it spent a daily
+submission — the dream -> cheap-precondition-probe -> decide loop working as
+intended. Surviving high-EV directions remain: ClickExplorer (staged, breadth),
+object-centric perception substrate (@LAT30LON53), two-sided local proxy
+(@LAT34LON53). New file: _test_scalar_detect.py.
