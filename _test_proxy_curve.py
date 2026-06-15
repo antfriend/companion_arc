@@ -37,6 +37,7 @@ from core.general_agent import GeneralAgent
 from core.general_agent_v2 import GeneralAgentV2
 from core.general_agent_dyn import GeneralAgentDyn
 from core.click_agent import ClickExplorer
+from core.goal_agent import GoalSeekAgent
 from core.dyn_signature import DynamicSignature
 
 ROOT = Path(__file__).parent
@@ -55,7 +56,7 @@ GAMES = sys.argv[1:] or ["ls20", "cd82", "sp80", "re86", "tu93", "wa30",
                          "ar25", "g50t", "sk48", "cn04", "ka59"]
 
 _AGENTS = {"random": None, "v1": GeneralAgent, "v2": GeneralAgentV2,
-           "dyn": GeneralAgentDyn, "click": "CLICK"}
+           "dyn": GeneralAgentDyn, "click": "CLICK", "goal": "GOAL"}
 
 
 def load(game):
@@ -80,6 +81,8 @@ def play(cls, policy, seed, budget):
     is_click = spec == "CLICK"
     if is_click:
         agent = ClickExplorer(n, allow_click=has_click, seed=seed)
+    elif spec == "GOAL":
+        agent = GoalSeekAgent(n, seed=seed, goal_mode="near")
     else:
         agent = spec(n, seed=seed) if spec else None
     ruler = DynamicSignature()        # measurement-only, HUD-immune
@@ -149,7 +152,7 @@ def main():
         print(f"PROXY VALID: mean-cov reproduces random < v1 (+{gain:.1f}%), "
               f"matching leaderboard 0.15 < 0.18.")
         print("-> mean-coverage is a gain-sensitive local proxy. deltas vs v1 below:")
-        for p in ("v2", "dyn", "click"):
+        for p in ("v2", "dyn", "click", "goal"):
             d = (means[p] - means["v1"]) / means["v1"] * 100
             print(f"     {p:5s}: {d:+.1f}% vs v1")
         # final-coverage (the OLD one-sided metric) for contrast
