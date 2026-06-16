@@ -13,6 +13,9 @@ Validated so far:
   tu93  — de-risk 2026-06-16: small 3×3 cursor/exit + color-2 corridor; adaptive BFS.
   wa30  — de-risk 2026-06-16: delivery; plan-once + abortable replay (multi-phase).
   re86  — de-risk 2026-06-16: piece-placement; single color-0 active center; cycle.
+  (g50t — DEFERRED: detector's button (3×3 color-8) merges with the door's color-8
+   region on this instance → _find_button returns None → no route. Needs robust
+   button detection before it can pass the de-risk. games/g50t/dynamic.py exists.)
 """
 
 from core.dynamics.registry import register
@@ -21,9 +24,11 @@ from games.cd82.dynamic import Cd82Dynamic
 from games.tu93.dynamic import Tu93Dynamic
 from games.wa30.dynamic import Wa30Dynamic
 from games.re86.dynamic import Re86Dynamic
+from games.ar25.dynamic import Ar25Dynamic
 
 register(Sp80Dynamic())
 register(Cd82Dynamic())
 register(Tu93Dynamic())
 register(Wa30Dynamic())
 register(Re86Dynamic())
+register(Ar25Dynamic())

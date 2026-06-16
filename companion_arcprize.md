@@ -14962,15 +14962,25 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   count caps exclude cd82 (large color-0) and sk48 (large color-2). **status:**
   de-risk CLEAN — supervised 10/10 vs goal 0/10; no cross-fires.
 
-### ar25 — reflection-covers-markers
-- **entities:** piece at (1,15); mirror at x=10; 5 markers. **win:** reflected
-  piece covers all 5 markers. **solution dynamic:** 16-step reflection route.
-  **fingerprint:** (TBD). **status:** SOLVED L1.
+### ar25 — reflection-covers-markers  [PORTED + de-risked 2026-06-16]
+- **entities:** color-5 piece; color-10 vertical mirror; 5 color-11 markers.
+  **win:** the piece's reflection covers all 5 markers.
+- **solution dynamic:** re-derive per frame — detector solves the target
+  placement from {reflect(piece)} == {markers}, emit one move toward it. Piece and
+  markers never occlude (different colors), so re-derivation stays valid.
+  games/ar25/dynamic.py.
+- **recognition fingerprint:** piece(5)+markers(11)+mirror(10) present AND the
+  reflection placement is SOLVABLE for the frame (a strong structure gate).
+  **status:** de-risk CLEAN — supervised 10/10 vs goal 0/10; no cross-fires.
 
-### g50t — record-replay-ghost-holds-door
-- **entities:** player; ghost (replays recording); door. **win:** ghost holds door
-  open while player passes. **solution dynamic:** RIGHT×4 + ACTION5 + DOWN×7 +
-  RIGHT×5 (record then replay). **fingerprint:** (TBD). **status:** SOLVED L1.
+### g50t — record-replay-ghost-holds-door  [DEFERRED 2026-06-16]
+- **entities:** goal cursor; ghost (replays recording); button; door; tracker.
+  **win:** record path to button, submit, ghost holds door, navigate to tracker.
+- **solution dynamic:** plan-once multi-stage (games/g50t/dynamic.py written) BUT
+  FAILS the de-risk: the 3×3 color-8 button merges with the door's color-8 region
+  on this instance → detector `_find_button` returns None → no route → recognizer
+  never fires (safe, no upside). **status:** DEFERRED — needs robust button
+  detection (find a 3×3 color-8 protrusion off the door) before it can pass.
 
 ### sk48 — snake-sokoban-hybrid
 - **win:** sokoban-style push within snake constraint. **solution dynamic:**
@@ -14989,14 +14999,16 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   only, P(win)≈1/6; lowest-confidence entry.
 
 **PORTED + de-risked so far (LOCUS_MODE=solve, _test_dynamics.py --games):**
-sp80, cd82, tu93, wa30, re86 (5/11) — confusion matrix is DIAGONAL (each fires only
-on its own game, 0 cross-fires), within-dynamic win 10/10 vs goal ≤1/10, full-library
-shows no off-target regression. Two solver shapes proven: per-frame RE-DERIVATION
-(sp80/cd82/tu93 — preferred, self-correcting) and PLAN-ONCE+abortable-replay (wa30,
-re86 — for multi-phase or self-occluding games that can't re-derive cleanly; re86
-proved the rule: 0/10 re-derived → 10/10 plan-once, the de-risk test catching it).
-**Next:** continue one at a time (g50t record-replay, ar25 reflection, sk48, cn04;
-ka59 is low-value P≈1/6), each gated on its own confusion-matrix precision before
-adding to core/dynamics/library.py. Harden each (TBD) fingerprint from its
-detector.py; prefer palette/translation-independent structure (sp80 used 4px-block
-uniformity) so recall extends to hidden variants, but precision is the hard gate.
+sp80, cd82, tu93, wa30, re86, ar25 (6/11) — confusion matrix is DIAGONAL (each fires
+only on its own game, 0 cross-fires), within-dynamic win 10/10 vs goal ≤1/10,
+full-library shows no off-target regression. Two solver shapes proven: per-frame
+RE-DERIVATION (sp80/cd82/tu93/ar25 — preferred, self-correcting) and
+PLAN-ONCE+abortable-replay (wa30, re86 — for multi-phase or self-occluding games;
+re86 proved the rule: 0/10 re-derived → 10/10 plan-once, the de-risk catching it).
+**DEFERRED:** g50t (button merges with door → no route; needs robust button
+detection). **Remaining:** sk48 (has bfs_solver.py), cn04 (rotate+translate); ka59
+low-value P≈1/6. Each gated on its own confusion-matrix precision before adding to
+core/dynamics/library.py. Prefer palette/translation-independent structure (sp80
+used 4px-block uniformity) so recall extends to hidden variants; precision is the
+hard gate (the de-risk has caught a non-winning solver (re86) and a non-detecting
+one (g50t) before either could ship).
