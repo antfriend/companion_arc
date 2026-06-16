@@ -14900,12 +14900,16 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
 - **status:** SOLVED L1; the only game the undirected explorer also completes
   (~15-20%), so it is the natural first port (ARC-RFC-0001 §8 step 3).
 
-### ls20 — block-navigation-through-corridor
-- **entities:** controllable = block (color 12); objects = corridor/maze walls,
-  target. **win:** route the block to the goal through the corridor (passes c19).
-- **solution dynamic:** column-adaptive LEFT/RIGHT count scaled to block column +
-  UP runs (the shipped `_detect_l1_route`). **fingerprint:** (TBD) color-12 block +
-  corridor structure. **status:** SOLVED L1 ×41; L2 open (block resets after osc).
+### ls20 — block-navigation-through-corridor  [PORTED + de-risked 2026-06-16]
+- **entities:** color-12 block (cursor); maze corridors; goal. **win:** route the
+  block through corridors (passes c19) to the goal.
+- **solution dynamic:** PLAN-ONCE + abortable replay — emit the canonical probe
+  (initial_action) first, then the detector's column-adaptive L1 choreography
+  (normalize to x=34 corridor, ascend, trigger rotation, ascend to goal).
+  games/ls20/dynamic.py.
+- **recognition fingerprint:** SMALL color-12 block (≤50 px) — excludes sp80 where
+  color-12 is the background (~3500 px) — AND block detected. **status:** de-risk
+  CLEAN — supervised 10/10 vs goal 0/10; no cross-fires. (L2 still open.)
 
 ### cd82 — basket-selection-route  [PORTED + de-risked 2026-06-16]
 - **entities:** pixel-2 "ActiveBasket" selector on a ring of 8 baskets around a
@@ -14982,33 +14986,42 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   never fires (safe, no upside). **status:** DEFERRED — needs robust button
   detection (find a 3×3 color-8 protrusion off the door) before it can pass.
 
-### sk48 — snake-sokoban-hybrid
-- **win:** sokoban-style push within snake constraint. **solution dynamic:**
-  14-action route (1 pre-route UP + 13 from row 30). **fingerprint:** (TBD)
-  in-grid band at row 23 (HUD — handled by DynamicSignature). **status:** SOLVED L1.
+### sk48 — snake-sokoban-hybrid  [SKIPPED 2026-06-16]
+- **win:** sokoban-style push within snake constraint. **solution:** bfs_solver.py
+  runs from a HARDCODED initial state (not frame-derived) — a fixed canonical route;
+  detector.py is a stub (no frame recognizer). **status:** SKIPPED — low transfer
+  (fixed route) and no detector to build a precise recognizer on. Revisit only with
+  a frame-derived state extractor + recognizer.
 
-### cn04 — connector-rotate-translate-match
-- **entities:** connector piece (rotatable + translatable); target. **win:** match
-  connector to target (pos (7,10), rot 0). **solution dynamic:** adaptive
-  rotate+translate route. **fingerprint:** (TBD) in-grid budget bar at row 4 (HUD).
-  **status:** SOLVED L1.
+### cn04 — connector-rotate-translate-match  [PORTED + de-risked 2026-06-16]
+- **entities:** selected sprite (color-0 body, two color-8 markers); target piece
+  (two markers). **win:** rotate/translate so the markers overlap the target's.
+- **solution dynamic:** PLAN-ONCE — detector enumerates rotation × marker-assignment
+  and chains the (≤2) consistent candidates (win fires mid-route on the correct
+  one). games/cn04/dynamic.py.
+- **recognition fingerprint:** a color-0 selected sprite with EXACTLY two color-8
+  markers + a target with two markers + a SOLVABLE placement. **status:** de-risk
+  CLEAN — supervised 10/10 vs goal 0/10; no cross-fires.
 
-### ka59 — push-and-contain
-- **win:** push object into containment (levels[4] only). **solution dynamic:** BFS
-  nav to (target+1, +1) then push. **fingerprint:** (TBD). **status:** detector
-  only, P(win)≈1/6; lowest-confidence entry.
+### ka59 — push-and-contain  [DEFERRED 2026-06-16]
+- **win:** nest a 3×3 container at (target+1,+1) inside a 5×5 target. **solution
+  dynamic:** BFS nav (games/ka59/dynamic.py written). **status:** DEFERRED — fails
+  the de-risk on BOTH axes: recognizer CROSS-FIRES on sk48, and L1 is not winnable
+  by the directly-movable container (needs ACTION6 click-select; P≈1/6) → 0/10.
+  Needs a tighter recognizer + a winnable-L1 check before it could pass.
 
 **PORTED + de-risked so far (LOCUS_MODE=solve, _test_dynamics.py --games):**
-sp80, cd82, tu93, wa30, re86, ar25 (6/11) — confusion matrix is DIAGONAL (each fires
-only on its own game, 0 cross-fires), within-dynamic win 10/10 vs goal ≤1/10,
-full-library shows no off-target regression. Two solver shapes proven: per-frame
-RE-DERIVATION (sp80/cd82/tu93/ar25 — preferred, self-correcting) and
-PLAN-ONCE+abortable-replay (wa30, re86 — for multi-phase or self-occluding games;
-re86 proved the rule: 0/10 re-derived → 10/10 plan-once, the de-risk catching it).
-**DEFERRED:** g50t (button merges with door → no route; needs robust button
-detection). **Remaining:** sk48 (has bfs_solver.py), cn04 (rotate+translate); ka59
-low-value P≈1/6. Each gated on its own confusion-matrix precision before adding to
-core/dynamics/library.py. Prefer palette/translation-independent structure (sp80
-used 4px-block uniformity) so recall extends to hidden variants; precision is the
-hard gate (the de-risk has caught a non-winning solver (re86) and a non-detecting
-one (g50t) before either could ship).
+sp80, cd82, tu93, wa30, re86, ar25, cn04, ls20 (8/11) — confusion matrix is DIAGONAL
+(each fires only on its own game, 0 cross-fires), within-dynamic win 10/10 vs goal
+≤1/10, full-library shows no off-target regression. Offline LOCUS_MODE=solve scores
+overall 2.31 (7 of 10 present games solved) vs 0.0 for goal/general. Two solver shapes
+proven: per-frame RE-DERIVATION (sp80/cd82/tu93/ar25 — preferred, self-correcting) and
+PLAN-ONCE+abortable-replay (wa30/re86/cn04/ls20 — multi-phase, self-occluding, or
+choreographed). **NOT PORTED (3/11):** g50t DEFERRED (button merges with door → no
+route), sk48 SKIPPED (hardcoded fixed route, stub detector), ka59 DEFERRED (recognizer
+cross-fires sk48 + L1 unwinnable without click-select). The de-risk gate REJECTED
+re86-as-re-derived (occlusion), g50t (no detection), and ka59 (cross-fire + 0/10)
+before any could ship — precision/upside are real gates, not formalities. Each future
+add stays gated on its own confusion-matrix precision before entering
+core/dynamics/library.py; prefer palette/translation-independent structure (sp80 used
+4px-block uniformity) so recall extends to hidden variants.

@@ -25,6 +25,8 @@ from games.tu93.dynamic import Tu93Dynamic
 from games.wa30.dynamic import Wa30Dynamic
 from games.re86.dynamic import Re86Dynamic
 from games.ar25.dynamic import Ar25Dynamic
+from games.cn04.dynamic import Cn04Dynamic
+from games.ls20.dynamic import Ls20Dynamic
 
 register(Sp80Dynamic())
 register(Cd82Dynamic())
@@ -32,3 +34,5 @@ register(Tu93Dynamic())
 register(Wa30Dynamic())
 register(Re86Dynamic())
 register(Ar25Dynamic())
+register(Cn04Dynamic())
+register(Ls20Dynamic())
