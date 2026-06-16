@@ -87,8 +87,9 @@ def run_game_tests(seeds=10, budget=200):
     from core.dynamics.registry import RECOG_HI
     from games.sp80.dynamic import Sp80Dynamic
     from games.cd82.dynamic import Cd82Dynamic
+    from games.tu93.dynamic import Tu93Dynamic
 
-    DYN = {"sp80": Sp80Dynamic, "cd82": Cd82Dynamic}   # target game → Dynamic class
+    DYN = {"sp80": Sp80Dynamic, "cd82": Cd82Dynamic, "tu93": Tu93Dynamic}  # target → Dynamic
 
     ACTIONS = [GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3,
                GameAction.ACTION4, GameAction.ACTION5, GameAction.ACTION6, GameAction.ACTION7]

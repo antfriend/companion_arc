@@ -10,11 +10,14 @@ Validated so far:
   sp80  — de-risk 2026-06-16: precision 12/12 own & 0/12 on all 10 others;
           supervised 12/12 vs goal 3/12; no off-target regression.
   cd82  — de-risk 2026-06-16: pixel-2-on-basket fingerprint; see _test_dynamics.py.
+  tu93  — de-risk 2026-06-16: small 3×3 cursor/exit + color-2 corridor; adaptive BFS.
 """
 
 from core.dynamics.registry import register
 from games.sp80.dynamic import Sp80Dynamic
 from games.cd82.dynamic import Cd82Dynamic
+from games.tu93.dynamic import Tu93Dynamic
 
 register(Sp80Dynamic())
 register(Cd82Dynamic())
+register(Tu93Dynamic())
