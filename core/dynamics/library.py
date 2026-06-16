@@ -9,9 +9,12 @@ win-rate, abort safety) — precision is the additive-safety margin.
 Validated so far:
   sp80  — de-risk 2026-06-16: precision 12/12 own & 0/12 on all 10 others;
           supervised 12/12 vs goal 3/12; no off-target regression.
+  cd82  — de-risk 2026-06-16: pixel-2-on-basket fingerprint; see _test_dynamics.py.
 """
 
 from core.dynamics.registry import register
 from games.sp80.dynamic import Sp80Dynamic
+from games.cd82.dynamic import Cd82Dynamic
 
 register(Sp80Dynamic())
+register(Cd82Dynamic())

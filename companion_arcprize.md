@@ -14907,10 +14907,20 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   UP runs (the shipped `_detect_l1_route`). **fingerprint:** (TBD) color-12 block +
   corridor structure. **status:** SOLVED L1 ×41; L2 open (block resets after osc).
 
-### cd82 — basket-selection-route
-- **entities:** controllable cursor; objects = baskets. **win:** reach target
-  basket. **solution dynamic:** adaptive 5-step route from any starting basket.
-  **fingerprint:** (TBD). **status:** SOLVED L1; L2 needs color selection.
+### cd82 — basket-selection-route  [PORTED + de-risked 2026-06-16]
+- **entities:** pixel-2 "ActiveBasket" selector on a ring of 8 baskets around a
+  3×3 nav grid (center forbidden); a 10×10 canvas. **win (L1):** fire (ACTION5)
+  from basket 4 at grid (2,1) to paint the canvas.
+- **solution dynamic:** re-derive each frame — detect which basket the selector
+  is on (pixel-2 bbox-min → grid cell), step one cell toward (2,1) avoiding the
+  center, FIRE when there. Self-correcting; directional expectation (selector
+  must move) aborts on a blocked move. games/cd82/dynamic.py.
+- **recognition fingerprint:** a pixel-2 sprite whose bbox-min sits within 16px²
+  of a known basket ring position — unique to cd82 (tu93/wa30/sk48/ka59 also have
+  pixel-2 but never at a basket). NOTE: canonical positions → recall is
+  translation-biased (a translated hidden variant defers to the explorer = safe,
+  no gain); precision is clean. **status:** de-risk CLEAN — supervised 10/10 vs
+  goal 0/10; no cross-fires; L2 needs color-select (ACTION6), out of scope.
 
 ### tu93 — corridor-BFS-navigation
 - **win:** traverse corridor (CORRIDOR_COLOR=2). **solution dynamic:** 18-step
@@ -14952,8 +14962,12 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   nav to (target+1, +1) then push. **fingerprint:** (TBD). **status:** detector
   only, P(win)≈1/6; lowest-confidence entry.
 
-**Next (ARC-RFC-0001 §8):** port sp80 to the Dynamic protocol first (highest
-confidence + already explorer-winnable), pass the de-risk tests (recognizer
-confusion matrix across randomized instances, within-dynamic win-rate, abort
-safety), then add dynamics one at a time gated on precision. Harden each (TBD)
-fingerprint from its detector.py during the port.
+**PORTED + de-risked so far (LOCUS_MODE=solve, _test_dynamics.py --games):**
+sp80, cd82 — confusion matrix is diagonal (each fires only on its own game, 0
+cross-fires), within-dynamic win 10/10 vs goal ≤1/10, full-library shows no
+off-target regression. **Next:** continue one at a time (tu93 corridor-BFS, wa30
+pick-up-and-deliver, g50t record-replay are good candidates), each gated on its
+own confusion-matrix precision before adding to core/dynamics/library.py. Harden
+each (TBD) fingerprint from its detector.py during the port; prefer
+palette/translation-independent structure (sp80 used 4px-block uniformity) where
+possible so recall extends to hidden variants, but precision is the hard gate.

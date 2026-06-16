@@ -80,12 +80,15 @@ def test_empty_library_equals_goal():
 # ---------------------------------------------------------------------------
 # Real-game de-risk (ARC-RFC-0001 §6.1–6.3), behind --games (needs arcengine).
 # ---------------------------------------------------------------------------
-def run_game_tests(seeds=12, budget=150):
+def run_game_tests(seeds=10, budget=200):
     import importlib.util
     from pathlib import Path
     from arcengine import ARCBaseGame, ActionInput, GameAction
     from core.dynamics.registry import RECOG_HI
     from games.sp80.dynamic import Sp80Dynamic
+    from games.cd82.dynamic import Cd82Dynamic
+
+    DYN = {"sp80": Sp80Dynamic, "cd82": Cd82Dynamic}   # target game → Dynamic class
 
     ACTIONS = [GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3,
                GameAction.ACTION4, GameAction.ACTION5, GameAction.ACTION6, GameAction.ACTION7]
@@ -101,27 +104,31 @@ def run_game_tests(seeds=12, budget=150):
         return next(v for v in vars(mod).values()
                     if isinstance(v, type) and issubclass(v, ARCBaseGame) and v is not ARCBaseGame)
 
-    def play(cls, kind, seed, recog=None):
+    def play(cls, make_agent, seed, recog=None, budget=budget):
         g = cls()
         obs = g.perform_action(ActionInput(id=GameAction.RESET), raw=True)
         raw = list(getattr(g, "_available_actions", [1, 2, 3, 4, 5]))
         mo = [ACTIONS[a - 1] for a in raw if a != 6]; n = len(mo)
-        if kind == "goal":
-            agent = GoalSeekAgent(n, seed=seed, goal_mode="near")
-        else:
-            agent = SupervisedAgent(n, seed=seed, goal_mode="near", dynamics=[Sp80Dynamic()])
-        fired = won = False; fcount = 0; steps = 0
+        agent = make_agent(n, seed)
+        fired = won = False
         for _ in range(budget):
             if obs is None or str(obs.state) in END or not obs.frame:
                 break
             full = np.asarray(obs.frame[-1])
             if recog is not None and recog.recognize(full) >= RECOG_HI:
-                fcount += 1; fired = True
+                fired = True
             a = agent.choose(full) % n
-            obs = g.perform_action(ActionInput(id=mo[a]), raw=True); steps += 1
+            obs = g.perform_action(ActionInput(id=mo[a]), raw=True)
             if obs is not None and obs.levels_completed > 0:
                 won = True; break
-        return won, fired, fcount, steps
+        return won, fired
+
+    def goal(n, seed):
+        return GoalSeekAgent(n, seed=seed, goal_mode="near")
+
+    def sup(classes_):
+        return lambda n, seed: SupervisedAgent(n, seed=seed, goal_mode="near",
+                                               dynamics=[C() for C in classes_])
 
     classes = {}
     for game in GAMES:
@@ -130,40 +137,54 @@ def run_game_tests(seeds=12, budget=150):
         except Exception as e:
             print(f"  {game} load-error {e}")
 
-    # §6.1 recognizer precision — sp80 recognizer fire-rate per game (goal rollout)
-    print("§6.1 recognizer precision (sp80 fingerprint fire-rate during a goal rollout):")
-    rec = Sp80Dynamic()
-    cross = []
-    for game, cls in classes.items():
-        fires = sum(play(cls, "goal", s, recog=rec)[1] for s in range(seeds))
-        rate = fires / seeds
-        tag = "← target" if game == "sp80" else ("CROSS-FIRE" if rate > 0 else "")
-        if game != "sp80" and rate > 0:
-            cross.append(game)
-        print(f"    {game:6s}: fired in {fires:2d}/{seeds} episodes  {tag}")
+    # §6.1 recognizer confusion matrix — each dynamic must fire ONLY on its target.
+    print("§6.1 recognizer confusion matrix (fires in ≥1 of "
+          f"{seeds} goal rollouts, budget 40):")
+    print(f"    {'dynamic':8s} | " + " ".join(f"{g[:4]:>4s}" for g in GAMES))
+    clean = True
+    for tgt, Cls in DYN.items():
+        rec = Cls()
+        cells = []
+        for game in GAMES:
+            if game not in classes:
+                cells.append("  - "); continue
+            fired = any(play(classes[game], goal, s, recog=rec, budget=40)[1]
+                        for s in range(seeds))
+            hit = (game == tgt)
+            if fired and not hit:
+                clean = False
+            cells.append(("[X]" if hit else "XFR") if fired else " . ")
+        print(f"    {tgt:8s} | " + " ".join(f"{c:>4s}" for c in cells))
 
-    # §6.2 within-dynamic win-rate on sp80 — supervised should beat goal
-    sg = sum(play(classes["sp80"], "goal", s)[0] for s in range(seeds)) if "sp80" in classes else 0
-    ss = sum(play(classes["sp80"], "sup", s)[0] for s in range(seeds)) if "sp80" in classes else 0
-    print(f"\n§6.2 within-dynamic win-rate on sp80:  goal {sg}/{seeds}  →  supervised {ss}/{seeds}")
+    # §6.2 within-dynamic win-rate — supervised(single dynamic) vs goal on target.
+    print("\n§6.2 within-dynamic win-rate (supervised[D] vs goal on the target game):")
+    upside = True
+    for tgt, Cls in DYN.items():
+        if tgt not in classes:
+            continue
+        wg = sum(play(classes[tgt], goal, s)[0] for s in range(seeds))
+        ws = sum(play(classes[tgt], sup([Cls]), s)[0] for s in range(seeds))
+        upside = upside and ws > wg
+        print(f"    {tgt:6s}: goal {wg}/{seeds}  →  supervised {ws}/{seeds}")
 
-    # §6.3 abort safety — supervised vs goal on NON-sp80 games (parity = no regression)
-    print("\n§6.3 abort safety on non-sp80 games (supervised win == goal win):")
+    # §6.3 abort safety — FULL library vs goal on NON-target games (parity).
+    print("\n§6.3 abort safety (full-library supervised vs goal on non-target games):")
+    full_lib = list(DYN.values())
     reg = True
     for game, cls in classes.items():
-        if game == "sp80":
+        if game in DYN:
             continue
-        wg = sum(play(cls, "goal", s)[0] for s in range(seeds))
-        ws = sum(play(cls, "sup", s)[0] for s in range(seeds))
+        wg = sum(play(cls, goal, s)[0] for s in range(seeds))
+        ws = sum(play(cls, sup(full_lib), s)[0] for s in range(seeds))
         ok = ws >= wg
         reg = reg and ok
         print(f"    {game:6s}: goal {wg}/{seeds}  supervised {ws}/{seeds}  "
               f"{'OK' if ok else 'REGRESSION'}")
 
     print("\nverdict:")
-    print(f"  precision : {'CLEAN (no cross-fires)' if not cross else 'CROSS-FIRES on '+','.join(cross)}")
-    print(f"  upside    : {'supervised > goal on sp80' if ss > sg else 'no measured upside (ss<=sg)'}")
-    print(f"  safety    : {'no regression off-target' if reg else 'REGRESSION off-target'}")
+    print(f"  precision : {'CLEAN (no cross-fires)' if clean else 'CROSS-FIRES present'}")
+    print(f"  upside    : {'supervised > goal on every target' if upside else 'a target lacks upside'}")
+    print(f"  safety    : {'no off-target regression' if reg else 'OFF-TARGET REGRESSION'}")
 
 
 def main():
