@@ -52,6 +52,7 @@ class GeneralAgent:
         self.noop: set = set()     # (sig, action) with no board change
         self._prev_sig: Optional[bytes] = None
         self._prev_action: Optional[int] = None
+        self._cur_sig: Optional[bytes] = None   # this step's signature (observe→propose→commit)
 
     def set_n_actions(self, n: int) -> None:
         self.n = max(1, n)
@@ -61,19 +62,38 @@ class GeneralAgent:
         Default is byte-identical to v1: the static board_signature."""
         return board_signature(frame)
 
-    def choose(self, frame: np.ndarray) -> int:
-        sig = self._sig(frame)
-        self.visit[sig] = self.visit.get(sig, 0) + 1
+    # -- observe / propose / commit ----------------------------------------
+    # Split so a supervisor (core/solve_agent.py) can keep the explorer warm
+    # while a solver drives: observe(frame) every step, propose() when the
+    # explorer is in control, commit(frame, executed_action) with whatever
+    # action was ACTUALLY taken (solver or explorer). choose() composes the
+    # three so standalone behavior is byte-identical to the old single method.
 
-        # Learn the effect of the previous action.
+    def observe(self, frame: np.ndarray) -> bytes:
+        """Ingest a frame: compute its signature (once — _sig may mutate state),
+        count the visit, and learn the effect of the previously executed action."""
+        sig = self._sig(frame)
+        self._cur_sig = sig
+        self.visit[sig] = self.visit.get(sig, 0) + 1
         if self._prev_sig is not None and self._prev_action is not None:
             key = (self._prev_sig, self._prev_action)
             self.trans[key] = sig
             if sig == self._prev_sig:
                 self.noop.add(key)
+        return sig
 
-        action = self._policy(sig)
-        self._prev_sig, self._prev_action = sig, action
+    def propose(self, frame: Optional[np.ndarray] = None) -> int:
+        """The explorer's action for this step's observed signature."""
+        return self._policy(self._cur_sig)
+
+    def commit(self, frame: Optional[np.ndarray], action: int) -> None:
+        """Record the action that was ACTUALLY executed (for next-step learning)."""
+        self._prev_sig, self._prev_action = self._cur_sig, action
+
+    def choose(self, frame: np.ndarray) -> int:
+        self.observe(frame)
+        action = self.propose(frame)
+        self.commit(frame, action)
         return action
 
     def _policy(self, sig: bytes) -> int:

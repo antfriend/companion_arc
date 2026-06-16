@@ -94,12 +94,23 @@ class GoalSeekAgent(GeneralAgentDyn):
         self._seek_on = False            # latches once movement stalls (this level)
         super().reset_level()
 
-    # -- online perception -------------------------------------------------
-    def choose(self, frame):
+    # -- online perception (observe/propose/commit split, see GeneralAgent) -
+    def observe(self, frame):
         self._cur_frame = np.asarray(frame)
+        # Perception uses _prev_frame + the previously EXECUTED action; in
+        # supervised mode commit() supplies the solver's action, so the entity
+        # and action→displacement models stay correct even when a solver drives.
         self._update_perception(self._cur_frame)
-        action = super().choose(frame)   # dispatches to our _policy (tie-break)
+        return super().observe(frame)
+
+    def commit(self, frame, action):
+        super().commit(frame, action)
         self._prev_frame = self._cur_frame
+
+    def choose(self, frame):
+        self.observe(frame)
+        action = self.propose(frame)     # → super().propose → our _policy (tie-break)
+        self.commit(frame, action)
         return action
 
     def _update_perception(self, cur: np.ndarray) -> None:

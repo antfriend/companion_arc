@@ -211,10 +211,15 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
     # "general_dyn" = DynamicSignature (HUD-noise immune); strict no-regression upgrade.
     # "goal"        = general_dyn + stall-gated, additive-safe goal-seeking tie-break
     #                 (per-instance solving; coverage-neutral, gains on goal-shaped games).
+    # "solve"       = goal explorer + recognition-gated, abortable Dynamic solver layer
+    #                 (ARC-RFC-0001); additive floor preserved, solves recognized games.
     _gen = None
-    if _MODE in ("general", "general_dyn", "goal"):
+    if _MODE in ("general", "general_dyn", "goal", "solve"):
         try:
-            if _MODE == "goal":
+            if _MODE == "solve":
+                from core.dynamics import library  # noqa: F401 — registers dynamics
+                from core.solve_agent import SupervisedAgent as _GenCls
+            elif _MODE == "goal":
                 from core.goal_agent import GoalSeekAgent as _GenCls
             elif _MODE == "general_dyn":
                 from core.general_agent_dyn import GeneralAgentDyn as _GenCls
@@ -441,6 +446,7 @@ def main() -> None:
           + ("  (general explorer — no per-game routes)" if _MODE == "general"
              else "  (general explorer + HUD-immune DynamicSignature)" if _MODE == "general_dyn"
              else "  (general_dyn + stall-gated goal-seeking tie-break)" if _MODE == "goal"
+             else "  (goal explorer + recognition-gated Dynamic solver layer)" if _MODE == "solve"
              else "  (uniform random)" if _MODE == "random"
              else "  (per-game detector routes)"), flush=True)
     _load_routes()
