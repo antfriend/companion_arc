@@ -14922,19 +14922,45 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   no gain); precision is clean. **status:** de-risk CLEAN — supervised 10/10 vs
   goal 0/10; no cross-fires; L2 needs color-select (ACTION6), out of scope.
 
-### tu93 — corridor-BFS-navigation
-- **win:** traverse corridor (CORRIDOR_COLOR=2). **solution dynamic:** 18-step
-  adaptive BFS. **fingerprint:** (TBD). **status:** SOLVED L1.
+### tu93 — corridor-BFS-navigation  [PORTED + de-risked 2026-06-16]
+- **entities:** 3×3 cursor (color-4 marker + color-9 body); 3×3 color-14 exit;
+  color-2 corridors. **win:** cursor reaches exit cell.
+- **solution dynamic:** re-derive each frame — detector's adaptive BFS (origin
+  derived from frame → translation-independent) from current cursor cell to exit,
+  emit one move. Directional expectation (marker shifts) aborts on a no-op.
+  games/tu93/dynamic.py.
+- **recognition fingerprint:** small 3×3 cursor (color-4 ≤16 & color-9 ≤16) AND
+  small 3×3 color-14 exit (≤16) AND color-2 corridor (>50). Size caps exclude
+  sk48 (color-4 ~1384); corridor floor excludes cd82. **status:** de-risk CLEAN —
+  supervised 10/10 vs goal 0/10; no cross-fires.
 
-### re86 — piece-placement-match-target
-- **entities:** two cross sprites (placed, NOT cursor-nav). **win:** sprites match
-  target. **solution dynamic:** 19-20 step adaptive placement route.
-  **fingerprint:** (TBD). **status:** SOLVED L1.
+### re86 — piece-placement-match-target  [PORTED + de-risked 2026-06-16]
+- **entities:** two cross pieces (color-9, color-11); active piece marked by a
+  single color-0 center; ACTION5 cycles active; ACTION1-4 move 3px. **win:** both
+  pieces cover their target markers.
+- **solution dynamic:** PLAN-ONCE + abortable replay (like wa30) — a placed piece
+  OCCLUDES its same-color target markers, so per-frame re-derivation loses the
+  target mid-solve (caught by the de-risk: re86 won 0/10 re-derived → 10/10
+  plan-once). Detector's adaptive route computed while all markers visible.
+  games/re86/dynamic.py.
+- **recognition fingerprint:** detect_state succeeds — EXACTLY one color-0 pixel
+  whose neighbor is a piece color (9/11), both pieces with valid target markers, a
+  big inactive cluster. ka59 also has 1 color-0 but no color-9 → excluded.
+  **status:** de-risk CLEAN — supervised 10/10 vs goal 0/10; no cross-fires.
 
-### wa30 — pick-up-and-deliver
-- **entities:** cursor; items (color-4); drop zone (color-2). **win:** deliver
-  items to drop zone. **solution dynamic:** 30-step BFS pick→deliver.
-  **fingerprint:** (TBD) cursor + color-4 items + color-2 zone. **status:** SOLVED.
+### wa30 — pick-up-and-deliver  [PORTED + de-risked 2026-06-16]
+- **entities:** 4×4 cursor (color-0 edge + color-14 body); color-4 items; color-2
+  drop zone. **win:** deliver all items to the zone (ACTION5 = pickup/drop).
+- **solution dynamic:** MULTI-PHASE (approach→face→pickup→carry→drop) so it does
+  NOT re-derive cleanly per frame (a carried item still reads as a loose color-4).
+  PLAN-ONCE per level via the detector's adaptive multi-item BFS, replay one
+  action at a time, each guarded by a "board changed" expectation → abort on a
+  no-op. games/wa30/dynamic.py. (First non-re-derivation dynamic; abort still caps
+  the downside, coarser check.)
+- **recognition fingerprint:** small color-0 cursor edge (≤40) + small color-2
+  drop zone (≤40) + color-14 body (≤40) AND detector finds items + a drop zone —
+  count caps exclude cd82 (large color-0) and sk48 (large color-2). **status:**
+  de-risk CLEAN — supervised 10/10 vs goal 0/10; no cross-fires.
 
 ### ar25 — reflection-covers-markers
 - **entities:** piece at (1,15); mirror at x=10; 5 markers. **win:** reflected
@@ -14963,11 +14989,14 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   only, P(win)≈1/6; lowest-confidence entry.
 
 **PORTED + de-risked so far (LOCUS_MODE=solve, _test_dynamics.py --games):**
-sp80, cd82 — confusion matrix is diagonal (each fires only on its own game, 0
-cross-fires), within-dynamic win 10/10 vs goal ≤1/10, full-library shows no
-off-target regression. **Next:** continue one at a time (tu93 corridor-BFS, wa30
-pick-up-and-deliver, g50t record-replay are good candidates), each gated on its
-own confusion-matrix precision before adding to core/dynamics/library.py. Harden
-each (TBD) fingerprint from its detector.py during the port; prefer
-palette/translation-independent structure (sp80 used 4px-block uniformity) where
-possible so recall extends to hidden variants, but precision is the hard gate.
+sp80, cd82, tu93, wa30, re86 (5/11) — confusion matrix is DIAGONAL (each fires only
+on its own game, 0 cross-fires), within-dynamic win 10/10 vs goal ≤1/10, full-library
+shows no off-target regression. Two solver shapes proven: per-frame RE-DERIVATION
+(sp80/cd82/tu93 — preferred, self-correcting) and PLAN-ONCE+abortable-replay (wa30,
+re86 — for multi-phase or self-occluding games that can't re-derive cleanly; re86
+proved the rule: 0/10 re-derived → 10/10 plan-once, the de-risk test catching it).
+**Next:** continue one at a time (g50t record-replay, ar25 reflection, sk48, cn04;
+ka59 is low-value P≈1/6), each gated on its own confusion-matrix precision before
+adding to core/dynamics/library.py. Harden each (TBD) fingerprint from its
+detector.py; prefer palette/translation-independent structure (sp80 used 4px-block
+uniformity) so recall extends to hidden variants, but precision is the hard gate.
