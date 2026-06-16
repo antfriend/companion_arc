@@ -93,10 +93,11 @@ def run_game_tests(seeds=10, budget=200):
     from games.ar25.dynamic import Ar25Dynamic
     from games.cn04.dynamic import Cn04Dynamic
     from games.ls20.dynamic import Ls20Dynamic
+    from games.g50t.dynamic import G50tDynamic
 
     DYN = {"sp80": Sp80Dynamic, "cd82": Cd82Dynamic, "tu93": Tu93Dynamic,
            "wa30": Wa30Dynamic, "re86": Re86Dynamic, "ar25": Ar25Dynamic,
-           "cn04": Cn04Dynamic, "ls20": Ls20Dynamic}  # target → Dynamic
+           "cn04": Cn04Dynamic, "ls20": Ls20Dynamic, "g50t": G50tDynamic}  # target → Dynamic
 
     ACTIONS = [GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3,
                GameAction.ACTION4, GameAction.ACTION5, GameAction.ACTION6, GameAction.ACTION7]

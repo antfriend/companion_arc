@@ -14977,14 +14977,19 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   reflection placement is SOLVABLE for the frame (a strong structure gate).
   **status:** de-risk CLEAN — supervised 10/10 vs goal 0/10; no cross-fires.
 
-### g50t — record-replay-ghost-holds-door  [DEFERRED 2026-06-16]
+### g50t — record-replay-ghost-holds-door  [PORTED + de-risked 2026-06-16]
 - **entities:** goal cursor; ghost (replays recording); button; door; tracker.
   **win:** record path to button, submit, ghost holds door, navigate to tracker.
-- **solution dynamic:** plan-once multi-stage (games/g50t/dynamic.py written) BUT
-  FAILS the de-risk: the 3×3 color-8 button merges with the door's color-8 region
-  on this instance → detector `_find_button` returns None → no route → recognizer
-  never fires (safe, no upside). **status:** DEFERRED — needs robust button
-  detection (find a 3×3 color-8 protrusion off the door) before it can pass.
+- **solution dynamic:** PLAN-ONCE multi-stage (detector's frame-derived route:
+  goal→button, submit, start→tracker). games/g50t/dynamic.py. FIXED a detection
+  bug: the 3×3 color-8 button is joined to the door's color-8 region by a 1px bar
+  (→ detector `_find_button` returned None). New `_find_button`: scan every 3×3
+  all-color-8 window, pick the most ISOLATED (fewest color-8 neighbours in its
+  surrounding ring) — finds the button protrusion; route matches the validated
+  RIGHT×4+ACT5+DOWN×7+RIGHT×5.
+- **recognition fingerprint:** goal (color-5 ringed by 9) + tracker (color-9 ringed
+  by 5) + a robustly-found 3×3 color-8 button. **status:** de-risk CLEAN —
+  supervised 10/10 vs goal 0/10; no cross-fires; offline solve g50t=100.
 
 ### sk48 — snake-sokoban-hybrid  [SKIPPED 2026-06-16]
 - **win:** sokoban-style push within snake constraint. **solution:** bfs_solver.py
@@ -15011,17 +15016,20 @@ during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
   Needs a tighter recognizer + a winnable-L1 check before it could pass.
 
 **PORTED + de-risked so far (LOCUS_MODE=solve, _test_dynamics.py --games):**
-sp80, cd82, tu93, wa30, re86, ar25, cn04, ls20 (8/11) — confusion matrix is DIAGONAL
-(each fires only on its own game, 0 cross-fires), within-dynamic win 10/10 vs goal
-≤1/10, full-library shows no off-target regression. Offline LOCUS_MODE=solve scores
-overall 2.31 (7 of 10 present games solved) vs 0.0 for goal/general. Two solver shapes
-proven: per-frame RE-DERIVATION (sp80/cd82/tu93/ar25 — preferred, self-correcting) and
-PLAN-ONCE+abortable-replay (wa30/re86/cn04/ls20 — multi-phase, self-occluding, or
-choreographed). **NOT PORTED (3/11):** g50t DEFERRED (button merges with door → no
-route), sk48 SKIPPED (hardcoded fixed route, stub detector), ka59 DEFERRED (recognizer
-cross-fires sk48 + L1 unwinnable without click-select). The de-risk gate REJECTED
-re86-as-re-derived (occlusion), g50t (no detection), and ka59 (cross-fire + 0/10)
-before any could ship — precision/upside are real gates, not formalities. Each future
-add stays gated on its own confusion-matrix precision before entering
-core/dynamics/library.py; prefer palette/translation-independent structure (sp80 used
-4px-block uniformity) so recall extends to hidden variants.
+sp80, cd82, tu93, wa30, re86, ar25, cn04, ls20, g50t (9/11) — confusion matrix is
+DIAGONAL (each fires only on its own game, 0 cross-fires), within-dynamic win 10/10 vs
+goal ≤1/10, full-library shows no off-target regression. Offline LOCUS_MODE=solve
+scores overall 12.31 (8 of 10 present games solved, g50t=100) vs 0.0 for goal/general —
+matching the old detector fleet (12.59) but via the additive-safe, recognition-gated,
+abortable architecture. Two solver shapes proven: per-frame RE-DERIVATION
+(sp80/cd82/tu93/ar25 — self-correcting) and PLAN-ONCE+abortable-replay
+(wa30/re86/cn04/ls20/g50t — multi-phase, self-occluding, or choreographed).
+**NOT PORTED (2/11):** sk48 SKIPPED (hardcoded fixed route, stub detector — no
+frame-derived recognizer to build on), ka59 DEFERRED (recognizer cross-fires sk48 + L1
+unwinnable without click-select → 0/10). The de-risk gate REJECTED re86-as-re-derived
+(occlusion → fixed via plan-once), g50t's first cut (button merged with door → fixed
+via a robust most-isolated-3×3 finder), and ka59 (cross-fire + 0/10) before any could
+ship — precision/upside are real gates. Each future add stays gated on its own
+confusion-matrix precision before entering core/dynamics/library.py; prefer
+palette/translation-independent structure (sp80 used 4px-block uniformity) so recall
+extends to hidden variants.
