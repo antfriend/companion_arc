@@ -26,6 +26,16 @@ This index lists RFCs included in the TTE 1.0 bundle.
 - [TTCP-RFC-0002-Globe-and-Navigation.md](TTCP-RFC-0002-Globe-and-Navigation.md): Knowledge Globe, Cursor Selection, Discovery, Tour, and Scene Playback
 - [TTCP-RFC-0003-Link-System-and-Addressability.md](TTCP-RFC-0003-Link-System-and-Addressability.md): Toot URI Scheme, URL Synchronization, and Search
 
+## ARC (ARC-AGI-3 Competition Agent)
+
+The companion-arc agent for the ARC Prize 2026 ARC-AGI-3 competition. A general
+count-based explorer (the additive floor) with an optional recognition-gated,
+abortable per-instance solver layer over it.
+
+| RFC | Title | Status | Summary |
+|-----|-------|--------|---------|
+| [ARC-RFC-0001-Dynamics-Solver-Architecture.md](ARC-RFC-0001-Dynamics-Solver-Architecture.md) | Dynamics Solver Architecture | Proposed | Additive, recognition-gated, abortable solver layer over the explorer; `Dynamic` protocol (recognize/re-derive/expect); supervisor with explorer-floor fallback; de-risk test plan |
+
 ## A32 (ESP32 Autonomous Device Framework)
 
 Agent 32 is a framework for building autonomous ESP32 devices using the Toot-Toot Database (TTDB) as an onboard, static knowledge base. No cloud LLMs. No neural inference. Just deterministic graph-based reasoning on a $5 microcontroller.

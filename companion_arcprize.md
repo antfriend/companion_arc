@@ -14854,3 +14854,106 @@ the ladder warned against — careful per-instance solving (@LAT25LON55: read TH
 hidden frame, plan for IT) — now justified BECAUSE breadth is empirically
 exhausted, not as a premature leap. The discipline that made breadth-first
 correct also tells us when breadth is done. New file: _test_proxy_curve.py.
+
+---
+
+## Dynamics Catalog (seed) — 2026-06-16
+
+Per ARC-RFC-0001 (RFCs/ARC-RFC-0001-Dynamics-Solver-Architecture.md): the
+enumerated mechanic FAMILIES encountered in the L1 practice set. Each is the unit
+the recognition-gated, abortable solver layer dispatches on — recognized from the
+current frame's structural fingerprint, then solved by per-frame re-derivation
+(NOT a route), with abort-to-explorer on divergence. The hidden set is assumed to
+vary only WITHIN these dynamics (weak form: SOME hidden games share one; the
+additive floor protects the rest).
+
+Each entry: **entities** (controllable + objects) · **win condition** · **solution
+dynamic** (the re-derivable plan) · **recognition fingerprint** (frame-structural,
+no canonical coords) · **status**. Fingerprints marked (TBD) are to be hardened
+during the build (ARC-RFC-0001 §8 step 4) from each game's detector.py.
+
+| dynamic | family | L1 status | solver source |
+|---------|--------|-----------|---------------|
+| sp80 | liquid-spill-covers-obstacles | SOLVED | games/sp80/detector.py |
+| ls20 | block-navigation-through-corridor | SOLVED | _ROUTES + adaptive _detect_l1_route |
+| cd82 | basket-selection-route | SOLVED | adaptive basket detector |
+| tu93 | corridor-BFS-navigation | SOLVED | 18-step adaptive BFS (CORRIDOR_COLOR=2) |
+| re86 | piece-placement-match-target | SOLVED | two cross-sprites to target |
+| wa30 | pick-up-and-deliver | SOLVED | cursor carries color-4 → drop zone color-2 |
+| ar25 | reflection-covers-markers | SOLVED | reflect piece through mirror to 5 markers |
+| g50t | record-replay-ghost-holds-door | SOLVED | ghost holds door; RIGHT×4+ACT5+DOWN×7+RIGHT×5 |
+| sk48 | snake-sokoban-hybrid | SOLVED | 14-action route |
+| cn04 | connector-rotate-translate-match | SOLVED | adaptive rotate+translate to (7,10) rot0 |
+| ka59 | push-and-contain | DETECTOR (P≈1/6) | BFS nav to (target+1,+1) |
+
+### sp80 — liquid-spill-covers-obstacles  [reference entry, fully specified]
+- **entities:** controllable = selected piece (frame pixel 9; or a ≥20px pixel-8
+  before auto-select). objects = color-11 obstacle cluster.
+- **win condition:** the spilled liquid must wet *every* color-11 obstacle.
+- **solution dynamic:** move the piece to the spill-1 position expressed RELATIVE
+  to the obstacle bbox-min (`anchor + (3-4, 4-13)`), then execute the spill
+  choreography. RE-DERIVE: recompute piece & obstacle positions each frame and
+  emit the next single step toward the spill position, then the next spill action
+  — abortable, unlike the hard-coded `_SPILL_ROUTE`.
+- **recognition fingerprint:** presence of (selected piece pixel-9 OR ≥20px
+  pixel-8) AND a color-11 cluster; cell pitch 4px (frame = game·4).
+- **status:** SOLVED L1; the only game the undirected explorer also completes
+  (~15-20%), so it is the natural first port (ARC-RFC-0001 §8 step 3).
+
+### ls20 — block-navigation-through-corridor
+- **entities:** controllable = block (color 12); objects = corridor/maze walls,
+  target. **win:** route the block to the goal through the corridor (passes c19).
+- **solution dynamic:** column-adaptive LEFT/RIGHT count scaled to block column +
+  UP runs (the shipped `_detect_l1_route`). **fingerprint:** (TBD) color-12 block +
+  corridor structure. **status:** SOLVED L1 ×41; L2 open (block resets after osc).
+
+### cd82 — basket-selection-route
+- **entities:** controllable cursor; objects = baskets. **win:** reach target
+  basket. **solution dynamic:** adaptive 5-step route from any starting basket.
+  **fingerprint:** (TBD). **status:** SOLVED L1; L2 needs color selection.
+
+### tu93 — corridor-BFS-navigation
+- **win:** traverse corridor (CORRIDOR_COLOR=2). **solution dynamic:** 18-step
+  adaptive BFS. **fingerprint:** (TBD). **status:** SOLVED L1.
+
+### re86 — piece-placement-match-target
+- **entities:** two cross sprites (placed, NOT cursor-nav). **win:** sprites match
+  target. **solution dynamic:** 19-20 step adaptive placement route.
+  **fingerprint:** (TBD). **status:** SOLVED L1.
+
+### wa30 — pick-up-and-deliver
+- **entities:** cursor; items (color-4); drop zone (color-2). **win:** deliver
+  items to drop zone. **solution dynamic:** 30-step BFS pick→deliver.
+  **fingerprint:** (TBD) cursor + color-4 items + color-2 zone. **status:** SOLVED.
+
+### ar25 — reflection-covers-markers
+- **entities:** piece at (1,15); mirror at x=10; 5 markers. **win:** reflected
+  piece covers all 5 markers. **solution dynamic:** 16-step reflection route.
+  **fingerprint:** (TBD). **status:** SOLVED L1.
+
+### g50t — record-replay-ghost-holds-door
+- **entities:** player; ghost (replays recording); door. **win:** ghost holds door
+  open while player passes. **solution dynamic:** RIGHT×4 + ACTION5 + DOWN×7 +
+  RIGHT×5 (record then replay). **fingerprint:** (TBD). **status:** SOLVED L1.
+
+### sk48 — snake-sokoban-hybrid
+- **win:** sokoban-style push within snake constraint. **solution dynamic:**
+  14-action route (1 pre-route UP + 13 from row 30). **fingerprint:** (TBD)
+  in-grid band at row 23 (HUD — handled by DynamicSignature). **status:** SOLVED L1.
+
+### cn04 — connector-rotate-translate-match
+- **entities:** connector piece (rotatable + translatable); target. **win:** match
+  connector to target (pos (7,10), rot 0). **solution dynamic:** adaptive
+  rotate+translate route. **fingerprint:** (TBD) in-grid budget bar at row 4 (HUD).
+  **status:** SOLVED L1.
+
+### ka59 — push-and-contain
+- **win:** push object into containment (levels[4] only). **solution dynamic:** BFS
+  nav to (target+1, +1) then push. **fingerprint:** (TBD). **status:** detector
+  only, P(win)≈1/6; lowest-confidence entry.
+
+**Next (ARC-RFC-0001 §8):** port sp80 to the Dynamic protocol first (highest
+confidence + already explorer-winnable), pass the de-risk tests (recognizer
+confusion matrix across randomized instances, within-dynamic win-rate, abort
+safety), then add dynamics one at a time gated on precision. Harden each (TBD)
+fingerprint from its detector.py during the port.
