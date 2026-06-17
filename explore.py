@@ -100,7 +100,11 @@ def load_game(game, instance=None):
 def parse_tokens(tokens):
     """Expand action tokens into a flat list of {'id':int,'data':?} dicts."""
     out = []
+    # accept both separate args and a single quoted string of space-separated tokens
+    flat = []
     for tok in tokens:
+        flat.extend(str(tok).split())
+    for tok in flat:
         t = tok.strip()
         if not t:
             continue

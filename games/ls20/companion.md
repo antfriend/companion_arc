@@ -88,6 +88,43 @@ verify_step check: after each UP, block.row must decrease. If blocked
 
 ## L2 dynamics + open problem
 
+@LAT-30LON-10 ls20 L2 — empirical action model + block corridor (explore.py 2026-06-17)
+[ew]
+conf:205
+rev:1
+sal:4
+touched:1
+[/ew]
+Confirmed live via `explore.py` (session ls20L2, instance 9607627b, `goto --level 2` then
+single-action probes + `watch 12 9 11`):
+- ACTION MODEL: a1=UP, a4=RIGHT move the BLOCK (color-12, 5-wide×2-tall) by ONE cell = 5px.
+  a2=DOWN and a3=LEFT are BLOCKED at the L2 start (void on those sides) — they tick the
+  timer but do not move the block. (So the start is a UP/RIGHT-only pocket.)
+- TIMER (color-11 bottom bar) ≈ 100 cells, drains ~4/step ⇒ ~25 moves per timer window
+  before expiry/reset. Collecting a ring resets it (see @LAT-40LON10).
+- ENTITY1 (color-9, in the goal room) shifts its centroid in the block's movement
+  direction each step — the "trail attraction" tracking; it is NOT independently steerable.
+- OPENING CORRIDOR (confirmed): from start (block rows 40-41 cols 29-33) UP alone climbs
+  only ONE cell (to row 35) then blocks (void above cols 29-33). The vertical corridor is
+  at cols 34-38: `RIGHT` (→cols 34-38) then `UP×7` climbs to row 5 (top), then blocks.
+  This is the concrete "route via c34" the open-loop route assumes.
+- L2 START LAYOUT (this instance): block rows 40-41 c29-33; goal room (color-5 floor in
+  color-3 walls) rows 38-46 c12-20 with the inner color-9 pattern at rows 41-43 c15-17;
+  rings (color-11, 3×3 notched) at (16-18,14-16) and (51-53,38-40); state-changer/cross
+  (color-0/1 box) at rows 46-48 c49-52; walls color-3, void color-4, floor color-5.
+PLAYTHROUGH PROBE (explore.py `goto --level 3`, full-library solver, 81 actions → GAME_OVER):
+the state-box (cross) at c0/c1 ≈ (row46-47,col50-51) NEVER changed across the entire run —
+the block NEVER reached/collected the cross, so entity1 (c9, n=45) state never advanced and
+WIN was impossible. A TIMER-EXPIRY FULL RESET was captured (c11 jumps n16→n100; block +
+entity1 snap back to start) — the documented oscillation that desyncs the open-loop route.
+⇒ THE BOTTLENECK is concretely: navigate the 5-wide block to the cross (lower-right, behind
+the void gap) WITHIN the ~21–25-step timer window. The cross is far from the UP/RIGHT start
+pocket; reaching it needs the wide top connector (rows 5–14) then a descent on the right —
+more than one timer window, so ring collection (timer reset) must be interleaved. This is
+the closed-loop adaptive-BFS-for-a-5-wide-block build the open-loop route cannot do.
+NEXT PROBE (unverified): once at the cross, `watch 9 11` to confirm the cross→inner-ring 90°
+rotation + entity1 state change — the crux of the win condition.
+
 @LAT-40LON10 ls20 L2 — rings/cross/timer (training-solved, competition-open)
 [ew]
 conf:120
