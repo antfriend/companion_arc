@@ -30,6 +30,12 @@ class Dynamic:
     """Base class. Subclasses live in games/<id>/dynamic.py and override all three."""
 
     id: str = "base"
+    _level: int = 1                 # current level (1-indexed); set by the supervisor
+
+    def set_level(self, level: int) -> None:
+        """Tell the dynamic which level it is on, so level-aware solvers can plan
+        the right route. Called by SupervisedAgent.reset_level on each transition."""
+        self._level = max(1, int(level))
 
     def recognize(self, frame: np.ndarray) -> float:
         """Confidence in [0,1] that this frame is an instance of my dynamic.

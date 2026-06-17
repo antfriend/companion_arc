@@ -18,7 +18,6 @@ from typing import List, Optional
 
 import numpy as np
 
-from core.goal_agent import GoalSeekAgent
 from core.dynamics.base import Dynamic
 from core.dynamics.registry import dispatch, DYNAMICS
 
@@ -27,19 +26,41 @@ from core.dynamics.registry import dispatch, DYNAMICS
 _ABORT_K = 3
 
 
+def _make_floor(floor: str, n_actions: int, seed):
+    """The undirected explorer used on unrecognized games. The dynamics layer is
+    additive, so the floor DOMINATES the score → use the measured-best explorer.
+
+    "v1"  = GeneralAgent (static signature) — leaderboard 0.18, the standing best.
+    "dyn" = GeneralAgentDyn (HUD-immune signature).
+    "goal"= GoalSeekAgent (goal tie-break) — leaderboard 0.10; NOT recommended as a
+            floor (its directed tie-break is redundant once dynamics drive solving,
+            and it scored below v1). The 2026-06-16 solve submission used this floor
+            by mistake → 0.13 (= goal 0.10 + dynamics +0.03); v1 floor should ≈0.21.
+    """
+    if floor == "dyn":
+        from core.general_agent_dyn import GeneralAgentDyn
+        return GeneralAgentDyn(n_actions, seed=seed)
+    if floor == "goal":
+        from core.goal_agent import GoalSeekAgent
+        return GoalSeekAgent(n_actions, seed=seed, goal_mode="near")
+    from core.general_agent import GeneralAgent       # default "v1" — the 0.18 floor
+    return GeneralAgent(n_actions, seed=seed)
+
+
 class SupervisedAgent:
     def __init__(self, n_actions: int, seed: Optional[int] = None,
-                 goal_mode: str = "near",
+                 floor: str = "v1",
                  dynamics: Optional[List[Dynamic]] = None) -> None:
         self.n = max(1, n_actions)
-        self.explorer = GoalSeekAgent(n_actions, seed=seed, goal_mode=goal_mode)
-        # None → use the global registry; [] → empty (must == goal); list → inject.
+        self.explorer = _make_floor(floor, n_actions, seed)
+        # None → use the global registry; [] → empty (must == the floor); list → inject.
         self.dynamics = DYNAMICS if dynamics is None else dynamics
         self.reset_level()
 
-    def reset_level(self) -> None:
+    def reset_level(self, level: int = 1) -> None:
         self.explorer.reset_level()
         for d in self.dynamics:
+            d.set_level(level)          # level-aware solvers plan the right route
             d.reset()
         self._active: Optional[Dynamic] = None
         self._expect = None

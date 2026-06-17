@@ -33,10 +33,14 @@ FIRE = 4
 _TOL = 16          # squared-px tolerance for matching a basket position
 
 
+_MAX_SELECTOR = 60        # the basket selector is a small sprite (~30px); a large
+                          # color-2 region (e.g. tu93 L2's 117px corridor) is NOT it
+
+
 def _active_basket(frame):
     """3×3 nav-grid (row,col) of the pixel-2 selector, or None."""
     p = np.argwhere(frame == 2)
-    if len(p) == 0:
+    if len(p) == 0 or len(p) > _MAX_SELECTOR:      # too big to be the selector
         return None
     r1, c1 = int(p[:, 0].min()), int(p[:, 1].min())
     best_d, best = float("inf"), None

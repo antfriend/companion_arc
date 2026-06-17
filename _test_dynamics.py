@@ -67,13 +67,13 @@ def test_split_equivalence():
     return ok
 
 
-def test_empty_library_equals_goal():
+def test_empty_library_equals_floor():
     frames = _frames(seed=2)
-    goal = _seq_choose(GoalSeekAgent(4, seed=7, goal_mode="near"), frames)
-    sup = _seq_choose(SupervisedAgent(4, seed=7, goal_mode="near", dynamics=[]), frames)
-    same = goal == sup
-    print(f"  [{'OK ' if same else 'FAIL'}] SupervisedAgent(empty) == GoalSeekAgent "
-          f"({sum(x==y for x,y in zip(goal,sup))}/{len(goal)} match)")
+    base = _seq_choose(GeneralAgent(4, seed=7), frames)            # default floor = v1
+    sup = _seq_choose(SupervisedAgent(4, seed=7, dynamics=[]), frames)
+    same = base == sup
+    print(f"  [{'OK ' if same else 'FAIL'}] SupervisedAgent(empty) == GeneralAgent (v1 floor) "
+          f"({sum(x==y for x,y in zip(base,sup))}/{len(base)} match)")
     return same
 
 
@@ -136,7 +136,7 @@ def run_game_tests(seeds=10, budget=200):
         return GoalSeekAgent(n, seed=seed, goal_mode="near")
 
     def sup(classes_):
-        return lambda n, seed: SupervisedAgent(n, seed=seed, goal_mode="near",
+        return lambda n, seed: SupervisedAgent(n, seed=seed,   # default floor = v1
                                                dynamics=[C() for C in classes_])
 
     classes = {}
@@ -201,7 +201,7 @@ def main():
     print("A. refactor faithfulness:")
     a = test_split_equivalence()
     print("\nB. additive floor (no-regression by construction):")
-    b = test_empty_library_equals_goal()
+    b = test_empty_library_equals_floor()
     print()
     if a and b:
         print("PASS: explorer split is faithful AND the supervisor with an empty")

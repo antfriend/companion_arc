@@ -44,12 +44,13 @@ class Ls20Dynamic(Dynamic):
 
     def next_action(self, frame, n_actions):
         f = np.asarray(frame)
+        lvl = getattr(self, "_level", 1)
         if not self._probed:                       # canonical probe before the route
             self._probed = True
-            return SolverStep(int(L.initial_action(1)), lambda x: True, "probe")
+            return SolverStep(int(L.initial_action(lvl)), lambda x: True, "probe")
         if self._route is None:                    # plan once, from the post-probe frame
             st = L.detect_state(f)
-            self._route = L.compute_route(st, 1)
+            self._route = L.compute_route(st, lvl)
             self._i = 0
         if not self._route or self._i >= len(self._route):
             return None
