@@ -77,7 +77,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1780876800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40,anchors>@LAT-650LON10,anchors>@LAT-660LON10,anchors>@LAT-670LON10,anchors>@LAT-680LON10,anchors>@LAT88LON40,anchors>@LAT-10LON40,anchors>@LAT75LON-50,anchors>@LAT70LON-50,anchors>@LAT-710LON10,anchors>@LAT85LON-10,anchors>@LAT80LON-10,anchors>@LAT80LON-20,anchors>@LAT80LON-30,anchors>@LAT75LON-10,anchors>@LAT75LON-20,anchors>@LAT75LON-30
+@LAT0LON0 | created:1747180800 | updated:1780876800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40,anchors>@LAT-650LON10,anchors>@LAT-660LON10,anchors>@LAT-670LON10,anchors>@LAT-680LON10,anchors>@LAT88LON40,anchors>@LAT-10LON40,anchors>@LAT75LON-50,anchors>@LAT70LON-50,anchors>@LAT-710LON10,anchors>@LAT85LON-10,anchors>@LAT80LON-10,anchors>@LAT80LON-20,anchors>@LAT80LON-30,anchors>@LAT75LON-10,anchors>@LAT75LON-20,anchors>@LAT75LON-30,anchors>@LAT55LON-40
 [ew]
 conf:255
 rev:0
@@ -10969,6 +10969,58 @@ ar25, bp35, cn04, dc22, ft09, g50t, ka59, lf52, lp85, m0r0, r11l, re86, s5i5, sb
 - `bp35`: random search crashed — no simple actions (ACTION6 requires x/y data). Click-only game, needs different approach.
 - All others: random search (500 trials, max_depth=25, 60s timeout per game) found no solutions. Routes may require longer sequences, specific patterns, or multi-action combinatorics.
 - Search speed: each route trial ≈ 100ms. 500 trials/game × 24 games ≈ 30 min total.
+
+NOTE (2026-06-17): this 25-game roster is the OLD hardcoded-route framing. The current
+agent is a general explorer + a recognition-gated abortable Dynamic solver layer. The
+live, canonical per-game knowledge is the [Dynamics Catalog](lat55lon-40).
+
+---
+
+@LAT55LON-40 | created:1781740800 | updated:1781740800 | kind:catalog | relates:anchored_by>@LAT0LON0,supersedes>@LAT-10LON40,informs_strategy>@LAT88LON40
+[ew]
+conf:240
+rev:1
+sal:5
+touched:1781740800
+[/ew]
+
+## Dynamics Catalog — in-play games (canonical index)
+
+The 9 games whose dynamics are PORTED + de-risked CLEAN and REGISTERED in
+`core/dynamics/library.py`. The agent is a general explorer floor (v1 = GeneralAgent,
+static signature, leaderboard 0.18) with a recognition-gated, ABORTABLE per-instance
+Dynamic solver layer over it (ARC-RFC-0001): each Dynamic fires ONLY on its own game
+(diagonal confusion matrix), solves it, and any unrecognized/mismatched/aborted frame
+falls back to the floor (no regression by construction). Solver shapes: per-frame
+RE-DERIVATION (self-correcting, preferred) vs PLAN-ONCE + abortable replay (for
+choreographed / self-occluding levels).
+
+Each game has a full TTDB companion file (elements / goal / dynamics / open problems,
+confidence-tagged) — the source of truth the code evolves around. KEEP IN SYNC when
+refactoring game code.
+
+| game | type | L1 | L2+ | companion |
+|---|---|---|---|---|
+| sp80 | two-phase spill/liquid | SOLVED (re-derive) | rotation gotcha fixed; spill L1-tuned → open | [sp80](?ttdb=games/sp80/companion.md) |
+| cd82 | basket-ring nav + fire | SOLVED (re-derive) | needs color/click select → infeasible w/ simple actions | [cd82](?ttdb=games/cd82/companion.md) |
+| tu93 | maze navigation | SOLVED (re-derive BFS) | TURRETS, instant-kill timing puzzle (decoded 2026-06-17) → open | [tu93](?ttdb=games/tu93/companion.md) |
+| wa30 | pickup-and-deliver | SOLVED (plan-once) | autonomous adversaries move items → open | [wa30](?ttdb=games/wa30/companion.md) |
+| re86 | piece placement (crosses) | SOLVED (plan-once) | multi-piece patterns → open | [re86](?ttdb=games/re86/companion.md) |
+| ar25 | reflection (mirror) | SOLVED (re-derive) | multi-piece / horizontal mirrors → open | [ar25](?ttdb=games/ar25/companion.md) |
+| cn04 | connector matching | SOLVED (re-derive) | 3–4 pieces, GreyMasking, click-select → open | [cn04](?ttdb=games/cn04/companion.md) |
+| ls20 | push-block maze + rings/timer | SOLVED (adaptive route) | training-solved, competition-desyncs → the standing open problem | [ls20](?ttdb=games/ls20/companion.md) |
+| g50t | record/replay maze | SOLVED (plan-once choreography) | 2 doors, new layout → needs general planner | [g50t](?ttdb=games/g50t/companion.md) |
+
+Adjacent (NOT registered): `ka59` (push-and-contain; cross-fires sk48 + L1 unwinnable
+without click-select; `games/ka59/dynamic.py` exists, deferred). `sk48` (snake+sokoban;
+hardcoded route, stub detector, skipped).
+
+CROSS-GAME L2 CONCLUSION (2026-06-16, reinforced 2026-06-17): ALL 9 dynamics CAP at L1 —
+every game's L2 layers in a REAL new mechanic (turrets / adversaries / multi-piece /
+ring-rotation), so there is NO quick "level-agnostic BFS → free L2" win. Hidden-set
+transfer of the whole 9-dynamic layer measured ≈ +0.03 (most hidden games are NOT
+canonical-dynamic variants). Treat each future L2 solve as cheap insurance, not a
+guaranteed score jump.
 
 ---
 
