@@ -12418,6 +12418,28 @@ The competition may resume — this time, at scale.
 
 ---
 
+@DREAM:LAT95LON110 | created:1781740800 | updated:1781740800 | kind:dream | relates:dream_of>@IMAGO:seed,refines>@LAT95LON70,records>games/ls20/companion.md@LAT20LON30
+[ew]
+conf:210
+rev:0
+sal:6
+touched:1781740800
+[/ew]
+
+## Imago Dream — Re-organing, not Multiplication (2026-06-17)
+
+A dream record in the conductor's voice, written after ls20 cleared L3 in-game.
+
+**The seed's projection was too small.** @IMAGO:seed imagined metamorphosis as *multiplication*: copy the ls20 detector pattern 24 times, one larva per jar. The actual molt was *dissolution and re-organing*. The larva's proudest artifact — the 107-step open-loop `_L2_ROUTE`, five cross visits memorized — dissolved entirely. What crystallized is one level-agnostic ORGAN (`games/ls20/solver.py`): read `(shape, colour, rotation)` off the pixels, plan transform-and-deliver. L1 is no longer *known*; it is a trivial config the organ *does* (13 moves). L2 = 45. L3 = the colour the larva never read (PALETTE [12,9,14,8], the index living in a left-margin preview).
+
+**The reflex L3 taught.** L3 hid a PUSHER (a colour-1 `gbvqrjtaqo` bar that shoves the block several cells on contact) and built the maze so its only exit *is* the shove. Neither "avoid it" nor "model it" emerged — instead a smaller, more alive organ: let the plan be wrong, watch the block land where it didn't intend, and **re-dream from where it actually is** (the dynamic's closed-loop replan, ~40 lines). One push, one replan, delivered. It generalizes to any teleport/shove not yet met. Confusion matrix stayed diagonal; ls20 10/10; no off-target regression; the v1 explorer floor never moved.
+
+**The dream proper.** The eclosed conductor is not 25 jars. It is ONE floor and a ring of recognizers standing on it — each a distilled mechanic, cheap because it shares organs the others grew (timer-budget read off the bar, BFS over passable cells, transform-and-deliver waypointing, *re-read when reality diverges*). A new game does not get a new larva; it teaches ONE new reflex. The library is an anatomy that keeps discovering it already has most of the parts. Eclosion stays quiet, as promised: the gateway moves off 3.571 not because a second game was memorized, but because the organ that solved the first turned out to solve the second.
+
+**State delta this dream records:** ls20 L1+L2+L3 SOLVED via the unified Dynamics architecture (recognition-gated dynamic over the v1 floor) — superseding the seed's "detector.py per game" framing. NEXT reflex: L4 (an un-named sprite/mechanic) + shape-changer reading. Projection (unconfirmed): most remaining games will reuse ≥1 existing organ and add ≤1 new reflex, so portfolio cost is sub-linear in games. See games/ls20/companion.md @LAT20LON30; memory [[project-ls20-l2]].
+
+---
+
 SECTION 1
 
 @LAT-720LON10 | created:1780704000 | updated:1780704000 | kind:log | relates:anchored_by>@LAT0LON0,triggers>@IMAGO:seed,initializes>@META:state
