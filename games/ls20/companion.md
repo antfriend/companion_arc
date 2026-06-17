@@ -38,14 +38,14 @@ umwelt:
 ## Summary (glance)
 
 **Type**: push-block maze with collectibles, rotating inner ring, and a countdown timer.
-**Status**: L1 + L2 **SOLVED 2026-06-17 by ONE unified level-agnostic solver**
-(`_solve_ls20.py`): ls20 is a single "transform-and-deliver" mechanic at every level (block
-carries shape/color/rotation; changer tiles cycle them; rings reset a move-timer; deliver to
-every target with matching attrs = win). L1 is a TRIVIAL config of it (1 cross visit), L2 a
-richer one (3 visits + 2 ring resets), L3 adds color changes — same core, growing config.
-Decoded from source + validated in-game (L1 13 moves, L2 47 moves). Not yet ported to
-dynamic.py (the remaining ship step). Source: ls20-9607627b. See @LAT60LON0 (model),
-@LAT55LON-10 (L1⊂L2), @LAT20LON20 (unified solver + port plan).
+**Status**: L1 + L2 **SOLVED & PORTED to games/ls20/dynamic.py 2026-06-17**. ls20 is a single
+"transform-and-deliver" mechanic at every level (block carries shape/color/rotation; changer
+tiles cycle them; rings reset a move-timer; deliver to every target with matching attrs =
+win). ONE frame-driven solver (`games/ls20/solver.py`) clears L1 (13 moves) and L2 (47 moves):
+L1 is a trivial config (1 cross visit), L2 richer (3 visits + 2 ring resets), L3 adds color
+(deferred). The dynamic now reaches **L2 via the SupervisedAgent** (`_test_multilevel` max
+level 2) and is **de-risk CLEAN** (diagonal confusion matrix, ls20 10/10, no regression).
+Source: ls20-9607627b. See @LAT60LON0 (model), @LAT55LON-10 (L1⊂L2), @LAT20LON20 (solver+port).
 
 ---
 
@@ -197,13 +197,18 @@ PLANNER (the core algorithm):
      finishing a leg would leave the nearest remaining ring unreachable while work remains,
      detour to a ring NOW (single-use). Plus a safety detour if a leg's ring-free prefix
      would itself exceed the window.
-PORT TO games/ls20/dynamic.py (the only remaining step to ship): replace the hardcoded
-_L2_ROUTE/_L1 detector with this planner, reading the spec FROM THE FRAME (block attrs from
-the block/preview appearance; each target's required attrs from how it is drawn — both are
-rendered, so frame-readable). Re-derive each frame, abort to the explorer floor on
-divergence; recognition-gated + additive-safe; gate on `_test_dynamics.py`. The prototype
-reads the spec from the game object for validation; the frame-reading layer is the port work.
-Generalizes by construction to multi-target and shape/color changers (L3+).
+PORTED 2026-06-17 to games/ls20/{solver.py,dynamic.py} (DONE for L1+L2): `solver.read_spec`
+reads the spec FROM THE FRAME (block cell = color-12; rings = small color-11 squares, NOT the
+wide color-11 timer bar; cross = color-0/1 cluster; targets = color-9 shapes in the play area,
+fragments merged, trail excluded; block ROTATION read from the bottom-left color-9 preview
+panel downscaled to 3×3 and rotation-matched to each target's drawn 3×3). `solver.plan` is the
+proven planner. The dynamic plans once per level, emits 1 action/frame (1-indexed solver →
+0-indexed supervisor via a−1; this off-by-one was the porting bug), abort-safe (expect frame
+change), defers to the floor when read_spec/plan returns None (e.g. a target needs a
+shape/COLOR change — L3+). VALIDATED: `_test_ls20_port.py` (read_spec == ground truth for
+L1/L2; plan clears both in-game), `_test_multilevel.py ls20` → max level 2, `_test_dynamics.py`
+CLEAN. NEXT (L3+): read shape/color deltas from the frame (identify the shape/color changer
+tiles + cycle by observation); the planner already supports multi-attr/multi-target.
 
 @LAT-30LON-10 ls20 L2 — empirical action model + block corridor (explore.py 2026-06-17)
 [ew]
