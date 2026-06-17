@@ -25,23 +25,27 @@ def load():
     return next(v for v in vars(m).values() if isinstance(v, type) and issubclass(v, ARCBaseGame) and v is not ARCBaseGame)
 
 
-def to_l2():
+def to_level(n):
+    """Return (game, obs) parked at the START of level n (n>=1)."""
     random.seed(0); np.random.seed(0)
     g = load()()
     obs = g.perform_action(ActionInput(id=GameAction.RESET), raw=True)
+    if n <= 1:
+        return g, obs
     agent = SupervisedAgent(4, seed=0); prev = 0
-    for _ in range(120):
+    for _ in range(200):
         if obs is None or str(obs.state) in END or not obs.frame:
             break
         a = agent.choose(np.asarray(obs.frame[-1])) % 4
         obs = g.perform_action(ActionInput(id=ACT[a + 1]), raw=True)
-        if obs and (obs.levels_completed or 0) > prev:
+        if obs and (obs.levels_completed or 0) >= n - 1:
             return g, obs
     return g, obs
 
 
 def main():
-    g, obs = to_l2()
+    level = int(sys.argv[1]) if len(sys.argv) > 1 else 2
+    g, obs = to_level(level)
     print(f"=== ls20 L2 puzzle spec (levels_completed={obs.levels_completed}) ===")
     print(f"action-step grid: gisrhqpee(x-step)={g.gisrhqpee} tbwnoxqgc(y-step)={g.tbwnoxqgc}")
     b = g.gudziatsk

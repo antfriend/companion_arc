@@ -38,11 +38,14 @@ umwelt:
 ## Summary (glance)
 
 **Type**: push-block maze with collectibles, rotating inner ring, and a countdown timer.
-**Status**: L1 SOLVED (adaptive route, 41+ wins, registered Dynamic). L2 **SOLVED 2026-06-17
-by a CLOSED-LOOP planner** (transform-and-deliver model decoded from source; validated WIN
-in-game) — superseding the old open-loop _L2_ROUTE that desynced. Not yet ported to
-dynamic.py. Source: ls20-9607627b. See @LAT60LON0 (model), @LAT20LON20 (validated route +
-architecture). Extensive historical L2 logs live in companion_arcprize.md.
+**Status**: L1 + L2 **SOLVED 2026-06-17 by ONE unified level-agnostic solver**
+(`_solve_ls20.py`): ls20 is a single "transform-and-deliver" mechanic at every level (block
+carries shape/color/rotation; changer tiles cycle them; rings reset a move-timer; deliver to
+every target with matching attrs = win). L1 is a TRIVIAL config of it (1 cross visit), L2 a
+richer one (3 visits + 2 ring resets), L3 adds color changes — same core, growing config.
+Decoded from source + validated in-game (L1 13 moves, L2 47 moves). Not yet ported to
+dynamic.py (the remaining ship step). Source: ls20-9607627b. See @LAT60LON0 (model),
+@LAT55LON-10 (L1⊂L2), @LAT20LON20 (unified solver + port plan).
 
 ---
 
@@ -84,6 +87,30 @@ Typical: UP×7 from start row ~40-41. Varies by instance.
 
 verify_step check: after each UP, block.row must decrease. If blocked
 (row unchanged), the ring wall has been reached — stop or recover.
+
+NOTE 2026-06-17: this "entity2 entry at STATE 0" framing is the OLD per-level model.
+The TRUE model (below) shows L1 is just a trivial config of the L2 transform-and-deliver
+mechanic — the unified solver supersedes this detector. Kept for history.
+
+---
+
+@LAT55LON-10 ls20 L1 = trivial subset of the L2 mechanic (2026-06-17)
+[ew]
+conf:240
+rev:1
+sal:6
+touched:1
+[/ew]
+L1 IS THE SAME "transform-and-deliver" mechanic as L2 (@LAT60LON0) — `step()`/`pbznecvnfr`
+are level-agnostic; levels differ only in CONFIGURATION. L1 spec (instance 9607627b, from
+`_probe_ls20_state.py 1`): block shape5/color1/**rot3** @game(34,45); ONE target
+shape5/color1/**rot0** @(34,10); a rotation-changer (cross) @(19,30); NO rings. Shape+color
+already match ⇒ need exactly **+1 cross visit** (rot 3→0), then deliver. So L1 = (1 changer
+visit + delivery), L2 = (3 changer visits + 2 ring resets + delivery), L3 = (color + rotation
+changes + 2 rings) — ONE solver, growing configs. The unified planner (@LAT20LON20) clears
+L1 in 13 moves WITHOUT any L1-specific code. ⇒ build ls20's dynamic as ONE core
+transform-and-deliver solver; each new level adds/refines config-handling (more targets,
+shape/color changers, timer routing), never a new per-level route.
 
 ---
 
@@ -143,34 +170,40 @@ game object (`_probe_ls20_state.py`):
   CROSS exists (no shape/color changers) ⇒ need exactly **+3 cross visits**; rings at
   game(15,16)=ringA & (40,51)=ringB; cross at (49,45). #shapes=6 #colors=4 rot∈{0,90,180,270}.
 
-@LAT20LON20 ls20 L2 — closed-loop solver: VALIDATED WIN + architecture (2026-06-17)
+@LAT20LON20 ls20 — UNIFIED level-agnostic CORE-DYNAMICS solver (L1+L2 solved 2026-06-17)
 [ew]
-conf:235
-rev:2
-sal:6
+conf:240
+rev:3
+sal:7
 touched:1
 [/ew]
-VALIDATED: `_research_ls20_l2.py win` plans a route that WON L2 in-game (explore.py: LEVEL
-UP → level=2). Planner = map-based BFS over 5px cells (color-3/5 passable, 4 void) +
-timer-aware ring interleaving. Structure that fits the ~21-move/window budget with 2
-single-use ring resets:
-  W1: block→cross (land = rotation visit 1) → ringB (RESET, adjacent to cross)
-  W2: ringB→cross (visit 2) → osc UP/DOWN (visit 3 ⇒ rotation 0→3) → cross→ringA (RESET)
-      → ringA→target  ⇒ deliver matching block = WIN.
-VALIDATED WIN ROUTE (instance 9607627b, from L2 start; explore tokens):
-  `1 4 1 1 1 1 1 4 4 2 4 2 2 2 2 2 2 2 3 3 4 1 4 1 2 1 1 1 1 1 1 1 3 3 3 3 3 3 2 3 2 2 2 2 2`
-  (45 moves; UP=1 DOWN=2 LEFT=3 RIGHT=4). Won at total step 60 (15 L1 + 45).
-GENERAL ARCHITECTURE (to port into games/ls20/dynamic.py behind `self._level==2`):
-  1. READ frame: 5px-cell passability map; block cell + its (shape,color,rotation); each
-     target cell + its required (shape,color,rotation) read from the target's drawn
-     appearance; changer-tile cells (shape/color/rotation); ring cells; timer (color-11 bar).
-  2. For each target: compute attr deltas → which/how-many changer visits needed.
-  3. PLAN with BFS: visit the needed changers (count entries = increments), then deliver to
-     the target cell; insert ring detours so no segment exceeds the timer window.
-  4. Re-derive each frame; abort to the explorer floor on any divergence. Additive-safe,
-     recognition-gated. Gate on `_test_dynamics.py` before staging.
-NOTE: must generalize beyond this instance (multi-target, shape/color changers, larger
-budget) — the source supports all of it; only this instance happened to need rotation-only.
+**ONE solver clears L1 AND L2** (`_solve_ls20.py`): L1 is a TRIVIAL CONFIG of the L2 model
+(see @LAT55LON-10), so a single level-agnostic planner handles both — the design goal. It
+reads the per-level spec (block attrs; per-target required attrs; changer/ring/target/wall
+cells), builds the 5px-cell passability map, and plans transform-and-deliver with timer-aware
+ring interleaving. Results: L1 SOLVED 13 moves, L2 SOLVED 47 moves (both validated by playing
+the real game to `levels_completed`++). L3 uses the SAME dynamics (now also a COLOR changer:
+block shape5/color0/rot0 → target shape5/color1/rot2) and is planned correctly but expires —
+only the timer-routing needs polish, NO new mechanic. This is the "core dynamics, extended
+per level" architecture working.
+PLANNER (the core algorithm):
+  1. order targets (nearest first); for each, for each attr (shape,color,rotation): compute
+     need=(req-cur)%N; append `need` visits to the nearest changer of that type (repeated
+     visits bounce off a neighbour to re-trigger); then append the target as a delivery wp.
+  2. WALK the waypoints over BFS legs that AVOID changers+targets in transit (crossing a
+     changer mutates attrs; a non-matching target bounces) but MAY cross rings (a crossed
+     ring is a free timer RESET, accounted for).
+  3. TIMER: ~100 units, −4/move, window≈23 moves. Invariant — keep a ring reachable: if
+     finishing a leg would leave the nearest remaining ring unreachable while work remains,
+     detour to a ring NOW (single-use). Plus a safety detour if a leg's ring-free prefix
+     would itself exceed the window.
+PORT TO games/ls20/dynamic.py (the only remaining step to ship): replace the hardcoded
+_L2_ROUTE/_L1 detector with this planner, reading the spec FROM THE FRAME (block attrs from
+the block/preview appearance; each target's required attrs from how it is drawn — both are
+rendered, so frame-readable). Re-derive each frame, abort to the explorer floor on
+divergence; recognition-gated + additive-safe; gate on `_test_dynamics.py`. The prototype
+reads the spec from the game object for validation; the frame-reading layer is the port work.
+Generalizes by construction to multi-target and shape/color changers (L3+).
 
 @LAT-30LON-10 ls20 L2 — empirical action model + block corridor (explore.py 2026-06-17)
 [ew]
