@@ -88,6 +88,79 @@ verify_step check: after each UP, block.row must decrease. If blocked
 
 ## L2 dynamics + open problem
 
+@LAT30LON10 ls20 L2 — closed-loop navigation + collection mechanics (VALIDATED 2026-06-17)
+[ew]
+conf:235
+rev:1
+sal:6
+touched:1
+[/ew]
+BREAKTHROUGH (explore.py + `_research_ls20_l2.py`, instance 9607627b): the L2 bottleneck
+was NAVIGATION, and it is now SOLVED with a map-based BFS — all primitives validated in-game.
+- GRID: 5px logical cells. Row-cells at rows {5,10,…,50}; col-cells at cols {9,14,…,54}.
+  The block (color-12, 5px wide × 2 tall "head" + a color-9 trail filling its cell) moves
+  exactly ONE cell (5px) per action: a1=UP a2=DOWN a3=LEFT a4=RIGHT.
+- PASSABILITY: color-3 (track) AND color-5 (floor) are PASSABLE for the block; color-4 =
+  void = blocked. (So the goal-room color-3 "walls" are themselves passable — see win note.)
+  Build the map by majority-non-void colour per 5×5 cell; BFS over cells. Validated: the
+  BFS route was followed move-for-move in the live game.
+- CROSS COLLECTION: the block COLLECTS the cross (color-0/1 box) by LANDING ON its cell;
+  the box vanishes, and it RESPAWNS the instant the block steps off → re-collectable by
+  oscillating on/off (this is the recipe's "cross ×N visits"). Validated.
+- RING COLLECTION (ring A upper @cell r15c14; ring B lower @cell r50c39): landing on a ring
+  RESETS the timer (c11 jumped 56→92). Validated for both. This is how the multi-window
+  route refreshes the budget.
+- TIMER: color-11 bottom bar ≈100 units, −4/move ⇒ ~25 moves/window. A clean BFS reaches
+  the cross in 17 moves (1 window). Timer expiry → full reset (block snaps to start).
+- VALIDATED ROUTES (from L2 start, explore tokens): to the CROSS = `1 4 1 1 1 1 1 4 4 2 4 2
+  2 2 2 2 2` (17 moves, collects it); to RING A = `1 4 1 1 1 1 1 3 3 3 3` then `3` onto it.
+
+@LAT-50LON0 ls20 L2 — WIN condition reframed + remaining unknown (2026-06-17)
+[ew]
+conf:160
+rev:1
+sal:6
+touched:1
+[/ew]
+WIN CONDITION (corrected & sharpened): the goal room (rows 38-46, cols 12-20) is a color-3
+box (passable to the block) whose interior holds the ENTITY1 inner pattern (color-9 at rows
+41-43, cols 15-17). WIN = the block enters the inner cell (rows 40-41, cols 14-18). DIRECTLY
+TESTED 2026-06-17: navigating the block to (r35,c14) then DOWN is a NO-OP — entry is BLOCKED
+because the color-9 inner pattern sits exactly in the block's destination. So NAVIGATION
+ALONE CANNOT WIN; the color-9 pattern must be ROTATED out of the entry path first (matches
+the 2026-06-02 SOLVED note: "at rotation 5 the entity1 pattern no longer blocks DOWN from
+r35,c14"). REMAINING UNKNOWN (the one open question): the ROTATION TRIGGER. Cross
+oscillation ×5 did NOT visibly rotate the color-9 inner pattern in this probe, so rotation
+is GATED — likely by entity1 STATE (the carrier shape near rows 53-60 cols 1-10; the recipe
+sets "STATE 2" via RING B FIRST) and/or a specific approach. NEXT EXPERIMENT: instrument the
+entity1 carrier state; collect RING B → then cross-visit, and watch rows 41-43 cols 15-17 for
+a 90° rotation; find the (state, cross-visit) protocol that rotates it, then BFS the block in.
+
+@LAT20LON20 ls20 L2 — closed-loop solver design (ready to implement once rotation is cracked)
+[ew]
+conf:175
+rev:1
+sal:5
+touched:1
+[/ew]
+ARCHITECTURE (replaces the open-loop _L2_ROUTE; all primitives below are VALIDATED — only
+the rotation protocol @LAT-50LON0 is open). Per-frame closed loop:
+  1. READ frame → build the 5px-cell passability map (color-3/5 passable, 4 void); locate
+     block, cross, rings A/B, goal-room inner cell, and read entity1 carrier state + the
+     color-9 inner pattern (rows 41-43 c15-17).
+  2. PLAN with BFS over cells (`_research_ls20_l2.py` has the map+BFS) to the next sub-goal.
+  3. SUB-GOAL SEQUENCER (the recipe, to be finalized): set entity1 state via RING B →
+     rotate the inner pattern via CROSS visits (oscillate on/off) until it clears the entry
+     → BFS the block to (r35,c14) → DOWN into the goal-room inner cell = WIN.
+  4. TIMER-AWARE INTERLEAVING: track the color-11 bar (~100, −4/move, ~25-move window). If
+     the remaining budget can't reach the next sub-goal, detour to BFS-collect the nearest
+     ring (A or B) to RESET the timer, then resume. This is the closed-loop answer to the
+     open-loop route's fatal flaw (after a timer-expiry reset the block snaps to start; a
+     re-derived BFS just re-plans from the new position instead of desyncing).
+This is additive-safe: it's a recognition-gated Dynamic; if recognition/abort fires it
+defers to the explorer floor. Implement in games/ls20/dynamic.py behind `self._level==2`,
+gated on `_test_dynamics.py` before staging.
+
 @LAT-30LON-10 ls20 L2 — empirical action model + block corridor (explore.py 2026-06-17)
 [ew]
 conf:205
