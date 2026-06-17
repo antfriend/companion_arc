@@ -42,6 +42,7 @@ class Ls20Dynamic(Dynamic):
         self._i = 0
         self._cells = None        # predicted block-cell after each planned action
         self._replans = 0
+        self._replan_cells = set()  # cells we've already re-planned from (non-progress guard)
         self._aborted = False
 
     def recognize(self, frame) -> float:
@@ -70,11 +71,15 @@ class Ls20Dynamic(Dynamic):
             self._plan_from(f)
         elif self._i > 0 and self._cells is not None and S.read_block_cell(f) != self._cells[self._i - 1]:
             # DIVERGENCE: an unmodeled mechanic moved the block (e.g. a pusher shove). Re-plan
-            # closed-loop from where it actually is, up to a cap (then latch to the floor).
+            # closed-loop from where it actually is. But if we've already re-planned FROM this
+            # exact cell, the push is a non-progress trap (a pusher reversing the only route) —
+            # latch to the floor FAST instead of thrashing the timer. (Also a hard cap.)
+            here = S.read_block_cell(f)
             self._replans += 1
-            if self._replans > self.MAX_REPLANS:
+            if here in self._replan_cells or self._replans > self.MAX_REPLANS:
                 self._aborted = True
             else:
+                self._replan_cells.add(here)
                 self._plan_from(f)
         if self._aborted or not self._route or self._i >= len(self._route):
             return None                            # nothing to drive → defer to the floor

@@ -39,6 +39,17 @@ BLOCK = 12                       # the mover's head colour (fixed, regardless of
 RING = 11
 PALETTE = [12, 9, 14, 8]         # colour cycle order (source `tnkekoeuk`); index = colour attr
 SHAPE, COLOR, ROT = 0, 1, 2      # attribute indices
+NSHAPES = 6
+# The 6 shapes' 3×3 silhouettes (source sprites `ijessuuig`, index = shape attr). All 24
+# (shape,rotation) silhouettes are DISTINCT, so identify() recovers BOTH from one silhouette.
+SHAPE_CATALOG = [
+    [[1, 1, 0], [0, 1, 1], [1, 0, 1]],   # 0
+    [[0, 1, 0], [0, 1, 0], [1, 1, 1]],   # 1
+    [[1, 0, 1], [1, 0, 1], [1, 1, 1]],   # 2
+    [[0, 1, 1], [1, 0, 1], [0, 1, 0]],   # 3
+    [[0, 1, 0], [1, 1, 0], [0, 1, 1]],   # 4
+    [[1, 1, 1], [0, 0, 1], [1, 0, 1]],   # 5
+]
 DELTA = {1: (-1, 0), 2: (1, 0), 3: (0, -1), 4: (0, 1)}     # UP DOWN LEFT RIGHT
 # Per-window move budget = StepCounter // StepsDecrement. Source: StepCounter=42 every level;
 # StepsDecrement=2 on L2/L3 ⇒ 21 moves between ring resets. The budget is CONTINUOUS across
@@ -109,13 +120,17 @@ def _shape3(f, r0, r1, c0, c1, color):
     return sig
 
 
-def _rot_delta(block_sig, target_sig):
-    """Number of +90° rotations (cross visits) to turn block_sig into target_sig, or None
-    if no rotation aligns them (different shape)."""
-    for k in range(4):
-        if np.array_equal(np.rot90(block_sig, -k), target_sig):   # -k = clockwise k turns
-            return k
-    return None
+_CATALOG_ARR = [np.asarray(g, bool) for g in SHAPE_CATALOG]
+
+
+def identify(sig):
+    """Recover (shape_idx, rot_idx) from a 3×3 silhouette by matching the shape catalog under
+    all 4 rotations (the map is injective). Returns (None, None) if nothing matches."""
+    for s, base in enumerate(_CATALOG_ARR):
+        for r in range(4):
+            if np.array_equal(np.rot90(base, -r), sig):    # -r = clockwise r turns
+                return s, r
+    return None, None
 
 
 def _cell_patch(f, r, c):
@@ -148,9 +163,10 @@ def read_block_cell(frame):
 def read_spec(frame, level=1):
     """Derive the transform-and-deliver spec from the frame. Returns dict or None (defer).
 
-    Returns {pm, block, rings, changers:{COLOR:[cells], ROT:[cells]}, targets:[(cell, deltas)]}
-    where deltas = [shape_delta, colour_delta, rot_delta] per target. Returns None if a target
-    needs a SHAPE change (silhouette matches under no rotation) — not yet frame-decoded.
+    Returns {pm, block, rings, changers:{SHAPE/COLOR/ROT:[cells]}, targets:[(cell, deltas)]}
+    where deltas = [shape_delta, colour_delta, rot_delta] per target (SHAPE and ROTATION read
+    together via identify(); COLOUR from the palette). Returns None if a silhouette can't be
+    identified or a needed change has no readable changer — defer to the floor.
     """
     f = np.asarray(frame)
     pm = build_map(f)
@@ -161,20 +177,20 @@ def read_spec(frame, level=1):
     if block is None:
         return None
 
-    # --- BLOCK colour + shape: the left-margin preview (rows>=50, cols<C0) painted in the
-    # block's current palette colour. block_colour_idx = that palette colour's index.
+    # --- BLOCK colour + shape + rotation: the left-margin preview (rows>=50, cols<C0) is
+    # painted in the block's current palette colour and drawn at its current shape+rotation.
+    # block colour = the DOMINANT palette colour in the margin (the ~24-px preview shape).
     margin = np.zeros(f.shape, bool)
     margin[50:, :C0] = True
-    block_color_idx = None
-    block_sig = None
-    for idx, col in enumerate(PALETTE):
-        m = (f == col) & margin
-        if np.any(m):
-            ys, xs = np.where(m)
-            block_color_idx = idx
-            block_sig = _shape3(f, int(ys.min()), int(ys.max()), int(xs.min()), int(xs.max()), col)
-            break
-    if block_sig is None:
+    counts = {col: int(np.count_nonzero((f == col) & margin)) for col in PALETTE}
+    block_col = max(counts, key=counts.get)
+    if counts[block_col] == 0:
+        return None
+    block_color_idx = PALETTE.index(block_col)
+    ys, xs = np.where((f == block_col) & margin)
+    block_sig = _shape3(f, int(ys.min()), int(ys.max()), int(xs.min()), int(xs.max()), block_col)
+    block_shape, block_rot = identify(block_sig)
+    if block_shape is None:
         return None
 
     # --- rings: small ~3x3 colour-11 squares in the grid (EXCLUDE the wide UI timer bar).
@@ -182,43 +198,47 @@ def read_spec(frame, level=1):
              for r0, r1, c0, c1 in _clusters((f == RING) & grid)
              if (r1 - r0) <= 4 and (c1 - c0) <= 4]
 
-    # --- changers + targets: scan grid cells. Palette colours appear in-grid ONLY on the
-    # mover (block cell), the colour-changer (≥3 distinct palette colours at once), and the
-    # targets (each a single palette colour = its required colour). The rotation-changer
-    # (cross) is the colour-0/1 cell.
-    color_changer, rot_changer, targets = [], [], []
-    cross_cl = _clusters(((f == 0) | (f == 1)) & grid)
-    if cross_cl:
-        r0, r1, c0, c1 = max(cross_cl, key=lambda b: (b[1] - b[0] + 1) * (b[3] - b[2] + 1))
-        rot_changer = [cell_of_px((r0 + r1) // 2, (c0 + c1) // 2)]
-
+    # --- changers + targets: scan grid cells, classify each by its interior signature.
+    # Palette colours appear in-grid only on the mover (block cell, skipped) and targets (each
+    # a single required colour). The changers: COLOUR = ≥3 palette colours at once; ROTATION
+    # (cross) = colour-0 AND colour-1; SHAPE = colour-0 only; a colour-1-only cell is a PUSHER
+    # bar (navigation/replan handles it, not a changer).
+    shape_changer, color_changer, rot_changer, targets = [], [], [], []
     for r in range(NR):
         for c in range(NC):
             if (r, c) == block:
                 continue
             patch = _cell_patch(f, r, c)
             present = [col for col in PALETTE if np.any(patch == col)]
-            if not present:
-                continue
-            if len(present) >= 3:                          # colour-changer signature
+            has0, has1 = bool(np.any(patch == 0)), bool(np.any(patch == 1))
+            if len(present) >= 3:
                 color_changer = [(r, c)]
-                continue
-            # a target: drawn in its required colour (the dominant palette colour here)
-            tcol = max(present, key=lambda col: int(np.count_nonzero(patch == col)))
-            tcol_idx = PALETTE.index(tcol)
-            tgt_sig = _sig_of_color(patch, tcol)
-            rd = _rot_delta(block_sig, tgt_sig)
-            if rd is None:
-                return None                                # shape change needed → defer
-            cd = (tcol_idx - block_color_idx) % len(PALETTE)
-            targets.append(((r, c), [0, cd, rd]))
+            elif has0 and has1:
+                rot_changer = [(r, c)]
+            elif has1:
+                continue                                   # pusher bar
+            elif has0:
+                shape_changer = [(r, c)]
+            elif present:                                  # a target
+                tcol = max(present, key=lambda col: int(np.count_nonzero(patch == col)))
+                ts, tr = identify(_sig_of_color(patch, tcol))
+                if ts is None:
+                    return None                            # unreadable target silhouette → defer
+                deltas = [(ts - block_shape) % NSHAPES,
+                          (PALETTE.index(tcol) - block_color_idx) % len(PALETTE),
+                          (tr - block_rot) % 4]
+                targets.append(((r, c), deltas))
 
     if not targets:
         return None
-    # a needed colour change with no readable colour-changer ⇒ defer
+    changers = {SHAPE: shape_changer, COLOR: color_changer, ROT: rot_changer}
+    # a needed change with no readable changer of that kind ⇒ defer
+    if any(d[SHAPE] for _, d in targets) and not shape_changer:
+        return None
     if any(d[COLOR] for _, d in targets) and not color_changer:
         return None
-    changers = {COLOR: color_changer, ROT: rot_changer}
+    if any(d[ROT] for _, d in targets) and not rot_changer:
+        return None
     # TIMER: the move-budget is CONTINUOUS across levels (a new level does NOT refill it), so
     # read the CURRENT remaining steps from the bottom timer bar (color-11 columns in row 61).
     steps = int(np.count_nonzero(f[61] == RING))
@@ -270,7 +290,7 @@ def plan(spec):
     waypoints, prev = [], block
     for ti in order:
         tcell, deltas = targets[ti]
-        for ai in (COLOR, ROT):
+        for ai in (SHAPE, COLOR, ROT):
             if not deltas[ai]:
                 continue
             ch = nearest_changer(prev, changers.get(ai, []))

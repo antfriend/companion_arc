@@ -41,8 +41,8 @@ def gt(g):
     """ground-truth spec from the game object: block cell, {COLOR,ROT} changer cells, rings,
     and per-target (cell, [shape_delta, colour_delta, rot_delta])."""
     block = S.cell_of_px(g.gudziatsk.y, g.gudziatsk.x)
-    changers = {S.COLOR: [], S.ROT: []}
-    for tag, ai in (("soyhouuebz", S.COLOR), ("rhsxkxzdjz", S.ROT)):
+    changers = {S.SHAPE: [], S.COLOR: [], S.ROT: []}
+    for tag, ai in (("ttfwljgohq", S.SHAPE), ("soyhouuebz", S.COLOR), ("rhsxkxzdjz", S.ROT)):
         changers[ai] = sorted(S.cell_of_px(s.y + 2, s.x + 2)
                               for s in g.current_level.get_sprites_by_tag(tag))
     rings = sorted(S.cell_of_px(s.y + 1, s.x + 1) for s in g.current_level.get_sprites_by_tag("npxgalaybz"))

@@ -48,10 +48,13 @@ L1/L2/L3) and the planner is multi-attribute. **L3 also carries a PUSHER mechani
 `gbvqrjtaqo` bar that shoves the block several cells — and on L3 the pusher cell is the ONLY way
 out of the start pocket, so it must be used). Pure-BFS can't model the shove, so the dynamic is
 CLOSED-LOOP: it verifies the block reaches each predicted cell and, on divergence, RE-PLANS from
-the actual position (@LAT20LON30). **L1+L2+L3 all SOLVED in-game** — `_test_multilevel` now
-reaches **max level 3** (L3 = 1 push + 1 replan) — and **de-risk CLEAN** (diagonal confusion
-matrix, ls20 10/10, no regression). Source: ls20-9607627b. See @LAT60LON0 (model), @LAT55LON-10
-(L1⊂L2), @LAT20LON20 (solver+port), @LAT20LON30 (colour reading + timer + pusher + replan).
+the actual position (@LAT20LON30). **L1+L2+L3 all SOLVED in-game** — `_test_multilevel` reaches
+**max level 3** (L3 = 1 push + 1 replan) — and **de-risk CLEAN** (diagonal confusion matrix, ls20
+10/10, no regression). read_spec also reads SHAPE now (all 3 attrs from the frame, validated == GT
+for **L4**), but **L4 is blocked by a PUSHER-TRAP** (8 pusher bars; one reverses the only route) —
+the next organ is modelling pushers IN navigation, not more attribute reading. Source:
+ls20-9607627b. See @LAT60LON0 (model), @LAT55LON-10 (L1⊂L2), @LAT20LON20 (solver+port), @LAT20LON30
+(colour + timer + pusher replan), @LAT20LON40 (shape reading + the L4 pusher-trap).
 
 ---
 
@@ -259,9 +262,35 @@ truth for L1, L2 AND L3 (`_test_ls20_port.py 3`). The decode (source `tnkekoeuk`
   **max level 3**; `_test_dynamics.py --games` CLEAN (diagonal confusion, ls20 10/10, no
   off-target regression); `_test_ls20_port.py 3` (read_spec==GT L1/L2/L3; single-shot plan
   clears L1+L2 — it doesn't replan, so L3 wins only through the dynamic). The closed-loop replan
-  is GENERAL: any unmodeled teleport/shove → re-read & re-plan, no per-mechanic code. NEXT (L4+):
-  shape-changer reading for shape-delta levels; check whether L4's extra sprites add mechanics.
+  is GENERAL: any unmodeled teleport/shove → re-read & re-plan, no per-mechanic code.
   New tool: `_probe_ls20_l3.py` (advances via the solver to dump L3 ground-truth + tiles).
+
+@LAT20LON40 ls20 — SHAPE reading done; L4 blocked by a PUSHER-TRAP (2026-06-17)
+[ew]
+conf:230
+rev:1
+sal:6
+touched:1
+[/ew]
+Completed the attribute-reading anatomy: read_spec now reads SHAPE too — all of
+shape+colour+rotation come from the frame. SHAPE_CATALOG = the 6 source shape silhouettes
+(`ijessuuig`); all 24 (shape,rotation) 3×3 silhouettes are DISTINCT, so `identify(sig)` recovers
+BOTH indices from one silhouette. read_spec now classifies every grid cell in ONE scan by its
+interior signature: ≥3 palette colours = COLOUR-changer; colour-0 AND colour-1 = ROT-changer
+(cross); colour-1 only = PUSHER bar (skip — not a changer); colour-0 only = SHAPE-changer
+(`mkjdaccuuf`); a single palette colour = a target (identify→its shape+rot, colour from palette).
+deltas = [(ts−bs)%6, (tc−bc)%4, (tr−br)%4]. VALIDATED == ground truth for **L4** (block
+shape4/col2/rot0 → target shape5/col1/rot0 ⇒ deltas [1,3,0]; SHAPE-changer@(5,3),
+COLOUR-changer@(5,5)) and still == GT for L1/L2/L3; de-risk CLEAN, no regression.
+**But L4 is NOT solved**: it has 8 PUSHER bars and one is a REVERSING TRAP — at cell (7,9) the
+only short route goes LEFT into the pusher at (7,7), which shoves the block right back to (7,9).
+Closed-loop replan can't escape (re-plans the same reversed move forever, draining the timer), so
+the dynamic now FAILS FAST: if a divergence re-plans FROM a cell already re-planned from
+(`_replan_cells`), it latches to the floor instead of thrashing. ⇒ the TRUE next organ is
+**modelling the pushers IN navigation** (read each bar's position+direction from the frame; make
+BFS transitions reflect the shove, so it routes around reversing traps and exploits helpful
+ones), not more attribute reading. New tool: `_probe_ls20_level.py` (advance via solver+replan to
+any level N; dump GT, tiles, and un-modelled sprites).
 
 @LAT-30LON-10 ls20 L2 — empirical action model + block corridor (explore.py 2026-06-17)
 [ew]
