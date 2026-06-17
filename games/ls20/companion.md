@@ -38,10 +38,11 @@ umwelt:
 ## Summary (glance)
 
 **Type**: push-block maze with collectibles, rotating inner ring, and a countdown timer.
-**Status**: L1 SOLVED (adaptive route, 41+ wins, registered Dynamic). L2 SOLVED IN TRAINING
-(123-action route) but FAILS IN COMPETITION (Phase-3 desync after the oscillation reset) —
-the standing open problem. Source: ls20-9607627b. Extensive L2 session logs live in
-companion_arcprize.md.
+**Status**: L1 SOLVED (adaptive route, 41+ wins, registered Dynamic). L2 **SOLVED 2026-06-17
+by a CLOSED-LOOP planner** (transform-and-deliver model decoded from source; validated WIN
+in-game) — superseding the old open-loop _L2_ROUTE that desynced. Not yet ported to
+dynamic.py. Source: ls20-9607627b. See @LAT60LON0 (model), @LAT20LON20 (validated route +
+architecture). Extensive historical L2 logs live in companion_arcprize.md.
 
 ---
 
@@ -115,51 +116,61 @@ was NAVIGATION, and it is now SOLVED with a map-based BFS — all primitives val
 - VALIDATED ROUTES (from L2 start, explore tokens): to the CROSS = `1 4 1 1 1 1 1 4 4 2 4 2
   2 2 2 2 2` (17 moves, collects it); to RING A = `1 4 1 1 1 1 1 3 3 3 3` then `3` onto it.
 
-@LAT-50LON0 ls20 L2 — WIN condition reframed + remaining unknown (2026-06-17)
+@LAT60LON0 ls20 L2 — SOLVED: transform-and-deliver model (decoded from source + WON 2026-06-17)
 [ew]
-conf:160
+conf:245
 rev:1
+sal:7
+touched:1
+[/ew]
+**L2 WON by a closed-loop planner (first non-open-loop win).** The mechanic, decoded from
+the game source (`pbznecvnfr`/`bejndxqqzf`/`txnfzvzetn`) and confirmed by reading the live
+game object (`_probe_ls20_state.py`):
+- The BLOCK carries a transformable state: SHAPE (`fwckfzsyc`), COLOR (`hiaauhahz`),
+  ROTATION (`cklxociuu`). Each is CYCLED by stepping the block onto a changer tile:
+  SHAPE-changer (tag ttfwljgohq), COLOR-changer (soyhouuebz), ROTATION-changer = THE CROSS
+  (rhsxkxzdjz, color-0/1 box; `cklxociuu=(cklxociuu+1)%4`). RINGS (npxgalaybz, color-11)
+  RESET the timer and are SINGLE-USE (removed on collection). WALL = tag ihdgageizm.
+- Each TARGET (tag rjlbuycveu) requires a specific (shape,color,rotation) and is RENDERED
+  with that required appearance (so a solver can read each target's requirement from how it
+  is drawn). A target REJECTS (blocks) a non-matching block — that was the earlier "entry
+  NO-OP". WIN = deliver the block onto EVERY target position with all three attrs matching
+  (`bejndxqqzf`). The "goal-room inner pattern" is just the target's required appearance.
+- TIMER EXPIRY resets the block position AND its shape/color/rotation (`qetwzqzzik`) — so a
+  win must be completed within the available ring resets; expiry is pure loss of progress.
+- THIS INSTANCE (9607627b) L2 SPEC (from _probe_ls20_state.py): block at game(29,40)
+  shape5/color1/rot0; ONE target at game(14,40) requiring shape5/color1/**rot3**; only the
+  CROSS exists (no shape/color changers) ⇒ need exactly **+3 cross visits**; rings at
+  game(15,16)=ringA & (40,51)=ringB; cross at (49,45). #shapes=6 #colors=4 rot∈{0,90,180,270}.
+
+@LAT20LON20 ls20 L2 — closed-loop solver: VALIDATED WIN + architecture (2026-06-17)
+[ew]
+conf:235
+rev:2
 sal:6
 touched:1
 [/ew]
-WIN CONDITION (corrected & sharpened): the goal room (rows 38-46, cols 12-20) is a color-3
-box (passable to the block) whose interior holds the ENTITY1 inner pattern (color-9 at rows
-41-43, cols 15-17). WIN = the block enters the inner cell (rows 40-41, cols 14-18). DIRECTLY
-TESTED 2026-06-17: navigating the block to (r35,c14) then DOWN is a NO-OP — entry is BLOCKED
-because the color-9 inner pattern sits exactly in the block's destination. So NAVIGATION
-ALONE CANNOT WIN; the color-9 pattern must be ROTATED out of the entry path first (matches
-the 2026-06-02 SOLVED note: "at rotation 5 the entity1 pattern no longer blocks DOWN from
-r35,c14"). REMAINING UNKNOWN (the one open question): the ROTATION TRIGGER. Cross
-oscillation ×5 did NOT visibly rotate the color-9 inner pattern in this probe, so rotation
-is GATED — likely by entity1 STATE (the carrier shape near rows 53-60 cols 1-10; the recipe
-sets "STATE 2" via RING B FIRST) and/or a specific approach. NEXT EXPERIMENT: instrument the
-entity1 carrier state; collect RING B → then cross-visit, and watch rows 41-43 cols 15-17 for
-a 90° rotation; find the (state, cross-visit) protocol that rotates it, then BFS the block in.
-
-@LAT20LON20 ls20 L2 — closed-loop solver design (ready to implement once rotation is cracked)
-[ew]
-conf:175
-rev:1
-sal:5
-touched:1
-[/ew]
-ARCHITECTURE (replaces the open-loop _L2_ROUTE; all primitives below are VALIDATED — only
-the rotation protocol @LAT-50LON0 is open). Per-frame closed loop:
-  1. READ frame → build the 5px-cell passability map (color-3/5 passable, 4 void); locate
-     block, cross, rings A/B, goal-room inner cell, and read entity1 carrier state + the
-     color-9 inner pattern (rows 41-43 c15-17).
-  2. PLAN with BFS over cells (`_research_ls20_l2.py` has the map+BFS) to the next sub-goal.
-  3. SUB-GOAL SEQUENCER (the recipe, to be finalized): set entity1 state via RING B →
-     rotate the inner pattern via CROSS visits (oscillate on/off) until it clears the entry
-     → BFS the block to (r35,c14) → DOWN into the goal-room inner cell = WIN.
-  4. TIMER-AWARE INTERLEAVING: track the color-11 bar (~100, −4/move, ~25-move window). If
-     the remaining budget can't reach the next sub-goal, detour to BFS-collect the nearest
-     ring (A or B) to RESET the timer, then resume. This is the closed-loop answer to the
-     open-loop route's fatal flaw (after a timer-expiry reset the block snaps to start; a
-     re-derived BFS just re-plans from the new position instead of desyncing).
-This is additive-safe: it's a recognition-gated Dynamic; if recognition/abort fires it
-defers to the explorer floor. Implement in games/ls20/dynamic.py behind `self._level==2`,
-gated on `_test_dynamics.py` before staging.
+VALIDATED: `_research_ls20_l2.py win` plans a route that WON L2 in-game (explore.py: LEVEL
+UP → level=2). Planner = map-based BFS over 5px cells (color-3/5 passable, 4 void) +
+timer-aware ring interleaving. Structure that fits the ~21-move/window budget with 2
+single-use ring resets:
+  W1: block→cross (land = rotation visit 1) → ringB (RESET, adjacent to cross)
+  W2: ringB→cross (visit 2) → osc UP/DOWN (visit 3 ⇒ rotation 0→3) → cross→ringA (RESET)
+      → ringA→target  ⇒ deliver matching block = WIN.
+VALIDATED WIN ROUTE (instance 9607627b, from L2 start; explore tokens):
+  `1 4 1 1 1 1 1 4 4 2 4 2 2 2 2 2 2 2 3 3 4 1 4 1 2 1 1 1 1 1 1 1 3 3 3 3 3 3 2 3 2 2 2 2 2`
+  (45 moves; UP=1 DOWN=2 LEFT=3 RIGHT=4). Won at total step 60 (15 L1 + 45).
+GENERAL ARCHITECTURE (to port into games/ls20/dynamic.py behind `self._level==2`):
+  1. READ frame: 5px-cell passability map; block cell + its (shape,color,rotation); each
+     target cell + its required (shape,color,rotation) read from the target's drawn
+     appearance; changer-tile cells (shape/color/rotation); ring cells; timer (color-11 bar).
+  2. For each target: compute attr deltas → which/how-many changer visits needed.
+  3. PLAN with BFS: visit the needed changers (count entries = increments), then deliver to
+     the target cell; insert ring detours so no segment exceeds the timer window.
+  4. Re-derive each frame; abort to the explorer floor on any divergence. Additive-safe,
+     recognition-gated. Gate on `_test_dynamics.py` before staging.
+NOTE: must generalize beyond this instance (multi-target, shape/color changers, larger
+budget) — the source supports all of it; only this instance happened to need rotation-only.
 
 @LAT-30LON-10 ls20 L2 — empirical action model + block corridor (explore.py 2026-06-17)
 [ew]
@@ -198,7 +209,7 @@ the closed-loop adaptive-BFS-for-a-5-wide-block build the open-loop route cannot
 NEXT PROBE (unverified): once at the cross, `watch 9 11` to confirm the cross→inner-ring 90°
 rotation + entity1 state change — the crux of the win condition.
 
-@LAT-40LON10 ls20 L2 — rings/cross/timer (training-solved, competition-open)
+@LAT-40LON10 ls20 L2 — rings/cross/timer (SUPERSEDED by @LAT60LON0/@LAT20LON20, 2026-06-17)
 [ew]
 conf:120
 rev:1

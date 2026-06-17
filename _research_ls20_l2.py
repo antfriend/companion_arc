@@ -108,6 +108,56 @@ def bfs(passable, start, goals):
     return None
 
 
+def act_between(a_cell, b_cell):
+    """action id to step from a_cell to adjacent b_cell."""
+    d = (b_cell[0] - a_cell[0], b_cell[1] - a_cell[1])
+    for a, dd in DELTA.items():
+        if dd == d:
+            return a
+    return None
+
+
+def plan_win(passable, block, cross, rings, gr, names):
+    """Full transform-and-deliver route: cross ×3 (rotation 0->3) then deliver to target,
+    routing via ring A for a timer reset. (L2 spec: shape/color already match; only
+    rotation differs by +3.)"""
+    target = gr
+    ringA = rings[0] if rings else None
+    # leg 1: block -> cross (landing = visit 1)
+    leg1 = bfs(passable, block, {cross})
+    if leg1 is None:
+        print("no path to cross"); return
+    # oscillation: pick a passable neighbour of cross; [to-nbr, back-to-cross] x2 = +2 visits
+    nbr = next(((cross[0] + dr, cross[1] + dc) for dr, dc in DELTA.values()
+                if 0 <= cross[0] + dr < NR and 0 <= cross[1] + dc < NC and passable[cross[0] + dr, cross[1] + dc]), None)
+    osc = []
+    if nbr:
+        a_out = act_between(cross, nbr); a_back = act_between(nbr, cross)
+        osc = [a_out, a_back, a_out, a_back]      # 2 more visits => rotation 0->3
+    # Timer-aware structure (each window <= ~21 moves; expiry RESETS rotation, so all 3
+    # cross visits + delivery must fit within the 2 single-use ring resets):
+    #   W1: block->cross (visit1) -> ringB (RESET, adjacent to cross)
+    #   W2: ringB->cross (visit2) -> osc UP/DOWN (visit3) -> cross->ringA (RESET) -> target
+    ringB = rings[1] if len(rings) > 1 else None
+    def seg(s, e):
+        p = bfs(passable, s, {e})
+        if p is None:
+            raise SystemExit(f"no path {s}->{e}")
+        return p
+    to_ringB = seg(cross, ringB)
+    back = seg(ringB, cross)                    # re-enter cross = visit2
+    osc2 = osc[:2]                              # UP/DOWN = leave + re-enter = visit3
+    to_ringA = seg(cross, ringA)
+    to_target = seg(ringA, target)
+    full = leg1 + to_ringB + back + osc2 + to_ringA + to_target
+    print(f"block={block} cross={cross} ringB={ringB} ringA={ringA} target={target}")
+    print(f"W1: leg1({len(leg1)})+cross->ringB({len(to_ringB)})={len(leg1)+len(to_ringB)} | "
+          f"W2: ringB->cross({len(back)})+osc({len(osc2)})+cross->ringA({len(to_ringA)})"
+          f"+ringA->target({len(to_target)})={len(back)+len(osc2)+len(to_ringA)+len(to_target)}")
+    print(f"\nFULL WIN ROUTE ({len(full)} moves): {[names[a] for a in full]}")
+    print("explore tokens:", " ".join(str(a) for a in full))
+
+
 def main():
     target = sys.argv[1] if len(sys.argv) > 1 else "cross"
     f = l2_start_frame()
@@ -123,11 +173,12 @@ def main():
             seen.add((r, c)); rings.append((r, c))
     goalroom = find_cell(f, {9}) if False else None
     # goal room cell = the color-5 room with color-9 inside, around col-cell 1 (cols 13-19)
+    # target cell = the goal-room color-9 pattern (rows 38-46, cols 12-20)
     gr = None
-    for r in range(NR):
-        for c in range(NC):
-            if cell_color(f, r, c) in (5, 9) and C0 + c * STEP >= 9 and c <= 2:
-                gr = (r, c)
+    room = np.argwhere(f[38:47, 12:21] == 9)
+    if len(room):
+        pr = 38 + int(room[:, 0].mean()); pc = 12 + int(room[:, 1].mean())
+        gr = ((pr - R0) // STEP, (pc - C0) // STEP)
     print("=== ls20 L2 cell map (.=void  #=track  o=block  +=cross  R=ring  G=goalroom) ===")
     print("    " + "".join(f"c{C0+c*STEP:<3}"[:3] for c in range(NC)))
     for r in range(NR):
@@ -142,6 +193,8 @@ def main():
         print(row)
     print(f"\nblock={block} cross={cross} rings={rings} goalroom={gr}")
 
+    if target.lower() == "win":
+        return plan_win(passable, block, cross, rings, gr, names={1:"UP",2:"DOWN",3:"LEFT",4:"RIGHT"})
     tgt = {"cross": [cross], "goal": [gr], "ringa": rings[:1], "ringb": rings[1:2] or rings}.get(target.lower())
     if not tgt or tgt == [None]:
         # also try cells ADJACENT to target (block sits next to it, trail overlaps)

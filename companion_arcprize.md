@@ -11008,7 +11008,7 @@ refactoring game code.
 | re86 | piece placement (crosses) | SOLVED (plan-once) | multi-piece patterns → open | [re86](?ttdb=games/re86/companion.md) |
 | ar25 | reflection (mirror) | SOLVED (re-derive) | multi-piece / horizontal mirrors → open | [ar25](?ttdb=games/ar25/companion.md) |
 | cn04 | connector matching | SOLVED (re-derive) | 3–4 pieces, GreyMasking, click-select → open | [cn04](?ttdb=games/cn04/companion.md) |
-| ls20 | push-block maze + rings/timer | SOLVED (adaptive route) | training-solved, competition-desyncs → the standing open problem | [ls20](?ttdb=games/ls20/companion.md) |
+| ls20 | push-block maze + rings/timer | SOLVED (adaptive route) | **L2 SOLVED 2026-06-17** (closed-loop transform-and-deliver planner, validated win; not yet ported to dynamic.py) | [ls20](?ttdb=games/ls20/companion.md) |
 | g50t | record/replay maze | SOLVED (plan-once choreography) | 2 doors, new layout → needs general planner | [g50t](?ttdb=games/g50t/companion.md) |
 
 Adjacent (NOT registered): `ka59` (push-and-contain; cross-fires sk48 + L1 unwinnable
