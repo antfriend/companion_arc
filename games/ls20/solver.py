@@ -11,13 +11,21 @@ This module is the frame-readable port of the validated prototype (`_solve_ls20.
   - read_spec(frame, level): derive the per-level spec from PIXELS.
   - plan(spec): the proven transform-and-deliver + timer-aware ring-interleaving planner.
 
-SCOPE (this port): rotation-only configs (L1, L2) are fully handled. If a target also needs
-a SHAPE or COLOUR change (L3+), read_spec returns None so the supervisor defers to the
-explorer floor (additive-safe) until the colour/shape changer reading is added.
+SCOPE (this port): COLOUR + ROTATION configs (L1, L2, L3) are fully handled. The block's
+ROTATION is read from the left-margin appearance preview (rotation-matched to each target's
+drawn 3×3); its COLOUR is read from WHICH palette colour that preview is painted in, and each
+target's COLOUR from the palette colour its silhouette is drawn in. If a target needs a SHAPE
+change (its silhouette matches the block under NO rotation) and no shape-changer reading exists
+yet, read_spec returns None so the supervisor defers to the explorer floor (additive-safe).
 
-Geometry: 5px logical cells; row-cells from R0=5 step 5; col-cells from C0=9 step 5.
-Colours: 3 track (passable), 5 floor (passable), 4 void; 12 block; 11 ring; 0/1 cross
-(rotation changer); 9 the shape paint colour used by the appearance previews.
+Geometry: 5px logical cells; row-cells from R0=5 step 5; col-cells from C0=9 step 5. The 10×10
+play grid is rows [5,55) × cols [9,59); UI/previews live in the left margin (cols<9) + bottom.
+Colours: 3 track (passable), 5 floor (passable), 4 void; 11 ring; 0/1 cross (rotation changer).
+PALETTE = [12,9,14,8] is the block's COLOUR cycle (a fixed source constant `tnkekoeuk`): a
+colour-changer visit advances the index by 1. These four are the ONLY palette colours that
+appear inside the grid, and ONLY on three things — the mover (a fixed colour-12 head + colour-9
+body), the colour-changer (its interior shows ≥3 of them at once), and the targets (each drawn
+in its required colour) — which is what makes cell-based detection clean.
 """
 
 from collections import deque
@@ -27,10 +35,16 @@ import numpy as np
 R0, C0, STEP, NR, NC = 5, 9, 5, 10, 10
 PASS = {3, 5, 12, 9, 11, 0, 1}
 VOID = 4
-BLOCK = 12
+BLOCK = 12                       # the mover's head colour (fixed, regardless of block colour)
 RING = 11
+PALETTE = [12, 9, 14, 8]         # colour cycle order (source `tnkekoeuk`); index = colour attr
+SHAPE, COLOR, ROT = 0, 1, 2      # attribute indices
 DELTA = {1: (-1, 0), 2: (1, 0), 3: (0, -1), 4: (0, 1)}     # UP DOWN LEFT RIGHT
-TIMER_WINDOW = 23
+# Per-window move budget = StepCounter // StepsDecrement. Source: StepCounter=42 every level;
+# StepsDecrement=2 on L2/L3 ⇒ 21 moves between ring resets. The budget is CONTINUOUS across
+# levels (a new level does NOT refill it), so plan() seeds the FIRST window from the remaining
+# steps read off the frame. (Decrement-1 levels get a conservative 21-of-42; harmless there.)
+TIMER_WINDOW = 21
 
 
 # --------------------------------------------------------------------------- geometry
@@ -104,87 +118,125 @@ def _rot_delta(block_sig, target_sig):
     return None
 
 
+def _cell_patch(f, r, c):
+    return f[R0 + r * STEP:R0 + r * STEP + STEP, C0 + c * STEP:C0 + c * STEP + STEP]
+
+
+def _sig_of_color(patch, color):
+    """3x3 silhouette of `color` pixels within their tight bbox in `patch`, or None."""
+    ys, xs = np.where(patch == color)
+    if not len(ys):
+        return None
+    return _shape3(patch, int(ys.min()), int(ys.max()), int(xs.min()), int(xs.max()), color)
+
+
+def read_block_cell(frame):
+    """The mover's cell from the frame: its colour-12 head, scoped to the play grid (colour-12
+    also leaks into the colour-changer interior and the left-margin preview). The head is a
+    full 5-wide×2-tall band ⇒ the largest in-grid colour-12 cluster; its top-left = its cell.
+    Returns the (row, col) cell or None."""
+    f = np.asarray(frame)
+    grid = np.zeros(f.shape, bool)
+    grid[R0:R0 + NR * STEP, C0:C0 + NC * STEP] = True
+    blk_cl = _clusters((f == BLOCK) & grid)
+    if not blk_cl:
+        return None
+    br0, _br1, bc0, _bc1 = max(blk_cl, key=lambda b: (b[1] - b[0] + 1) * (b[3] - b[2] + 1))
+    return cell_of_px(br0, bc0)
+
+
 def read_spec(frame, level=1):
     """Derive the transform-and-deliver spec from the frame. Returns dict or None (defer).
 
-    Returns {pm, block, rings, cross, targets:[(cell, rot_delta)]} for rotation-only
-    configs; None if a target needs a shape/colour change not yet frame-decoded.
+    Returns {pm, block, rings, changers:{COLOR:[cells], ROT:[cells]}, targets:[(cell, deltas)]}
+    where deltas = [shape_delta, colour_delta, rot_delta] per target. Returns None if a target
+    needs a SHAPE change (silhouette matches under no rotation) — not yet frame-decoded.
     """
     f = np.asarray(frame)
     pm = build_map(f)
 
-    blk = np.argwhere(f == BLOCK)
-    if not len(blk):
+    grid = np.zeros(f.shape, bool)
+    grid[R0:R0 + NR * STEP, C0:C0 + NC * STEP] = True
+    block = read_block_cell(f)
+    if block is None:
         return None
-    block = cell_of_px(int(blk[:, 0].min()), int(blk[:, 1].min()))
 
-    # rings are small ~3x3 colour-11 squares; EXCLUDE the wide colour-11 timer bar.
+    # --- BLOCK colour + shape: the left-margin preview (rows>=50, cols<C0) painted in the
+    # block's current palette colour. block_colour_idx = that palette colour's index.
+    margin = np.zeros(f.shape, bool)
+    margin[50:, :C0] = True
+    block_color_idx = None
+    block_sig = None
+    for idx, col in enumerate(PALETTE):
+        m = (f == col) & margin
+        if np.any(m):
+            ys, xs = np.where(m)
+            block_color_idx = idx
+            block_sig = _shape3(f, int(ys.min()), int(ys.max()), int(xs.min()), int(xs.max()), col)
+            break
+    if block_sig is None:
+        return None
+
+    # --- rings: small ~3x3 colour-11 squares in the grid (EXCLUDE the wide UI timer bar).
     rings = [cell_of_px((r0 + r1) // 2, (c0 + c1) // 2)
-             for r0, r1, c0, c1 in _clusters(f == RING)
+             for r0, r1, c0, c1 in _clusters((f == RING) & grid)
              if (r1 - r0) <= 4 and (c1 - c0) <= 4]
-    cross_cl = _clusters((f == 0) | (f == 1))
-    if not cross_cl:
-        return None
-    r0, r1, c0, c1 = max(cross_cl, key=lambda b: (b[1] - b[0]) * (b[3] - b[2]))
-    cross = cell_of_px((r0 + r1) // 2, (c0 + c1) // 2)
 
-    # block appearance = the colour-9 shape in the bottom-left preview panel (UI rows >= 50)
-    panel = _clusters((f == 9) & (np.arange(f.shape[0])[:, None] >= 50))
-    if not panel:
-        return None
-    pr0, pr1, pc0, pc1 = max(panel, key=lambda b: (b[1] - b[0]) * (b[3] - b[2]))
-    block_sig = _shape3(f, pr0, pr1, pc0, pc1, 9)
+    # --- changers + targets: scan grid cells. Palette colours appear in-grid ONLY on the
+    # mover (block cell), the colour-changer (≥3 distinct palette colours at once), and the
+    # targets (each a single palette colour = its required colour). The rotation-changer
+    # (cross) is the colour-0/1 cell.
+    color_changer, rot_changer, targets = [], [], []
+    cross_cl = _clusters(((f == 0) | (f == 1)) & grid)
+    if cross_cl:
+        r0, r1, c0, c1 = max(cross_cl, key=lambda b: (b[1] - b[0] + 1) * (b[3] - b[2] + 1))
+        rot_changer = [cell_of_px((r0 + r1) // 2, (c0 + c1) // 2)]
 
-    # targets = colour-9 shapes in the PLAY area (rows < 50). A single target's colour-9
-    # silhouette FRAGMENTS (transparent gaps), so merge nearby fragments (gap<=2) into one
-    # ~3x3 region. Exclude the block's colour-9 trail (directly under the colour-12 mover).
-    mover_cols = set(range(int(blk[:, 1].min()), int(blk[:, 1].max()) + 1))
-    regions = _merge(_clusters((f == 9) & (np.arange(f.shape[0])[:, None] < 50)), gap=2)
-    targets = []
-    for tr0, tr1, tc0, tc1 in regions:
-        if set(range(tc0, tc1 + 1)) & mover_cols and tr0 >= int(blk[:, 0].max()):
-            continue                          # trail
-        if (tr1 - tr0) > 6 or (tc1 - tc0) > 6:
-            continue                          # too big to be a 3x3 target appearance
-        tgt_sig = _shape3(f, tr0, tr1, tc0, tc1, 9)
-        rd = _rot_delta(block_sig, tgt_sig)
-        if rd is None:
-            return None                       # shape/colour change needed → defer (L3+)
-        targets.append((cell_of_px((tr0 + tr1) // 2, (tc0 + tc1) // 2), rd))
+    for r in range(NR):
+        for c in range(NC):
+            if (r, c) == block:
+                continue
+            patch = _cell_patch(f, r, c)
+            present = [col for col in PALETTE if np.any(patch == col)]
+            if not present:
+                continue
+            if len(present) >= 3:                          # colour-changer signature
+                color_changer = [(r, c)]
+                continue
+            # a target: drawn in its required colour (the dominant palette colour here)
+            tcol = max(present, key=lambda col: int(np.count_nonzero(patch == col)))
+            tcol_idx = PALETTE.index(tcol)
+            tgt_sig = _sig_of_color(patch, tcol)
+            rd = _rot_delta(block_sig, tgt_sig)
+            if rd is None:
+                return None                                # shape change needed → defer
+            cd = (tcol_idx - block_color_idx) % len(PALETTE)
+            targets.append(((r, c), [0, cd, rd]))
+
     if not targets:
         return None
-    return {"pm": pm, "block": block, "rings": rings, "cross": cross, "targets": targets}
-
-
-def _merge(boxes, gap=2):
-    """Union bboxes whose expansions (by `gap`) overlap → merged regions."""
-    boxes = [list(b) for b in boxes]
-    changed = True
-    while changed:
-        changed = False
-        out = []
-        for b in boxes:
-            for o in out:
-                if (b[0] <= o[1] + gap and o[0] <= b[1] + gap
-                        and b[2] <= o[3] + gap and o[2] <= b[3] + gap):
-                    o[0], o[1] = min(o[0], b[0]), max(o[1], b[1])
-                    o[2], o[3] = min(o[2], b[2]), max(o[3], b[3])
-                    changed = True
-                    break
-            else:
-                out.append(b)
-        boxes = out
-    return [tuple(b) for b in boxes]
+    # a needed colour change with no readable colour-changer ⇒ defer
+    if any(d[COLOR] for _, d in targets) and not color_changer:
+        return None
+    changers = {COLOR: color_changer, ROT: rot_changer}
+    # TIMER: the move-budget is CONTINUOUS across levels (a new level does NOT refill it), so
+    # read the CURRENT remaining steps from the bottom timer bar (color-11 columns in row 61).
+    steps = int(np.count_nonzero(f[61] == RING))
+    return {"pm": pm, "block": block, "rings": rings, "changers": changers,
+            "targets": targets, "steps": steps}
 
 
 # --------------------------------------------------------------------------- planner
 def plan(spec):
-    """Transform-and-deliver plan (rotation-only): for each target, visit the cross
-    `rot_delta` times then deliver, weaving single-use ring resets so no run exceeds the
-    timer window. Returns a list of action ids (1=UP 2=DOWN 3=LEFT 4=RIGHT), or None."""
-    pm, block, cross, rings = spec["pm"], spec["block"], spec["cross"], list(spec["rings"])
-    targets = spec["targets"]
-    avoid = {cross} | {t[0] for t in targets}
+    """Transform-and-deliver plan: for each target, for each attribute that needs changing,
+    visit that attribute's changer `delta` times (bouncing off a neighbour to re-trigger),
+    then deliver — weaving single-use ring resets so no ring-free run exceeds the timer
+    window. Returns a list of action ids (1=UP 2=DOWN 3=LEFT 4=RIGHT), or None."""
+    pm, block, rings = spec["pm"], spec["block"], list(spec["rings"])
+    changers, targets = spec["changers"], spec["targets"]
+    # Changers and targets must NOT be crossed in transit (a changer mutates attrs; a
+    # non-matching target bounces). Rings MAY be crossed — a crossed ring is a free reset.
+    avoid = {c for cs in changers.values() for c in cs} | {t[0] for t in targets}
 
     def route(a, b):
         return bfs(pm, a, {b}, blocked=avoid - {b})
@@ -202,67 +254,85 @@ def plan(spec):
                 return n
         return None
 
-    # waypoints: per target, `rot_delta` cross visits (bounce to re-trigger) then deliver.
+    def nearest_changer(start, cells):
+        best, bp = None, None
+        for cell in cells:
+            p = route(start, cell)
+            if p is not None and (bp is None or len(p) < len(bp)):
+                best, bp = cell, p
+        return best
+
+    # waypoints = an ORDERED list of cells the block must LAND on: per target, `delta` landings
+    # on that attribute's changer (a repeated cell = re-trigger, realised below by leaving and
+    # returning), then the target itself. Re-triggers and resets are interleaved by deliver().
     order = sorted(range(len(targets)),
                    key=lambda i: abs(targets[i][0][0] - block[0]) + abs(targets[i][0][1] - block[1]))
     waypoints, prev = [], block
     for ti in order:
-        tcell, rd = targets[ti]
-        for _ in range(rd):
-            if prev == cross:
-                nb = nbr_plain(cross)
-                if nb is None:
-                    return None
-                waypoints.append(nb)
-            waypoints.append(cross); prev = cross
+        tcell, deltas = targets[ti]
+        for ai in (COLOR, ROT):
+            if not deltas[ai]:
+                continue
+            ch = nearest_changer(prev, changers.get(ai, []))
+            if ch is None:
+                return None
+            waypoints += [ch] * deltas[ai]
+            prev = ch
         waypoints.append(tcell); prev = tcell
 
-    cur, since_reset, rings_left, actions = block, 0, list(rings), []
-
-    def hop(dst):
-        nonlocal cur, since_reset
-        p = route(cur, dst)
-        if p is None:
-            return False
-        ms = since_reset
-        for c in cells_of(cur, p):
-            ms += 1
-            if c in rings_left:
-                rings_left.remove(c); ms = 0
-        actions.extend(p); since_reset = ms; cur = dst
-        return True
-
-    def nearest_reachable_ring():
-        reach = [(r, route(cur, r)) for r in rings_left]
-        reach = [(r, q) for r, q in reach if q is not None and since_reset + len(q) <= TIMER_WINDOW]
-        return min(reach, key=lambda x: len(x[1])) if reach else (None, None)
-
-    def first_ring_dist(leg):
-        for i, c in enumerate(cells_of(cur, leg)):
-            if c in rings_left:
-                return i + 1
-        return len(leg)
-
-    for idx, wp in enumerate(waypoints):
-        more = idx < len(waypoints) - 1
-        leg = route(cur, wp)
-        if leg is None:
-            return None
-        if more and rings_left:                       # keep-a-ring-reachable invariant
-            after = [len(route(wp, r)) for r in rings_left if route(wp, r) is not None]
-            ring_after = min(after) if after else 10 ** 9
-            rcell, _ = nearest_reachable_ring()
-            if rcell is not None and since_reset + len(leg) + ring_after > TIMER_WINDOW:
-                if not hop(rcell):
-                    return None
-                leg = route(cur, wp)
-        while since_reset + first_ring_dist(leg) > TIMER_WINDOW and rings_left:   # safety
-            rcell, _ = nearest_reachable_ring()
-            if rcell is None:
-                break
-            if not hop(rcell):
+    def walk(frm, leg, sr, rl):
+        """Advance window-position sr along `leg` (from `frm`), consuming any ring crossed
+        (single-use, resets the window). Returns end_sr, or None if it expires mid-leg."""
+        for c in cells_of(frm, leg):
+            sr += 1
+            if sr > TIMER_WINDOW:
                 return None
-            leg = route(cur, wp)
-        if not hop(wp):
-            return None
-    return actions
+            if c in rl:
+                rl.discard(c); sr = 0
+        return sr
+
+    def land_options(cur, wp, rl):
+        """Candidate action-legs that LAND the block on `wp` (re-triggering it if cur==wp by
+        leaving and returning). Ordered cheap-first: direct / neighbour-bounce, then via each
+        still-unused ring (a productive bounce that ALSO resets the timer). Each is a full leg."""
+        cands = []
+        if cur != wp:
+            d = route(cur, wp)
+            if d is not None:
+                cands.append(d)
+        else:                                          # re-trigger: step off and back on
+            nb = nbr_plain(wp)
+            if nb is not None:
+                a, b = route(cur, nb), route(nb, wp)
+                if a and b:
+                    cands.append(a + b)
+        for r in rl:                                   # leave to a ring (reset) and come back
+            a, b = route(cur, r), route(r, wp)
+            if a is not None and b is not None and (a + b):
+                cands.append(a + b)
+        return cands
+
+    # DELIVER the waypoints with timer-aware single-use ring resets. WHEN to reset is the hard
+    # part: rings are single-use and the best moment is usually a re-trigger bounce or right
+    # before a long delivery leg, not greedily on the first overflow. Search it: a tiny DFS
+    # (≤2 rings, short waypoint list) tries cheap legs first and backtracks to route via a ring
+    # where needed, returning the first fully-feasible action sequence, or None.
+    def deliver(cur, sr, rl, wps):
+        if not wps:
+            return []
+        wp = wps[0]
+        for leg in land_options(cur, wp, rl):
+            rl2 = set(rl)
+            ns = walk(cur, leg, sr, rl2)               # consumes any ring crossed
+            if ns is None:
+                continue
+            rest = deliver(wp, ns, rl2, wps[1:])
+            if rest is not None:
+                return leg + rest
+        return None
+
+    # The move-budget is CONTINUOUS across levels, so SEED the first window from the remaining
+    # steps read off the frame (full window = TIMER_WINDOW; `steps` remaining ⇒ steps//2 moves).
+    steps = spec.get("steps", TIMER_WINDOW * 2)
+    since_reset = max(0, TIMER_WINDOW - steps // 2)
+    return deliver(block, since_reset, set(rings), waypoints)

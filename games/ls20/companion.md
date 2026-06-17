@@ -42,10 +42,15 @@ umwelt:
 "transform-and-deliver" mechanic at every level (block carries shape/color/rotation; changer
 tiles cycle them; rings reset a move-timer; deliver to every target with matching attrs =
 win). ONE frame-driven solver (`games/ls20/solver.py`) clears L1 (13 moves) and L2 (47 moves):
-L1 is a trivial config (1 cross visit), L2 richer (3 visits + 2 ring resets), L3 adds color
-(deferred). The dynamic now reaches **L2 via the SupervisedAgent** (`_test_multilevel` max
-level 2) and is **de-risk CLEAN** (diagonal confusion matrix, ls20 10/10, no regression).
-Source: ls20-9607627b. See @LAT60LON0 (model), @LAT55LON-10 (L1⊂L2), @LAT20LON20 (solver+port).
+L1 is a trivial config (1 cross visit), L2 richer (3 visits + 2 ring resets), L3 adds a COLOR
+change. **read_spec now reads COLOUR + ROTATION from the frame** (validated == ground-truth for
+L1/L2/L3) and the planner is multi-attribute, but **L3 also carries a PUSHER mechanic** (a
+colour-1 `gbvqrjtaqo` bar that shoves the block several cells) which pure-BFS navigation can't
+model — so the dynamic now VERIFIES the block reaches each predicted cell and ABORTS to the
+floor on divergence (@LAT20LON30). The dynamic reaches **L2 via the SupervisedAgent**
+(`_test_multilevel` max level 2) and is **de-risk CLEAN** (diagonal confusion matrix, ls20
+10/10, no regression). Source: ls20-9607627b. See @LAT60LON0 (model), @LAT55LON-10 (L1⊂L2),
+@LAT20LON20 (solver+port), @LAT20LON30 (colour reading + timer + pusher).
 
 ---
 
@@ -209,6 +214,51 @@ shape/COLOR change — L3+). VALIDATED: `_test_ls20_port.py` (read_spec == groun
 L1/L2; plan clears both in-game), `_test_multilevel.py ls20` → max level 2, `_test_dynamics.py`
 CLEAN. NEXT (L3+): read shape/color deltas from the frame (identify the shape/color changer
 tiles + cycle by observation); the planner already supports multi-attr/multi-target.
+
+@LAT20LON30 ls20 — COLOUR reading + frame-timer + the L3 PUSHER (2026-06-17)
+[ew]
+conf:235
+rev:1
+sal:7
+touched:1
+[/ew]
+Extended the port to read COLOUR (and keep ROTATION) from the frame — read_spec == ground
+truth for L1, L2 AND L3 (`_test_ls20_port.py 3`). The decode (source `tnkekoeuk` etc.):
+- PALETTE = [12,9,14,8] is a FIXED module constant = the colour CYCLE order; a colour-changer
+  visit advances the index by 1. These four are the ONLY palette colours that appear INSIDE
+  the 10×10 play grid (rows[5,55)×cols[9,59)), and only on three things: the mover (a FIXED
+  colour-12 head + colour-9 body — independent of its colour attr, so colour-12 always marks
+  the block), the COLOUR-CHANGER (its 5×5 interior shows ≥3 distinct palette colours at once —
+  a unique signature), and the TARGETS (each drawn in its required colour). ⇒ cell-based
+  detection: scan grid cells; block cell excluded; ≥3 palette colours ⇒ colour-changer;
+  otherwise a target whose dominant palette colour = its required colour. ROT-changer (cross)
+  = the colour-0/1 cell.
+- BLOCK colour = which palette colour the LEFT-MARGIN preview (rows≥50, cols<9, the
+  `htkmubhry_2` panel) is painted in (9 at L1/L2 where block colour idx=1; 12 at L3 where idx=0
+  — this is why the old colour-9-only reader returned None at L3). colour_delta =
+  (target_idx − block_idx) % 4. ROTATION still via the preview silhouette rotation-matched to
+  each target's drawn 3×3. SHAPE: deferred (no shape-changer present to calibrate; silhouette
+  mismatch under all rotations ⇒ read_spec returns None).
+- TIMER is frame-read: `steps` = count of colour-11 columns in row 61 of the bottom bar
+  (max 42; StepsDecrement=2 on L2/L3 ⇒ window = 21 moves; seed since_reset = 21 − steps//2 so
+  it's correct whether or not a level refills the budget). The planner's ring-interleaving was
+  rebuilt: waypoints = cells to LAND on (a repeated changer cell = a re-trigger), delivered by
+  a tiny DFS that realises each re-trigger by a plain-neighbour bounce OR a ring detour
+  (productive bounce that ALSO resets the timer), backtracking to place single-use ring resets
+  where needed. This solves L1 (13) and L2 (45) cleanly in-game.
+- L3 is NOT just "+colour": it also has a PUSHER (tag `gbvqrjtaqo`, the colour-1 bar
+  `yjgargdic_r`, class `twkzhcfelv`). When the block collides with it, `prpxgfxlcm`/`ullzqnksoj`
+  SHOVE the block several cells toward the next wall (a sokoban-slide). Pure-cell BFS can't
+  model this — the block teleports off-route and the plan desyncs into a timer-out. So instead
+  of shipping a broken L3 plan, the DYNAMIC now precomputes the predicted block-cell path and,
+  before each step, verifies the block actually reached the previous prediction; ANY divergence
+  (this pusher, or any future unmodeled mechanic) ABORTS to the explorer floor. This keeps L1/L2
+  solid and L3 a clean defer rather than a wasted run. Validated: `_test_ls20_port.py 3`
+  (read_spec==GT L1/L2/L3; plan clears L1+L2), `_test_multilevel.py ls20`→max level 2,
+  `_test_dynamics.py --games` CLEAN (diagonal confusion, ls20 10/10, no off-target regression).
+  NEXT (true L3 win): model the pusher in navigation (avoid/exploit the shove) — a NEW
+  mechanic, not a config; plus shape-changer reading for shape-delta levels. New tool:
+  `_probe_ls20_l3.py` (advances via the solver to dump L3 ground-truth + tile appearances).
 
 @LAT-30LON-10 ls20 L2 — empirical action model + block corridor (explore.py 2026-06-17)
 [ew]

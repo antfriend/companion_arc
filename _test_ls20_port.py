@@ -38,47 +38,45 @@ def to_level(g_obs_builder, n):
 
 
 def gt(g):
-    """ground-truth spec from the game object."""
+    """ground-truth spec from the game object: block cell, {COLOR,ROT} changer cells, rings,
+    and per-target (cell, [shape_delta, colour_delta, rot_delta])."""
     block = S.cell_of_px(g.gudziatsk.y, g.gudziatsk.x)
-    cross = None
-    cs = g.current_level.get_sprites_by_tag("rhsxkxzdjz")
-    if cs:
-        cross = S.cell_of_px(cs[0].y + 2, cs[0].x + 2)
+    changers = {S.COLOR: [], S.ROT: []}
+    for tag, ai in (("soyhouuebz", S.COLOR), ("rhsxkxzdjz", S.ROT)):
+        changers[ai] = sorted(S.cell_of_px(s.y + 2, s.x + 2)
+                              for s in g.current_level.get_sprites_by_tag(tag))
     rings = sorted(S.cell_of_px(s.y + 1, s.x + 1) for s in g.current_level.get_sprites_by_tag("npxgalaybz"))
     targets = []
     for i, t in enumerate(g.plrpelhym):
+        sd = (g.ldxlnycps[i] - g.fwckfzsyc) % len(g.ijessuuig)
+        cd = (g.yjdexjsoa[i] - g.hiaauhahz) % len(g.tnkekoeuk)
         rd = (g.ehwheiwsk[i] - g.cklxociuu) % 4
-        targets.append((S.cell_of_px(t.y, t.x), rd))
-    return block, cross, rings, sorted(targets)
+        targets.append((S.cell_of_px(t.y, t.x), [sd, cd, rd]))
+    return block, changers, rings, sorted(targets)
 
 
 def main():
-    print("=== read_spec FRAME vs ground-truth ===")
-    for lvl in (1, 2):
-        g, obs = to_level(None, lvl)
-        f = np.asarray(obs.frame[-1])
-        spec = S.read_spec(f, lvl)
-        gb, gc, gr, gtg = gt(g)
-        if spec is None:
-            print(f"L{lvl}: read_spec=None (GT block={gb} cross={gc} rings={gr} targets={gtg})")
-            continue
-        sb, sc = spec["block"], spec["cross"]
-        sr = sorted(spec["rings"]); stg = sorted(spec["targets"])
-        ok = sb == gb and sc == gc and sr == gr and stg == gtg
-        print(f"L{lvl}: {'MATCH' if ok else 'MISMATCH'}")
-        print(f"   block  frame={sb} gt={gb}")
-        print(f"   cross  frame={sc} gt={gc}")
-        print(f"   rings  frame={sr} gt={gr}")
-        print(f"   tgts   frame={stg} gt={gtg}")
-
-    print("\n=== plan() clears the real game ===")
+    MAX = int(sys.argv[1]) if len(sys.argv) > 1 else 3
+    print("=== read_spec FRAME vs ground-truth + plan() clears the real game ===")
     g, obs = to_level(None, 1)
     level = 1
-    while level <= 2:
+    while level <= MAX:
         f = np.asarray(obs.frame[-1])
         spec = S.read_spec(f, level)
+        gb, gch, gr, gtg = gt(g)
         if spec is None:
-            print(f"L{level}: read_spec=None — DEFER"); break
+            print(f"L{level}: read_spec=None — DEFER (GT block={gb} changers={gch} rings={gr} targets={gtg})")
+            break
+        sb = spec["block"]
+        sch = {k: sorted(v) for k, v in spec["changers"].items()}
+        sr = sorted(spec["rings"]); stg = sorted(spec["targets"])
+        ok = (sb == gb and sch == {k: sorted(v) for k, v in gch.items()}
+              and sr == gr and stg == gtg)
+        print(f"\nL{level}: read_spec {'MATCH' if ok else 'MISMATCH'}")
+        print(f"   block    frame={sb} gt={gb}")
+        print(f"   changers frame={sch} gt={ {k: sorted(v) for k, v in gch.items()} }")
+        print(f"   rings    frame={sr} gt={gr}")
+        print(f"   targets  frame={stg} gt={gtg}")
         acts = S.plan(spec)
         if not acts:
             print(f"L{level}: plan=None"); break
@@ -93,7 +91,7 @@ def main():
         if done > before:
             print(f"L{level}: SOLVED ✓ ({len(acts)} moves)"); level += 1
         else:
-            print(f"L{level}: NOT solved (state={str(obs.state) if obs else None})"); break
+            print(f"L{level}: NOT solved ({len(acts)} moves, state={str(obs.state) if obs else None})"); break
     print(f"\nRESULT: frame-driven plan cleared up to level {level - 1}")
 
 
