@@ -77,7 +77,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1780876800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40,anchors>@LAT-650LON10,anchors>@LAT-660LON10,anchors>@LAT-670LON10,anchors>@LAT-680LON10,anchors>@LAT88LON40,anchors>@LAT-10LON40,anchors>@LAT75LON-50,anchors>@LAT70LON-50,anchors>@LAT-710LON10,anchors>@LAT85LON-10,anchors>@LAT80LON-10,anchors>@LAT80LON-20,anchors>@LAT80LON-30,anchors>@LAT75LON-10,anchors>@LAT75LON-20,anchors>@LAT75LON-30,anchors>@LAT55LON-40
+@LAT0LON0 | created:1747180800 | updated:1780876800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40,anchors>@LAT-650LON10,anchors>@LAT-660LON10,anchors>@LAT-670LON10,anchors>@LAT-680LON10,anchors>@LAT88LON40,anchors>@LAT-10LON40,anchors>@LAT75LON-50,anchors>@LAT70LON-50,anchors>@LAT-710LON10,anchors>@LAT85LON-10,anchors>@LAT80LON-10,anchors>@LAT80LON-20,anchors>@LAT80LON-30,anchors>@LAT75LON-10,anchors>@LAT75LON-20,anchors>@LAT75LON-30,anchors>@LAT55LON-40,anchors>@LAT60LON30
 [ew]
 conf:255
 rev:0
@@ -11021,6 +11021,58 @@ ring-rotation), so there is NO quick "level-agnostic BFS → free L2" win. Hidde
 transfer of the whole 9-dynamic layer measured ≈ +0.03 (most hidden games are NOT
 canonical-dynamic variants). Treat each future L2 solve as cheap insurance, not a
 guaranteed score jump.
+
+---
+
+@LAT60LON30 | created:1781740800 | updated:1781740800 | kind:method | relates:anchored_by>@LAT0LON0,informs_strategy>@LAT55LON-40
+[ew]
+conf:235
+rev:1
+sal:5
+touched:1781740800
+[/ew]
+
+## Discovery Method — agent-in-the-loop frame exploration (`explore.py`)
+
+How I (the agent) READ frames, PROCEED through games, VERIFY known strategies, DISCOVER
+new dynamics, and TEST next-level routes — the empirical front-end that produces
+breakthrough knowledge BEFORE it is committed to submittable code. Tool: `explore.py`
+(built + validated 2026-06-17 on tu93; supersedes the ad-hoc `_probe_*`/`_sim_*`/`_dump_*`
+scripts). Internal reasoning over frames is FREE in ARC scoring, so this loop is costless
+compute — run it freely.
+
+DESIGN — REPLAY-FROM-RESET. My tool calls are stateless, so a "session" is a JSON file
+(`_explore_sessions/<name>.json`) holding game+instance+seed+the ordered ACTION history+
+notes. Every command RESETs a fresh seeded game and re-applies the whole history, then
+acts. So the action log IS the reproducible experiment; I can branch and UNDO freely
+(`back N`); offline environment_files instances replay deterministically. Games are short
+(≤600 steps) so full replay each call is cheap. If a game is non-deterministic, note it
+and trust the per-step transition reports over long replays.
+
+THE INSTRUMENT (rendering is how I "see"):
+- `new <game> [--instance ID] [--seed N] [--session NAME]` — RESET + render frame 0.
+- `step <tokens>` — apply actions; per-step transition report (changed/NOOP, level-up,
+  END) + the RESULT frame with a DELTA/`moved:` line (which colours' centroids shifted).
+- `show [--full] [--raw]`, `diff`, `watch <colors>` (track bbox/centroid over the run),
+  `back [N]`, `goto --level N` (plays the registered solver to PARK on level N — verifies
+  the known strategy en route AND positions the session at the new mechanic), `note`,
+  `status`, `games`, `method`. Render = cropped grid + coordinate rulers + stable colour→
+  char legend with per-sprite count/bbox/centroid (detector-style). Action tokens: 1..7=
+  ACTIONn; U D L R F = nominal dir aliases (true semantics are to be DISCOVERED); 6@x,y=
+  click; R*4 = repeat.
+
+THE LOOP (8 phases): 1 ORIENT (legend vs the game's companion.md elements record) →
+2 MODEL (single-action probes + `diff` to learn each action's effect/move-vector/trigger)
+→ 3 VERIFY (replay the known route; confirm L1 still wins) → 4 ADVANCE (`goto --level N`)
+→ 5 PROBE (single-action experiments on the NEW mechanic; `watch`+`diff` to map it) →
+6 TEST (form a candidate route; `step`; binary-search failures with `back`) → 7 RECORD
+(`note`, then write findings CONFIDENCE-TAGGED into games/<g>/companion.md — high conf =
+confirmed, low conf = open) → 8 PROMOTE (once the dynamic is understood AND a route wins
+across instances/seeds, implement in games/<g>/dynamic.py and pass `_test_dynamics.py`
+before staging). Validation 2026-06-17: `goto --level 2` on tu93 verified the L1 solver
+wins, parked on L2, and the `moved:` line surfaced the turret mechanic instantly
+(c8 turret slid 6px, cursor c4/c9 vanished, armed-marker c11 appeared); a manual
+`step U R R R` reproduced the distance-6 INSTANT KILL (GAME_OVER on the 3rd RIGHT).
 
 ---
 
