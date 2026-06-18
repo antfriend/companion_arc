@@ -69,10 +69,18 @@ class Cd82Dynamic(Dynamic):
         self._fired = False
 
     def recognize(self, frame) -> float:
-        # PRECISION fingerprint: a pixel-2 selector whose bbox-min sits on a known
-        # basket ring position. Unique to cd82 on the practice set (tu93/wa30/
-        # sk48/ka59 also have pixel-2 but never at a basket position).
-        return 1.0 if _active_basket(np.asarray(frame)) is not None else 0.0
+        # PRECISION fingerprint: a selector-SIZED pixel-2 sprite (real cd82: ~30px — note
+        # it is a RING/outline, so its bbox is much larger than its pixel count; do NOT
+        # gate on bbox compactness) whose bbox-min sits on a known basket ring position.
+        # Unique to cd82 on the practice set (tu93/wa30/sk48/ka59 also have pixel-2 but
+        # never selector-sized AND at a basket position). The size window is the hidden-
+        # decoy fuzzer fix (_test_falsefire.py): a stray color-2 blob near a canonical
+        # basket coord fired on 2.1% of decoys; bounding the count cuts most of them.
+        f = np.asarray(frame)
+        n2 = int(np.count_nonzero(f == 2))
+        if not (12 <= n2 <= 50):                       # selector-sized only
+            return 0.0
+        return 1.0 if _active_basket(f) is not None else 0.0
 
     def next_action(self, frame, n_actions):
         frame = np.asarray(frame)

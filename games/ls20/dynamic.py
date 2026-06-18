@@ -46,11 +46,28 @@ class Ls20Dynamic(Dynamic):
         self._aborted = False
 
     def recognize(self, frame) -> float:
-        # PRECISION fingerprint: a SMALL color-12 block (≤50 px) — excludes sp80 where
-        # color-12 is the background (~3500 px).
+        # PRECISION fingerprint. The colour-12 count alone is FAR too loose — colour-12
+        # is a common HUD/sprite colour, so "1–50 px of colour-12" fires on hidden games
+        # that merely have a small colour-12 element, hijacking them with bogus directional
+        # moves (regression: v1-floor 0.18 → 0.10). Gate STRUCTURALLY instead, exactly like
+        # ar25/cn04/re86: the frame must PARSE as a solvable ls20 board.
+        #   (1) cheap pre-filter — a small in-frame colour-12 block (excludes sp80's ~3500px
+        #       colour-12 background);
+        #   (2) read_spec(f) is not None — the full ls20 geometry (5px cells, a left-margin
+        #       appearance preview identifiable as a shape, in-grid targets with identifiable
+        #       silhouettes, changers for every needed change). A stray colour-12 blob fails it;
+        #   (3) plan(spec) is not None — the read board is actually deliverable (else defer to
+        #       the floor rather than fire-then-abort). Guarded: odd frame sizes / parse errors
+        #       → 0.0 (no fire), never an exception.
         f = np.asarray(frame)
         n12 = int(np.count_nonzero(f == S.BLOCK))
-        return 1.0 if 0 < n12 <= 50 else 0.0
+        if not (0 < n12 <= 50):
+            return 0.0
+        try:
+            spec = S.read_spec(f)
+            return 1.0 if (spec is not None and S.plan(spec) is not None) else 0.0
+        except Exception:
+            return 0.0
 
     def _plan_from(self, f):
         """(Re)plan from the current frame; precompute the predicted block-cell path."""

@@ -22,7 +22,10 @@ from core.dynamics.base import Dynamic, SolverStep
 _CELL = 4
 _SELECTED = 9
 _PIECE8_MIN = 20            # a >=20px pixel-8 blob is the moveable piece pre-select
+_PIECE_MIN = 20            # a real selected piece is substantial (real sp80: ~80px pixel-9),
+                           # NOT a stray pixel — the size floor kills hidden false fires
 _OBSTACLE = 11
+_OBSTACLE_MIN = 40         # the spill obstacle is a real cluster (real sp80: ~160px color-11)
 _ANCHOR_TO_PIECE = (-1, -9)   # (dx, dy) game-coords: piece offset from obstacle bbox-min
 _SPILL_ROUTE = [4, 3, 3, 3, 4, 2, 2, 1]
 UP, DOWN, LEFT, RIGHT, SPILL = 0, 1, 2, 3, 4
@@ -82,20 +85,24 @@ class Sp80Dynamic(Dynamic):
         self._spill_i = -1            # -1 = still navigating; >=0 = spill index
 
     def recognize(self, frame) -> float:
-        # PRECISION-first fingerprint (calibrated on the §6.1 confusion matrix):
+        # PRECISION-first fingerprint (calibrated on the §6.1 confusion matrix AND the
+        # hidden-decoy fuzzer _test_falsefire.py):
         #   (1) 4px-block render structure — excludes ls20/re86/ar25 (pitch ≠ 4),
-        #       palette-independent so hidden recolorings still match;
-        #   (2) a compact selected piece (pixel-9, or ≥20px pixel-8) that is NOT
-        #       the background — excludes ar25 (pixel-9 is its background);
-        #   (3) a color-11 obstacle cluster that is NOT the background.
+        #       palette-independent so hidden recolorings still match. NOTE this is
+        #       NECESSARY-but-weak: a mostly-uniform hidden frame also passes it;
+        #   (2) a SUBSTANTIAL selected piece (≥20px pixel-9, or ≥20px pixel-8) that is
+        #       NOT the background — excludes ar25 (pixel-9 is its background);
+        #   (3) a SUBSTANTIAL color-11 obstacle cluster (≥40px) that is NOT the background.
+        # The size floors (2)+(3) are the fuzzer fix: "uniform + a stray 9 + a stray 11"
+        # fired on 8.85% of hidden-like decoys; real sp80 carries ~80px-9 + ~160px-11.
         frame = np.asarray(frame)
         if _block_uniform_frac(frame) < 0.85:
             return 0.0
         vals, counts = np.unique(frame, return_counts=True)
         bg = int(vals[int(np.argmax(counts))])
-        has_piece = ((np.count_nonzero(frame == _SELECTED) > 0 and _SELECTED != bg)
+        has_piece = ((np.count_nonzero(frame == _SELECTED) >= _PIECE_MIN and _SELECTED != bg)
                      or (np.count_nonzero(frame == 8) >= _PIECE8_MIN and 8 != bg))
-        has_obstacle = np.count_nonzero(frame == _OBSTACLE) > 0 and _OBSTACLE != bg
+        has_obstacle = np.count_nonzero(frame == _OBSTACLE) >= _OBSTACLE_MIN and _OBSTACLE != bg
         return 1.0 if (has_piece and has_obstacle) else 0.0
 
     def next_action(self, frame, n_actions):
