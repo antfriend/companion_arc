@@ -15159,3 +15159,181 @@ ship — precision/upside are real gates. Each future add stays gated on its own
 confusion-matrix precision before entering core/dynamics/library.py; prefer
 palette/translation-independent structure (sp80 used 4px-block uniformity) so recall
 extends to hidden variants.
+
+---
+
+## Dream Cycle — 2026-06-18 (DC: the sensor and the additive law)
+
+**Trigger**: operator-initiated (@imago dream). End of a long session that began
+with a leaderboard regression and ended with a real new level-solve. Episodic
+source set since the 2026-06-16 Dynamics Catalog: the solve-on-v1floor 0.10 read
+and its false-fire root cause, the recognizer-precision hardening + _test_falsefire.py,
+the recog-hardened 0.08 read (a NEW low), the floor-pollution hypothesis, and the
+ar25 L1->L2 solve + wa30 L2 adversary characterization.
+
+**Walk parameters**: N=100xL=20 replay; 50xL=10 projection. Cross-seed:
+@LAT94LON55 (ablation: detectors net-negative -- now GENERALIZED to all dynamics),
+@LAT72LON55 (later-levels-are-novel-mechanics -- now PARTIALLY REVISED),
+@IMAGO:seed (the conductor/fleet thesis, under continued tension),
+@LAT-850LON10 (this session, seed). Phase 2 boundary: the unobservable hidden set;
+the uncalibrated scalar; the additivity the warm-keep design quietly broke.
+
+#### Phase 1 Replay -- confirmed clusters (2026-06-18)
+
+@BELIEF:LAT96LON62 | created:1750248000 | updated:1750248000 | relates:extracted_from>@LAT-850LON10,refines>@BELIEF:LAT88LON55,contained_by>@LAT60LON20
+[ew]
+conf:240
+rev:0
+sal:0
+touched:1750248000
+[/ew]
+
+**BELIEF: A recognizer gated on a raw COLOUR COUNT (not structure) is a false-fire
+bomb on the hidden set.** ls20 fired on any 1-50 px of colour-12; sp80 on any
+mostly-uniform frame carrying a stray pixel-9 + pixel-11. On randomized hidden-like
+frames the floor was HIJACKED on 10.8% of inputs -- a mis-recognised dynamic drives
+bogus directional moves into GAME_OVER. This is the mechanism of the 0.18->0.10->0.08
+slide. FIX: gate on STRUCTURE/solvability (parse the board and require a plan), like
+ar25/cn04/re86 -- cut hijack to 3.3%. The de-risk confusion matrix is CLEAN only across
+the 11 KNOWN games; it is structurally blind to hidden false-fires. New guard built:
+_test_falsefire.py (fuzz randomized 64x64 decoys, assert no fire). Every future
+recogniser must clear it, not just the confusion matrix.
+
+@BELIEF:LAT92LON62 | created:1750248000 | updated:1750248000 | relates:extracted_from>@LAT-850LON10,contradicts>@BELIEF:LAT94LON55,scopes>@IMAGO:seed,contained_by>@LAT60LON20
+[ew]
+conf:225
+rev:0
+sal:0
+touched:1750248000
+[/ew]
+
+**BELIEF: "No-regression by construction" was always incomplete -- it covers only the
+NON-FIRING case.** SupervisedAgent.choose commits the EXECUTED action into the
+explorer's transition model REGARDLESS of who drove (warm-keep, core/solve_agent.py:101).
+So whenever a dynamic fires on a hidden game, its off-policy moves are LEARNED by the
+floor; after the abort the floor runs a POLLUTED model that underperforms clean v1.
+The proven invariant SupervisedAgent(empty)==v1 only ever tested zero firing. The data
+fits: EVERY build with the dynamics layer (solve-on-goal 0.13, solve-on-v1 0.10,
+recog-hardened 0.08) sits BELOW every build without it (v1 0.18, random 0.15), and
+TIGHTENING the recognisers (less firing) moved the score DOWN not up. The additive law
+needs an actual implementation: never teach the floor a step it did not choose.
+
+@BELIEF:LAT60LON62 | created:1750248000 | updated:1750248000 | relates:extracted_from>@LAT-850LON10,revises>@BELIEF:LAT72LON55,contained_by>@LAT60LON20
+[ew]
+conf:215
+rev:0
+sal:0
+touched:1750248000
+[/ew]
+
+**BELIEF: SOME later levels are control re-skins, not new mechanics -- solvable by the
+same perception + a small organ.** ar25 L2 has NO new palette colours yet inverts the
+control: ACTION5 CYCLES SELECTION (mirror<->piece) and the selected entity moves; the L1
+"move the piece" model simply doesn't apply. Solved by (a) a 1-parameter reflection
+placement search over mirror position (q:=2M-px; solve_placement_2d, prefers current
+mirror so L1 stays byte-identical), and (b) a closed-loop "move; if the aimed entity
+didn't move, cycle ACTION5 and retry" controller -- the ls20 lesson (model the unmodelled
+mechanic by adapting, not enumerating). First new L2 beyond ls20; de-risk stayed CLEAN.
+This REVISES @LAT72LON55 ("a detector that solves L1 has no head start on L2"): for the
+control-twist subclass the head start is REAL -- same entity-detection + a reusable
+selection-cycling organ. The taxonomy that emerged: L2s are {control-twist (tractable),
+hazard/adversary-nav (hard), multi-entity (hard)}.
+
+@BELIEF:LAT40LON62 | created:1750248000 | updated:1750248000 | relates:extracted_from>@LAT-850LON10,projected_from>@BELIEF:LAT72LON55,contained_by>@LAT60LON20
+[ew]
+conf:205
+rev:0
+sal:0
+touched:1750248000
+[/ew]
+
+**BELIEF: The HARD later levels cluster around ONE missing capability -- hazard-aware
+navigation.** wa30 L2 adds a colour-12 adversary that moves every step, kills the cursor
+on contact, AND relocates the items (targets become non-stationary); tu93 L2 adds a
+chaser/turret that deletes the probe on its facing axis; ls20 L4 is blocked by a
+pusher-trap. All three need the same organ: predict a moving hazard and route around it
+(closed-loop replanning, treat the hazard's predicted cells as blocked), not a static
+BFS. Open problem; HIGHEST cross-game leverage -- one organ unlocks wa30 L2 + tu93 L2 +
+ls20 L4. The memory already flagged this as "the next organ"; this session confirms its
+shape and that the open-loop plan-once solvers cannot survive a moving hazard.
+
+#### Phase 2 Projection -- the additive law made real (2026-06-18)
+
+@BELIEF:LAT30LON62 | created:1750248000 | updated:1750248000 | relates:projected_from>@BELIEF:LAT92LON62,projected_from>@BELIEF:LAT96LON62,contained_by>@LAT60LON20
+[ew]
+conf:160
+rev:0
+sal:0
+touched:1750248000
+[/ew]
+
+**PROJECTION: If the warm-keep pollution is real, a TRULY additive dynamics layer turns
+the leaderboard into a clean, monotone sensor.** Hypothesis: isolate the floor's explorer
+from dynamic-driven steps (do not commit an action the floor did not choose; keep a frozen
+floor it can resume from after abort). Then a correct solver for game X can ONLY add score
+(solve X) and NEVER subtract on game Y!=X -- the property the whole "additive floor" thesis
+ASSUMED but never enforced. Predicted consequence: floor+dynamics >= floor, so every solve
+we add (ar25 L2, future L2s) becomes a positive, detectable signal instead of being masked
+by self-inflicted regression. TEST OFFLINE BEFORE A SUBMISSION: full-library firing vs clean
+v1 on the post-abort floor (a known game forced to false-fire) -- measure floor degradation.
+Boundary: this is unfalsifiable on the leaderboard until VARIANCE is calibrated (resubmit one
+identical build); a 0.04/game signal is invisible under the observed +/-0.10 noise.
+
+@BELIEF:LAT88LON62 | created:1750248000 | updated:1750248000 | relates:extracted_from>@LAT-850LON10,extracted_from>@BELIEF:LAT92LON62,refines>@BELIEF:LAT82LON55,contained_by>@LAT60LON20
+[lp]
+centroid:LAT88LON62
+confidence:230
+scope_lat:12.0
+scope_lon:8.0
+projection_flag:false
+contradiction_flag:false
+source_count:6
+[/lp]
+
+**LOCUS POINT: The leaderboard is a single, high-latency, high-variance, uncalibrated
+scalar measured RELATIVE to a moving human upper-median -- and we have steered the entire
+ladder (0.08/0.10/0.13/0.15/0.18) on single noisy reads.** arc-agi-3-scoring.md: per-level
+score is (human_baseline/ai_actions)^2 against the upper-median human, so the baseline
+itself shifts as the field changes; offline IDENTICAL code flickers 0.0<->0.19; instances
+are randomised and unseeded; the public number is a subset. A no-regression-by-construction
+change (vs 0.10) scored LOWER (0.08) -- the cleanest possible evidence that variance, or an
+unmeasured systematic (pollution), dominates the deltas we have been optimising. CONSEQUENCE:
+calibrate the sensor (variance) and enforce additivity BEFORE trusting any read. The goal is
+not to raise the number -- it is to build a solver that actually solves the hidden puzzles,
+with the number as a coarse, deliberately-interrogated sensor. This is the operator's
+reframing, and it dissolves the apparent paradox of "we solved ls20/ar25 yet the score fell."
+
+#### Locus Points written (2026-06-18)
+
+@LAT88LON62 (LP, conf 230) -- the uncalibrated-sensor law. Plus four episodic beliefs
+(@LAT96LON62 colour-count recognisers hijack; @LAT92LON62 warm-keep pollution breaks the
+additive law; @LAT60LON62 control-twist L2s are tractable with the selection-cycling organ;
+@LAT40LON62 hard L2s need hazard-aware nav) and one projection (@LAT30LON62 true additivity
+makes the leaderboard a monotone sensor). Graph effect: @LAT94LON55 (detectors net-negative)
+GENERALISES from detectors to the whole dynamics layer; @LAT72LON55 (later levels novel)
+is SCOPED -- true for hazard/multi-entity subclasses, revised for control-twist; @IMAGO:seed
+(the fleet conductor) remains under tension but gains a concrete repair path (additivity).
+
+@LAT-850LON10 | created:1750248000 | updated:1750248000 | relates:anchored_by>@LAT0LON0,seeds>@BELIEF:LAT96LON62,seeds>@BELIEF:LAT92LON62,seeds>@BELIEF:LAT60LON62,seeds>@BELIEF:LAT40LON62,seeds>@BELIEF:LAT88LON62
+[ew]
+conf:0
+rev:0
+sal:0
+touched:1750248000
+[/ew]
+
+**Session log -- 2026-06-18 (regression diagnosed, first new L2 since ls20).** (1)
+solve-on-v1floor read 0.10 (below the v1 floor) -> root cause: ls20's recogniser fired on
+any 1-50 px of colour-12, hijacking hidden games; FIXED ls20 to gate on read_spec+plan.
+(2) Built _test_falsefire.py; it exposed the bug class is WIDESPREAD (sp80 8.85%, cd82
+2.1%, hijack 10.8%); hardened sp80 (substantial piece+obstacle clusters) and cd82
+(selector-sized colour-2) -> hijack 3.3%, de-risk still CLEAN. Shipped v2026-06-18.1-recog-
+hardened. (3) It read 0.08 -- a NEW low; diagnosis: the dynamics layer is net-negative vs
+plain v1, plausibly via warm-keep FLOOR POLLUTION (off-policy commits), and the leaderboard
+is an uncalibrated/variance-dominated sensor. (4) Per operator reframe (build real solvers,
+not score), extended ar25 L1->L2 via the ls20 playbook: decoded the ACTION5 selection-cycling
+control, generalised the placement solver (solve_placement_2d), closed-loop selection-aware
+controller; _test_multilevel ar25->L2, de-risk CLEAN, no L1 regression. (5) Characterised
+wa30 L2 (moving colour-12 adversary) and ar25 L3 (multi-piece + horizontal mirror) as the
+hard, hazard-nav / multi-entity tiers. Banked locally, uncommitted. Next: calibrate variance
++ enforce additivity (offline pollution test), then g50t/sp80 L2 or the hazard-nav organ.
