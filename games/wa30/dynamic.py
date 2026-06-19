@@ -10,29 +10,34 @@ route (frame-derived, translation-robust), replayed one action at a time, each
 guarded by a "board changed" expectation. A no-op step means the plan desynced and
 the supervisor aborts back to the explorer.
 
-L2+ (a color-12 patroller that KILLS on contact): the fixed plan would walk into the
-patroller, and — crucially — wa30 has NO wait action (a no-op needs a wall), so the
-agent must EVADE by detouring, not by pausing. So when an adversary is present the
-dynamic switches to a CLOSED-LOOP hazard-aware delivery driven by the shared
-space-time BFS organ (core/dynamics/hazard_nav.py): each frame it re-reads the
-cursor + adversary, forecasts the patroller's short-horizon occupancy, and BFS-routes
-the current delivery sub-goal around it. Phases (approach/face/pickup/carry/drop) are
-tracked internally; carry-state can't be read cleanly from the frame (a carried item
-still shows as a loose color-4), so it is latched. Anything uncertain → return None →
-defer to the floor (additive-safe).
+L2+ (a color-12 sprite appears): the color-12 sprite `kdweefinfi` is NOT a lethal
+hazard — it is a DELIVERY HELPER that autonomously carries items into the drop zone
+(source: ynmgxjqkgh/cyjrduhzmz; it delivers ~4/5 on its own). The cursor never dies
+on contact; the ONLY failure is the step TIMER (StepCounter=70 on L2). So L2 is a
+COOPERATIVE delivery, not an evasion problem (the earlier hazard-nav evasion branch
+solved a non-existent threat and could not win). The cursor delivers the items the
+helper is slowest to reach (FARTHEST-from-helper first → least competition) while it
+delivers the rest; together they finish 5/5 inside the timer. Each frame:
+  * read cursor / items / drop-zone slots / helper from the frame,
+  * track filled slots by scanning color-4 within the latched drop-zone footprint
+    (the detector's dz_valid is a bbox fill that mis-reads delivered slots as empty),
+  * fetch the farthest-from-helper undelivered item (committed approach→face→pickup,
+    never re-targeting mid-pickup — a one-frame dropout flickers the item out),
+  * deliver to the nearest REACHABLE free slot, routing the rigid cursor+item body
+    around other items and the moving helper.
+Carry-state can't be read cleanly (a carried item still shows as a loose color-4) so
+it is latched. Anything uncertain → return None → defer to the floor (additive-safe).
 """
+
+from collections import deque
 
 import numpy as np
 
 from core.dynamics.base import Dynamic, SolverStep
-from core.dynamics.hazard_nav import (
-    HazardTracker, predict_occupancy, spacetime_bfs, manhattan, WAIT,
-)
 from games.wa30 import detector as W
 
 STEP = 4
 _LO, _HI = 0, 15                       # 64/STEP = 16 cells per axis (0..15)
-_HORIZON = 12
 # (dx, dy) cell move → wa30 action index (0=UP,1=DOWN,2=LEFT,3=RIGHT)
 _ACT = {(0, -1): 0, (0, 1): 1, (-1, 0): 2, (1, 0): 3}
 _DIRS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
@@ -44,12 +49,19 @@ def _expect_changed(cur):
     return lambda f: np.asarray(f).tobytes() != b
 
 
+def _in_bounds(c):
+    return _LO <= c[0] <= _HI and _LO <= c[1] <= _HI
+
+
 def _adv_cells(frame):
-    """Color-12 adversary sprite centroid(s) → cell coords. Returns [] if none."""
+    """Color-12 sprite centroid(s) → (x, y) cell coords. Returns [] if none.
+
+    On L2+ this is the kdweefinfi delivery HELPER (one compact 4×4 sprite); its mere
+    presence is the L2 trigger. Centroid clustering tolerates the helper carrying an
+    item (the color-12 body stays a single component)."""
     pos = np.argwhere(np.asarray(frame) == 12)
     if len(pos) == 0:
         return []
-    # one compact 4×4 sprite per adversary; cluster by 8-connectivity
     rem = {(int(r), int(c)) for r, c in pos}
     out = []
     while rem:
@@ -65,8 +77,38 @@ def _adv_cells(frame):
                         stack.append((r + dr, c + dc))
         mr = sum(r for r, _ in cl) / len(cl)
         mc = sum(c for _, c in cl) / len(cl)
-        out.append((int(round(mc)) // STEP, int(round(mr)) // STEP))   # (x,y) cell
+        out.append((int(round(mc)) // STEP, int(round(mr)) // STEP))
     return out
+
+
+def _item_cells(frame, cursor_game):
+    """EVERY color-4 item cell (delivered + undelivered + carried), snapped to the
+    cursor's STEP lattice. The detector's `items` excludes drop-zone-bbox cells, so
+    delivered items vanish from it — we re-scan to track which slots are filled."""
+    f = np.asarray(frame)[:63, :]
+    px, py = cursor_game[0] % STEP, cursor_game[1] % STEP
+    out = set()
+    for r, c in np.argwhere(f == 4):
+        out.add(((int(c) - px) // STEP, (int(r) - py) // STEP))
+    return out
+
+
+def _bfs(start, goals, passable):
+    """First move (dx,dy) on a shortest path from start to any goal cell, or None."""
+    goals = set(goals)
+    if not goals or start in goals:
+        return None
+    q = deque([(start, None)]); seen = {start}
+    while q:
+        cell, first = q.popleft()
+        for dx, dy in _DIRS:
+            nc = (cell[0] + dx, cell[1] + dy)
+            fm = first if first is not None else (dx, dy)
+            if nc in goals:
+                return fm
+            if nc not in seen and passable(nc):
+                seen.add(nc); q.append((nc, fm))
+    return None
 
 
 class Wa30Dynamic(Dynamic):
@@ -75,12 +117,12 @@ class Wa30Dynamic(Dynamic):
     def reset(self) -> None:
         self._route = None          # L1 plan-once route
         self._i = 0
-        # L2 closed-loop state
-        self._tracker = HazardTracker()
-        self._carrying = False
-        self._item_off = None       # (dx,dy) cell offset of carried item
-        self._phase = "approach"    # approach|face|pickup|carry|drop
-        self._target = None         # current item cell being fetched
+        # L2 cooperative-delivery state
+        self._carry = False
+        self._off = None            # (dx,dy) cell offset of carried item
+        self._phase = "approach"    # approach | face | pickup | carry
+        self._target = None         # current undelivered item being fetched
+        self._footprint = None      # latched set of drop-zone slot cells (all 6, empty)
 
     def recognize(self, frame) -> float:
         # PRECISION fingerprint: small color-0 cursor edge + color-14 body + a
@@ -110,112 +152,80 @@ class Wa30Dynamic(Dynamic):
             return 0.0
         return 1.0
 
-    # ----- L2 closed-loop hazard-aware delivery -----------------------------
+    # ----- L2 cooperative delivery ------------------------------------------
     def _l2_step(self, f, n_actions):
         st = W.detect_state(f)
         if not st:
             return None
-        cursor = (st["cursor_x"] // STEP, st["cursor_y"] // STEP)
-        dz = {(x // STEP, y // STEP) for (x, y) in st["dz_valid"]}
-        items = [(x // STEP, y // STEP) for (x, y) in st["items"]]
-
-        # Carried item reads as a loose color-4; drop it from the to-fetch list.
-        carried_cell = None
-        if self._carrying and self._item_off is not None:
-            carried_cell = (cursor[0] + self._item_off[0], cursor[1] + self._item_off[1])
-            items = [it for it in items if it != carried_cell]
-
-        # Undelivered = items not already sitting on a drop cell.
-        undelivered = [it for it in items if it not in dz]
-
-        # Hazard forecast (re-derived every frame → short horizon suffices).
-        adv = self._tracker.update(_adv_cells(f))
-        occ = predict_occupancy(adv, _HORIZON, radius=1, bounds=(_LO, _LO, _HI, _HI))
-
-        def in_bounds(c):
-            return _LO <= c[0] <= _HI and _LO <= c[1] <= _HI
-
-        # ----- not carrying: fetch the nearest item -----
-        if not self._carrying:
-            if not undelivered:
-                return None                      # nothing left → hand back
-            # Only (re)pick a target while approaching; once we are face/pickup we
-            # commit, so a one-frame detection dropout can't reset the phase.
-            if self._phase == "approach" and self._target not in undelivered:
-                self._target = min(undelivered, key=lambda it: manhattan(it, cursor))
-            if self._target is None:
-                self._target = min(undelivered, key=lambda it: manhattan(it, cursor))
-            item = self._target
-            others = set(undelivered) - {item}
-
-            def passable(c):
-                return in_bounds(c) and c not in others and c != item
-
-            adj = [(item[0] + dx, item[1] + dy) for dx, dy in _DIRS]
-            adj = [a for a in adj if passable(a)]
-            if not adj:
-                return None
-
-            if cursor in adj or self._phase in ("face", "pickup"):
-                # adjacent: face the item then pick it up (2 no-op frames). Guard:
-                # only do so if staying put is safe next tick; else flee one step.
-                if cursor in occ[1] if len(occ) > 1 else False:
-                    mv = spacetime_bfs(cursor, item, passable, occ, _HORIZON)
-                    if mv in (None, WAIT):
-                        return None
-                    return SolverStep(_ACT[mv], _expect_changed(f), "wa30L2 flee")
-                if self._phase != "pickup":
-                    self._phase = "pickup"
-                    fdx, fdy = item[0] - cursor[0], item[1] - cursor[1]
-                    fdx = max(-1, min(1, fdx)); fdy = max(-1, min(1, fdy))
-                    return SolverStep(_ACT[(fdx, fdy)], lambda ff: True, "wa30L2 face")
-                # pickup
-                self._carrying = True
-                self._item_off = (item[0] - cursor[0], item[1] - cursor[1])
-                self._phase = "carry"
-                return SolverStep(_PICKDROP, _expect_changed(f), "wa30L2 pickup")
-
-            # approach: BFS one step toward ANY adjacent cell, avoiding the patroller
-            mv = spacetime_bfs(cursor, adj, passable, occ, _HORIZON)
-            if mv is None or mv == WAIT:
-                return None                      # no realizable wait in wa30 → defer
-            return SolverStep(_ACT[mv], _expect_changed(f), f"wa30L2 approach {mv}")
-
-        # ----- carrying: deliver to a free drop cell -----
-        off = self._item_off
-        free_dz = [d for d in dz if d not in items]    # drop cells not yet filled
-        if not free_dz:
-            free_dz = list(dz)
-        # cursor cells that land the item on a drop cell
-        goals = [(d[0] - off[0], d[1] - off[1]) for d in free_dz]
-        goals = [g for g in goals if in_bounds(g) and in_bounds((g[0] + off[0], g[1] + off[1]))]
-        if not goals:
+        cur = (st["cursor_x"] // STEP, st["cursor_y"] // STEP)
+        dzbb = {(x // STEP, y // STEP) for (x, y) in st["dz_valid"]}
+        if self._footprint is None and len(dzbb) >= 5:
+            self._footprint = set(dzbb)                 # latch all slots while empty
+        fp = self._footprint or dzbb
+        if not fp:
             return None
-        others = set(undelivered)
+        all4 = _item_cells(f, (st["cursor_x"], st["cursor_y"]))
+        helper = set(_adv_cells(f))
+        carried = (cur[0] + self._off[0], cur[1] + self._off[1]) if (self._carry and self._off) else None
+        items = {it for it in all4 if it != carried}
+        undelivered = [it for it in items if it not in fp]
+        free = [s for s in fp if s not in items]
+
+        if self._carry:
+            return self._deliver(f, cur, items, helper, free)
+
+        # (re)select a target ONLY while approaching — committing protects the pickup
+        # from a one-frame detector dropout that flickers the item out of `undelivered`.
+        if self._phase == "approach" and (self._target is None or self._target not in undelivered):
+            if not undelivered:
+                return None                             # nothing left for us → defer
+            hc = next(iter(helper)) if helper else cur
+            self._target = max(undelivered, key=lambda it: abs(it[0] - hc[0]) + abs(it[1] - hc[1]))
+        if self._target is None:
+            return None
+        return self._fetch(f, cur, items, helper)
+
+    def _fetch(self, f, cur, items, helper):
+        t = self._target
+        if self._phase == "pickup":
+            self._carry = True
+            self._off = (t[0] - cur[0], t[1] - cur[1])
+            self._phase = "carry"
+            return SolverStep(_PICKDROP, _expect_changed(f), "wa30L2 pickup")
+        if self._phase == "face" or abs(t[0] - cur[0]) + abs(t[1] - cur[1]) == 1:
+            self._phase = "pickup"
+            fdx = max(-1, min(1, t[0] - cur[0])); fdy = max(-1, min(1, t[1] - cur[1]))
+            return SolverStep(_ACT.get((fdx, fdy), _PICKDROP), lambda ff: True, "wa30L2 face")
+        obst = (items - {t}) | helper
+        adj = [(t[0] + dx, t[1] + dy) for dx, dy in _DIRS
+               if _in_bounds((t[0] + dx, t[1] + dy)) and (t[0] + dx, t[1] + dy) not in (items - {t})]
+        mv = _bfs(cur, adj, lambda c: _in_bounds(c) and c not in obst)
+        if mv not in _ACT:
+            return None
+        return SolverStep(_ACT[mv], _expect_changed(f), f"wa30L2 approach {mv}")
+
+    def _deliver(self, f, cur, items, helper, free):
+        off = self._off
+        obst = items | helper
+        goals = [(s[0] - off[0], s[1] - off[1]) for s in free]
+        goals = [g for g in goals if _in_bounds(g) and _in_bounds((g[0] + off[0], g[1] + off[1]))
+                 and (g[0] + off[0], g[1] + off[1]) not in obst]
+        if cur in set(goals):
+            self._carry = False; self._off = None
+            self._target = None; self._phase = "approach"
+            return SolverStep(_PICKDROP, _expect_changed(f), "wa30L2 drop")
 
         def passable_c(c):
             ic = (c[0] + off[0], c[1] + off[1])
-            return (in_bounds(c) and in_bounds(ic)
-                    and c not in others and ic not in others)
-
-        # forbid cursor cells whose carried item would enter a lethal cell, too
-        occ_c = [s | {(cc[0] - off[0], cc[1] - off[1]) for cc in s} for s in occ]
-
-        if cursor in set(goals):
-            self._carrying = False
-            self._item_off = None
-            self._target = None
-            self._phase = "approach"
-            return SolverStep(_PICKDROP, _expect_changed(f), "wa30L2 drop")
-
-        mv = spacetime_bfs(cursor, goals, passable_c, occ_c, _HORIZON)
-        if mv is None or mv == WAIT:
+            return _in_bounds(c) and _in_bounds(ic) and c not in obst and ic not in obst
+        mv = _bfs(cur, goals, passable_c)
+        if mv not in _ACT:
             return None
         return SolverStep(_ACT[mv], _expect_changed(f), f"wa30L2 carry {mv}")
 
     def next_action(self, frame, n_actions):
         f = np.asarray(frame)
-        # L2+: a color-12 patroller is present → closed-loop hazard-aware delivery.
+        # L2+: a color-12 helper is present → cooperative delivery.
         if len(_adv_cells(f)) > 0:
             return self._l2_step(f, n_actions)
 
