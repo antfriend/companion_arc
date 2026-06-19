@@ -67,6 +67,19 @@ CURSOR_BODY  = 9   # cursor sprite body color (cursor-only; used for TL anchor)
 TARGET_COLOR = 14  # exit sprite fill color
 CORRIDOR_COLOR = 2  # passage pixel color — maze.pixels[i,c]==2 allows movement
 
+# Turret families (L2+): a turret body color + a color-15 facing marker (color-11
+# once armed). It ARMS only when the mover is at EXACTLY the trigger distance in
+# front of it on its facing axis (source: wlhbetxehh), so the lethal set is the
+# single cell at that distance — forbid it and BFS routes around (proven win,
+# _probe_tu93_l2_route.py). Trigger distance is per family, in LOGICAL CELLS:
+#   color-8  (tag 0001) → hcgctulqhn=6px  = 1 cell
+#   color-13 (tag 0023) → anklfvjqkx=12px = 2 cells
+# color-12 (tag 0020) is a MOVING patroller, not a facing-axis turret → handled by
+# the hazard_nav organ, NOT here (and it does not appear at L2).
+TURRET_TRIGGER_CELLS = {8: 1, 13: 2}
+TURRET_MARKER = 15   # facing marker on the turret's leading edge (unarmed)
+TURRET_ARMED  = 11   # marker color once the turret has armed/fired
+
 UP    = 0
 DOWN  = 1
 LEFT  = 2
@@ -153,8 +166,64 @@ def _passage_open(grid: np.ndarray, from_r: int, from_c: int,
     return int(grid[pr, pc]) == CORRIDOR_COLOR
 
 
+def _components(mask: np.ndarray) -> list:
+    """4-connected components of a boolean mask → list of [(r,c), ...]."""
+    pts = np.argwhere(mask)
+    pset = {(int(r), int(c)) for r, c in pts}
+    seen: set = set()
+    comps = []
+    for p in pset:
+        if p in seen:
+            continue
+        q = deque([p]); seen.add(p); cells = []
+        while q:
+            r, c = q.popleft(); cells.append((r, c))
+            for dr, dc in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                nb = (r + dr, c + dc)
+                if nb in pset and nb not in seen:
+                    seen.add(nb); q.append(nb)
+        comps.append(cells)
+    return comps
+
+
+def arming_cells(grid: np.ndarray, origin: Tuple[int, int]) -> set:
+    """Logical cells that ARM a turret (lethal) — the cell at the trigger distance
+    directly in front of each facing-axis turret (color-8/13).
+
+    Facing is read from the marker (color-15 unarmed / color-11 armed) position
+    within the turret's 3×3 body: top row→UP, bottom→DOWN, left col→LEFT, right→RIGHT.
+    The arming cell is `trigger` logical cells in the facing direction.
+    """
+    forbidden: set = set()
+    for color, trig in TURRET_TRIGGER_CELLS.items():
+        body = (grid == color)
+        if not body.any():
+            continue
+        for cells in _components(body):
+            rs = [r for r, _ in cells]; cs = [c for _, c in cells]
+            r0, c0, r1, c1 = min(rs), min(cs), max(rs), max(cs)
+            sub = grid[r0:r1 + 1, c0:c1 + 1]
+            mk = np.argwhere((sub == TURRET_MARKER) | (sub == TURRET_ARMED))
+            if not len(mk):
+                continue
+            mr, mc = int(mk[:, 0].mean()), int(mk[:, 1].mean())
+            h, w = sub.shape
+            if mr == 0:
+                d = (-1, 0)
+            elif mr == h - 1:
+                d = (1, 0)
+            elif mc == 0:
+                d = (0, -1)
+            else:
+                d = (0, 1)
+            tr = (r0 - origin[0]) // LOGICAL_CELL_SIZE
+            tc = (c0 - origin[1]) // LOGICAL_CELL_SIZE
+            forbidden.add((tr + d[0] * trig, tc + d[1] * trig))
+    return forbidden
+
+
 def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],
-         origin: Tuple[int, int]) -> list:
+         origin: Tuple[int, int], forbidden: frozenset = frozenset()) -> list:
     if start == target:
         return []
     # Cell-space bounds from the corridor (color-2) extent relative to the
@@ -173,6 +242,8 @@ def _bfs(grid: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],
         for action, (dr, dc) in _DELTAS.items():
             nr, nc = r + dr, c + dc
             if nr < min_r or nc < min_c or nr > max_r or nc > max_c:
+                continue
+            if (nr, nc) in forbidden:        # turret arming cell → lethal, route around
                 continue
             # Check passage pixel BEFORE treating as target — only return if the
             # actual game move is allowed (passage color == 2).
@@ -231,7 +302,10 @@ def detect_state(grid: np.ndarray) -> GameState:
 
     route = []
     if cursor_cell is not None and target_cell is not None:
-        route = _bfs(grid, cursor_cell, target_cell, origin)
+        # Forbid each turret's arming cell so the BFS routes around the firing line
+        # (empty on L1 / any turret-free maze → byte-identical to the plain BFS).
+        forbidden = frozenset(arming_cells(grid, origin))
+        route = _bfs(grid, cursor_cell, target_cell, origin, forbidden)
 
     return GameState(
         grid_shape=(rows, cols),
