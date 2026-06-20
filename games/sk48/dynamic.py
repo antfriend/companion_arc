@@ -45,8 +45,8 @@ class Sk48Dynamic(Dynamic):
         st = D.read_state(f)
         if st is None:
             return None
-        row, ncols, blocks, win = st
-        return B.solve(row, ncols, dict(blocks), win)
+        geom, row, ncols, blocks, win = st
+        return B.solve_level(geom, row, ncols, dict(blocks), win)
 
     def recognize(self, frame) -> float:
         # Structural gate only (cheap, precise) — the BFS plan is deferred to

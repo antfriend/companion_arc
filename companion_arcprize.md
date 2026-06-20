@@ -15434,3 +15434,40 @@ tests the additive law in the direction it was built for. Memory [[project-sk48]
 **Desk remaining (operator-owned):** #2 variance-calibration resubmit (bound the ±noise band),
 then #3 ship the additive library (v1 floor + full dynamics incl. sk48) as the LB bet, expecting
 >= v1 — the first eclosion echo that is signal, not noise.
+
+---
+
+## Session Log — 2026-06-20 (sk48 L2: the reader generalizes across levels)
+
+**Trigger**: operator "solve another". Conductor triage first established the local landscape:
+all 10 cleanly-winnable local L1 games are solved; the 11th, ka59, is UNWINNABLE on its one
+offline instance (a solid colour-15 wall, cols 33-38 every row, seals the second target from
+both 3×3 containers — one of the ~1/6 unwinnable variants; ACTION6 click-select needs (x,y)
+coords the int-only SolverStep can't carry). The genuinely-new games (bp35, dc22, …) have no
+local environment_files to explore. So the verifiable frontier is the L2 of an L1-only game.
+
+**Solved: sk48 L2 — by generalizing the L1 dynamic, not writing a new one.** sk48 L2 is the same
+snake/sokoban mechanic at a different geometry: head anchor game-x=5 (not 11), a taller rail, a
+wider field, and 4 blocks in a horizontal row band (incl. a new colour-12), goal [8,12,9,14]. The
+L1 reader hardcoded x=11 + a fixed grid → returned None on L2 → multilevel stalled at L1. Fix:
+made the push model GEOMETRY-PARAMETRIC (`bfs_solver.Geom`/`Model`/`solve_level`) and had
+`detector.read_state` DERIVE the geometry from the frame (anchor = head-box left col; seg slots =
+anchor+6i bounded by the field's right edge; slide rows = start_row−6k bounded by the rail top;
+blocks = the centred 4×4 of each 6×6 cell). One solver now spans levels; L1 stays byte-identical
+(UUURRRRLDDRLUR). Plain BFS was too slow on L2's larger space (71s), so switched to weighted A*
+(displacement + snake slide/extend heuristic) → ~8s one-time plan, route verified LIVE
+(levels_completed=2). `_test_multilevel sk48` → **max level 2**; de-risk CLEAN (sk48 fires only on
+sk48), falsefire 0/1500, pollution PASS, full fleet unchanged. Bounded by max_expansions so a
+pathological hidden variant defers to the floor (additive-safe). Memory [[project-sk48]] updated.
+
+**Belief formed:** the "later levels are novel mechanics" prior is further scoped — sk48 L2 is a
+GEOMETRY re-skin of L1 (same rules, different anchor/size/count), solvable by making the reader
+frame-derived rather than constant-bound. This is the same lesson ar25 L2 taught (control-twist
+re-skin): a chunk of L2s are the L1 mechanic in disguise, and the head start is real once the
+perception layer stops hardcoding L1's coordinates. Cost noted: A* planning is ~8s for L2 (a
+one-time, cached spike) — acceptable for an additive ship; flag for competition per-step timeouts.
+
+**Local frontier now genuinely exhausted at L1.** Remaining work is deeper levels (sk48 L3+,
+cn04/g50t/sp80 L2), the click-select capability (unlocks ka59 winnable variants + cd82 L2 + re86
+L3), or hidden games with no local data. Conductor desk #2/#3 (variance calibration, ship the
+additive library) unchanged and still operator-owned.

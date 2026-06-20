@@ -23,9 +23,10 @@ replaying a hardcoded one. Geometry (verified on instance d8078629):
 from dataclasses import dataclass
 import numpy as np
 
+from games.sk48.bfs_solver import Geom
+
 FLOOR = 4
-SEG_X = [17, 23, 29, 35, 41]       # block/segment game-x slots right of the head (x=11)
-ROWS_Y = [12, 18, 24, 30, 36]      # block game-y slots
+STEP = 6
 _NON_BLOCK = {FLOOR, 6, 0, 1, 2, 5}  # floor, head border/interior, snake stripes, bg
 
 
@@ -55,44 +56,68 @@ def _block_at(f, gx, gy):
 
 
 def read_state(frame):
-    """Reconstruct (row, ncols, blocks, win_seq) for bfs_solver.solve, or None if the
-    frame is not a well-formed sk48 board (→ recognize 0.0, defer to floor)."""
+    """Reconstruct (geom, row, ncols, blocks, win_seq) for bfs_solver.solve_level —
+    geometry DERIVED from the frame so it works at any anchor/size (L1, L2, …). Returns
+    None if the frame is not a well-formed sk48 board (→ recognize 0.0, defer to floor).
+    """
     f = np.asarray(frame)
     if f.ndim != 2:
         return None
-    H = f.shape[0]
+    H, W = f.shape
     rows_idx = np.arange(H)[:, None]
 
-    # Head box: a colour-6 6×6 border box in the upper play area, anchored at col 11.
+    # Head box: a colour-6 6×6 border box in the upper play area. Its left col is the
+    # snake anchor (game-x of the head slot); its top row is the snake's start row.
     p6 = np.argwhere((f == 6) & (rows_idx < 50))
     if len(p6) == 0:
         return None
     r0, r1 = int(p6[:, 0].min()), int(p6[:, 0].max())
     c0, c1 = int(p6[:, 1].min()), int(p6[:, 1].max())
-    if (r1 - r0) != 5 or (c1 - c0) != 5 or c0 != 11:
+    if (r1 - r0) != 5 or (c1 - c0) != 5:
         return None
-    row = r0                                   # game_row = head box top frame row
+    anchor_c, row = c0, r0
 
-    # Rail: a tall, ≤2-col colour-3 strip (distinctive — keeps decoys out).
+    # Rail: a tall, ≤2-col colour-3 strip (distinctive — keeps decoys out). Its top
+    # bounds how far up the snake can slide.
     p3 = np.argwhere(f == 3)
     if len(p3) == 0:
         return None
     if (p3[:, 1].max() - p3[:, 1].min()) > 2 or (p3[:, 0].max() - p3[:, 0].min()) < 8:
         return None
+    rail_r0 = int(p3[:, 0].min())
 
-    # ncols: head segment (x=11) + contiguous striped body segments to the right.
+    # Play field extent: colour-4 in the upper play area (above the HUD). Its right
+    # edge bounds the rightmost segment slot.
+    field = np.argwhere((f == FLOOR) & (rows_idx < r1) & (rows_idx >= rail_r0 - 6))
+    if len(field) == 0:
+        return None
+    field_right = int(field[:, 1].max())
+
+    # Segment slots: anchor + STEP, while a 4×4 block at that slot fits in the field.
+    seg_x = [anchor_c + STEP * i for i in range((field_right - anchor_c) // STEP + 1)
+             if anchor_c + STEP * i + 5 <= field_right + 1]
+    if len(seg_x) < 3:
+        return None
+    # Slide rows: start row is the bottom; step up by STEP while the rail allows.
+    rows = [row - STEP * k for k in range((row - (rail_r0 - 4)) // STEP + 1)
+            if row - STEP * k >= rail_r0 - 4]
+    if len(rows) < 2:
+        return None
+    geom = Geom(seg_x=sorted(seg_x), rows=sorted(rows), step=STEP)
+
+    # ncols: head segment + contiguous striped body segments to the right.
     ncols = 1
-    for gx in SEG_X:
+    for gx in seg_x[1:]:
         band = f[row + 2:row + 4, gx + 1:gx + 5]
         if band.size and np.any((band == 1) | (band == 2)):
             ncols += 1
         else:
             break
 
-    # Blocks at the grid slots.
+    # Blocks at the grid slots (4×4 centred in each 6×6 cell).
     blocks = {}
-    for gy in ROWS_Y:
-        for gx in SEG_X:
+    for gy in rows:
+        for gx in seg_x[1:]:
             v = _block_at(f, gx, gy)
             if v is not None:
                 blocks[(gx, gy)] = v
@@ -109,10 +134,10 @@ def read_state(frame):
             v = present[0]
             if not win or win[-1] != v:
                 win.append(v)
-    if len(win) < 3:
+    if len(win) < 3 or len(win) != len(blocks):
         return None
 
-    return row, ncols, blocks, win[:3]
+    return geom, row, ncols, blocks, win
 
 
 def detect_state(grid: np.ndarray) -> GameState:

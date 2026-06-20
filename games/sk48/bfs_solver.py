@@ -13,8 +13,201 @@ Actions: U=slide UP, D=slide DOWN, L=retract (backward), R=extend (forward)
 """
 
 from collections import deque
+from dataclasses import dataclass
+from typing import List, Optional
 
 STEP = 6
+_W = 2          # weighted-A* heuristic weight (speed over optimal route length)
+
+
+# ===========================================================================
+# Geometry-parametric model (level-agnostic) — used by the Dynamic.
+#
+# The L1 push model below is hardcoded to L1's grid. The competition presents
+# the SAME mechanic at other anchors/sizes (L2: head at game-x=5, 4 blocks, a
+# taller rail). `Model` lifts the four actions to operate on a `Geom` derived
+# from the frame (games/sk48/detector.read_state), so one BFS solves any level.
+# ===========================================================================
+
+@dataclass
+class Geom:
+    seg_x: List[int]        # segment grid-x slots, left→right (head = seg_x[0])
+    rows: List[int]         # valid head-top grid rows (slide positions)
+    step: int = STEP
+
+    @property
+    def min_bx(self):       # first BLOCK slot (the head slot can't hold a block)
+        return self.seg_x[1]
+
+    @property
+    def max_bx(self):
+        return self.seg_x[-1]
+
+    @property
+    def min_by(self):
+        return min(self.rows)
+
+    @property
+    def max_by(self):
+        return max(self.rows)
+
+
+class Model:
+    """The L1 push rules (push_blocks / slide / retract / extend / win), lifted
+    to an arbitrary Geom. Mirrors the module-level L1 functions exactly except
+    the grid constants come from `geom` and a slide is legal iff its destination
+    is a real rail row (geom.rows)."""
+
+    def __init__(self, geom: Geom):
+        self.g = geom
+
+    def _valid_block(self, x, y):
+        g = self.g
+        return g.min_bx <= x <= g.max_bx and g.min_by <= y <= g.max_by
+
+    def _push(self, blocks, x, y, dx, dy):
+        s = self.g.step
+        nx, ny = x + dx * s, y + dy * s
+        if not self._valid_block(nx, ny):
+            return None
+        nb = dict(blocks)
+        if (nx, ny) in nb:
+            r = self._push(nb, nx, ny, dx, dy)
+            if r is None:
+                return None
+            nb = r
+        nb[nx, ny] = nb.pop((x, y))
+        return nb
+
+    def slide(self, row, ncols, blocks, dy_s):
+        new_row = row + dy_s * self.g.step
+        if new_row not in self.g.rows:
+            return None
+        nb = dict(blocks)
+        for i in range(ncols):
+            sx = self.g.seg_x[i]
+            for key in ((sx, new_row), (sx, row)):
+                if key in nb:
+                    r = self._push(nb, key[0], key[1], 0, dy_s)
+                    if r is None:
+                        return None
+                    nb = r
+        return new_row, ncols, nb
+
+    def retract(self, row, ncols, blocks):
+        if ncols <= 1:
+            return None
+        nb = dict(blocks)
+        for i in range(1, ncols):
+            sx = self.g.seg_x[i]
+            tx = self.g.seg_x[i - 1]
+            if self._valid_block(tx, row) and (tx, row) in nb:
+                r = self._push(nb, tx, row, -1, 0)
+                if r is not None:
+                    nb = r
+            if (sx, row) in nb:
+                if not self._valid_block(tx, row):
+                    pass
+                elif (tx, row) in nb:
+                    pass
+                else:
+                    r = self._push(nb, sx, row, -1, 0)
+                    if r is not None:
+                        nb = r
+        return row, ncols - 1, nb
+
+    def extend(self, row, ncols, blocks):
+        if ncols >= len(self.g.seg_x):
+            return None
+        last_x = self.g.seg_x[ncols - 1]
+        next_x = self.g.seg_x[ncols]
+        nb = dict(blocks)
+        if (next_x, row) in nb:
+            r = self._push(nb, next_x, row, 1, 0)
+            if r is not None:
+                nb = r
+        if (last_x, row) in nb:
+            r = self._push(nb, last_x, row, 1, 0)
+            if r is not None:
+                nb = r
+        return row, ncols + 1, nb
+
+    def win(self, row, ncols, blocks, win_seq):
+        seq = [blocks[(self.g.seg_x[i], row)]
+               for i in range(ncols) if (self.g.seg_x[i], row) in blocks]
+        return seq[:len(win_seq)] == list(win_seq)
+
+
+def _heuristic(geom: Geom, row, ncols, blocks, win_seq) -> int:
+    """Lower-bound remaining moves to the win: block displacement to the goal slots
+    (win-sequence colours on seg_x[1..] of one shared row) PLUS the snake's own cost to
+    slide to that row and extend to cover the blocks. Including the snake terms is what
+    keeps a greedy search from thrashing once the blocks are placed but the snake isn't."""
+    goal_x = {c: geom.seg_x[1 + j] for j, c in enumerate(win_seq)}
+    pos = {}                                    # colour -> (x, y) (first match)
+    for (x, y), c in blocks.items():
+        pos.setdefault(c, (x, y))
+    if any(c not in pos for c in win_seq):
+        return 10 ** 6                          # a goal colour vanished — dead end
+    from collections import Counter
+    target_row = Counter(pos[c][1] for c in win_seq).most_common(1)[0][0]
+    h = 0
+    for c in win_seq:
+        x, y = pos[c]
+        h += abs(x - goal_x[c]) // geom.step + abs(y - target_row) // geom.step
+    h += abs(row - target_row) // geom.step               # slide the snake to that row
+    h += max(0, (len(win_seq) + 1) - ncols)               # extend to cover the blocks
+    return h
+
+
+def solve_level(geom: Geom, init_row, init_ncols, init_blocks, win_seq,
+                max_depth=80, max_expansions=400_000) -> Optional[List[str]]:
+    """Frame-derived, level-agnostic A* over the push model. Returns an action path
+    ['U'/'D'/'L'/'R', ...] or None (→ the dynamic defers to the floor). Bounded by
+    max_expansions so a pathological hidden variant can't hang — it just defers."""
+    import heapq
+    win_seq = list(win_seq)
+    M = Model(geom)
+
+    def key(row, ncols, blocks):
+        return (row, ncols, tuple(sorted(blocks.items())))
+
+    start = (init_row, init_ncols, dict(init_blocks))
+    h0 = _heuristic(geom, init_row, init_ncols, init_blocks, win_seq)
+    # heap entries: (f, tie, g, row, ncols, blocks, path)
+    heap = [(h0, 0, 0, init_row, init_ncols, dict(init_blocks), [])]
+    best_g = {key(*start): 0}
+    tie = 1
+    expansions = 0
+    while heap:
+        f, _, g, row, ncols, blocks, path = heapq.heappop(heap)
+        if g > best_g.get(key(row, ncols, blocks), g):
+            continue
+        expansions += 1
+        if expansions > max_expansions:
+            return None
+        for action, result in (('U', M.slide(row, ncols, blocks, -1)),
+                               ('D', M.slide(row, ncols, blocks, +1)),
+                               ('L', M.retract(row, ncols, blocks)),
+                               ('R', M.extend(row, ncols, blocks))):
+            if result is None:
+                continue
+            nr, nc, nb = result
+            if M.win(nr, nc, nb, win_seq):
+                return path + [action]
+            ng = g + 1
+            if ng >= max_depth:
+                continue
+            k = key(nr, nc, nb)
+            if ng < best_g.get(k, max_depth + 1):
+                best_g[k] = ng
+                h = _heuristic(geom, nr, nc, nb, win_seq)
+                # Weighted A* (W=_W): the push model makes the displacement heuristic a
+                # loose under-estimate, so plain A* ≈ BFS. Weighting trades optimality
+                # for speed — any route within budget wins the level just the same.
+                heapq.heappush(heap, (ng + _W * h, tie, ng, nr, nc, nb, path + [action]))
+                tie += 1
+    return None
 SEG_X = [11, 17, 23, 29, 35, 41]
 ROWS = [12, 18, 24, 30, 36]
 MIN_BX, MAX_BX = 17, 41   # block x: [17,41] (x+6 <= 47)
