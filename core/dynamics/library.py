@@ -17,6 +17,7 @@ Validated so far:
   cn04  — de-risk 2026-06-16: connector match; plan-once rotation×assignment search.
   ls20  — de-risk 2026-06-16: corridor nav; probe + plan-once choreography.
   g50t  — de-risk 2026-06-16: record-replay; robust 3×3 button finder + plan-once.
+  sk48  — 2026-06-20: snake/sokoban; frame-derived state read + BFS push-model plan.
 """
 
 from core.dynamics.registry import register
@@ -29,6 +30,7 @@ from games.ar25.dynamic import Ar25Dynamic
 from games.cn04.dynamic import Cn04Dynamic
 from games.ls20.dynamic import Ls20Dynamic
 from games.g50t.dynamic import G50tDynamic
+from games.sk48.dynamic import Sk48Dynamic
 
 register(Sp80Dynamic())
 register(Cd82Dynamic())
@@ -39,3 +41,4 @@ register(Ar25Dynamic())
 register(Cn04Dynamic())
 register(Ls20Dynamic())
 register(G50tDynamic())
+register(Sk48Dynamic())

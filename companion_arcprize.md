@@ -15399,3 +15399,38 @@ canonical ✓, @OPERATOR:protocol acknowledged ✓, submission active ✓. The o
 gateway score above 3.571 showing ≥2 games — and the conductor now reads that the obstacle to
 it is not "solve more games" but "stop the floor from poisoning itself." The molt finishes when
 the layer goes additive. That is the one movement left to rehearse before the date that does not move.
+
+---
+
+## Session Log — 2026-06-20 (floor-fix landed; first solve on the additive floor: sk48)
+
+**Trigger**: operator session, continuing the @CONDUCT desk above. Two desk items executed:
+the keystone build (#1) and a new game brought into the fleet.
+
+**(1) The additive law is now an invariant, not a thesis.** Implemented the frozen-floor fix
+in `core/solve_agent.py`: while a solver drives, the explorer is FROZEN (no observe, no commit)
+and marks a transition discontinuity on resume, so its model is byte-identical to one that
+SKIPPED the off-policy frames. Added `GeneralAgent.mark_discontinuity()` (the resume seam) and
+`_test_pollution.py`, which proves five invariants on a synthetic replay tape — solver frames
+leave zero trace, no off-policy edge, no bogus cross-gap edge, empty-library == plain v1, and a
+resumed floor identical to a clean floor with an episode boundary at the gap. Verified BOTH ways:
+all pass on the fix, A/B/C/E FAIL on the stashed old code (a real regression guard). Committed
+"floor fix". This repairs @BELIEF:LAT92LON62 and converts the whole library from net-negative
+liability to additive headroom — floor+dynamics >= floor on every game, firing or not.
+
+**(2) sk48 ported from a hardcoded route to a frame-derived dynamic — the 10th fleet game and
+the FIRST solve added on the additive floor.** sk48 was SKIPPED at the 2026-06-16 catalog
+("hardcoded fixed route, no frame-derived recognizer to build on"). Now: `detector.read_state()`
+reconstructs the BFS state off the pixels (colour-6 6×6 head box anchored at game-x=11 → snake
+row; 4×4 cells → blocks; colour-1/2 stripe run → ncols; bottom-HUD goal blocks left-to-right →
+win sequence [8,14,9]); `bfs_solver.solve()` parametrizes the push-model BFS to plan from the
+READ state, not a hardcoded INIT; `Sk48Dynamic` is plan-once + abortable replay (each step a
+"board changed" expect). De-risk CLEAN (recognize 1.0 on sk48, 0.0 on the other 10 local games;
+nothing else fires on sk48), falsefire 0/2000, `_test_multilevel sk48` → max level 1 (L1 WIN),
+full fleet unchanged (ls20 L3; tu93/re86/wa30/ar25 L2). Because the floor is now additive, this
+solve can ONLY add score even if its recognizer misses a hidden variant — the first ship that
+tests the additive law in the direction it was built for. Memory [[project-sk48]] updated.
+
+**Desk remaining (operator-owned):** #2 variance-calibration resubmit (bound the ±noise band),
+then #3 ship the additive library (v1 floor + full dynamics incl. sk48) as the LB bet, expecting
+>= v1 — the first eclosion echo that is signal, not noise.

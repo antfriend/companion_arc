@@ -1,12 +1,32 @@
 """
-games/sk48/detector.py — Stub detector for sk48 (ARC-AGI-3).
+games/sk48/detector.py — frame reader for sk48 (ARC-AGI-3).
 
-Not yet implemented. Returns empty route from all interface functions.
-Replace detect_state / compute_route / verify_step once the mechanic is known.
+sk48 = snake/sokoban hybrid. A horizontal "snake" (a colour-6 bordered head box at
+the left, anchored at game-x=11, plus colour-1/2 striped body segments extending
+rightward) pushes coloured blocks around a grid so the first segments spell a target
+sequence shown in a bottom HUD. ACTION1/2 slide the snake UP/DOWN along a colour-3
+rail; ACTION3 retracts (pulls a segment back, pushing blocks left); ACTION4 extends
+(grows a segment right, pushing blocks right). Win = the segment row matches the HUD
+order (games/sk48/bfs_solver.py is the forward model).
+
+read_state() reconstructs the BFS state (snake row, ncols, blocks, win sequence)
+straight from the pixels, so the solver re-derives the route per instance instead of
+replaying a hardcoded one. Geometry (verified on instance d8078629):
+  - head box: colour-6 6×6 border box, top-left at frame (game_row, 11),
+  - blocks: 4×4 uniform non-floor cells at frame (game_y+1 .. +4, game_x+1 .. +4),
+    i.e. game (x, y) = (frame_col_left - 1, frame_row_top - 1),
+  - snake body: colour-1/2 stripe in the head band's middle rows (game_row+2 .. +3),
+  - rail: a 2-col colour-3 strip to the left,
+  - HUD: a second colour-6 box low in the frame with the goal blocks left-to-right.
 """
 
 from dataclasses import dataclass
 import numpy as np
+
+FLOOR = 4
+SEG_X = [17, 23, 29, 35, 41]       # block/segment game-x slots right of the head (x=11)
+ROWS_Y = [12, 18, 24, 30, 36]      # block game-y slots
+_NON_BLOCK = {FLOOR, 6, 0, 1, 2, 5}  # floor, head border/interior, snake stripes, bg
 
 
 @dataclass
@@ -20,6 +40,79 @@ class StepResult:
     success: bool
     reason: str
     delta: dict
+
+
+def _block_at(f, gx, gy):
+    """The block colour of a 4×4 uniform non-floor cell at game (gx, gy), or None."""
+    r0, c0 = gy + 1, gx + 1
+    sub = f[r0:r0 + 4, c0:c0 + 4]
+    if sub.shape != (4, 4):
+        return None
+    v = int(sub[0, 0])
+    if v == FLOOR or v in (6, 0) or not np.all(sub == v):
+        return None
+    return v
+
+
+def read_state(frame):
+    """Reconstruct (row, ncols, blocks, win_seq) for bfs_solver.solve, or None if the
+    frame is not a well-formed sk48 board (→ recognize 0.0, defer to floor)."""
+    f = np.asarray(frame)
+    if f.ndim != 2:
+        return None
+    H = f.shape[0]
+    rows_idx = np.arange(H)[:, None]
+
+    # Head box: a colour-6 6×6 border box in the upper play area, anchored at col 11.
+    p6 = np.argwhere((f == 6) & (rows_idx < 50))
+    if len(p6) == 0:
+        return None
+    r0, r1 = int(p6[:, 0].min()), int(p6[:, 0].max())
+    c0, c1 = int(p6[:, 1].min()), int(p6[:, 1].max())
+    if (r1 - r0) != 5 or (c1 - c0) != 5 or c0 != 11:
+        return None
+    row = r0                                   # game_row = head box top frame row
+
+    # Rail: a tall, ≤2-col colour-3 strip (distinctive — keeps decoys out).
+    p3 = np.argwhere(f == 3)
+    if len(p3) == 0:
+        return None
+    if (p3[:, 1].max() - p3[:, 1].min()) > 2 or (p3[:, 0].max() - p3[:, 0].min()) < 8:
+        return None
+
+    # ncols: head segment (x=11) + contiguous striped body segments to the right.
+    ncols = 1
+    for gx in SEG_X:
+        band = f[row + 2:row + 4, gx + 1:gx + 5]
+        if band.size and np.any((band == 1) | (band == 2)):
+            ncols += 1
+        else:
+            break
+
+    # Blocks at the grid slots.
+    blocks = {}
+    for gy in ROWS_Y:
+        for gx in SEG_X:
+            v = _block_at(f, gx, gy)
+            if v is not None:
+                blocks[(gx, gy)] = v
+    if not blocks:
+        return None
+
+    # Win sequence: goal block colours left-to-right in the bottom HUD strip.
+    hud = f[r1 + 1:]                            # everything below the head box
+    win = []
+    for c in range(hud.shape[1]):
+        col = hud[:, c]
+        present = [int(v) for v in np.unique(col) if int(v) not in _NON_BLOCK]
+        if present:
+            v = present[0]
+            if not win or win[-1] != v:
+                win.append(v)
+    if len(win) < 3:
+        return None
+
+    return row, ncols, blocks, win[:3]
 
 
 def detect_state(grid: np.ndarray) -> GameState:
@@ -45,4 +138,4 @@ def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResul
 
 
 def format_companion_block(state: GameState, route: list) -> str:
-    return "[strategy game=sk48 level=1 type=stub]\nnot implemented\n[/strategy]"
+    return "[strategy game=sk48 level=1 type=snake-sokoban]\nframe-derived BFS\n[/strategy]"

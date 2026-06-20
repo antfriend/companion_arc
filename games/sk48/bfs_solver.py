@@ -151,6 +151,43 @@ def check_win(row, ncols, blocks):
     return seq[:3] == WIN_SEQ
 
 
+def solve(init_row, init_ncols, init_blocks, win_seq, max_depth=60):
+    """Frame-derived BFS: plan a winning action path ['U'/'D'/'L'/'R', ...] from a
+    state READ off the pixels (detector.read_state), not the hardcoded INIT. Returns
+    None if no win is reachable within max_depth (→ the dynamic defers to the floor)."""
+    win_seq = list(win_seq)[:3]
+
+    def _win(row, ncols, blocks):
+        seq = [blocks[(SEG_X[i], row)] for i in range(ncols) if (SEG_X[i], row) in blocks]
+        return seq[:len(win_seq)] == win_seq
+
+    init = to_state(init_row, init_ncols, dict(init_blocks))
+    queue = deque([(init, [])])
+    visited = {init}
+    while queue:
+        state, path = queue.popleft()
+        row, ncols, blocks = from_state(state)
+        for action, result in [
+            ('U', action_slide(row, ncols, blocks, -1)),
+            ('D', action_slide(row, ncols, blocks, +1)),
+            ('L', action_retract(row, ncols, blocks)),
+            ('R', action_extend(row, ncols, blocks)),
+        ]:
+            if result is None:
+                continue
+            nr, nc, nb = result
+            ns = to_state(nr, nc, nb)
+            if ns in visited:
+                continue
+            visited.add(ns)
+            npath = path + [action]
+            if _win(nr, nc, nb):
+                return npath
+            if len(npath) < max_depth:
+                queue.append((ns, npath))
+    return None
+
+
 def bfs_solve():
     init = to_state(INIT_ROW, INIT_NCOLS, INIT_BLOCKS)
     queue = deque([(init, [])])

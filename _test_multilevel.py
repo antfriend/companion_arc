@@ -28,7 +28,7 @@ ACTIONS = [GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3,
            GameAction.ACTION4, GameAction.ACTION5, GameAction.ACTION6, GameAction.ACTION7]
 END = ("GameState.GAME_OVER", "game_over", "GameState.WIN", "win")
 ENV = Path(__file__).parent / "environment_files"
-GAMES = ["ls20", "sp80", "tu93", "cd82", "re86", "wa30", "ar25", "cn04", "g50t"]
+GAMES = ["ls20", "sp80", "tu93", "cd82", "re86", "wa30", "ar25", "cn04", "g50t", "sk48"]
 
 BUDGET = 600
 if "--budget" in sys.argv:
