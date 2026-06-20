@@ -50,6 +50,13 @@ def _make_floor(floor: str, n_actions: int, seed):
     if floor == "goal":
         from core.goal_agent import GoalSeekAgent
         return GoalSeekAgent(n_actions, seed=seed, goal_mode="near")
+    if floor == "click":
+        # ACTION6-capable floor: count-based novelty over moves + foreground
+        # clicks (movement-stall gates clicks on). For movement games it never
+        # stalls so it never clicks — reduces to v1-style novelty; for click
+        # games it can actually win instead of scoring 0. Use when 6 in avail.
+        from core.click_agent import ClickExplorer
+        return ClickExplorer(n_actions, allow_click=True, seed=seed)
     from core.general_agent import GeneralAgent       # default "v1" — the 0.18 floor
     return GeneralAgent(n_actions, seed=seed)
 
@@ -133,7 +140,13 @@ class SupervisedAgent:
             self.explorer.mark_discontinuity()
             self._solver_drove_last = False
         self.explorer.observe(frame)
-        action = self.explorer.propose(frame)
-        self.explorer.commit(frame, action)
-        self.spec = ("m", action)
-        return action
+        proposal = self.explorer.propose(frame)
+        self.explorer.commit(frame, proposal)
+        # A click floor proposes a SPEC tuple (("m",i) / ("c",x,y)); the movement
+        # floor proposes a bare int. Normalise to (spec, int) so the int return
+        # stays valid for legacy `% n` callers and self.spec drives clicks.
+        if isinstance(proposal, tuple):
+            self.spec = proposal
+            return (proposal[1] % self.n) if proposal[0] == "m" else 0
+        self.spec = ("m", proposal)
+        return proposal

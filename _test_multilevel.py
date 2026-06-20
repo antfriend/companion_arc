@@ -52,7 +52,8 @@ def play(cls, seed=0):
     obs = g.perform_action(ActionInput(id=GameAction.RESET), raw=True)
     raw = list(getattr(g, "_available_actions", [1, 2, 3, 4, 5]))
     mo = [ACTIONS[a - 1] for a in raw if a != 6]; n = len(mo)
-    agent = SupervisedAgent(n, seed=seed)          # default v1 floor + full library
+    floor = "click" if 6 in raw else "v1"          # ACTION6 games get the click floor
+    agent = SupervisedAgent(n, seed=seed, floor=floor)
     prev_levels = 0
     steps = 0
     for _ in range(BUDGET):

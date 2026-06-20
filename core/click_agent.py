@@ -53,6 +53,8 @@ def spec_to_action_input(spec, move_objs):
     move_objs is the per-game list of simple-action GameActions (ACTION6 excluded)."""
     from arcengine import ActionInput, GameAction
     if spec[0] == "m":
+        if not move_objs:                      # click-only game: no movement actions
+            return ActionInput(id=GameAction.ACTION6, data={"x": 0, "y": 0})
         return ActionInput(id=move_objs[spec[1] % len(move_objs)], data={})
     return ActionInput(id=GameAction.ACTION6, data={"x": int(spec[1]), "y": int(spec[2])})
 
@@ -115,6 +117,8 @@ class ClickExplorer:
         self._prev_key = None
         self._since_new = 0        # steps since a never-seen signature appeared
         self._clicks_on = False    # latched once movement stalls (this level)
+        self._cur_sig = None       # this step's signature (observe→propose→commit)
+        self._cur_frame = None
 
     def set_actions(self, n_moves: int, allow_click: bool) -> None:
         self.n_moves = max(0, n_moves)
@@ -144,8 +148,15 @@ class ClickExplorer:
         click_keys = [("c", gx, gy) for gx, gy in _foreground_components(frame)]
         return (move_keys + click_keys) or [("m", 0)]
 
-    def choose(self, frame: np.ndarray):
+    # -- observe / propose / commit / mark_discontinuity ----------------------
+    # Same split interface as GeneralAgent so ClickExplorer is a drop-in
+    # SupervisedAgent floor (core/solve_agent.py) — the additive-law freeze and
+    # resume logic work unchanged. propose() returns an action SPEC, not an int.
+
+    def observe(self, frame: np.ndarray) -> bytes:
         sig = board_signature(frame)
+        self._cur_sig = sig
+        self._cur_frame = frame
         is_new = sig not in self.visit
         self.visit[sig] = self.visit.get(sig, 0) + 1
         # Track movement-stall: clicks latch on once novelty dries up.
@@ -155,16 +166,27 @@ class ClickExplorer:
             self._since_new += 1
             if self.allow_click and not self._clicks_on and self._since_new >= self._stall:
                 self._clicks_on = True
-
         if self._prev_sig is not None and self._prev_key is not None:
             k = (self._prev_sig, self._prev_key)
             self.trans[k] = sig
             if sig == self._prev_sig:
                 self.noop.add(k)
+        return sig
 
-        cands = self._candidates(sig, frame)
-        key = self._policy(sig, cands)
-        self._prev_sig, self._prev_key = sig, key
+    def propose(self, frame: Optional[np.ndarray] = None):
+        cands = self._candidates(self._cur_sig, self._cur_frame)
+        return self._policy(self._cur_sig, cands)
+
+    def commit(self, frame, key) -> None:
+        self._prev_sig, self._prev_key = self._cur_sig, key
+
+    def mark_discontinuity(self) -> None:
+        self._prev_sig, self._prev_key = None, None
+
+    def choose(self, frame: np.ndarray):
+        self.observe(frame)
+        key = self.propose(frame)
+        self.commit(frame, key)
         return key
 
     def _policy(self, sig, cands):

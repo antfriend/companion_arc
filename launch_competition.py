@@ -177,8 +177,13 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         print(f"[game] {game_id}: env creation failed — skipping", flush=True)
         return
 
+    from arcengine import GameAction as _GA
     actions = [a for a in (env.action_space or []) if a.is_simple()]
-    if not actions:
+    # ACTION6 (click) is not "simple", so it never enters `actions`. The solve-mode
+    # click floor drives it via env.step(ACTION6, data={x,y}); other modes can't.
+    _has_click = _GA.ACTION6 in (env.action_space or [])
+    _click_only = not actions and _has_click and _MODE == "solve"
+    if not actions and not _click_only:
         print(f"[game] {game_id}: no simple actions — skipping", flush=True)
         return
 
@@ -225,7 +230,12 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
                 from core.general_agent_dyn import GeneralAgentDyn as _GenCls
             else:
                 from core.general_agent import GeneralAgent as _GenCls
-            _gen = _GenCls(len(actions))
+            # Solve mode gets the ACTION6-capable floor on click games so it can
+            # actually win them instead of scoring 0; movement games stay on v1.
+            if _MODE == "solve" and _has_click:
+                _gen = _GenCls(len(actions), floor="click")
+            else:
+                _gen = _GenCls(len(actions))
         except Exception as exc:
             print(f"[game] {game_id}: general agent unavailable ({exc}) — random", flush=True)
 
@@ -260,8 +270,12 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         # Choose action per mode. random/general re-decide every frame (never
         # commit to a killable plan — the lesson of the 0.08<0.15 ablation).
         level_step = step - level_start_step
+        _click = None
         if _gen is not None and obs is not None and obs.frame:
-            action_idx = _gen.choose(np.asarray(list(obs.frame)[-1])) % len(actions)
+            action_idx = _gen.choose(np.asarray(list(obs.frame)[-1])) % max(1, len(actions))
+            _spec = getattr(_gen, "spec", None)        # SupervisedAgent click side-channel
+            if _spec is not None and _spec[0] == "c":
+                _click = (int(_spec[1]), int(_spec[2]))
         elif _MODE == "random":
             action_idx = random.randrange(len(actions))
         elif obs is None:
@@ -272,7 +286,10 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         else:
             action_idx = 0  # route exhausted or unknown game — no random
 
-        obs = env.step(actions[action_idx])
+        if _click is not None:                         # ACTION6 click-select
+            obs = env.step(_GA.ACTION6, data={"x": _click[0], "y": _click[1]})
+        else:
+            obs = env.step(actions[action_idx])
         if obs is None:
             break
         step += 1
