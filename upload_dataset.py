@@ -9,7 +9,11 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "2026-06-20.1-click+additive: (1) ADDITIVE LAW now an ENFORCED invariant - the floor is "
+    "2026-06-20.2-click+additive (hotfix): FIXES an online IndexError in launch_competition "
+    "_play_game on CLICK-ONLY games (empty simple-action list) - the click floor now offers "
+    "clicks immediately when there are no moves, and the launcher emits an ACTION6 fallback "
+    "instead of indexing []. "
+    "(1) ADDITIVE LAW now an ENFORCED invariant - the floor is "
     "frozen while a solver drives (no off-policy commits) so floor+dynamics >= floor on every "
     "game; repairs the warm-keep pollution that had every dynamics build sitting under plain v1 "
     "(core/solve_agent.py + GeneralAgent.mark_discontinuity; proven by _test_pollution.py). "

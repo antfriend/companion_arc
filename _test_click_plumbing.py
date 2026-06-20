@@ -66,6 +66,16 @@ def run() -> bool:
     ai2 = spec_to_action_input(sup0.spec, mo)
     _ok(ai2.id == mo[a], "movement spec translates to the same action as the int", fails)
 
+    # 3) Click-only floor (no movement actions) must propose a CLICK, never ("m",0)
+    #    — else a launcher that indexes an empty action list crashes (the online
+    #    IndexError at launch_competition._play_game).
+    from core.click_agent import ClickExplorer
+    f2 = np.zeros((20, 20), dtype=np.int64)
+    f2[8:12, 8:12] = 5                          # a foreground blob to click
+    ce = ClickExplorer(0, allow_click=True, seed=0)   # 0 moves = click-only game
+    sp = ce.choose(f2)
+    _ok(sp[0] == "c", f"click-only floor proposes a click on step 1  (got {sp})", fails)
+
     ok = not fails
     print("\nverdict:", "CLEAN — clicks drive ACTION6; movement path unchanged"
           if ok else f"BROKEN — {fails}")

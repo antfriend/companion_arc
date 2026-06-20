@@ -288,8 +288,13 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
 
         if _click is not None:                         # ACTION6 click-select
             obs = env.step(_GA.ACTION6, data={"x": _click[0], "y": _click[1]})
-        else:
+        elif actions:
             obs = env.step(actions[action_idx])
+        else:
+            # Click-only game whose floor proposed a non-click this step (e.g. the
+            # ClickExplorer ("m",0) fallback on a blank frame): there is no movement
+            # action, so emit a harmless origin click rather than index [] -> crash.
+            obs = env.step(_GA.ACTION6, data={"x": 0, "y": 0})
         if obs is None:
             break
         step += 1

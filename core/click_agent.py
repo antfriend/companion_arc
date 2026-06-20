@@ -143,7 +143,10 @@ class ClickExplorer:
         finding new states, never stalls, never clicks — preserved exactly.
         """
         move_keys = [("m", i) for i in range(self.n_moves)]
-        if not (self.allow_click and self._clicks_on):
+        # Clicks are offered once movement stalls, OR immediately on a click-only
+        # game (no moves to stall on — without this it emits ("m",0) forever and a
+        # click-only launcher indexes an empty action list).
+        if not (self.allow_click and (self._clicks_on or self.n_moves == 0)):
             return move_keys or [("m", 0)]
         click_keys = [("c", gx, gy) for gx, gy in _foreground_components(frame)]
         return (move_keys + click_keys) or [("m", 0)]
