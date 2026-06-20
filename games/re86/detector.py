@@ -143,6 +143,111 @@ def compute_route(state: GameState, level_num: int = 1) -> list:
     return a + [CYCLE] + b
 
 
+# ---------------------------------------------------------------------------
+# Generalized N-piece solver (level-agnostic) — handles L2+ where pieces have
+# arbitrary shapes/colors (saltire/diamond/cross), and a piece's color-0 active
+# center splits it. Closed-loop: each frame re-derive the active piece's pixel
+# set and the 3px displacement that lands its target markers.
+# ---------------------------------------------------------------------------
+
+_PIECE_MIN = 18            # a real piece blob (markers are <= _MARK_MAX px)
+_MARK_MAX = 4
+_IGNORE = frozenset({4, 15})   # 4 = excluded border markers; 15 = bottom UI bar
+
+
+def _components(mask: np.ndarray) -> list:
+    """8-connected components of True cells → list of (r, c) lists."""
+    remaining = {(int(r), int(c)) for r, c in np.argwhere(mask)}
+    out = []
+    while remaining:
+        stack = [next(iter(remaining))]
+        comp = []
+        while stack:
+            cur = stack.pop()
+            if cur not in remaining:
+                continue
+            remaining.discard(cur)
+            comp.append(cur)
+            r, c = cur
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    if (r + dr, c + dc) in remaining:
+                        stack.append((r + dr, c + dc))
+        out.append(comp)
+    return out
+
+
+def detect_pieces(grid: np.ndarray) -> list:
+    """Return [{color, bbox, pixels(set), marks(list)}] for each piece blob.
+
+    A piece's color-0 active-center hole is bridged by including color-0 in the
+    connectivity (a saltire whose arms meet only at the 0-center stays ONE blob).
+    Markers = the small isolated clusters of a piece color (the target footprint),
+    kept SEPARATE from the piece."""
+    g = np.asarray(grid)
+    vals, counts = np.unique(g, return_counts=True)
+    bg = int(vals[int(np.argmax(counts))])
+    pieces = []
+    for v in vals:
+        c = int(v)
+        if c == bg or c in _IGNORE or c == 0:
+            continue
+        marks = []
+        for comp in _components((g == c) | (g == 0)):
+            cpix = [p for p in comp if g[p[0], p[1]] == c]
+            if len(cpix) >= _PIECE_MIN:
+                rs = [p[0] for p in cpix]; cs = [p[1] for p in cpix]
+                pieces.append({"color": c, "bbox": (min(rs), max(rs), min(cs), max(cs)),
+                               "pixels": set(cpix), "marks": None})
+            elif 1 <= len(cpix) <= _MARK_MAX:
+                marks.extend(cpix)
+        for p in pieces:
+            if p["color"] == c and p["marks"] is None:
+                p["marks"] = list(marks)
+    return pieces
+
+
+def active_piece(grid: np.ndarray):
+    """(color, pixel-set) of the active piece = the blob whose bbox contains the
+    unique color-0 pixel (robust to HOLLOW shapes). The color-0 CENTRE cell is
+    added to the footprint: while active it renders as a 0-hole, but once placed
+    it fills with the piece colour — so a target marker that lands on the centre
+    (common for a saltire) is covered. Without this, coverage flips per-position
+    and the solver stalls. (None, None) if undetermined."""
+    g = np.asarray(grid)
+    p0 = np.argwhere(g == 0)
+    if len(p0) != 1:
+        return None, None
+    r, c = int(p0[0][0]), int(p0[0][1])
+    cands = [p for p in detect_pieces(g)
+             if p["bbox"][0] <= r <= p["bbox"][1] and p["bbox"][2] <= c <= p["bbox"][3]]
+    if not cands:
+        return None, None
+    best = min(cands, key=lambda p: (p["bbox"][1] - p["bbox"][0]) * (p["bbox"][3] - p["bbox"][2]))
+    return best["color"], best["pixels"] | {(r, c)}
+
+
+def required_disp(pixels: set, marks: list):
+    """The 3px-divisible displacement D=(dr,dc) s.t. (pixels + D) covers every
+    marker. Anchor-free (candidates = marker - piece-pixel on the move grid).
+    Returns (D, full_coverage_bool); (None, False) if no markers."""
+    if not marks:
+        return None, False
+    m0 = marks[0]
+    cands = set()
+    for p in pixels:
+        dr, dc = m0[0] - p[0], m0[1] - p[1]
+        if dr % _STEP == 0 and dc % _STEP == 0:
+            cands.add((dr, dc))
+    best, best_cov, best_d = None, -1, None
+    for D in cands:
+        cov = sum(1 for m in marks if (m[0] - D[0], m[1] - D[1]) in pixels)
+        d = abs(D[0]) + abs(D[1])
+        if cov > best_cov or (cov == best_cov and d < best_d):
+            best, best_cov, best_d = D, cov, d
+    return best, (best_cov == len(marks))
+
+
 def verify_step(before: np.ndarray, after: np.ndarray, action: int) -> StepResult:
     return StepResult(success=True, reason="unverified (re86)", delta={})
 
