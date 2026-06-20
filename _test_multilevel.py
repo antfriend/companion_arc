@@ -22,7 +22,8 @@ import numpy as np
 from arcengine import ARCBaseGame, ActionInput, GameAction
 
 from core.solve_agent import SupervisedAgent
-from core.dynamics import library  # noqa: F401 — registers the 9 dynamics
+from core.click_agent import spec_to_action_input
+from core.dynamics import library  # noqa: F401 — registers the dynamics
 
 ACTIONS = [GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3,
            GameAction.ACTION4, GameAction.ACTION5, GameAction.ACTION6, GameAction.ACTION7]
@@ -58,8 +59,8 @@ def play(cls, seed=0):
         if obs is None or str(obs.state) in END or not obs.frame:
             break
         full = np.asarray(obs.frame[-1])
-        a = agent.choose(full) % n
-        obs = g.perform_action(ActionInput(id=mo[a]), raw=True)
+        agent.choose(full)                         # sets agent.spec (move or click)
+        obs = g.perform_action(spec_to_action_input(agent.spec, mo), raw=True)
         steps += 1
         if obs is not None and (obs.levels_completed or 0) > prev_levels:
             prev_levels = obs.levels_completed

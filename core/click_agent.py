@@ -45,6 +45,18 @@ _MAX_CLICKS = 12          # cap click candidates per frame (largest components f
 _MIN_COMPONENT = 1        # ignore components smaller than this many cells
 
 
+def spec_to_action_input(spec, move_objs):
+    """Translate an action SPEC into an ARC ActionInput. The shared convention used
+    by ClickExplorer and SupervisedAgent.spec:
+        ("m", i)      → move_objs[i]                       (a simple movement action)
+        ("c", x, y)   → ACTION6 with data {"x": x, "y": y} (click-select cell (x, y))
+    move_objs is the per-game list of simple-action GameActions (ACTION6 excluded)."""
+    from arcengine import ActionInput, GameAction
+    if spec[0] == "m":
+        return ActionInput(id=move_objs[spec[1] % len(move_objs)], data={})
+    return ActionInput(id=GameAction.ACTION6, data={"x": int(spec[1]), "y": int(spec[2])})
+
+
 def _foreground_components(frame: np.ndarray, max_clicks: int = _MAX_CLICKS):
     """Return up to max_clicks click targets (gx, gy): centroids of the largest
     non-background connected components (4-connectivity)."""

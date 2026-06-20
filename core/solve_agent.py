@@ -74,6 +74,14 @@ class SupervisedAgent:
         self._aborted = False
         self._diverge = 0
         self._solver_drove_last = False
+        # Side-channel action SPEC for the executed step, in ClickExplorer's format:
+        #   ("m", i)        → movement action index i
+        #   ("c", x, y)     → ACTION6 click at frame cell (x, y)
+        # Harnesses translate it via core.click_agent.spec_to_action_input. It is set
+        # on every choose(); a click is emitted ONLY when a solver returns one, so for
+        # non-firing / movement steps this is always ("m", action) and behaviour is
+        # byte-identical to the int return (the additive invariant is untouched).
+        self.spec = ("m", 0)
 
     def set_n_actions(self, n: int) -> None:
         self.n = max(1, n)
@@ -111,7 +119,12 @@ class SupervisedAgent:
         if step is not None:
             self._expect = step.expect
             self._solver_drove_last = True
-            return step.action % self.n
+            a = step.action % self.n
+            if step.click is not None:                # ACTION6 click-select
+                self.spec = ("c", int(step.click[0]), int(step.click[1]))
+            else:
+                self.spec = ("m", a)
+            return a
 
         # 4) Floor drives — a real explorer step it chose itself, so learn from it.
         #    On the first floor step after solver control, cut the transition gap so
@@ -122,4 +135,5 @@ class SupervisedAgent:
         self.explorer.observe(frame)
         action = self.explorer.propose(frame)
         self.explorer.commit(frame, action)
+        self.spec = ("m", action)
         return action

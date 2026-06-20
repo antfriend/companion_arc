@@ -13,17 +13,23 @@ canonical coordinates, so a translated/recolored hidden variant still matches.
 """
 
 from dataclasses import dataclass, field
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 import numpy as np
 
 
 @dataclass
 class SolverStep:
-    """One re-derived move plus the predicate the resulting frame must satisfy."""
+    """One re-derived move plus the predicate the resulting frame must satisfy.
+
+    `click` carries an optional (x, y) frame coordinate: when set, the supervisor
+    emits ACTION6 at that cell (click-select) instead of the movement `action`.
+    `action` is then a don't-care placeholder. This is how click-gated games
+    (ka59 multi-container, cd82 L2, dc22, …) drive sprite selection."""
     action: int
     expect: Callable[[np.ndarray], bool] = field(default=lambda f: True)
     note: str = ""
+    click: Optional[Tuple[int, int]] = None
 
 
 class Dynamic:
