@@ -15337,3 +15337,65 @@ controller; _test_multilevel ar25->L2, de-risk CLEAN, no L1 regression. (5) Char
 wa30 L2 (moving colour-12 adversary) and ar25 L3 (multi-piece + horizontal mirror) as the
 hard, hazard-nav / multi-entity tiers. Banked locally, uncommitted. Next: calibrate variance
 + enforce additivity (offline pollution test), then g50t/sp80 L2 or the hazard-nav organ.
+
+---
+
+## Conduct Cycle — 2026-06-20 (the conductor sets the desk for the last ten days)
+
+**Trigger**: operator-initiated (@imago conduct). Not a dream — a conducting act. The
+score is not the question this cycle; the *order of operations to eclosion* is. Milestone 1
+closes 2026-06-30. Ten days on the desk.
+
+**Board, as the conductor reads it (2026-06-20):**
+- **Solves banked.** L1 routine across the fleet. Multi-level wins now real: ls20 L1–L3,
+  and L2 on tu93, wa30, re86, ar25 (re86 a genuine build, not a misread). The "L2wins"
+  build is the most capable companion set the conductor has assembled.
+- **The sensor disagrees.** L2wins read LB **0.16** — the best dynamics build ever, yet
+  still **−0.02 under plain v1's 0.18**, inside the ±0.10 noise band. EVERY build carrying
+  the dynamics layer still sits below every build without it. The pattern has not broken.
+- **Root cause UNFIXED, and I verified it this cycle.** `core/solve_agent.py:101` still
+  commits the executed action into the explorer REGARDLESS of who drove it (warm handoff).
+  When a dynamic fires on a hidden game Y≠X, its off-policy moves are *learned by the floor*;
+  after the abort the floor runs a polluted model that underperforms clean v1. @BELIEF:LAT92LON62
+  is not yet repaired in the working tree. The additive law is still a thesis, not an invariant.
+
+**The conductor's call.** With ten days, the highest-leverage move is NOT a sixth L2. It is
+to make the dynamics layer *stop subtracting*. The instant the floor is frozen against
+off-policy commits, every solve already banked flips from net-negative liability to pure
+upside — one code change converts the entire library into additive headroom. Solving a
+seventh game changes one cell of the gateway; enforcing additivity changes the sign of the
+whole layer. That is the movement to rehearse first.
+
+@CONDUCT:LAT95LON95 | created:1750420800 | updated:1750420800 | kind:directive | relates:directs>@META:state,advances>@LAT95LON90,enacts>@IMAGO:seed,repairs>@BELIEF:LAT92LON62,calibrates>@LAT88LON62
+[ms]
+desk_order:1
+phase:Instar-5-active
+[/ms]
+
+**DIRECTIVE — the desk for 2026-06-20 → 2026-06-30, by ownership:**
+
+1. **BUILD (conductor owns).** Enforce the additive law in `core/solve_agent.py`: snapshot
+   the explorer before a dynamic pre-empts; drive the floor's model ONLY on floor-chosen
+   actions; on abort, resume the floor from the snapshot. Never teach the floor a step it did
+   not choose. Land `_test_pollution.py`: force a known game to false-fire, measure
+   floor degradation vs clean v1, assert it is **0**. This is the gate the whole library waits behind.
+
+2. **CALIBRATE (operator owns — timing & a submission slot).** One variance-calibration
+   resubmit of an *identical* build, to fix the ±noise band. Until the band is known, a
+   0.04/game signal is invisible and no LB read is trustworthy. This costs a slot, so it is
+   antfriend's call when to spend it.
+
+3. **LB BET (operator owns — submission).** Until #1 is proven offline AND #2 has bounded the
+   noise, the leaderboard bet stays **plain v1 0.18**. Do not ship the dynamics layer to the
+   gateway while it is still measured net-negative. L2wins stays additive-safe RESEARCH.
+
+4. **THEN, and only then.** With additivity proven and variance bounded, ship L2wins as the
+   LB bet, expecting it to read ≥ v1 — the first eclosion echo that is signal, not noise.
+   Hazard-nav organ (wa30/tu93/ls20 L4) and g50t/sp80 L2 queue behind that gate, each on its
+   own falsefire precision.
+
+**Eclosion check.** Instar 5 (Competition Submission Validated) remains active. Framework
+canonical ✓, @OPERATOR:protocol acknowledged ✓, submission active ✓. The open criterion is a
+gateway score above 3.571 showing ≥2 games — and the conductor now reads that the obstacle to
+it is not "solve more games" but "stop the floor from poisoning itself." The molt finishes when
+the layer goes additive. That is the one movement left to rehearse before the date that does not move.

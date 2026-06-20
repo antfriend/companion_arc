@@ -10,8 +10,15 @@ plan aborts back to the floor within ABORT_K frames. So:
     (no regression by construction),
   - upside = whole games solved when a dynamic confidently matches.
 
-The explorer is kept WARM every step (observe + commit the executed action), so
-after an abort it already holds this level's transition table — no cold start.
+The explorer learns ONLY from steps IT chose (the additive law, §7): while a solver
+drives, the explorer is frozen (no observe/commit), so its model is identical to one
+that skipped those off-policy frames. On abort it resumes from clean pre-takeover
+state — never from a model polluted by moves it did not pick. This makes the layer
+additive by construction: floor+dynamics >= floor on every game, firing or not.
+
+(Superseded the prior "keep warm every step" design, which committed the executed
+action regardless of who drove — teaching the floor off-policy edges and dropping
+every dynamics build BELOW plain v1 on the leaderboard; see @BELIEF:LAT92LON62.)
 """
 
 from typing import List, Optional
@@ -66,6 +73,7 @@ class SupervisedAgent:
         self._expect = None
         self._aborted = False
         self._diverge = 0
+        self._solver_drove_last = False
 
     def set_n_actions(self, n: int) -> None:
         self.n = max(1, n)
@@ -73,11 +81,8 @@ class SupervisedAgent:
 
     def choose(self, frame) -> int:
         frame = np.asarray(frame)
-        # 1) Keep the floor warm REGARDLESS of who drives.
-        self.explorer.observe(frame)
-        explorer_action = self.explorer.propose(frame)
 
-        # 2) Consistency check: did the last solver step's expectation hold?
+        # 1) Consistency check: did the last solver step's expectation hold?
         if self._active is not None and self._expect is not None:
             if self._expect(frame):
                 self._diverge = 0
@@ -88,16 +93,33 @@ class SupervisedAgent:
                     self._active = None
                     self._expect = None
 
-        # 3) Solver pre-empts ONLY on a unique confident match (and not aborted).
-        action = explorer_action
+        # 2) Decide who drives. Solver pre-empts ONLY on a unique confident match
+        #    (and not aborted) that yields a concrete next step.
+        step = None
         if not self._aborted:
             d = self._active or dispatch(frame, self.dynamics)
-            step = d.next_action(frame, self.n) if d is not None else None
-            if step is not None:
-                self._active = d
-                self._expect = step.expect
-                action = step.action % self.n
+            if d is not None:
+                step = d.next_action(frame, self.n)
+                if step is not None:
+                    self._active = d
 
-        # 4) Tell the explorer what was ACTUALLY executed (warm handoff).
+        # 3) THE ADDITIVE LAW (ARC-RFC-0001 §7): never teach the floor a step it did
+        #    not choose. While the solver drives, the explorer is FROZEN — no observe,
+        #    no commit — so its model is byte-identical to one that skipped these
+        #    off-policy frames. The floor thus resumes from clean pre-takeover state
+        #    on abort, and floor+dynamics >= floor by construction (no pollution).
+        if step is not None:
+            self._expect = step.expect
+            self._solver_drove_last = True
+            return step.action % self.n
+
+        # 4) Floor drives — a real explorer step it chose itself, so learn from it.
+        #    On the first floor step after solver control, cut the transition gap so
+        #    the floor doesn't learn a bogus edge from its last action to this frame.
+        if self._solver_drove_last:
+            self.explorer.mark_discontinuity()
+            self._solver_drove_last = False
+        self.explorer.observe(frame)
+        action = self.explorer.propose(frame)
         self.explorer.commit(frame, action)
         return action

@@ -90,6 +90,15 @@ class GeneralAgent:
         """Record the action that was ACTUALLY executed (for next-step learning)."""
         self._prev_sig, self._prev_action = self._cur_sig, action
 
+    def mark_discontinuity(self) -> None:
+        """Forget the last executed action so the NEXT observe learns no transition
+        across a control gap. Used by the supervisor (core/solve_agent.py) when the
+        explorer resumes after a solver drove off-policy steps: the resumed frame is
+        NOT the successor of the last floor action, so trans[(prev_sig, prev_action)]
+        must not be written. This keeps the floor's model identical to one that
+        simply skipped the off-policy frames (the additive law, ARC-RFC-0001 §7)."""
+        self._prev_sig, self._prev_action = None, None
+
     def choose(self, frame: np.ndarray) -> int:
         self.observe(frame)
         action = self.propose(frame)
