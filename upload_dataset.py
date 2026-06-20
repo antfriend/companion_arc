@@ -9,19 +9,18 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "2026-06-19.1-L2wins: FIRST multi-level dynamics solves on the v1 floor "
-    "(LOCUS_MODE=solve, ARC-RFC-0001). tu93 L2 (the turret arms only at EXACT distance-6 on "
-    "its facing axis -> one lethal cell + a lower-corridor bypass -> forbidden-cell BFS in "
-    "games/tu93/detector.py) and wa30 L2 (the colour-12 sprite is a delivery HELPER, not a "
-    "lethal patroller -> COOPERATIVE delivery replacing the hazard-evasion branch in "
-    "games/wa30/dynamic.py) now clear L2 (_test_multilevel max level 2 for both). ls20 L4 "
-    "attempted + reverted (pushers can't be read cleanly from the frame; still max level 3). "
-    "RESYNCED the kaggle_upload mirror to the committed repo: it was MISSING ls20/solver.py + "
-    "core/dynamics/hazard_nav.py and had stale ar25/ls20 dynamics (prior uploads may have shipped "
-    "a broken ls20 import). de-risk CLEAN (diagonal confusion matrix, 10/10 within-dynamic win, "
-    "no off-target regression, SupervisedAgent(empty)==v1 120/120), falsefire floor-hijack 3.4% "
-    "unchanged. Runs in both the competition rerun and the offline batch via the shared "
-    "_play_game path.",
+    "2026-06-20.1-click+additive: (1) ADDITIVE LAW now an ENFORCED invariant - the floor is "
+    "frozen while a solver drives (no off-policy commits) so floor+dynamics >= floor on every "
+    "game; repairs the warm-keep pollution that had every dynamics build sitting under plain v1 "
+    "(core/solve_agent.py + GeneralAgent.mark_discontinuity; proven by _test_pollution.py). "
+    "(2) CLICK-SELECT capability: SolverStep.click + SupervisedAgent.spec side-channel + "
+    "ClickExplorer as a drop-in floor='click' + spec_to_action_input -> the dynamics layer and "
+    "the competition launcher now drive ACTION6 clicks (env.step(ACTION6,{x,y})); click games "
+    "get a real attempt instead of scoring 0 (vc33 ~44% via the click floor). Movement path "
+    "byte-identical; full fleet unchanged (_test_multilevel: ls20 L3, tu93/re86/wa30/ar25 L2, "
+    "sk48 L2); de-risk CLEAN; _test_click_plumbing.py green. (3) sk48 SOLVED L1+L2 as a "
+    "frame-derived, geometry-generalized push-model dynamic (games/sk48/{dynamic,detector,bfs_solver}.py). "
+    "falsefire floor-hijack 3.3% unchanged (pre-existing baseline, recognizers untouched).",
     dir_mode="zip",
     quiet=False,
 )

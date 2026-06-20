@@ -15471,3 +15471,43 @@ one-time, cached spike) — acceptable for an additive ship; flag for competitio
 cn04/g50t/sp80 L2), the click-select capability (unlocks ka59 winnable variants + cd82 L2 + re86
 L3), or hidden games with no local data. Conductor desk #2/#3 (variance calibration, ship the
 additive library) unchanged and still operator-owned.
+
+---
+
+## Session Log — 2026-06-20 (the portfolio unblock + click capability)
+
+**Trigger**: operator "play new games" → "build click-select" → "wire it in as a floor". One long
+session; this entry records the three structural wins after the floor-fix + sk48 L1/L2 above.
+
+**(1) The method to play NEW games, found and reactivated.** The local set was only 11 games (all
+solved bar ka59, which is UNWINNABLE on its one offline instance — a colour-15 wall seals the 2nd
+target). `_dl_envs.py` is the method: the Kaggle API (`api.competition_download_file`) pulls
+`environment_files/<game>/<inst>/<game>.py` from the competition. Auth works; downloaded ALL 14
+remaining games → **all 25 now local**. Triage: only tr87 is pure-movement; ~12/14 are click-gated.
+This converts "no new games" into the whole rest of the portfolio. See [[reference-click-capability]].
+
+**(2) Click-select capability — the keystone for the click class.** dc22 (and 12/14 new games +
+ka59/cd82 L2/re86 L3) are click-gated, but the architecture was int-only. Built it additive-safe:
+`SolverStep.click` (optional (x,y)); `SupervisedAgent.spec` side-channel (`("m",i)`/`("c",x,y)`,
+inert unless a solver clicks → pollution guard still green); `ClickExplorer` given the
+observe/propose/commit/mark_discontinuity split so it's a drop-in `floor="click"`;
+`spec_to_action_input` the shared ACTION6 translator. `_test_click_plumbing.py` proves a Dynamic's
+click drives ACTION6 end-to-end with the movement path byte-identical.
+
+**(3) ClickExplorer wired in as the click-capable floor (banked).** `_test_multilevel.py` +
+`launch_competition.py` auto-select `floor="click"` on ACTION6 games and emit `env.step(ACTION6,
+{x,y})`. **Full fleet unchanged** (all 10 same max levels, incl. the 5 click-capable ones now on the
+click floor); pollution/plumbing/de-risk PASS; falsefire 3.3% (pre-existing baseline). **Click games
+now get a real attempt instead of scoring 0** — vc33 wins ~44% (7/16, median 25 steps) through the
+integrated path. This is the practical payoff of the click work: the whole click class can now score.
+
+**dc22 / vc33 decoded but NOT deterministically solved.** dc22 = a click-driven multi-object
+routing/sliding puzzle (avatar box-confined; pads remote-move auxiliary sprites; win = avatar→goal).
+vc33 = obfuscated region/wall/quadrant placement (1 item, 2 control buttons; deep-copyable so offline
+simulator-search is possible, but a competition solver needs the decoded frame model). Both are deep;
+banked vc33's ~44% via the explorer floor (#2) rather than sink a session into one deterministic
+decode (#1, deferred). Belief reinforced: ~half the portfolio is click-gated, so the click FLOOR
+(stochastic, frame-derived, generalising) is higher leverage than any single hand-decoded solver.
+
+**Shipped:** committed "architecture" + "goodness"; this build versioned & pushed to the
+`danxray/companion-arc` Kaggle dataset (click capability + all-25 local + sk48 L1/L2 + floor-fix).
