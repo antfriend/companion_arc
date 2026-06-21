@@ -77,7 +77,7 @@ preview:
 
 ---
 
-@LAT0LON0 | created:1747180800 | updated:1780876800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40,anchors>@LAT-650LON10,anchors>@LAT-660LON10,anchors>@LAT-670LON10,anchors>@LAT-680LON10,anchors>@LAT88LON40,anchors>@LAT-10LON40,anchors>@LAT75LON-50,anchors>@LAT70LON-50,anchors>@LAT-710LON10,anchors>@LAT85LON-10,anchors>@LAT80LON-10,anchors>@LAT80LON-20,anchors>@LAT80LON-30,anchors>@LAT75LON-10,anchors>@LAT75LON-20,anchors>@LAT75LON-30,anchors>@LAT55LON-40,anchors>@LAT60LON30
+@LAT0LON0 | created:1747180800 | updated:1780876800 | relates:anchors>@LAT-10LON0,anchors>@LAT40LON-30,anchors>@LAT30LON-20,anchors>@LAT20LON0,anchors>@LAT10LON10,anchors>@LAT5LON-15,anchors>@LAT0LON20,anchors>@LAT-10LON10,anchors>@LAT-20LON0,anchors>@LAT70LON10,anchors>@LAT-50LON10,anchors>@LAT-60LON10,anchors>@LAT-70LON10,anchors>@LAT-80LON10,anchors>@LAT-90LON10,anchors>@LAT-100LON10,anchors>@LAT-110LON10,anchors>@LAT-120LON10,anchors>@LAT-130LON10,anchors>@LAT-140LON10,anchors>@LAT-150LON10,anchors>@LAT-160LON10,anchors>@LAT50LON30,anchors>@LAT60LON20,anchors>@LAT90LON0,anchors>@LAT-310LON10,anchors>@LAT70LON-40,anchors>@LAT85LON-40,anchors>@LAT-650LON10,anchors>@LAT-660LON10,anchors>@LAT-670LON10,anchors>@LAT-680LON10,anchors>@LAT88LON40,anchors>@LAT-10LON40,anchors>@LAT75LON-50,anchors>@LAT70LON-50,anchors>@LAT-710LON10,anchors>@LAT85LON-10,anchors>@LAT80LON-10,anchors>@LAT80LON-20,anchors>@LAT80LON-30,anchors>@LAT75LON-10,anchors>@LAT75LON-20,anchors>@LAT75LON-30,anchors>@LAT55LON-40,anchors>@LAT60LON30,anchors>@LAT90LON58
 [ew]
 conf:255
 rev:0
@@ -15511,3 +15511,52 @@ decode (#1, deferred). Belief reinforced: ~half the portfolio is click-gated, so
 
 **Shipped:** committed "architecture" + "goodness"; this build versioned & pushed to the
 `danxray/companion-arc` Kaggle dataset (click capability + all-25 local + sk48 L1/L2 + floor-fix).
+
+---
+
+@LAT90LON58 | created:1750420800 | updated:1750420800 | kind:belief | relates:anchored_by>@LAT0LON0,refines>@BELIEF:LAT92LON62,informs_strategy>@LAT88LON40
+[ew]
+conf:240
+rev:0
+sal:0
+touched:1750420800
+[/ew]
+
+## The blind-first-action trap — the harness must feed the agent the level-start frame
+
+**Sibling to the additive law** ([floor fix](lat92lon62)): that fix made the dynamics layer
+stop SUBTRACTING; this one makes a registered solver actually FIRE. Both are one-line harness
+truths that flip whole-library sign, not single-game tweaks.
+
+**The bug.** `launch_competition._play_game` took its first action BLIND: on the opening
+iteration `obs is None` → `action_idx = 0` → `env.step(ACTION1)` BEFORE the agent ever scanned
+a frame. So the dynamics layer's first `choose()` saw the POST-ACTION1 frame; it NEVER saw the
+pristine level-start frame. Plan-once recognizers that key on start geometry only match the
+RESET frame — sk48's `read_state` anchors on a colour-6 6×6 head box at game-x=11, and the
+blind ACTION1 slides the snake so `read_state` returns None on that frame and EVERY frame after.
+Result: `recognize()=0.0` forever → sk48 fell to the floor and scored **0 in solve mode despite
+being a registered, de-risk-CLEAN, working dynamic** (L1+L2 banked). Diagnosed via probe: reset
+frame reads OK, all post-step frames read None.
+
+**Why only sk48 showed it.** ls20/wa30/re86/tu93/ar25 recognizers tolerate one blind ACTION1;
+sk48's anchor does not. The trap is GENERAL — it silently weakens ANY future plan-once dynamic.
+
+**The fix.** `_play_game` now acquires the start frame via `env.reset()` and sets
+`level_start_step = -1`, so level 1 matches levels 2+ (which already start `route[0]`/first
+`choose()` on the level's first frame via the −1 trick). No blind leading action. Falls back to
+the old behavior if `reset()` returns None (gateway env without reset). Also re-patched sk48's
+hardcoded detector route (prepended one UP: `[0,0,0,3,...]`) — it had been calibrated to assume
+the blind ACTION1 did its first climbing UP (36→30).
+
+**Measured (offline, seed 0, 10 local games).** solve **16.10 → 16.93** (sk48 0 → 8.33 = L1+L2;
+the other 9 games BYTE-IDENTICAL → no regression). detector **12.59 → 12.59** (sk48 restored to
+2.78 by the route patch; others unchanged). The notebook ships `LOCUS_MODE=solve`, so on the LB
+this is pure upside.
+
+**Residue.** (1) ka59 still scores 0 in solve mode — it has NO `Ka59Dynamic` registered (only a
+detector); not a harness bug, needs a ported dynamic (and its one offline instance is an
+unwinnable colour-15-wall variant anyway). (2) `env.reset()` adds a harmless phantom empty run
+per game (20 rows for 10 games); the scorer takes MAX-over-runs so the 0-score row is ignored,
+and `submission.parquet` is gateway-ignored regardless. (3) Reproducibility groundwork landed
+same session: `LOCUS_SEED` (default 0) seeds `random`+`np.random` AND threads `seed` into the
+explorer/solver agents, so stochastic modes now reproduce local==hosted in the OFFLINE batch.

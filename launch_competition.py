@@ -76,6 +76,20 @@ _ABLATION = os.getenv("LOCUS_ABLATION", "").strip().lower()
 if not _MODE:
     _MODE = "random" if _ABLATION == "random" else "detector"
 
+# Seed all RNGs so hosted batch runs reproduce local runs bit-for-bit in the
+# stochastic modes (random/general/goal/solve tie-breaks). Deterministic modes
+# (detector routes, pure solver) are unaffected. Override with LOCUS_SEED; set
+# LOCUS_SEED=off to restore nondeterministic behavior. _SEED_INT is None when
+# seeding is disabled (off/none/empty/non-int), else the parsed int.
+_SEED = os.getenv("LOCUS_SEED", "0").strip().lower()
+if _SEED in ("off", "none", ""):
+    _SEED_INT: int | None = None
+else:
+    try:
+        _SEED_INT = int(_SEED)
+    except ValueError:
+        _SEED_INT = None
+
 # Games with confirmed, stable solutions — batch runs suppress verbose frame/route logs
 _SOLVED_GAMES: frozenset[str] = frozenset({"ls20", "cd82", "re86", "sp80", "tu93", "wa30", "ar25", "g50t", "sk48"})
 
@@ -97,12 +111,14 @@ _HARDCODED_ROUTES: dict[str, list[int]] = {
     # g50t: recording/replay maze. Stage 0: RIGHT*4 to button (37,7) + ACTION5 submit.
     # Stage 1: ghost holds button open, DOWN*7 + RIGHT*5 to win target (43,49). 17 actions.
     "g50t": [3, 3, 3, 3, 4, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3],
-    # sk48: snake+sokoban hybrid. Pre-route UP slides row=36→30 automatically.
-    # Route starts from row=30: UP*2→row=18, extend*4 (c8 detaches at 41,18),
-    # retract (c8→35,18), DOWN*2→row=30 (c8→35,30), extend (c14 detaches at 41,30),
-    # retract (c8→29,30 c14→35,30), UP→row=24, extend (c9 at 41,24 wins).
-    # Final: row=24 segs[3,4,5] hold [c8,c14,c9]=[8,14,9]. 13 route actions (14 total).
-    "sk48": [0, 0, 3, 3, 3, 3, 2, 1, 1, 3, 2, 0, 3],
+    # sk48: snake+sokoban hybrid. Snake starts at row=36; UP×3 climbs 36→30→24→18
+    # (6 rows/step). Then extend*4 (c8 detaches at 41,18), retract (c8→35,18),
+    # DOWN*2→row=30 (c8→35,30), extend (c14 detaches at 41,30), retract
+    # (c8→29,30 c14→35,30), UP→row=24, extend (c9 at 41,24 wins).
+    # Final: row=24 segs[3,4,5] hold [c8,c14,c9]=[8,14,9]. 14 route actions.
+    # (Was 13 actions + a blind leading ACTION1 that did the first UP; the loop no
+    # longer steps blindly, so the route owns all 3 climbing UPs — leading 0 added.)
+    "sk48": [0, 0, 0, 3, 3, 3, 3, 2, 1, 1, 3, 2, 0, 3],
 }
 
 _ROUTES: dict[str, list[int]] = {}
@@ -233,15 +249,25 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             # Solve mode gets the ACTION6-capable floor on click games so it can
             # actually win them instead of scoring 0; movement games stay on v1.
             if _MODE == "solve" and _has_click:
-                _gen = _GenCls(len(actions), floor="click")
+                _gen = _GenCls(len(actions), floor="click", seed=_SEED_INT)
             else:
-                _gen = _GenCls(len(actions))
+                _gen = _GenCls(len(actions), seed=_SEED_INT)
         except Exception as exc:
             print(f"[game] {game_id}: general agent unavailable ({exc}) — random", flush=True)
 
-    obs = None
+    # Acquire the pristine level-start frame BEFORE acting. The old loop stepped a
+    # blind ACTION1 to obtain its first frame, which destroyed plan-once recognizers
+    # that key on the start geometry (e.g. sk48's colour-6 head-box anchor at x=11):
+    # they never saw a recognizable frame and fell to the floor, scoring 0. Reset
+    # yields the true start frame so the scan + first decision operate on it — making
+    # level 1 consistent with levels 2+ (which already start route[0] on the level's
+    # first frame via the -1 trick below). When obs holds the start frame we set
+    # level_start_step=-1 so level_step=1 on the first iteration (route[0] / first
+    # choose fire on the start frame, no blind leading action). If reset returns
+    # nothing (e.g. a gateway env without reset), fall back to the old behavior.
+    obs = env.reset() if hasattr(env, "reset") else None
     step = 0
-    level_start_step = 0
+    level_start_step = -1 if (obs is not None and obs.frame) else 0
     level_scanned = False
     prev_levels = 0
     route_steps = 0
@@ -462,6 +488,13 @@ def run_offline() -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    if _SEED_INT is not None:
+        random.seed(_SEED_INT)
+        np.random.seed(_SEED_INT)
+        print(f"[launch] RNG seeded ({_SEED_INT}) — stochastic modes are reproducible", flush=True)
+    else:
+        print(f"[launch] RNG unseeded (LOCUS_SEED={_SEED!r})", flush=True)
+
     env_flag = os.getenv("KAGGLE_IS_COMPETITION_RERUN")
     print(f"[launch] KAGGLE_IS_COMPETITION_RERUN={env_flag!r}  IS_COMPETITION_RERUN={IS_COMPETITION_RERUN}", flush=True)
     print(f"[launch] PLAY MODE: {_MODE!r}"
