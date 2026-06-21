@@ -9,22 +9,14 @@ api.authenticate()
 print(f"Uploading from: {upload_dir}")
 api.dataset_create_version(
     upload_dir,
-    "2026-06-20.2-click+additive (hotfix): FIXES an online IndexError in launch_competition "
-    "_play_game on CLICK-ONLY games (empty simple-action list) - the click floor now offers "
-    "clicks immediately when there are no moves, and the launcher emits an ACTION6 fallback "
-    "instead of indexing []. "
-    "(1) ADDITIVE LAW now an ENFORCED invariant - the floor is "
-    "frozen while a solver drives (no off-policy commits) so floor+dynamics >= floor on every "
-    "game; repairs the warm-keep pollution that had every dynamics build sitting under plain v1 "
-    "(core/solve_agent.py + GeneralAgent.mark_discontinuity; proven by _test_pollution.py). "
-    "(2) CLICK-SELECT capability: SolverStep.click + SupervisedAgent.spec side-channel + "
-    "ClickExplorer as a drop-in floor='click' + spec_to_action_input -> the dynamics layer and "
-    "the competition launcher now drive ACTION6 clicks (env.step(ACTION6,{x,y})); click games "
-    "get a real attempt instead of scoring 0 (vc33 ~44% via the click floor). Movement path "
-    "byte-identical; full fleet unchanged (_test_multilevel: ls20 L3, tu93/re86/wa30/ar25 L2, "
-    "sk48 L2); de-risk CLEAN; _test_click_plumbing.py green. (3) sk48 SOLVED L1+L2 as a "
-    "frame-derived, geometry-generalized push-model dynamic (games/sk48/{dynamic,detector,bfs_solver}.py). "
-    "falsefire floor-hijack 3.3% unchanged (pre-existing baseline, recognizers untouched).",
+    "purge+focus: the dataset now carries ONLY the solving hull (launch_competition.py + "
+    "agent_framework.py + ls20_detector.py + level_scanner.py + core/ + games/). One solving "
+    "brain - SupervisedAgent (v1/click explorer floor + recognition-gated, abortable Dynamic "
+    "solver layer) - plays every game the SAME way in the competition rerun and the offline "
+    "batch; an unrecognized game falls back to the floor with no regression (additive law, "
+    "enforced by tests/_test_pollution.py). Crow's nest (tests/_test_multilevel.py): ls20 L3; "
+    "tu93/re86/wa30/ar25/sk48 L2; sp80/cd82/cn04/g50t L1. Per-game isolation so one game's "
+    "failure never sinks the run.",
     dir_mode="zip",
     quiet=False,
 )

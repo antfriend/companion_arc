@@ -1,11 +1,14 @@
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
 """
 _test_falsefire.py — HIDDEN-GAME false-fire fuzzer for the dynamics recognizers.
 
 The §6.1 confusion matrix in _test_dynamics.py only covers the 11 KNOWN games, so it
 is structurally BLIND to a recognizer firing on a HIDDEN game it has never seen — the
-exact failure that dropped solve-on-v1floor to 0.10 (ls20 fired on any frame with
-1–50 px of colour-12). A false fire is the only way the additive stack can score BELOW
-its own floor: a mis-recognized dynamic drives bogus directional moves into GAME_OVER.
+exact failure once seen when ls20 fired on any frame with 1–50 px of colour-12. A false
+fire is the only way the additive stack can do WORSE than its own floor: a mis-recognized
+dynamic drives bogus directional moves into GAME_OVER on a game the floor would have
+played cleanly, costing levels we could otherwise reach.
 
 This harness approximates the hidden distribution with randomized 64×64 decoy frames
 (random palette, random small blobs of every colour, random HUD bars) and asserts NO
@@ -67,7 +70,7 @@ def run(n=4000, seed=0):
         flag = "  <-- FALSE FIRE" if k else ""
         print(f"    {did:8s} | {k:5d}/{n}  ({k / n:6.3%}){flag}")
     print(f"\n    dispatch hijacked the floor on {hijacks}/{n} decoys "
-          f"({hijacks / n:.3%}) — a non-zero rate is leaderboard regression risk.")
+          f"({hijacks / n:.3%}) — a non-zero rate means we corrupt games we shouldn't touch.")
     clean = (hijacks == 0)
     print("\nverdict:", "CLEAN — no recognizer fires on hidden-like decoys"
           if clean else "FALSE FIRES PRESENT — tighten the flagged recognizers")

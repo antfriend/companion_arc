@@ -1,8 +1,8 @@
 """
 core/click_agent.py — count-based explorer WITH ACTION6 (click) support.
 
-Why this exists (2026-06-14): both the 0.15 random baseline and the general v1
-explorer are structurally blind to click games. ACTION6 needs (x,y) coords so
+Why this exists: both the random baseline and the general v1 explorer are
+structurally blind to click games. ACTION6 needs (x,y) coords so
 is_simple() is False, so `actions = [a for a in action_space if a.is_simple()]`
 excludes it everywhere. Yet 6 of 11 canonical games expose ACTION6
 (cd82, sp80, ar25, sk48, cn04, ka59) — and the hidden set surely mirrors that.

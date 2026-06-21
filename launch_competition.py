@@ -1,23 +1,18 @@
 #!/usr/bin/env python3
 """
-launch_competition.py — ARC-AGI-3 offline diagnostics (batch mode only).
+launch_competition.py — the single entry point that plays every game.
 
-EXECUTION MODEL:
-  Competition reruns (KAGGLE_IS_COMPETITION_RERUN=True) are handled entirely
-  by the notebook's inline LucusAgent + ARC-AGI-3-Agents framework path.
-  This file is only called in batch mode (KAGGLE_IS_COMPETITION_RERUN not set)
-  for offline diagnostics. Competition scores come from gateway reruns, not
-  from submission.parquet. submission.parquet is written by this file but is
-  not used by the competition scorer.
+ONE METHOD, EVERY ENVIRONMENT. The same per-game loop (_play_game) drives both:
+  - the competition rerun (online gateway, run_competition), and
+  - the offline batch (local environment_files, run_offline),
+selected only by IS_COMPETITION_RERUN. There is no second, "inline" agent: the
+solving brain is the SupervisedAgent (v1/click floor + recognition-gated Dynamic
+solver layer), identical in both paths, so what we verify offline is what runs
+in the rerun.
 
-Play strategy per game:
-  Phase 1 — execute hardcoded route (known-optimal actions from offline training)
-  Phase 2 — random play (500 steps) to attempt completing remaining levels
-
-Scoring (RHAE, from docs.arcprize.org/methodology):
-  level_score = (human_baseline / ai_actions)^2, capped at 1.15
-  game_score  = weighted average of level scores (weight = 1-indexed level number)
-  total_score = average of all 25 game scores
+Goal per game: reach the highest level we can solve. Each game is played
+independently and a crash in one never sinks the rest (per-game isolation in the
+run loops). submission.parquet is a local diagnostic artifact only.
 """
 
 import os
@@ -67,9 +62,9 @@ IS_COMPETITION_RERUN = bool(os.getenv("KAGGLE_IS_COMPETITION_RERUN")) or _gatewa
 
 _DIR = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3}
 
-# Play mode. Default "detector" (per-game routes; net-NEGATIVE on the hidden
-# set per the 2026-06-13 ablation). "random" = uniform random (scored 0.15).
-# "general" = ONE general count-based explorer, no per-game code (core/general_agent).
+# Play mode. "solve" is the shipped brain (floor + Dynamic solver layer).
+# "detector" = fixed per-game routes (net-NEGATIVE: routes die on unknown instances).
+# "random" = uniform random. "general" = the bare v1 explorer floor (diagnostic).
 # LOCUS_ABLATION=random is honored as a back-compat alias for LOCUS_MODE=random.
 _MODE = os.getenv("LOCUS_MODE", "").strip().lower()
 _ABLATION = os.getenv("LOCUS_ABLATION", "").strip().lower()
@@ -227,33 +222,27 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         verbose=game_prefix not in _SOLVED_GAMES,
     )
 
-    # General-agent mode: one count-based explorer, no per-game code.
-    # "general"     = static board_signature (v1, leaderboard 0.18).
-    # "general_dyn" = DynamicSignature (HUD-noise immune); strict no-regression upgrade.
-    # "goal"        = general_dyn + stall-gated, additive-safe goal-seeking tie-break
-    #                 (per-instance solving; coverage-neutral, gains on goal-shaped games).
-    # "solve"       = goal explorer + recognition-gated, abortable Dynamic solver layer
-    #                 (ARC-RFC-0001); additive floor preserved, solves recognized games.
+    # The solving brain: one count-based explorer floor + recognition-gated,
+    # abortable Dynamic solver layer (ARC-RFC-0001). The floor is additive, so an
+    # unrecognized game falls back to it with no regression by construction.
+    # "solve"   = SupervisedAgent (the shipped brain — floor + dynamics).
+    # "general" = the bare v1 floor (diagnostic only; no per-game solvers).
     _gen = None
-    if _MODE in ("general", "general_dyn", "goal", "solve"):
+    if _MODE in ("general", "solve"):
         try:
             if _MODE == "solve":
                 from core.dynamics import library  # noqa: F401 — registers dynamics
                 from core.solve_agent import SupervisedAgent as _GenCls
-            elif _MODE == "goal":
-                from core.goal_agent import GoalSeekAgent as _GenCls
-            elif _MODE == "general_dyn":
-                from core.general_agent_dyn import GeneralAgentDyn as _GenCls
             else:
                 from core.general_agent import GeneralAgent as _GenCls
             # Solve mode gets the ACTION6-capable floor on click games so it can
-            # actually win them instead of scoring 0; movement games stay on v1.
+            # actually win them instead of doing nothing; movement games stay on v1.
             if _MODE == "solve" and _has_click:
                 _gen = _GenCls(len(actions), floor="click", seed=_SEED_INT)
             else:
                 _gen = _GenCls(len(actions), seed=_SEED_INT)
         except Exception as exc:
-            print(f"[game] {game_id}: general agent unavailable ({exc}) — random", flush=True)
+            print(f"[game] {game_id}: solver unavailable ({exc}) — random", flush=True)
 
     # Acquire the pristine level-start frame BEFORE acting. The old loop stepped a
     # blind ACTION1 to obtain its first frame, which destroyed plan-once recognizers
@@ -294,14 +283,18 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
             level_scanned = True
 
         # Choose action per mode. random/general re-decide every frame (never
-        # commit to a killable plan — the lesson of the 0.08<0.15 ablation).
+        # commit to a killable plan — fixed routes die on unknown instances).
         level_step = step - level_start_step
         _click = None
         if _gen is not None and obs is not None and obs.frame:
-            action_idx = _gen.choose(np.asarray(list(obs.frame)[-1])) % max(1, len(actions))
-            _spec = getattr(_gen, "spec", None)        # SupervisedAgent click side-channel
-            if _spec is not None and _spec[0] == "c":
-                _click = (int(_spec[1]), int(_spec[2]))
+            try:
+                action_idx = _gen.choose(np.asarray(list(obs.frame)[-1])) % max(1, len(actions))
+                _spec = getattr(_gen, "spec", None)    # SupervisedAgent click side-channel
+                if _spec is not None and _spec[0] == "c":
+                    _click = (int(_spec[1]), int(_spec[2]))
+            except Exception as exc:                    # one bad frame must not end the game
+                print(f"[game] {game_id}: choose() raised ({exc}) — safe action 0", flush=True)
+                action_idx = 0
         elif _MODE == "random":
             action_idx = random.randrange(len(actions))
         elif obs is None:
@@ -338,6 +331,17 @@ def _play_game(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
         f"[game] {game_id}: {step} steps (route={route_steps}), L{levels}, state={state}",
         flush=True,
     )
+
+
+def _play_game_safe(arc: arc_agi.Arcade, game_id: str, card_id: str) -> None:
+    """Per-game isolation: a crash in one game must never sink the rest of the run.
+    The hull stays afloat even if a single solver throws on an unexpected frame."""
+    try:
+        _play_game(arc, game_id, card_id)
+    except Exception as exc:
+        import traceback
+        print(f"[game] {game_id}: FAILED ({exc}) — skipping, run continues", flush=True)
+        traceback.print_exc()
 
 
 # ---------------------------------------------------------------------------
@@ -428,7 +432,7 @@ def run_competition() -> None:
 
         card_id = arc.open_scorecard(tags=["locus"])
         for game_info in arc.available_environments:
-            _play_game(arc, game_info.game_id, card_id)
+            _play_game_safe(arc, game_info.game_id, card_id)
 
         scorecard = arc.close_scorecard(card_id)
         if scorecard:
@@ -469,7 +473,7 @@ def run_offline() -> None:
 
         card_id = arc.open_scorecard(tags=["locus"])
         for game_info in arc.available_environments:
-            _play_game(arc, game_info.game_id, card_id)
+            _play_game_safe(arc, game_info.game_id, card_id)
 
         scorecard = arc.close_scorecard(card_id)
         if scorecard:
@@ -498,10 +502,8 @@ def main() -> None:
     env_flag = os.getenv("KAGGLE_IS_COMPETITION_RERUN")
     print(f"[launch] KAGGLE_IS_COMPETITION_RERUN={env_flag!r}  IS_COMPETITION_RERUN={IS_COMPETITION_RERUN}", flush=True)
     print(f"[launch] PLAY MODE: {_MODE!r}"
-          + ("  (general explorer — no per-game routes)" if _MODE == "general"
-             else "  (general explorer + HUD-immune DynamicSignature)" if _MODE == "general_dyn"
-             else "  (general_dyn + stall-gated goal-seeking tie-break)" if _MODE == "goal"
-             else "  (goal explorer + recognition-gated Dynamic solver layer)" if _MODE == "solve"
+          + ("  (bare v1 explorer floor — no per-game solvers)" if _MODE == "general"
+             else "  (v1 floor + recognition-gated Dynamic solver layer)" if _MODE == "solve"
              else "  (uniform random)" if _MODE == "random"
              else "  (per-game detector routes)"), flush=True)
     _load_routes()

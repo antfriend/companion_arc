@@ -1,3 +1,5 @@
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
 """Validate the frame-driven ls20 solver port: (a) read_spec from the FRAME matches the
 game-object ground truth, (b) plan() actually clears L1 and L2 in the real game."""
 import importlib.util, io, random, sys
@@ -9,7 +11,7 @@ from core.solve_agent import SupervisedAgent
 from core.dynamics import library  # noqa
 from games.ls20 import solver as S
 
-ENV = Path(__file__).parent / "environment_files"
+ENV = Path(__file__).resolve().parent.parent / "environment_files"
 ACT = {1: GameAction.ACTION1, 2: GameAction.ACTION2, 3: GameAction.ACTION3, 4: GameAction.ACTION4}
 END = ("GameState.GAME_OVER", "game_over", "GameState.WIN", "win")
 

@@ -2,6 +2,12 @@
 """
 launch_training.py — run a LOCUS-guided ARC-AGI training attempt locally.
 
+This is the CREW, not the hull. Training exists for one purpose: to learn an
+unsolved game or level well enough to produce a per-game solver
+(games/<id>/{detector,dynamic,solver}.py) that the registry picks up and the
+solving brain then carries in every environment. Its measure of success is a
+higher level reached on the crow's nest (tests/_test_multilevel.py) — nothing else.
+
 Usage:
     python launch_training.py [game_id]
     python launch_training.py ls20

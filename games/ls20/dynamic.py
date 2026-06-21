@@ -49,7 +49,8 @@ class Ls20Dynamic(Dynamic):
         # PRECISION fingerprint. The colour-12 count alone is FAR too loose — colour-12
         # is a common HUD/sprite colour, so "1–50 px of colour-12" fires on hidden games
         # that merely have a small colour-12 element, hijacking them with bogus directional
-        # moves (regression: v1-floor 0.18 → 0.10). Gate STRUCTURALLY instead, exactly like
+        # moves (a regression: it corrupts games the floor would have played cleanly).
+        # Gate STRUCTURALLY instead, exactly like
         # ar25/cn04/re86: the frame must PARSE as a solvable ls20 board.
         #   (1) cheap pre-filter — a small in-frame colour-12 block (excludes sp80's ~3500px
         #       colour-12 background);

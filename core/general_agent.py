@@ -1,9 +1,9 @@
 """
 core/general_agent.py — ONE general agent for all games. No per-game code.
 
-Motivation (2026-06-13 ablation): deterministic per-game routes scored 0.08 on
-the hidden set while uniform-random scored 0.15 — the routes drive unknown
-instances into early GAME_OVER. The fix is an agent that:
+Motivation: a fixed per-game route drives unknown instances into early
+GAME_OVER (the board it was recorded on is not the board it now faces), so it
+clears fewer levels than even uniform-random play. The fix is an agent that:
   - re-decides every frame (never commits to a killable plan),
   - wastes no budget on no-op actions (moves blocked by walls),
   - explores via count-based novelty (cover more distinct states than random),
@@ -58,8 +58,8 @@ class GeneralAgent:
         self.n = max(1, n)
 
     def _sig(self, frame: np.ndarray) -> bytes:
-        """Signature seam — overridable by subclasses (e.g. DynamicSignature).
-        Default is byte-identical to v1: the static board_signature."""
+        """Signature seam — overridable by subclasses. Default is the static
+        board_signature (the v1 floor)."""
         return board_signature(frame)
 
     # -- observe / propose / commit ----------------------------------------

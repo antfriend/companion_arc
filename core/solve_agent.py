@@ -3,10 +3,10 @@ core/solve_agent.py — SupervisedAgent (ARC-RFC-0001 §5).
 
 An additive, recognition-gated, abortable solver layer OVER the general explorer.
 
-Invariant: the explorer floor (GoalSeekAgent) is never displaced except under a
-unique high-confidence dynamic recognition, and any divergence from the solver's
-plan aborts back to the floor within ABORT_K frames. So:
-  - empty library / nothing recognized / aborted  → byte-identical to `goal`
+Invariant: the explorer floor is never displaced except under a unique
+high-confidence dynamic recognition, and any divergence from the solver's plan
+aborts back to the floor within ABORT_K frames. So:
+  - empty library / nothing recognized / aborted  → byte-identical to the floor
     (no regression by construction),
   - upside = whole games solved when a dynamic confidently matches.
 
@@ -17,8 +17,8 @@ state — never from a model polluted by moves it did not pick. This makes the l
 additive by construction: floor+dynamics >= floor on every game, firing or not.
 
 (Superseded the prior "keep warm every step" design, which committed the executed
-action regardless of who drove — teaching the floor off-policy edges and dropping
-every dynamics build BELOW plain v1 on the leaderboard; see @BELIEF:LAT92LON62.)
+action regardless of who drove — teaching the floor off-policy edges and breaking
+the additive invariant. The floor-freeze restores it.)
 """
 
 from typing import List, Optional
@@ -35,29 +35,19 @@ _ABORT_K = 3
 
 def _make_floor(floor: str, n_actions: int, seed):
     """The undirected explorer used on unrecognized games. The dynamics layer is
-    additive, so the floor DOMINATES the score → use the measured-best explorer.
+    additive, so the floor is what carries every game we cannot yet recognize.
 
-    "v1"  = GeneralAgent (static signature) — leaderboard 0.18, the standing best.
-    "dyn" = GeneralAgentDyn (HUD-immune signature).
-    "goal"= GoalSeekAgent (goal tie-break) — leaderboard 0.10; NOT recommended as a
-            floor (its directed tie-break is redundant once dynamics drive solving,
-            and it scored below v1). The 2026-06-16 solve submission used this floor
-            by mistake → 0.13 (= goal 0.10 + dynamics +0.03); v1 floor should ≈0.21.
+    "v1"    = GeneralAgent (static signature) — the movement floor.
+    "click" = ClickExplorer (ACTION6-capable) — for games that expose a click.
     """
-    if floor == "dyn":
-        from core.general_agent_dyn import GeneralAgentDyn
-        return GeneralAgentDyn(n_actions, seed=seed)
-    if floor == "goal":
-        from core.goal_agent import GoalSeekAgent
-        return GoalSeekAgent(n_actions, seed=seed, goal_mode="near")
     if floor == "click":
         # ACTION6-capable floor: count-based novelty over moves + foreground
         # clicks (movement-stall gates clicks on). For movement games it never
         # stalls so it never clicks — reduces to v1-style novelty; for click
-        # games it can actually win instead of scoring 0. Use when 6 in avail.
+        # games it can actually win instead of doing nothing. Use when 6 in avail.
         from core.click_agent import ClickExplorer
         return ClickExplorer(n_actions, allow_click=True, seed=seed)
-    from core.general_agent import GeneralAgent       # default "v1" — the 0.18 floor
+    from core.general_agent import GeneralAgent       # default "v1" movement floor
     return GeneralAgent(n_actions, seed=seed)
 
 

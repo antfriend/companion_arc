@@ -1,3 +1,5 @@
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
 """Play each game through ALL its levels with the current detector.
 
 Levels 2-6 are real structurally-different instances of the same mechanic —
@@ -22,7 +24,7 @@ from arcengine import ARCBaseGame, ActionInput, GameAction
 
 from core.game_registry import get_detector
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parent.parent
 ENV_DIR = ROOT / "environment_files"
 
 VERBOSE = "--verbose" in sys.argv

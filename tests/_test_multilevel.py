@@ -1,9 +1,12 @@
-"""How far past L1 does each current dynamic get?  (ls20 pilot, step 0)
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
+"""How far past L1 does each current dynamic get?
 
-The de-risk harness stops at the first level. But the score rewards higher levels
-(RHAE weights them more), and a hidden L1 may use an L2-flavoured mechanic. This
-plays each game MULTI-LEVEL with the full solver library, resetting the agent on
-each level transition (so the dynamic re-plans), and reports the max level reached.
+THIS IS THE CROW'S NEST. The one star is the highest level we can solve, so the
+max level reached per game is the measure that matters — every purge/refactor must
+leave this table the same or better. The de-risk harness stops at the first level;
+this plays each game MULTI-LEVEL with the full solver library, resetting the agent
+on each level transition (so the dynamic re-plans), and reports the max level reached.
 
 Re-derivation dynamics (level-agnostic, e.g. tu93's per-frame BFS) may clear L2+
 for free; plan-once dynamics (ls20/wa30/re86/cn04/g50t — fixed L1 route) should
@@ -28,7 +31,7 @@ from core.dynamics import library  # noqa: F401 — registers the dynamics
 ACTIONS = [GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3,
            GameAction.ACTION4, GameAction.ACTION5, GameAction.ACTION6, GameAction.ACTION7]
 END = ("GameState.GAME_OVER", "game_over", "GameState.WIN", "win")
-ENV = Path(__file__).parent / "environment_files"
+ENV = Path(__file__).resolve().parent.parent / "environment_files"
 GAMES = ["ls20", "sp80", "tu93", "cd82", "re86", "wa30", "ar25", "cn04", "g50t", "sk48"]
 
 BUDGET = 600

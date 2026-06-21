@@ -1,3 +1,5 @@
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
 """
 _test_click_plumbing.py — proves the dynamics layer can drive ACTION6 clicks, and
 that adding click capability did not disturb the additive (movement) path.

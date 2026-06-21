@@ -1,3 +1,5 @@
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
 """_test_hazard_nav.py — provable unit test for the hazard-aware nav organ.
 
 Synthetic gridworlds with a DETERMINISTIC patroller (the test's ground truth). The

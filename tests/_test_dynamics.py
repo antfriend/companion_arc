@@ -1,8 +1,10 @@
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
 """De-risk harness for the dynamics solver layer (ARC-RFC-0001 §6).
 
 Currently implements the foundational equivalence checks (build steps 1–2):
   A. choose() == observe/propose/commit  (the refactor is a faithful split)
-  B. SupervisedAgent(empty library) == GoalSeekAgent  (no-regression by
+  B. SupervisedAgent(empty library) == v1 floor  (no-regression by
      construction: the supervisor adds nothing until a dynamic recognizes)
 
 Steps 6.1–6.3 (recognizer confusion matrix, within-dynamic win-rate, abort
@@ -18,8 +20,6 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 import numpy as np
 
 from core.general_agent import GeneralAgent
-from core.general_agent_dyn import GeneralAgentDyn
-from core.goal_agent import GoalSeekAgent
 from core.solve_agent import SupervisedAgent
 
 
@@ -56,9 +56,7 @@ def _seq_opc(agent, frames):
 def test_split_equivalence():
     frames = _frames(seed=1)
     ok = True
-    for name, make in (("GeneralAgent", lambda: GeneralAgent(4, seed=7)),
-                       ("GeneralAgentDyn", lambda: GeneralAgentDyn(4, seed=7)),
-                       ("GoalSeekAgent", lambda: GoalSeekAgent(4, seed=7, goal_mode="near"))):
+    for name, make in (("GeneralAgent", lambda: GeneralAgent(4, seed=7)),):
         a = _seq_choose(make(), frames)
         b = _seq_opc(make(), frames)
         same = a == b
@@ -102,7 +100,7 @@ def run_game_tests(seeds=10, budget=200):
     ACTIONS = [GameAction.ACTION1, GameAction.ACTION2, GameAction.ACTION3,
                GameAction.ACTION4, GameAction.ACTION5, GameAction.ACTION6, GameAction.ACTION7]
     END = ("GameState.GAME_OVER", "game_over", "GameState.WIN", "win")
-    ENV = Path(__file__).parent / "environment_files"
+    ENV = Path(__file__).resolve().parent.parent / "environment_files"
     GAMES = ["ls20", "cd82", "sp80", "re86", "tu93", "wa30",
              "ar25", "g50t", "sk48", "cn04", "ka59"]
 
@@ -132,8 +130,8 @@ def run_game_tests(seeds=10, budget=200):
                 won = True; break
         return won, fired
 
-    def goal(n, seed):
-        return GoalSeekAgent(n, seed=seed, goal_mode="near")
+    def v1(n, seed):
+        return GeneralAgent(n, seed=seed)   # the shipped floor baseline
 
     def sup(classes_):
         return lambda n, seed: SupervisedAgent(n, seed=seed,   # default floor = v1
@@ -148,7 +146,7 @@ def run_game_tests(seeds=10, budget=200):
 
     # §6.1 recognizer confusion matrix — each dynamic must fire ONLY on its target.
     print("§6.1 recognizer confusion matrix (fires in ≥1 of "
-          f"{seeds} goal rollouts, budget 40):")
+          f"{seeds} v1 rollouts, budget 40):")
     print(f"    {'dynamic':8s} | " + " ".join(f"{g[:4]:>4s}" for g in GAMES))
     clean = True
     for tgt, Cls in DYN.items():
@@ -157,7 +155,7 @@ def run_game_tests(seeds=10, budget=200):
         for game in GAMES:
             if game not in classes:
                 cells.append("  - "); continue
-            fired = any(play(classes[game], goal, s, recog=rec, budget=40)[1]
+            fired = any(play(classes[game], v1, s, recog=rec, budget=40)[1]
                         for s in range(seeds))
             hit = (game == tgt)
             if fired and not hit:
@@ -165,34 +163,34 @@ def run_game_tests(seeds=10, budget=200):
             cells.append(("[X]" if hit else "XFR") if fired else " . ")
         print(f"    {tgt:8s} | " + " ".join(f"{c:>4s}" for c in cells))
 
-    # §6.2 within-dynamic win-rate — supervised(single dynamic) vs goal on target.
-    print("\n§6.2 within-dynamic win-rate (supervised[D] vs goal on the target game):")
+    # §6.2 within-dynamic win-rate — supervised(single dynamic) vs v1 on target.
+    print("\n§6.2 within-dynamic win-rate (supervised[D] vs v1 on the target game):")
     upside = True
     for tgt, Cls in DYN.items():
         if tgt not in classes:
             continue
-        wg = sum(play(classes[tgt], goal, s)[0] for s in range(seeds))
+        wg = sum(play(classes[tgt], v1, s)[0] for s in range(seeds))
         ws = sum(play(classes[tgt], sup([Cls]), s)[0] for s in range(seeds))
         upside = upside and ws > wg
-        print(f"    {tgt:6s}: goal {wg}/{seeds}  →  supervised {ws}/{seeds}")
+        print(f"    {tgt:6s}: v1 {wg}/{seeds}  →  supervised {ws}/{seeds}")
 
-    # §6.3 abort safety — FULL library vs goal on NON-target games (parity).
-    print("\n§6.3 abort safety (full-library supervised vs goal on non-target games):")
+    # §6.3 abort safety — FULL library vs v1 on NON-target games (parity).
+    print("\n§6.3 abort safety (full-library supervised vs v1 on non-target games):")
     full_lib = list(DYN.values())
     reg = True
     for game, cls in classes.items():
         if game in DYN:
             continue
-        wg = sum(play(cls, goal, s)[0] for s in range(seeds))
+        wg = sum(play(cls, v1, s)[0] for s in range(seeds))
         ws = sum(play(cls, sup(full_lib), s)[0] for s in range(seeds))
         ok = ws >= wg
         reg = reg and ok
-        print(f"    {game:6s}: goal {wg}/{seeds}  supervised {ws}/{seeds}  "
+        print(f"    {game:6s}: v1 {wg}/{seeds}  supervised {ws}/{seeds}  "
               f"{'OK' if ok else 'REGRESSION'}")
 
     print("\nverdict:")
     print(f"  precision : {'CLEAN (no cross-fires)' if clean else 'CROSS-FIRES present'}")
-    print(f"  upside    : {'supervised > goal on every target' if upside else 'a target lacks upside'}")
+    print(f"  upside    : {'supervised > v1 on every target' if upside else 'a target lacks upside'}")
     print(f"  safety    : {'no off-target regression' if reg else 'OFF-TARGET REGRESSION'}")
 
 
@@ -205,7 +203,7 @@ def main():
     print()
     if a and b:
         print("PASS: explorer split is faithful AND the supervisor with an empty")
-        print("library is byte-identical to `goal`. Safe to port the first Dynamic.")
+        print("library is byte-identical to the v1 floor. Safe to port the first Dynamic.")
     else:
         print("FAIL: equivalence broken — fix before adding any Dynamic.")
         sys.exit(1)

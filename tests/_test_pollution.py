@@ -1,12 +1,14 @@
+import sys as _sys, pathlib as _pl
+_sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
 """
 _test_pollution.py — the ADDITIVE-LAW guard for the dynamics layer (ARC-RFC-0001 §7).
 
-The leaderboard failure this locks out: a dynamic fires on a game it should not, drives
-a few off-policy moves, then aborts — and the explorer FLOOR, kept "warm" by committing
+The failure this locks out: a dynamic fires on a game it should not, drives a few
+off-policy moves, then aborts — and the explorer FLOOR, kept "warm" by committing
 whatever action was executed, LEARNS those off-policy moves. After the abort it runs a
-polluted transition model that underperforms clean v1. That is the only way the additive
-stack can score BELOW its own floor, and the data fit it: every dynamics build sat under
-plain v1 0.18 (@BELIEF:LAT92LON62).
+polluted transition model that plays WORSE than a clean floor. That is the only way the
+additive stack can do worse than its own floor — and so the only way the solver layer
+can cost us levels instead of winning them.
 
 The fix (core/solve_agent.py): while a solver drives, the explorer is FROZEN — no observe,
 no commit — and on resume it marks a transition discontinuity. So the floor's model is

@@ -1,16 +1,39 @@
+# The Kaggle dataset carries ONLY the solving hull — the files launch_competition.py
+# imports/reads at solve time:
+#   launch_competition.py, agent_framework.py, ls20_detector.py, level_scanner.py,
+#   core/, games/, dataset-metadata.json (+ wheels/ if present).
+# Everything else — the training crew, the logbook, and the lore — stays on shore.
+
+# repo / tooling
 .git
 .claude
 .env.example
+.gitattributes
+.gitignore
+.kaggleignore
+LICENSE
+pyproject.toml
 __pycache__
 *.pyc
+
+# kernel + build artifacts (not dataset content)
 kernel-metadata.json
+kaggle_notebook.ipynb
 submission.parquet
 environment_files
-locus_*.txt
-*.pdf
-kaggle_notebook.ipynb
-RFCs
-_patch_notebook.py
-pyproject.toml
 resubmit_notebook.py
 upload_dataset.py
+
+# the crew (training) — not needed to solve a game
+launch_training.py
+kaggle_agent.py
+explore.py
+practice_offline.py
+search_routes.py
+tests
+
+# lore / docs — stay on shore
+locus_*.txt
+*.pdf
+*.md
+RFCs
