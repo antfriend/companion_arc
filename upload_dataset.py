@@ -15,8 +15,10 @@ api.dataset_create_version(
     "solver layer) - plays every game the SAME way in the competition rerun and the offline "
     "batch; an unrecognized game falls back to the floor with no regression (additive law, "
     "enforced by tests/_test_pollution.py). Crow's nest (tests/_test_multilevel.py): ls20 L3; "
-    "tu93/re86/wa30/ar25/sk48 L2; sp80/cd82/cn04/g50t L1. Per-game isolation so one game's "
-    "failure never sinks the run.",
+    "tu93/re86/wa30/ar25/sk48/sp80 L2; cd82/cn04/g50t L1. NEW: sp80 L2 = multi-piece "
+    "closed-loop deflector arranger (click-select each piece, seat it relative to the target "
+    "cluster, then one spill covers all targets). Per-game isolation so one game's failure "
+    "never sinks the run.",
     dir_mode="zip",
     quiet=False,
 )

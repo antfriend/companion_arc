@@ -39,9 +39,9 @@ umwelt:
 
 **Type**: two-phase SPILL/liquid puzzle — position a piece, then spill liquid to cover a
 target. The only canonical game the explorer floor can sometimes win by chance.
-**Status**: L1 SOLVED (re-derivation Dynamic, de-risk CLEAN, registered). L2 has an
-action-space ROTATION gotcha (fixed) but the spill heuristic is L1-tuned → L2 still open.
-Source: sp80-589a99af.
+**Status**: L1+L2 SOLVED (L2 2026-06-22). L1 = single-deflector re-derivation Dynamic.
+L2 = multi-piece CLOSED-LOOP deflector arranger. De-risk CLEAN, _test_multilevel max
+level 2. Source: sp80-589a99af.
 
 ---
 
@@ -93,20 +93,38 @@ flickers; ignore that flicker as noise.
 
 ---
 
-@LAT-30LON-10 sp80 L2 — rotation gotcha (fixed) + spill open
+@LAT30LON10 sp80 L2 — SOLVED (multi-piece closed-loop arranger)
 [ew]
-conf:110
-rev:1
+conf:225
+rev:2
 sal:4
-touched:1
+touched:2
 [/ew]
-L2 BUG (FIXED 2026-06-10, commit f50f75b): `_play_game` built the actions list ONCE on
-L1 (k=0); for L2 (k=2) `_get_valid_actions()` returns remapped slots, so a stale L1 list
-sent index-2 "LEFT" as ACTION3 → mapped to RIGHT → piece placed at x=9 not x=3 → spill
-missed → GAME_OVER. FIX: refresh the actions list from `env.action_space` on each level's
-first frame. L2 STILL OPEN: the spill heuristic (`_ANCHOR_TO_PIECE` / `_SPILL_ROUTE`) is
-L1-tuned to canonical positions and L2 has more color-11 obstacles (~240 vs ~160) → the
-fixed route does not transfer; L2 needs non-L1 spill logic. Open.
+SOLVED 2026-06-22. MECHANIC (read from source + engine probing): a FIXED spout drips a
+single liquid stream that RISES (the level runs at `dojfslwbg=180`, so display is rotated
+180° — moves are still display-nominal when sent as raw GameActions). Each ACTION5 is ONE
+complete spill, resolved inside a single `perform_action`; WIN = that one spill covers
+EVERY color-11 target (`repwkzbkhxl`) — flanked on both sides → recolor 13 / `cevwbinfgl`
+— WITHOUT touching the hazard (`waoewejnqzc`, sets `kfdcqkodyy`). Coverage RESETS between
+failed spills (`lpqbikobah` repaints targets to 11) and ~4 spills then GAME_OVER, so a
+SINGLE arrangement must cover all targets at once. Pieces (`plzwjbfyfli`, color-8 idle /
+color-9 selected) are DEFLECTORS: a rising drop hitting a piece splits L+R and continues
+up. L2 = three pieces (one 5-wide, two interchangeable 3-wide) + three targets centred at
+the top.
+SOLVER (`Sp80Dynamic._arrange`): engaged when >1 movable piece is seen near the color-11
+cluster. CLOSED-LOOP — re-detects pieces each frame (color-9 and color-8 detected
+SEPARATELY so a moving piece is never merged with an adjacent idle one), assigns each to a
+slot (TOP-LEFT offset from the target-cluster anchor: 5-wide→(+10,+3); 3-wide→(+5,+2),
+(+7,+6)), then click-selects an unplaced piece and walks it in. Two rules avoid pieces
+overlapping mid-move (which would hide one and trigger a premature spill): fill slots
+BOTTOM-UP (largest row first) and move each piece VERTICALLY before horizontally. Once all
+seated, ACTION5. Winning final board verified via the real engine; `_test_multilevel`
+sp80 max level 2.
+NOTE: slots/spill are anchored to the detected target cluster (translation-robust for this
+layout) but the exact 3-slot recipe is tuned to the L2 geometry — L3+ (more pieces/targets,
+multiple spouts) would need a search-derived recipe or a flow planner. The old "rotation
+gotcha" (stale per-level actions list, FIXED 2026-06-10 f50f75b) is moot for the Dynamic,
+which sends raw GameActions.
 
 ---
 
