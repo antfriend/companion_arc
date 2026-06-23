@@ -111,7 +111,7 @@ Two new gates, added before any refactor so the evolution is measured, not asser
 The existing crow's nest (`_test_multilevel.py`) keeps its meaning but its column is
 re-read: **"max level"** is split into **"max level reached"** and **"max level
 *solved* (Pattern A)."** Today the second column would read: ls20 3, tu93/re86/ar25/
-sk48 2, and wa30/sp80/g50t **1** (reached 2).
+sk48/**wa30** 2 (wa30 → A 2026-06-23), and sp80/g50t **1** (reached 2).
 
 ---
 
@@ -141,22 +141,41 @@ The same six moves for every game; the difficulty is entirely in steps 3–4.
 
 ## 5. Per-game plans (ordered by lift, ascending)
 
-### 5.1 `wa30` — *easiest; the L2 solver likely already contains L1*
+### 5.1 `wa30` — ✅ **DONE 2026-06-23 (Pattern A)**
 
-The L2 cooperative-delivery solver (`_l2_step`) is already a closed-loop, frame-derived,
-multi-agent delivery planner. The only thing making it Pattern B is the gate
-`if len(_adv_cells(f)) > 0` that hands the no-helper case to a separate plan-once route.
+`next_action` now always calls ONE closed-loop `_step` (the cooperative-delivery solver);
+the `len(_adv_cells)` gate and the `compute_route` plan-replay are gone. **L1 is the
+degenerate no-helper case** of the same code. Litmus PASSED. Gates GREEN: multilevel
+wa30=2 via the unified path, pollution/dynamics CLEAN, falsefire unchanged (`recognize`
+byte-identical), all 9 other games hold their levels.
 
-- **Hypothesis:** with **zero** helpers, the cooperative solver degenerates correctly —
-  the cursor is assigned *all* items (the farthest-from-helper heuristic with `hc = cur`
-  becomes farthest-from-cursor ordering) and delivers them. L1 = "cooperative delivery,
-  cooperators = {cursor}."
-- **Work:** remove the gate; let `_l2_step` run on L1; fix the item-ordering fallback so
-  no-helper order is sane; delete the `compute_route` L1 branch and `self._route`.
-- **Acceptance:** byte-identical not required (different but valid route is fine if it
-  wins); must win L1+L2 and translation/recolor variants of both.
-- **Risk:** low. Worst case the no-helper ordering is suboptimal and trips the timer on
-  L1 — mitigated by nearest-first ordering when `helper == ∅`.
+**The first attempt's diagnosis (four "blockers": sealing, phantom, occlusion, opposite
+pulls) was WRONG** — it attributed DETECTION artifacts to the planner. The actual blockers
+were three frame-reading mechanics, every one found by driving the real engine offline (do
+this FIRST; don't theorize about the planner):
+
+1. **color-3 pickup highlight.** An item's color-4 border *recolors to color-3* when the
+   cursor is adjacent. `_item_cells` scanned only color-4, so a cursor-adjacent item
+   silently dropped out of detection and the planner routed UP into the still-physical item
+   → livelock. This — not "sprite occlusion" — was the real "occlusion." FIX: scan `{3,4}`.
+2. **Carry geometry + cursor misread.** The carried item rides rigidly at the facing offset
+   it was picked from (`off = item − cursor`); DROP detaches it at `cursor + off`. BUT
+   `detect_state` under-reads the cursor by one cell *while carrying* (the hidden held item
+   shifts the edge read). FIX: **dead-reckon** the cursor during carry — seed from the frame
+   at pickup, advance by each commanded move, resync from the frame whenever not carrying.
+   (This subsumes the imagined "carried-item phantom" and "post-drop" issues.)
+3. **Carry goal-passability + footprint latch.** A drop goal needs BOTH the cursor cell AND
+   the item-landing cell free (checking only the item cell let the cursor goal land on an
+   already-filled slot → bump). And the color-2 interior *shrinks* as slots fill, so latch
+   the full slot set on FIRST sight (the old `len(dzbb) >= 5` excluded L1's 3 slots, which
+   corrupted the free/undelivered sets). With these, no global `compute_route` ordering is
+   needed — the closed loop re-reads filled slots as obstacles each frame.
+
+**Lesson for 5.2/5.3:** when a closed-loop L2 solver "can't subsume L1," suspect the
+per-frame READER (recoloring, sprite-merged misreads, shrinking-zone reads) before
+rewriting the planner. Validate each reader fix against the offline engine as oracle.
+Probes: `wa30_uni.py` (per-level trace), `wa30_carry.py`/`wa30_mech.py` (carry geometry),
+`wa30_board.py` (slot occupancy dumps).
 
 ### 5.2 `sp80` — *medium; replace hardcoded slots with a computed arrangement*
 
@@ -218,8 +237,9 @@ claim the variant test actually depends on.
 1. **M0 — Instrument.** Land `_test_unification.py` + `_test_variants.py` (translation
    + recolor first; generators per game as they come). Re-label the crow's nest with the
    "solved (Pattern A)" column. *Now the debt is visible and regressions are caught.*
-2. **M1 — `wa30` → A.** Smallest lift; proves the recipe end-to-end and the "L1 is the
-   degenerate case" collapse.
+2. **M1 — `wa30` → A.** ✅ **DONE 2026-06-23.** Proved the recipe end-to-end and the "L1 is
+   the degenerate case" collapse. Key lesson: the blocker was the per-frame READER (color-3
+   highlight, carry misread, shrinking drop zone), not the planner — see §5.1.
 3. **M2 — `sp80` → A.** Spill forward-model + computed slots; removes the first set of
    magic numbers.
 4. **M3 — `g50t` → A.** Maze reader + recording simulator + staged time-aware planner;
