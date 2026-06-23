@@ -1,0 +1,112 @@
+{
+  "session": "cn04L2",
+  "game": "cn04",
+  "instance": "2fe56bfb",
+  "seed": 0,
+  "actions": [
+    {
+      "id": 5,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 4,
+      "data": null
+    },
+    {
+      "id": 2,
+      "data": null
+    },
+    {
+      "id": 2,
+      "data": null
+    },
+    {
+      "id": 2,
+      "data": null
+    },
+    {
+      "id": 2,
+      "data": null
+    },
+    {
+      "id": 2,
+      "data": null
+    },
+    {
+      "id": 2,
+      "data": null
+    },
+    {
+      "id": 2,
+      "data": null
+    },
+    {
+      "id": 5,
+      "data": null
+    },
+    {
+      "id": 5,
+      "data": null
+    },
+    {
+      "id": 3,
+      "data": null
+    },
+    {
+      "id": 3,
+      "data": null
+    },
+    {
+      "id": 3,
+      "data": null
+    },
+    {
+      "id": 3,
+      "data": null
+    },
+    {
+      "id": 3,
+      "data": null
+    },
+    {
+      "id": 6,
+      "data": {
+        "x": 25,
+        "y": 36
+      }
+    }
+  ],
+  "notes": []
+}

@@ -39,8 +39,38 @@ umwelt:
 
 **Type**: RECORDING / REPLAY maze. Record a path, submit it (ACTION5) to spawn a GHOST
 that replays it (e.g. to hold a door/button open), then navigate the goal to the target.
-**Status**: L1 SOLVED (PLAN-ONCE choreographed Dynamic + hardcoded route, de-risk CLEAN,
-registered). L2+ UNSOLVED.
+**Status**: L1 + L2 SOLVED (PLAN-ONCE choreographed Dynamic + frame-gated relative-move
+routes, de-risk CLEAN, _test_multilevel max level 2). L3+ UNSOLVED.
+
+---
+
+@LAT-10LON10 g50t L2 — SOLVED 2026-06-23 (two-ghost / two-door / three-stage)
+[ew]
+conf:210
+rev:1
+sal:5
+touched:1
+[/ew]
+L2 is a 2-GHOST 2-DOOR variant with THREE recording stages (verified from source —
+`drofvwhbxb` has 3 stage sprites; the controller `qxlodtievc` clones a ghost on each
+non-final submit and freezes them on the final). Elements (this instance, x,y):
+goal start (49,25); tracker (24,18) → win cell (25,19); buttons (37,25) & (13,37);
+doors (13,19) & (37,49). Both doors are NON-latching (door sprite `kjrcloicja` centre
+pixel = 8 ≠ 11; latching needs centre==11, as seen in L3's `color_remap(None,11)`).
+Geometry: button (37,25) opens door (37,49) → exposes the bottom corridor with button
+(13,37); button (13,37) opens door (13,19) → the tracker room (otherwise sealed).
+MECHANIC: ghosts replay one recorded step PER PLAYER MOVE, indexed by the player's
+move count this stage; a path step into a shut door is LOST (index still advances →
+permanent desync), and a NO-OP/wall-bump player move returns early WITHOUT advancing
+ghosts. So both ghosts must be recorded (stage0→buttonA, stage1→buttonB), and in
+stage2 the player must make ≥12 REAL moves (so ghost2 seats buttonB) before crossing
+door-B. WIN fires when goal == tracker+(1,1); the engine registers the level on the
+NEXT step (sets a flag, advances on the following action).
+ROUTE (relative moves, simple-action indices 0=U 1=D 2=L 3=R 4=SUBMIT), verified
+end-to-end (level_index 1→2): `[2,2,4, 1,1,1,1,2,2,2,2,0,0,2,2,4, 0,0,0,2,2,2,2,2,2,2,1,1, 3,3,3]`.
+Relative moves → translation-invariant (like the L1 route); instance-structure-specific
+otherwise. L1-vs-L2 read from frame: L1 has ONE merged color-8 region (button welded to
+door), L2 has TWO color-8 door regions (`_door_components`). In `games/g50t/dynamic.py`.
 
 ---
 

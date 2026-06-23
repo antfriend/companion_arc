@@ -88,15 +88,32 @@ Validated 7/7 incl. an ACTION5-burn scenario. De-risk CLEAN (registered).
 
 ---
 
-@LAT-30LON-10 cn04 L2+ — open
+@LAT-30LON-10 cn04 L2+ — DETECTION WALL (2026-06-23)
 [ew]
-conf:70
-rev:1
-sal:4
-touched:1
+conf:200
+rev:2
+sal:5
+touched:2
 [/ew]
-NO solver. Levels 2–6 have 3–4 pieces, GreyMasking, and stacked variants → need
-click-select (ACTION6) to choose which piece to move, plus multi-piece search. Open.
+L2 = 4 pieces (0002 body11, 0003 body14, 0004 body15, 0005 body9), click-select
+ANY piece (ACTION6 on a SOLID body pixel — confirmed working; the clicked piece
+becomes color-0/selected, the previously-selected reverts to its TRUE body colour),
+then ACTION1-4 move / ACTION5 rotate the selected. WIN (`sjwqloivve`): EVERY
+connector pixel of EVERY visible sprite must overlap exactly one SAME-TYPE connector
+(8-on-8 or 13-on-13) of another sprite. 6×8 + 6×13 connectors → 6 matched cells.
+A unique winning arrangement exists (all 4 pieces rot=90, offline assembly search +
+engine win-check CONFIRMED winnable, ~46 moves < MaxSteps=100).
+
+**WHY IT IS A FRAME-WALL** (the reason to NOT ship a solver): the display
+`color_remap(13,8)` makes 8 and 13 connectors IDENTICAL on screen, AND a matched
+cell renders green (color-3) via `ydfurpdwv` for ANY coincidence — a WRONG-type
+(13-on-8) overlap renders the SAME green as a correct (8-8) match (verified:
+green-count identical, `iahpylgry` differs but is internal). Type-AGNOSTIC geometric
+assembly search finds 32 distinct assemblies (deduped by translation); only 4 are
+type-correct wins, 28 are decoys INDISTINGUISHABLE from the frame. So a frame-only
+solver cannot pick the winner, and chaining all 32 candidates blows the 100-step
+budget. Same class as ls20 L4. Scratch artifacts: cn04_search.py / cn04_search_
+agnostic.py / cn04_green.py / cn04_validate.py (session 2026-06-23). DEFERRED.
 
 ---
 
